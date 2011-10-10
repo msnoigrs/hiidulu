@@ -1,0 +1,12 @@
+diff -uNr commons-daemon-1.0.1_p536530.orig/src/native/unix/native/jsvc-unix.c commons-daemon-1.0.1_p536530/src/native/unix/native/jsvc-unix.c
+--- commons-daemon-1.0.1_p536530.orig/src/native/unix/native/jsvc-unix.c	2007-06-02 15:10:43.000000000 +0900
++++ commons-daemon-1.0.1_p536530/src/native/unix/native/jsvc-unix.c	2007-06-02 15:37:26.000000000 +0900
+@@ -516,7 +516,7 @@
+ 
+ #ifdef OS_LINUX
+     /* setuid()/setgid() only apply the current thread so we must do it now */
+-    if (linuxset_user_group(args->user,uid,gid)!=0)
++    if (getuid()==0 && linuxset_user_group(args->user,uid,gid)!=0)
+             return(4);
+ #endif
+     /* Initialize the Java VM */

@@ -1,0 +1,3157 @@
+diff -uNr /var/tmp/portage/dev-java/commons-logging-1.1.1/work/commons-logging-1.1.1-src/src/assembly/src.xml /var/tmp/portage/dev-java/commons-logging-9999/work/commons-logging-9999/src/assembly/src.xml
+--- /var/tmp/portage/dev-java/commons-logging-1.1.1/work/commons-logging-1.1.1-src/src/assembly/src.xml	2011-03-12 18:08:50.135000095 +0900
++++ /var/tmp/portage/dev-java/commons-logging-9999/work/commons-logging-9999/src/assembly/src.xml	2011-03-12 17:19:58.404000094 +0900
+@@ -23,7 +23,7 @@
+     <format>tar.gz</format>
+     <format>zip</format>
+   </formats>
+-  <baseDirectory>${artifactId}-${version}-src</baseDirectory>
++  <baseDirectory>${project.artifactId}-${project.version}-src</baseDirectory>
+   <fileSets>
+     <fileSet>
+       <directory>.</directory>
+diff -uNr /var/tmp/portage/dev-java/commons-logging-1.1.1/work/commons-logging-1.1.1-src/src/java/org/apache/commons/logging/LogConfigurationException.java /var/tmp/portage/dev-java/commons-logging-9999/work/commons-logging-9999/src/java/org/apache/commons/logging/LogConfigurationException.java
+--- /var/tmp/portage/dev-java/commons-logging-1.1.1/work/commons-logging-1.1.1-src/src/java/org/apache/commons/logging/LogConfigurationException.java	2011-03-12 18:08:50.163000095 +0900
++++ /var/tmp/portage/dev-java/commons-logging-9999/work/commons-logging-9999/src/java/org/apache/commons/logging/LogConfigurationException.java	2011-03-12 17:19:58.406000094 +0900
+@@ -24,7 +24,7 @@
+  * factory methods.</p>
+  *
+  * @author Craig R. McClanahan
+- * @version $Revision: 424107 $ $Date: 2006-07-21 01:15:42 +0200 (fr, 21 jul 2006) $
++ * @version $Revision: 424107 $ $Date: 2006-07-21 08:15:42 +0900 (Fri, 21 Jul 2006) $
+  */
+ 
+ public class LogConfigurationException extends RuntimeException {
+diff -uNr /var/tmp/portage/dev-java/commons-logging-1.1.1/work/commons-logging-1.1.1-src/src/java/org/apache/commons/logging/LogFactory.java /var/tmp/portage/dev-java/commons-logging-9999/work/commons-logging-9999/src/java/org/apache/commons/logging/LogFactory.java
+--- /var/tmp/portage/dev-java/commons-logging-1.1.1/work/commons-logging-1.1.1-src/src/java/org/apache/commons/logging/LogFactory.java	2011-03-12 18:08:50.166000095 +0900
++++ /var/tmp/portage/dev-java/commons-logging-9999/work/commons-logging-9999/src/java/org/apache/commons/logging/LogFactory.java	2011-03-12 17:19:58.408000094 +0900
+@@ -27,6 +27,7 @@
+ import java.lang.reflect.InvocationTargetException;
+ import java.lang.reflect.Method;
+ import java.net.URL;
++import java.net.URLConnection;
+ import java.security.AccessController;
+ import java.security.PrivilegedAction;
+ import java.util.Enumeration;
+@@ -46,7 +47,7 @@
+  * @author Craig R. McClanahan
+  * @author Costin Manolache
+  * @author Richard A. Sitze
+- * @version $Revision: 593798 $ $Date: 2007-11-10 18:40:43 +0100 $
++ * @version $Revision: 697387 $ $Date: 2008-09-21 01:33:51 +0900 (Sun, 21 Sep 2008) $
+  */
+ 
+ public abstract class LogFactory {
+@@ -1420,18 +1421,36 @@
+         PrivilegedAction action = 
+             new PrivilegedAction() {
+                 public Object run() {
++                    InputStream stream = null;
+                     try {
+-                        InputStream stream = url.openStream();
++                        // We must ensure that useCaches is set to false, as the
++                        // default behaviour of java is to cache file handles, and
++                        // this "locks" files, preventing hot-redeploy on windows.
++                        URLConnection connection = url.openConnection();
++                        connection.setUseCaches(false);
++                        stream = connection.getInputStream();
+                         if (stream != null) {
+                             Properties props = new Properties();
+                             props.load(stream);
+                             stream.close();
++                            stream = null;
+                             return props;
+                         }
+                     } catch(IOException e) {
+                         if (isDiagnosticsEnabled()) {
+                             logDiagnostic("Unable to read URL " + url);
+                         }
++                    } finally {
++                        if (stream != null) {
++                            try {
++                                stream.close();
++                            } catch(Throwable t) {
++                                // ignore exception; this should not happen
++                                if (isDiagnosticsEnabled()) {
++                                    logDiagnostic("Unable to close stream for URL " + url);
++                                }
++                            }
++                        }
+                     }
+ 
+                     return null;
+diff -uNr /var/tmp/portage/dev-java/commons-logging-1.1.1/work/commons-logging-1.1.1-src/src/java/org/apache/commons/logging/impl/AvalonLogger.java /var/tmp/portage/dev-java/commons-logging-9999/work/commons-logging-9999/src/java/org/apache/commons/logging/impl/AvalonLogger.java
+--- /var/tmp/portage/dev-java/commons-logging-1.1.1/work/commons-logging-1.1.1-src/src/java/org/apache/commons/logging/impl/AvalonLogger.java	2011-03-12 18:08:50.141000095 +0900
++++ /var/tmp/portage/dev-java/commons-logging-9999/work/commons-logging-9999/src/java/org/apache/commons/logging/impl/AvalonLogger.java	2011-03-12 17:19:58.409000094 +0900
+@@ -50,7 +50,7 @@
+  * is not considered to be an incompatible change.
+  * </p>
+  * @author <a href="mailto:neeme@apache.org">Neeme Praks</a>
+- * @version $Revision: 424107 $ $Date: 2006-07-21 01:15:42 +0200 (fr, 21 jul 2006) $
++ * @version $Revision: 424107 $ $Date: 2006-07-21 08:15:42 +0900 (Fri, 21 Jul 2006) $
+  */
+ public class AvalonLogger implements Log {
+ 
+diff -uNr /var/tmp/portage/dev-java/commons-logging-1.1.1/work/commons-logging-1.1.1-src/src/java/org/apache/commons/logging/impl/Jdk13LumberjackLogger.java /var/tmp/portage/dev-java/commons-logging-9999/work/commons-logging-9999/src/java/org/apache/commons/logging/impl/Jdk13LumberjackLogger.java
+--- /var/tmp/portage/dev-java/commons-logging-1.1.1/work/commons-logging-1.1.1-src/src/java/org/apache/commons/logging/impl/Jdk13LumberjackLogger.java	2011-03-12 18:08:50.145000095 +0900
++++ /var/tmp/portage/dev-java/commons-logging-9999/work/commons-logging-9999/src/java/org/apache/commons/logging/impl/Jdk13LumberjackLogger.java	2011-03-12 17:19:58.410000094 +0900
+@@ -39,7 +39,7 @@
+  * @author <a href="mailto:bloritsch@apache.org">Berin Loritsch</a>
+  * @author <a href="mailto:donaldp@apache.org">Peter Donald</a>
+  * @author <a href="mailto:vince256@comcast.net">Vince Eagen</a>
+- * @version $Revision: 424107 $ $Date: 2006-07-21 01:15:42 +0200 (fr, 21 jul 2006) $
++ * @version $Revision: 424107 $ $Date: 2006-07-21 08:15:42 +0900 (Fri, 21 Jul 2006) $
+  * @since 1.1
+  */
+ 
+diff -uNr /var/tmp/portage/dev-java/commons-logging-1.1.1/work/commons-logging-1.1.1-src/src/java/org/apache/commons/logging/impl/Jdk14Logger.java /var/tmp/portage/dev-java/commons-logging-9999/work/commons-logging-9999/src/java/org/apache/commons/logging/impl/Jdk14Logger.java
+--- /var/tmp/portage/dev-java/commons-logging-1.1.1/work/commons-logging-1.1.1-src/src/java/org/apache/commons/logging/impl/Jdk14Logger.java	2011-03-12 18:08:50.147000095 +0900
++++ /var/tmp/portage/dev-java/commons-logging-9999/work/commons-logging-9999/src/java/org/apache/commons/logging/impl/Jdk14Logger.java	2011-03-12 17:19:58.410000094 +0900
+@@ -34,7 +34,7 @@
+  * @author <a href="mailto:sanders@apache.org">Scott Sanders</a>
+  * @author <a href="mailto:bloritsch@apache.org">Berin Loritsch</a>
+  * @author <a href="mailto:donaldp@apache.org">Peter Donald</a>
+- * @version $Revision: 424107 $ $Date: 2006-07-21 01:15:42 +0200 (fr, 21 jul 2006) $
++ * @version $Revision: 424107 $ $Date: 2006-07-21 08:15:42 +0900 (Fri, 21 Jul 2006) $
+  */
+ 
+ public class Jdk14Logger implements Log, Serializable {
+diff -uNr /var/tmp/portage/dev-java/commons-logging-1.1.1/work/commons-logging-1.1.1-src/src/java/org/apache/commons/logging/impl/LogFactoryImpl.java /var/tmp/portage/dev-java/commons-logging-9999/work/commons-logging-9999/src/java/org/apache/commons/logging/impl/LogFactoryImpl.java
+--- /var/tmp/portage/dev-java/commons-logging-1.1.1/work/commons-logging-1.1.1-src/src/java/org/apache/commons/logging/impl/LogFactoryImpl.java	2011-03-12 18:08:50.151000095 +0900
++++ /var/tmp/portage/dev-java/commons-logging-9999/work/commons-logging-9999/src/java/org/apache/commons/logging/impl/LogFactoryImpl.java	2011-03-12 17:19:58.412000094 +0900
+@@ -65,7 +65,7 @@
+  * @author Craig R. McClanahan
+  * @author Richard A. Sitze
+  * @author Brian Stansberry
+- * @version $Revision: 581090 $ $Date: 2007-10-02 00:01:06 +0200 (ti, 02 okt 2007) $
++ * @version $Revision: 581090 $ $Date: 2007-10-02 07:01:06 +0900 (Tue, 02 Oct 2007) $
+  */
+ 
+ public class LogFactoryImpl extends LogFactory {
+Binary files /var/tmp/portage/dev-java/commons-logging-1.1.1/work/commons-logging-1.1.1-src/src/site/resources/images/logo.png and /var/tmp/portage/dev-java/commons-logging-9999/work/commons-logging-9999/src/site/resources/images/logo.png differ
+diff -uNr /var/tmp/portage/dev-java/commons-logging-1.1.1/work/commons-logging-1.1.1-src/src/site/site.xml /var/tmp/portage/dev-java/commons-logging-9999/work/commons-logging-9999/src/site/site.xml
+--- /var/tmp/portage/dev-java/commons-logging-1.1.1/work/commons-logging-1.1.1-src/src/site/site.xml	2011-03-12 18:08:50.173000095 +0900
++++ /var/tmp/portage/dev-java/commons-logging-9999/work/commons-logging-9999/src/site/site.xml	2011-03-12 17:19:58.417000094 +0900
+@@ -22,7 +22,7 @@
+ <project>
+   <bannerRight>
+     <name>Commons Logging</name>
+-    <src>http://commons.apache.org/logging/images/logo.png</src>
++    <src>/images/logo.png</src>
+     <href>http://commons.apache.org/logging/</href>
+   </bannerRight>
+   <body>
+@@ -33,6 +33,8 @@
+             href="/guide.html"/>
+       <item name="Tech Guide"
+             href="/tech.html"/>
++      <item name="Issue Tracking"
++            href="/issue-tracking.html"/>
+       <item name="Troubleshooting Guide"
+             href="/troubleshooting.html"/>
+       <item name="Wiki"
+@@ -44,7 +46,21 @@
+       <item name="Building"
+             href="/building.html"/>
+       <item name="Download"
+-            href="http://commons.apache.org/downloads/download_logging.cgi"/>
++            href="http://commons.apache.org/logging/download_logging.cgi"/>
++    </menu>
++    <menu name="1.1.1 Release">
++      <item name="Overview"
++            href="http://commons.apache.org/logging/commons-logging-1.1.1/index.html"/>
++      <item name="User Guide"
++            href="http://commons.apache.org/logging/commons-logging-1.1.1/guide.html"/>
++      <item name="Tech Guide"
++            href="http://commons.apache.org/logging/commons-logging-1.1.1/tech.html"/>
++      <item name="Troubleshooting Guide"
++            href="http://commons.apache.org/logging/commons-logging-1.1.1/troubleshooting.html"/>
++      <item name='JavaDoc'
++            href='http://commons.apache.org/logging/commons-logging-1.1.1/apidocs/index.html'/>
++      <item name="Release Notes"
++            href="http://commons.apache.org/logging/commons-logging-1.1.1/RELEASE-NOTES.txt"/>
+     </menu>
+     <menu name="1.1 Release">
+       <item name="Overview"
+diff -uNr /var/tmp/portage/dev-java/commons-logging-1.1.1/work/commons-logging-1.1.1-src/src/site/xdoc/building.xml /var/tmp/portage/dev-java/commons-logging-9999/work/commons-logging-9999/src/site/xdoc/building.xml
+--- /var/tmp/portage/dev-java/commons-logging-1.1.1/work/commons-logging-1.1.1-src/src/site/xdoc/building.xml	1970-01-01 09:00:00.000000000 +0900
++++ /var/tmp/portage/dev-java/commons-logging-9999/work/commons-logging-9999/src/site/xdoc/building.xml	2011-03-12 17:19:58.418000094 +0900
+@@ -0,0 +1,74 @@
++<?xml version="1.0"?>
++<!--
++Licensed to the Apache Software Foundation (ASF) under one or more
++contributor license agreements.  See the NOTICE file distributed with
++this work for additional information regarding copyright ownership.
++The ASF licenses this file to You under the Apache License, Version 2.0
++(the "License"); you may not use this file except in compliance with
++the License.  You may obtain a copy of the License at
++
++     http://www.apache.org/licenses/LICENSE-2.0
++
++Unless required by applicable law or agreed to in writing, software
++distributed under the License is distributed on an "AS IS" BASIS,
++WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++See the License for the specific language governing permissions and
++limitations under the License.
++-->
++<document>
++ <properties>
++  <title>Building</title>
++  <author email="dev@commons.apache.org">Commons Documentation Team</author>
++ </properties>
++<body>
++<!-- ================================================== -->
++<section name="Overview">
++  <p>
++    Commons Logging uses <a href="http://maven.apache.org">Maven 2.0.x</a> as its
++    primary build system. <a href="http://ant.apache.org">Ant</a> can also be used.
++  </p>
++</section>
++<!-- ================================================== -->
++<section name="Maven">
++  <p>
++    To build the full website, run
++  </p>
++  <source>mvn site</source>
++  <p>
++    The result will be in the <code>target/site</code> folder.
++    You must be online and using JDK 1.4 or higher to successfully complete this target.
++  </p>
++  <p>
++    To build the jar files, run
++  </p>
++  <source>mvn package</source>
++  <p>
++    The resulting 4 jar files will be in the <code>target</code> folder.
++    You must use JDK 1.4 or higher to successfully complete this target.
++  </p>
++  <p>
++    To create a full distribution, run
++  </p>
++  <source>mvn clean site assembly:assembly</source>
++  <p>
++    The resulting .zip and .tar.gz files will be in the <code>target</code> folder.
++    You must use JDK 1.4 or higher to successfully complete this target.
++  </p>
++  <p>
++    Further details can be found in the
++    <a href="http://commons.apache.org/building.html">commons build instructions</a>.
++  </p>
++</section>
++<!-- ================================================== -->
++<section name="Ant">
++  <p>
++    We still use Ant to test the artifacts built my Maven.
++    Please follow the instructions in the file <code>build-testing.xml</code>.
++  </p>
++  <p>
++    <b>Note:</b> A 1.2 JDK is needed to run the tests.
++  </p>
++</section>
++<!-- ================================================== -->
++</body>
++</document>
+diff -uNr /var/tmp/portage/dev-java/commons-logging-1.1.1/work/commons-logging-1.1.1-src/src/site/xdoc/download_logging.xml /var/tmp/portage/dev-java/commons-logging-9999/work/commons-logging-9999/src/site/xdoc/download_logging.xml
+--- /var/tmp/portage/dev-java/commons-logging-1.1.1/work/commons-logging-1.1.1-src/src/site/xdoc/download_logging.xml	1970-01-01 09:00:00.000000000 +0900
++++ /var/tmp/portage/dev-java/commons-logging-9999/work/commons-logging-9999/src/site/xdoc/download_logging.xml	2011-03-12 17:19:58.419000094 +0900
+@@ -0,0 +1,138 @@
++<?xml version="1.0"?>
++<!--
++Licensed to the Apache Software Foundation (ASF) under one or more
++contributor license agreements.  See the NOTICE file distributed with
++this work for additional information regarding copyright ownership.
++The ASF licenses this file to You under the Apache License, Version 2.0
++(the "License"); you may not use this file except in compliance with
++the License.  You may obtain a copy of the License at
++
++     http://www.apache.org/licenses/LICENSE-2.0
++
++Unless required by applicable law or agreed to in writing, software
++distributed under the License is distributed on an "AS IS" BASIS,
++WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++See the License for the specific language governing permissions and
++limitations under the License.
++-->
++<!--
++ +======================================================================+
++ |****                                                              ****|
++ |****      THIS FILE IS GENERATED BY THE COMMONS BUILD PLUGIN      ****|
++ |****                    DO NOT EDIT DIRECTLY                      ****|
++ |****                                                              ****|
++ +======================================================================+
++ | TEMPLATE FILE: download-page-template.xml                            |
++ | commons-build-plugin/trunk/src/main/resources/commons-xdoc-templates |
++ +======================================================================+
++ |                                                                      |
++ | 1) Re-generate using: mvn commons:download-page                      |
++ |                                                                      |
++ | 2) Set the following properties in the component's pom:              |
++ |    - commons.componentid (required, alphabetic, lower case)          |
++ |    - commons.release.version (required)                              |
++ |    - commons.binary.suffix (optional)                                |
++ |      (defaults to "-bin", set to "" for pre-maven2 releases)         |
++ |                                                                      |
++ | 3) Example Properties                                                |
++ |                                                                      |
++ |  <properties>                                                        |
++ |    <commons.componentid>math</commons.componentid>                   |
++ |    <commons.release.version>1.2</commons.release.version>            |
++ |  </properties>                                                       |
++ |                                                                      |
++ +======================================================================+
++-->
++<document>
++  <properties>
++    <title>Download Commons Logging</title>
++    <author email="dev@commons.apache.org">Commons Documentation Team</author>
++  </properties>
++  <body>
++    <section name="Download Commons Logging">
++    <subsection name="Using a Mirror">
++      <p>
++        We recommend you use a mirror to download our release
++        builds, but you <strong>must</strong> verify the integrity of
++        the downloaded files using signatures downloaded from our main 
++        distribution directories. Recent releases (48 hours) may not yet
++        be available from the mirrors.
++      </p>
++
++      <p>
++        You are currently using <b>[preferred]</b>.  If you
++        encounter a problem with this mirror, please select another
++        mirror.  If all mirrors are failing, there are <i>backup</i>
++        mirrors (at the end of the mirrors list) that should be
++        available.
++        <br></br>
++        [if-any logo]<a href="[link]"><img align="right" src="[logo]" border="0"></img></a>[end]
++      </p>
++
++      <form action="[location]" method="get" id="SelectMirror">
++        <p>
++          Other mirrors: 
++          <select name="Preferred">
++          [if-any http]
++            [for http]<option value="[http]">[http]</option>[end]
++          [end]
++          [if-any ftp]
++            [for ftp]<option value="[ftp]">[ftp]</option>[end]
++          [end]
++          [if-any backup]
++            [for backup]<option value="[backup]">[backup] (backup)</option>[end]
++          [end]
++          </select>
++          <input type="submit" value="Change"></input>
++        </p>
++      </form>
++
++      <p>
++        The <a href="http://www.apache.org/dist/commons/KEYS">KEYS</a>
++        link links to the code signing keys used to sign the product.
++        The <code>PGP</code> link downloads the OpenPGP compatible signature from our main site. 
++        The <code>MD5</code> link downloads the checksum from the main site.
++      </p>
++    </subsection>
++    </section>
++    <section name="Commons Logging 1.1.1 ">
++      <subsection name="Binaries">
++        <table>
++          <tr>
++              <td><a href="[preferred]/commons/logging/binaries/commons-logging-1.1.1-bin.tar.gz">commons-logging-1.1.1-bin.tar.gz</a></td>
++              <td><a href="http://www.apache.org/dist/commons/logging/binaries/commons-logging-1.1.1-bin.tar.gz.md5">md5</a></td>
++              <td><a href="http://www.apache.org/dist/commons/logging/binaries/commons-logging-1.1.1-bin.tar.gz.asc">pgp</a></td>
++          </tr>
++          <tr>
++              <td><a href="[preferred]/commons/logging/binaries/commons-logging-1.1.1-bin.zip">commons-logging-1.1.1-bin.zip</a></td>
++              <td><a href="http://www.apache.org/dist/commons/logging/binaries/commons-logging-1.1.1-bin.zip.md5">md5</a></td>
++              <td><a href="http://www.apache.org/dist/commons/logging/binaries/commons-logging-1.1.1-bin.zip.asc">pgp</a></td>
++          </tr>
++        </table>
++      </subsection>
++      <subsection name="Source">
++        <table>
++          <tr>
++              <td><a href="[preferred]/commons/logging/source/commons-logging-1.1.1-src.tar.gz">commons-logging-1.1.1-src.tar.gz</a></td>
++              <td><a href="http://www.apache.org/dist/commons/logging/source/commons-logging-1.1.1-src.tar.gz.md5">md5</a></td>
++              <td><a href="http://www.apache.org/dist/commons/logging/source/commons-logging-1.1.1-src.tar.gz.asc">pgp</a></td>
++          </tr>
++          <tr>
++              <td><a href="[preferred]/commons/logging/source/commons-logging-1.1.1-src.zip">commons-logging-1.1.1-src.zip</a></td>
++              <td><a href="http://www.apache.org/dist/commons/logging/source/commons-logging-1.1.1-src.zip.md5">md5</a></td>
++              <td><a href="http://www.apache.org/dist/commons/logging/source/commons-logging-1.1.1-src.zip.asc">pgp</a></td>
++          </tr>
++        </table>
++      </subsection>
++    </section>
++    <section name="Archives">
++        <p>
++          Older releases can be obtained from the archives.
++        </p>
++        <ul>
++          <li class="download"><a href="[preferred]/commons/logging/">browse download area</a></li>
++          <li><a href="http://archive.apache.org/dist/commons/logging/">archives...</a></li>
++        </ul>
++    </section>
++  </body>
++</document>
+diff -uNr /var/tmp/portage/dev-java/commons-logging-1.1.1/work/commons-logging-1.1.1-src/src/site/xdoc/guide.xml /var/tmp/portage/dev-java/commons-logging-9999/work/commons-logging-9999/src/site/xdoc/guide.xml
+--- /var/tmp/portage/dev-java/commons-logging-1.1.1/work/commons-logging-1.1.1-src/src/site/xdoc/guide.xml	1970-01-01 09:00:00.000000000 +0900
++++ /var/tmp/portage/dev-java/commons-logging-9999/work/commons-logging-9999/src/site/xdoc/guide.xml	2011-03-12 17:19:58.420000094 +0900
+@@ -0,0 +1,850 @@
++<?xml version="1.0"?>
++
++<!--
++
++ Licensed to the Apache Software Foundation (ASF) under one or more
++ contributor license agreements.  See the NOTICE file distributed with
++ this work for additional information regarding copyright ownership.
++ The ASF licenses this file to You under the Apache License, Version 2.0
++ (the "License"); you may not use this file except in compliance with
++ the License.  You may obtain a copy of the License at
++ 
++      http://www.apache.org/licenses/LICENSE-2.0
++ 
++ Unless required by applicable law or agreed to in writing, software
++ distributed under the License is distributed on an "AS IS" BASIS,
++ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ See the License for the specific language governing permissions and
++ limitations under the License.
++
++-->
++
++<document>
++
++ <properties>
++  <title>User Guide</title>
++  <author email="dev@commons.apache.org">Commons Documentation Team</author>
++ </properties>
++
++ <body>
++    <section name='Contents'>
++        <p>
++            <ol>
++                <li><a href='#Introduction'>Introduction</a></li>
++                <li><a href='#Quick Start'>Quick Start</a>
++                    <ol>
++                        <li><a href='#Configuration'>Configuration</a></li>
++                        <li>
++<a href='#Configuring The Underlying Logging System'>Configuring The Underlying Logging System</a>
++                        </li>
++                        <li>
++<a href='#Configuring Log4J'>Configuring Log4J</a>
++                        </li>
++                    </ol>
++                </li>
++                <li><a href='#Developing With JCL'>Developing With JCL</a>
++                     <ol>
++                        <li><a href='#Obtaining a Log Object'>Obtaining a Log Object</a></li>
++                        <li><a href='#Logging a Message'>Logging a Message</a></li>
++                        <li><a href='#Serialization Issues'>Serialization Issues</a></li>
++                     </ol>
++                </li>
++                <li><a href='#Jars Included in the Standard Distribution'>Jars Included in the Standard Distribution</a>
++                     <ol>
++                        <li><a href='#commons-logging.jar'>commons-logging.jar</a></li>
++                        <li><a href='#commons-logging-api.jar'>commons-logging-api.jar</a></li>
++                        <li><a href='#commons-logging-adapters.jar'>commons-logging-adapters.jar</a></li>
++                     </ol>
++                </li>
++                <li><a href='#JCL Best Practices'>JCL Best Practices</a></li>
++                <li><a href='#Best Practices (General)'>Best Practices (General)</a>
++                    <ol>
++                        <li><a href='#Code Guards'>Code Guards</a></li>
++                        <li><a href='#Message Priorities/Levels'>Message Priorities/Levels</a></li>
++                        <li><a href='#Default Message Priority/Level'>Default Message Priority/Level</a></li>
++                    </ol>
++                </li>
++                <li><a href='#Best Practices (Enterprise)'>Best Practices (Enterprise)</a>
++                    <ol>
++                        <li><a href='#Logging Exceptions'>Logging Exceptions</a></li>
++                        <li><a href='#When Info Level Instead of Debug?'>When Info Level Instead of Debug?</a></li>
++                        <li><a href='#More Control of Enterprise Exception Logging'>More Control of Enterprise Exception Logging</a></li>                    
++                        <li><a href='#National Language Support And Internationalization'>National Language Support And Internationalization</a></li>
++                        <li><a href='#Classloader and Memory Management'>Classloader and Memory Management</a></li>
++                    </ol>
++                </li>
++                <li><a href='#Extending Commons Logging'>Extending Commons Logging</a>
++                    <ol>
++                        <li><a href='#Contract'>Contract</a></li>
++                        <li><a href='#Creating a Log Implementation'>Creating a Log Implementation</a></li>
++                        <li><a href='#Creating A LogFactory Implementation'>Creating A LogFactory Implementation</a></li>
++                    </ol>
++                </li>
++                <li><a href='#A%20Quick%20Guide%20To%20Simple%20Log'>A Quick Guide To Simple Log</a>
++                </li>
++                <li><a href='#Frequently Asked Questions'>Frequently Asked Questions</a>
++                </li>
++            </ol>
++        </p>
++    </section>
++    <section name="Introduction">
++        <p>
++The Apache Commons Logging (JCL) provides a <code>Log</code> interface that
++is intended to be both light-weight and an independent abstraction of other logging toolkits.
++It provides the middleware/tooling developer with a simple
++logging abstraction, that allows the user (application developer) to plug in
++a specific logging implementation.
++    </p>
++<p>JCL provides thin-wrapper <code>Log</code> implementations for
++other logging tools, including
++<a href="http://logging.apache.org/log4j/docs/index.html">Log4J</a>,
++<a href="http://avalon.apache.org/logkit/index.html">Avalon LogKit</a>
++(the Avalon Framework's logging infrastructure),
++JDK 1.4, and an implementation of JDK 1.4 logging APIs (JSR-47) for pre-1.4
++systems.
++The interface maps closely to Log4J and LogKit.
++</p>
++        <p>
++Familiarity with high-level details of the relevant Logging implementations is presumed.
++    </p>
++</section>
++    <section name="Quick Start">
++        <p>
++As far as possible, JCL tries to be as unobtrusive as possible.
++In most cases, including the (full) <code>commons-logging.jar</code> in the classpath
++should result in JCL configuring itself in a reasonable manner.
++There's a good chance that it'll guess (discover) your preferred logging system and you won't
++need to do any configuration of JCL at all! 
++    </p><p>
++Note, however, that if you have a particular preference then providing a simple
++<code>commons-logging.properties</code> file which specifies the concrete logging library to be
++used is recommended, since (in this case) JCL will log only to that system
++and will report any configuration problems that prevent that system being used.
++    </p>
++    <p>
++When no particular logging library is specified then JCL will silently ignore any logging library
++that it finds but cannot initialise and continue to look for other alternatives. This is a deliberate
++design decision; no application should fail to run because a "guessed" logging library cannot be
++used. To ensure an exception is reported when a particular logging library cannot be used, use one
++of the available JCL configuration mechanisms to force that library to be selected (ie disable
++JCL's discovery process).
++    </p>
++        <subsection name='Configuration'>
++            <p>
++There are two base abstractions used by JCL: <code>Log</code>
++(the basic logger) and <code>LogFactory</code> (which knows how to create <code>Log</code>
++instances). Specifying a particular Log implementation is very useful (whether that is
++one provided by commons-logging or a user-defined one). Specifying a 
++<code>LogFactory</code> implementation other than the default is a subject for
++advanced users only, so will not be addressed here.
++        </p>
++            <p>
++The default <code>LogFactory</code> implementation uses the following discovery process
++to determine what type of <code>Log</code> implementation it should use
++(the process terminates when the first positive match - in order - is found):
++        </p>
++
++            <ol>
++                <li>
++Look for a configuration attribute of this factory named
++<code>org.apache.commons.logging.Log</code> (for backwards compatibility to
++pre-1.0 versions of this API, an attribute
++<code>org.apache.commons.logging.log</code> is also consulted).
++<p>
++Configuration attributes can be set explicitly by java code, but they are more
++commonly set by placing a file named commons-logging.properties in the classpath.
++When such a file exists, every entry in the properties file becomes an "attribute"
++of the LogFactory. When there is more than one such file in the classpath, releases
++of commons-logging prior to 1.1 simply use the first one found. From release 1.1,
++each file may define a <code>priority</code> key, and the file with
++the highest priority is used (no priority definition implies priority of zero).
++When multiple files have the same priority, the first one found is used.
++</p>
++<p>
++Defining this property in a commons-logging.properties file is the recommended
++way of explicitly selecting a Log implementation.
++</p>
++            </li>
++                <li>
++Look for a system property named
++<code>org.apache.commons.logging.Log</code> (for backwards
++compatibility to pre-1.0 versions of this API, a system property
++<code>org.apache.commons.logging.log</code> is also consulted).
++            </li>
++                <li>
++If the Log4J logging system is available in the application
++class path, use the corresponding wrapper class
++(<a href="http://commons.apache.org/logging/apidocs/org/apache/commons/logging/impl/Log4JLogger.html">Log4JLogger</a>).
++            </li>
++                <li>
++If the application is executing on a JDK 1.4 system, use
++the corresponding wrapper class
++(<a href="http://commons.apache.org/logging/apidocs/org/apache/commons/logging/impl/Jdk14Logger.html">Jdk14Logger</a>).
++            </li>
++                <li>
++Fall back to the default simple logging wrapper
++(<a href="http://commons.apache.org/logging/apidocs/org/apache/commons/logging/impl/SimpleLog.html">SimpleLog</a>).
++            </li>
++        </ol>
++            <p>
++Consult the JCL javadocs for details of the various <code>Log</code>
++implementations that ship with the component. (The discovery process is also covered in more
++detail there.)
++        </p>
++    </subsection>
++        <subsection name='Configuring The Underlying Logging System'>
++            <p>
++The JCL SPI
++can be configured to use different logging toolkits (see <a href='#Configuration'>above</a>).
++JCL provides only a bridge for writing log messages. It does not (and will not) support any
++sort of configuration API for the underlying logging system. 
++        </p>
++            <p>
++Configuration of the behavior of the JCL ultimately depends upon the
++logging toolkit being used. Please consult the documentation for the chosen logging system.
++        </p>
++        <p>
++JCL is NOT responsible for initialisation, configuration or shutdown of the underlying logging library.
++In many cases logging libraries will automatically initialise/configure themselves when first used, and
++need no explicit shutdown process. In these situations an application can simply use JCL and not depend
++directly on the API of the underlying logging system in any way. However if the logging library being used
++requires special initialisation, configuration or shutdown then some logging-library-specific code will
++be required in the application. JCL simply forwards logging method calls to the correct underlying
++implementation. When writing library code this issue is of course not relevant as the calling application
++is responsible for handling such issues.
++        </p>
++            <subsection name='Configuring Log4J'>
++                <p>
++Log4J is a very commonly used logging implementation (as well as being the JCL primary default), 
++so a <i>few</i> details are presented herein to get the developer/integrator going.
++Please see the <a href='http://logging.apache.org/log4j/docs/index.html'>Log4J Home</a> for more details
++on Log4J and it's configuration.
++            </p>
++                <p>
++Configure Log4J using system properties and/or a properties file:
++            </p>
++                <ul>
++                    <li>
++<strong>log4j.configuration=<em>log4j.properties</em></strong>
++Use this system property to specify the name of a Log4J configuration file.
++If not specified, the default configuration file is <i>log4j.properties</i>.
++                </li>
++                    <li>
++<strong>log4j.rootCategory=<i>priority</i> [, <i>appender</i>]*</strong>
++                </li>
++Set the default (root) logger priority.
++                    <li>
++<strong>log4j.logger.<i>logger.name</i>=<i>priority</i></strong>
++Set the priority for the named logger
++and all loggers hierarchically lower than, or below, the
++named logger.
++<i>logger.name</i> corresponds to the parameter of
++<code>LogFactory.getLog(<i>logger.name</i>)</code>,
++used to create the logger instance.  Priorities are:
++<code>DEBUG</code>,
++<code>INFO</code>,
++<code>WARN</code>,
++<code>ERROR</code>,
++or <code>FATAL</code>.
++<br/>
++Log4J understands hierarchical names,
++enabling control by package or high-level qualifiers:
++<code>log4j.logger.org.apache.component=DEBUG</code>
++will enable debug messages for all classes in both
++<code>org.apache.component</code>
++and
++<code>org.apache.component.sub</code>.
++Likewise, setting
++<code>log4j.logger.org.apache.component=DEBUG</code>
++will enable debug message for all 'component' classes,
++but not for other Apache projects.
++                </li>
++                    <li>
++<strong>log4j.appender.<i>appender</i>.Threshold=<i>priority</i></strong>
++                </li>
++Log4J <i>appenders</i> correspond to different output devices:
++console, files, sockets, and others.
++If appender's <i>threshold</i>
++is less than or equal to the message priority then
++the message is written by that appender.
++This allows different levels of detail to be appear
++at different log destinations.
++For example: one can capture DEBUG (and higher) level information in a logfile,
++while limiting console output to INFO (and higher).
++            </ul>
++        </subsection>
++    </subsection>
++</section>
++    <section name='Developing With JCL'>
++    <subsection name="Obtaining a Log Object">
++        <p>
++To use the JCL SPI from a Java class,
++include the following import statements:
++    </p>
++        <ul>
++            <code>
++import org.apache.commons.logging.Log;
++<br/>
++import org.apache.commons.logging.LogFactory;
++<br/>
++        </code>
++    </ul>
++        <p>
++Note that some components using JCL may
++either extend Log,
++or provide a component-specific LogFactory implementation.
++Review the component documentation for guidelines
++on how commons-logging should be used in such components.
++    </p>
++        <p>
++For each class definition, declare and initialize a
++<code>log</code> attribute as follows:
++    </p>
++        <ul>
++            <source>
++public class CLASS
++{
++    private Log log = LogFactory.getLog(CLASS.class);
++    ...
++    ;
++        </source>
++    </ul>
++    <p>
++Note that for application code, declaring the log member as "static" is more
++efficient as one Log object is created per class, and is recommended.
++However this is not safe to do for a class which may be deployed via a "shared"
++classloader in a servlet or j2ee container or similar environment. If the class
++may end up invoked with different thread-context-classloader values set then the
++member must <i>not</i> be declared static. The use of "static" should therefore
++be avoided in code within any "library" type project.
++    </p>
++    </subsection>
++    <subsection name="Logging a Message">
++        <p>
++Messages are logged to a <em>logger</em>, such as <code>log</code>
++by invoking a method corresponding to <em>priority</em>.
++The <code>org.apache.commons.logging.Log</code> interface defines the
++following methods for use
++in writing log/trace messages to the log:
++    </p>
++        <ul>
++            <source>
++    log.fatal(Object message);
++    log.fatal(Object message, Throwable t);
++    log.error(Object message);
++    log.error(Object message, Throwable t);
++    log.warn(Object message);
++    log.warn(Object message, Throwable t);
++    log.info(Object message);
++    log.info(Object message, Throwable t);
++    log.debug(Object message);
++    log.debug(Object message, Throwable t);
++    log.trace(Object message);
++    log.trace(Object message, Throwable t);
++        </source>
++    </ul>
++        <p>
++Semantics for these methods are such that it is expected
++that the severity, from highest to lowest, of messages is ordered as above.
++    </p>
++        <p>
++In addition to the logging methods, the following are provided for code guards:
++    </p>
++        <ul>
++            <source>
++    log.isFatalEnabled();
++    log.isErrorEnabled();
++    log.isWarnEnabled();
++    log.isInfoEnabled();
++    log.isDebugEnabled();
++    log.isTraceEnabled();
++        </source>
++    </ul>
++    </subsection>
++    <subsection name="Serialization Issues">
++    <p>Prior to release 1.0.4, none of the standard Log implementations were
++    Serializable. If you are using such a release and have a Serializable class
++    with a member that is of type Log then it is necessary to declare
++    that member to be transient and to ensure that the value is restored on
++    deserialization. The recommended approach is to define a custom
++    readObject method on the class which reinitializes that member.</p>
++    <p>In release 1.0.4, all standard Log implementations are Serializable. This
++    means that class members of type Log do <i>not</i> need to be declared transient;
++    on deserialization the Log object will "rebind" to the same category for the
++    same logging library. Note that the same underlying logging library will be
++    used on deserialization as was used in the original object, even if the
++    application the object was deserialized into is using a different logging
++    library. There is one exception; LogKitLogger (adapter for the Avalon LogKit
++    library) is not Serializable for technical reasons.</p>
++    <p>Custom Log implementations not distributed with commons-logging may
++    or may not be Serializable. If you wish your code to be compatible with
++    any arbitrary log adapter then you should follow the advice given above
++    for pre-1.0.4 releases.</p>
++    </subsection>
++</section>
++<section name="Jars Included in the Standard Distribution">
++    <subsection name="commons-logging.jar">
++      <p>
++The <code>commons-logging.jar</code> file includes the JCL API, the default 
++<code>LogFactory</code> implemenation and thin-wrapper <code>Log</code> 
++implementations for
++<a href="http://logging.apache.org/log4j/docs/index.html">Log4J</a>,
++<a href="http://avalon.apache.org/logkit/index.html">Avalon LogKit</a>,
++the Avalon Framework's logging infrastructure,
++JDK 1.4, as well as an implementation of JDK 1.4 logging APIs (JSR-47) for 
++pre-1.4 systems.
++   </p>
++   <p>
++In most cases, including <code>commons-logging.jar</code> and your preferred 
++logging implementation in the classpath should be all that is required to 
++use JCL.
++   </p>
++    </subsection>
++    <subsection name="commons-logging-api.jar">
++<p>
++The <code>commons-logging-api.jar</code> file includes the JCL API and the 
++default <code>LogFactory</code> implementation as well as the built-in
++<code>Log</code> implementations SimpleLog and NoOpLog. However it does not
++include the wrapper <code>Log</code> implementations that require additional
++libraries such as <code>Log4j</code>, <code>Avalon</code> and
++<code>Lumberjack</code>. 
++</p>
++<p>
++This jar is intended for use by projects that recompile the commons-logging
++source using alternate java environments, and cannot compile against all of
++the optional libraries that the Apache release of commons-logging supports.
++Because of the reduced dependencies of this jarfile, such projects should be
++able to create an equivalent of this library with fewer difficulties.
++</p>
++<p>
++This jar is also useful for build environments that automatically track
++dependencies, and thus have difficulty with the concept that the main
++commons-logging.jar has "optional" dependencies on various logging
++implementations that can safely go unsatisfied at runtime.
++</p>
++    </subsection>
++    <subsection name="commons-logging-adapters.jar">
++<p>
++The <code>commons-logging-adapters.jar</code> file includes only adapters
++to third-party logging implementations, and none of the core commons-logging
++framework. As such, it cannot be used alone; either commons-logging.jar or
++commons-logging-api.jar must also be present in the classpath.
++</p>
++<p>
++This library will not often be used; it is only intended for situations where
++a container has deployed commons-logging-api.jar in a shared classpath but a
++webapp wants to bind logging to one of the external logging implementations
++that the api jar does not include. In this situation, deploying the
++commons-logging.jar file within the webapp can cause problems as this leads to
++duplicates of the core commons-logging classes (Log, LogFactory, etc) in
++the classpath which in turn can cause unpleasant ClassCastException exceptions
++to occur. Deploying only the adapters avoids this problem.
++</p>
++    </subsection>
++</section>
++        <section name='JCL Best Practices'>
++            <p>
++Best practices for JCL are presented in two categories:
++General and Enterprise.
++The general principles are fairly clear.Enterprise practices are a bit more involved
++and it is not always as clear as to why they are important.
++        </p>
++            <p>
++Enterprise best-practice principles apply to middleware components
++and tooling that is expected to execute in an "Enterprise" level
++environment.
++These issues relate to Logging as Internationalization,
++and fault detection.
++Enterprise requires more effort and planning, but are strongly encouraged (if not required)
++in production level systems.  Different corporate enterprises/environments have different
++requirements, so being flexible always helps.
++        </p>
++    </section>
++    <section name='Best Practices (General)'>
++        <subsection name='Code Guards'>
++            <p>
++Code guards are typically used to guard code that
++only needs to execute in support of logging,
++that otherwise introduces undesirable runtime overhead
++in the general case (logging disabled).
++Examples are multiple parameters, or expressions (e.g. string + " more") for parameters.
++Use the guard methods of the form <code>log.is&lt;<i>Priority</i>&gt;()</code> to verify
++that logging should be performed, before incurring the overhead of the logging method call.
++Yes, the logging methods will perform the same check, but only after resolving parameters.
++            </p>
++        </subsection>
++           <subsection name='Message Priorities/Levels'>
++                <p>
++It is important to ensure that log message are
++appropriate in content and severity.
++The following guidelines are suggested:
++        </p>
++            <ul>
++                <li>
++<b>fatal</b> - Severe errors that cause premature termination.
++Expect these to be immediately visible on a status console.
++See also <a HREF="#National%20Language%20Support%20And%20Internationalization">
++Internationalization</a>.
++            </li>
++                <li>
++<b>error</b> - Other runtime errors or unexpected conditions.
++Expect these to be immediately visible on a status console.
++See also <a HREF="#National%20Language%20Support%20And%20Internationalization">
++Internationalization</a>.
++            </li>
++                <li>
++<b>warn</b> - Use of deprecated APIs, poor use of API, 'almost' errors,
++other runtime situations that are undesirable or unexpected, but not
++necessarily "wrong".
++Expect these to be immediately visible on a status console.
++See also <a HREF="#National%20Language%20Support%20And%20Internationalization">
++Internationalization</a>.
++            </li>
++                <li>
++<b>info</b> - Interesting runtime events (startup/shutdown).
++Expect these to be immediately visible on a console,
++so be conservative and keep to a minimum.
++See also <a HREF="#National%20Language%20Support%20And%20Internationalization">
++Internationalization</a>.
++            </li>
++                <li>
++<b>debug</b> - detailed information on the flow through the system.
++Expect these to be written to logs only.
++            </li>
++                <li>
++<b>trace</b> - more detailed information.
++Expect these to be written to logs only.
++            </li>
++        </ul>
++        </subsection>
++            <subsection name='Default Message Priority/Level'>
++                <p>
++By default the message priority should be no lower than <b>info</b>.
++That is, by default <b>debug</b> message should not be seen in the logs.
++            </p>
++        </subsection>
++    </section>
++    <section name='Best Practices (Enterprise)'>
++          <subsection name='Logging Exceptions'>
++               <p>
++The general rule in dealing with exceptions is to assume that
++the user (developer using a tooling/middleware API) isn't going
++to follow the rules.
++Since any problems that result are going to be assigned to you,
++it's in your best interest to be prepared with the proactive
++tools necessary to demonstrate that your component works correctly,
++or at worst that the problem can be analyzed from your logs.
++For this discussion, we must make a distinction between different types of exceptions
++based on what kind of boundaries they cross:
++           </p>
++               <ul>
++                   <li>
++<b>External Boundaries - Expected Exceptions</b>.
++This classification includes exceptions such as <code>FileNotFoundException</code>
++that cross API/SPI boundaries, and are exposed to the user of a component/toolkit.
++These are listed in the 'throws' clause of a method signature.
++<br/>
++Appropriate handling of these exceptions depends upon the type
++of code you are developing.
++API's for utility functions and tools should log these at the <b>debug</b> level,
++if they are caught at all by internal code.
++<br/>
++For higher level frameworks and middleware components,
++these exceptions should be caught immediatly prior to crossing
++the API/SPI interface back to user code-space,
++logged with full stack trace at <b>info</b> level,
++and rethrown.
++The assures that the log contains a record of the root cause for
++future analysis <i>in the event that the exception is not caught and resolved
++as expected by the user's code</i>.
++<br/>
++            </li>
++               <li>
++<b>External Boundaries - Unexpected Exceptions</b>.
++This classification includes exceptions such as <code>NullPointerException</code>
++that cross API/SPI boundaries, and are exposed to the user of a component/toolkit.
++These are runtime exceptions/error that are NOT
++listed in the 'throws' clause of a method signature.
++<br/>
++Appropriate handling of these exceptions depends upon the type
++of code you are developing.
++APIs for utility functions and tools should log these at the <b>debug</b> level,
++if they are caught at all.
++<br/>
++For higher level frameworks and middleware components,
++these exceptions should be caught immediately prior to crossing
++the API/SPI interface back to user code-space,
++logged with full stack trace at <b>info</b> level,
++and rethrown/wrapped as <code><i>Component</i>InternalError</code>.
++This ensures that the log contains a record of the root cause for
++future analysis <i>in the event that the exception is not caught and
++logged/reported as expected by the user's code</i>.
++            </li>
++                <li>
++<b>Internal Boundaries</b>.
++Exceptions that occur internally and are resolved internally.
++These should be logged when caught as <b>debug</b> or <b>info</b> messages,
++at the programmer's discretion.
++            </li>
++                <li>
++<b>Significant Internal Boundaries</b>.
++This typically only applies to middleware components that span networks or runtime processes.
++Exceptions that cross over significant internal component boundaries such as networks
++should be logged when caught as <b>info</b> messages.
++Do not assume that such a (process/network) boundary will deliver exceptions to the 'other side'.
++                </li>
++            </ul>
++    </subsection>
++        <subsection name='When Info Level Instead of Debug?'>
++                <p>
++You want to have exception/problem information available for
++first-pass problem determination in a production level
++enterprise application without turning on <b>debug</b>
++as a default log level.  There is simply too much information
++in <b>debug</b> to be appropriate for day-to-day operations.
++            </p>
++        </subsection>
++            <subsection name='More Control of Enterprise Exception Logging'>
++                <p>
++If more control is desired for the level of detail of these
++'enterprise' exceptions, then consider creating a special
++logger just for these exceptions:
++            </p>
++                <ul>
++<source>
++   Log log = LogFactory.getLog("org.apache.<i>component</i>.enterprise");
++</source>
++            </ul>
++                <p>
++This allows the 'enterprise' level information to be turned on/off explicitly
++by most logger implementations.
++            </p>
++        </subsection>
++        <subsection name='National Language Support And Internationalization'>
++            <p>
++NLS internationalization involves looking up messages from
++a message file by a message key, and using that message for logging.
++There are various tools in Java, and provided by other components,
++for working with NLS messages.
++                </p>
++            <p>
++NLS enabled components are particularly appreciated
++(that's an open-source-correct term for 'required by corporate end-users' :-)
++for <strong>tooling</strong> and <strong>middleware</strong> components.
++                </p>
++            <p>
++NLS internationalization SHOULD be strongly considered for used for
++<b>fatal</b>, <b>error</b>, <b>warn</b>, and <b>info</b> messages.
++It is generally considered optional for <b>debug</b> and <b>trace</b> messages.
++                </p>
++            <p>
++Perhaps more direct support for internationalizing log messages
++can be introduced in a future or alternate version of the <code>Log</code> interface.
++                </p>
++            </subsection>
++            <subsection name="Classloader and Memory Management">
++            <p>
++The <code>LogFactory</code> discovery process (see 
++<a href='#Configuration'>Configuration</a> above) is a fairly expensive 
++operation, so JCL certainly should not perform it each time user code 
++invokes: 
++</p>
++<source>LogFactory.getLog()</source> 
++<p>
++Instead JCL caches the 
++<code>LogFactory</code> implementation created as a result of the discovery 
++process and uses the cached factory to return <code>Log</code> objects.  
++Since in J2EE and similar multi-classloader environments, the result of the 
++discovery process can vary depending on the thread context classloader 
++(e.g. one webapp in a web container may be configured to use Log4j and 
++another to use JDK 1.4 logging), JCL internally caches the 
++<code>LogFactory</code> instances in a static hashtable, keyed by classloader.
++            </p>
++            <p>
++While this approach is efficient, it can lead to memory leaks if container
++implementors are not careful to call 
++</p>
++<source>LogFactory.release()</source> 
++<p>
++whenever a classloader that has utilized JCL is undeployed.  If 
++<code>release()</code> is not called, a reference to the undeployed 
++classloader (and thus to all the classes loaded by it) will be
++held in <code>LogFactory</code>'s static hashtable.
++            </p>
++            <p>
++Beginning with JCL 1.1, <code>LogFactory</code> caches factory implementations in a 
++"WeakHashtable". This class is similar to <code>java.util.WeakHashMap</code> in
++that it holds a <code>WeakReference</code> to each key (but a strong reference
++to each value), thus allowing classloaders to be GC'd even if
++<code>LogFactory.release()</code> is never invoked.
++            </p>
++            <p>
++Because <code>WeakHashtable</code> depends on JDK 1.3+ features, it is dynamically
++loaded depending on the JVM version; when commons-logging is run on java versions
++prior to 1.3 the code defaults to a standard Hashtable instead.
++            </p>
++            <p>
++If a custom LogFactory implementation is used, however, then a
++<code>WeakHashtable</code> alone can be insufficent to allow garbage collection
++of a classloader without a call to <code>release</code>.  If the abstract class
++<code>LogFactory</code> is loaded by a parent classloader and a concrete
++subclass implementation of <code>LogFactory</code> is loaded by a child
++classloader, the WeakHashtable's key is a weak reference to the TCCL (child
++classloader), but the value is a strong reference to the LogFactory instance,
++which in turn contains a strong reference to its class and thus loading
++classloader - the child classloader. This chain of strong references prevents
++the child loader from being garbage collected.
++           </p>
++           <p>
++If use of a custom <code>LogFactory</code> subclass is desired, ensuring that
++the custom subclass is loaded by the same classloader as <code>LogFactory</code>
++will prevent problems.  In normal deployments, the standard implementations 
++of <code>LogFactory</code> found in package <code>org.apache.commons.logging.impl</code> 
++will be loaded by the same classloader that loads <code>LogFactory</code> 
++itself, so use of the standard <code>LogFactory</code> implementation
++should not pose problems. Alternatively, use the provided ServletContextCleaner
++to ensure this reference is explicitly released on webapp unload.
++         </p>
++            </subsection>
++    </section>
++    <section name='Extending Commons Logging'>
++        <p>
++JCL is designed to encourage extensions to be created that add functionality. 
++Typically, extensions to JCL fall into two categories:
++    </p>
++        <ul>
++            <li>new <code>Log</code> implementations that provide new bridges to logging systems</li>
++            <li>
++new <code>LogFactory</code> implementations that provide alternative discovery strategies
++            </li>
++    </ul>
++        <subsection name='Contract'>
++            <p>
++When creating new implementations for <code>Log</code> and <code>LogFactory</code>,
++it is important to understand the implied contract between the factory 
++and the log implementations:
++                <ul>
++                    <li><b>Life cycle</b>
++                        <blockquote>
++The JCL LogFactory implementation must assume responsibility for
++either connecting/disconnecting to a logging toolkit,
++or instantiating/initializing/destroying a logging toolkit.
++                        </blockquote>
++                </li>
++                    <li><b>Exception handling</b>
++                        <blockquote>
++The JCL Log interface doesn't specify any exceptions to be handled,
++the implementation must catch any exceptions.
++                    </blockquote>
++                </li>
++                    <li><b>Multiple threads</b>
++                        <blockquote>
++The JCL Log and LogFactory implementations must ensure
++that any synchronization required by the logging toolkit
++is met.
++                    </blockquote>
++                </li>
++            </ul>
++        </p>
++    </subsection>
++    <subsection name='Creating a Log Implementation'>
++        <p>
++The minimum requirement to integrate with another logger
++is to provide an implementation of the
++<code>org.apache.commons.logging.Log</code> interface.
++In addition, an implementation of the
++<code>org.apache.commons.logging.LogFactory</code> interface
++can be provided to meet
++specific requirements for connecting to, or instantiating, a logger.
++    </p>
++            <p>
++The default <code>LogFactory</code> provided by JCL
++can be configured to instantiate a specific implementation of the
++<code>org.apache.commons.logging.Log</code> interface
++by setting the property of the same name (<code>org.apache.commons.logging.Log</code>).
++This property can be specified as a system property,
++or in the <code>commons-logging.properties</code> file,
++which must exist in the CLASSPATH.
++        </p>
++     </subsection>
++        <subsection name='Creating A LogFactory Implementation'>
++            <p>
++If desired, the default implementation of the
++<code>org.apache.commons.logging.LogFactory</code>
++interface can be overridden,
++allowing the JDK 1.3 Service Provider discovery process
++to locate and create a LogFactory specific to the needs of the application.
++Review the Javadoc for the <code>LogFactoryImpl.java</code>
++for details.
++        </p>
++    </subsection>
++</section>
++<section name='A Quick Guide To Simple Log'>
++  <p>
++JCL is distributed with a very simple <code>Log</code> implementation named 
++<code>org.apache.commons.logging.impl.SimpleLog</code>. This is intended to be a minimal
++implementation and those requiring a fully functional open source logging system are 
++directed to <a href='http://logging.apache.org/log4j'>Log4J</a>.
++  </p>
++  <p>
++  <code>SimpleLog</code> sends all (enabled) log messages,
++  for all defined loggers, to <code>System.err</code>.  The following system properties
++  are supported to configure the behavior of this logger:</p>
++  <ul>
++  <li><strong>org.apache.commons.logging.simplelog.defaultlog</strong> -
++      Default logging detail level for all instances of SimpleLog.
++      Must be one of:
++      <ul>
++          <li><code>trace</code></li>
++          <li><code>debug</code></li>
++          <li><code>info</code></li>
++          <li><code>warn</code></li>
++          <li><code>error</code></li>
++          <li><code>fatal</code></li>
++      </ul>
++      If not specified, defaults to <code>info</code>. </li>
++  <li><strong>org.apache.commons.logging.simplelog.log.xxxxx</strong> -
++      Logging detail level for a SimpleLog instance named "xxxxx".
++      Must be one of:
++      <ul>
++          <li><code>trace</code></li>
++          <li><code>debug</code></li>
++          <li><code>info</code></li>
++          <li><code>warn</code></li>
++          <li><code>error</code></li>
++          <li><code>fatal</code></li>
++      </ul>
++      If not specified, the default logging detail level is used.</li>
++  <li><strong>org.apache.commons.logging.simplelog.showlogname</strong> -
++      Set to <code>true</code> if you want the <code>Log</code> instance name to be
++      included in output messages. Defaults to <code>false</code>.</li>
++  <li><strong>org.apache.commons.logging.simplelog.showShortLogname</strong> -
++      Set to <code>true</code> if you want the last component of the name to be
++      included in output messages. Defaults to <code>true</code>.</li>
++  <li><strong>org.apache.commons.logging.simplelog.showdatetime</strong> -
++      Set to <code>true</code> if you want the current date and time
++      to be included in output messages. Default is <code>false</code>.</li>
++ <li><strong>org.apache.commons.logging.simplelog.dateTimeFormat</strong> -
++      The date and time format to be used in the output messages.
++      The pattern describing the date and time format is the same that is
++      used in <code>java.text.SimpleDateFormat</code>. If the format is not
++      specified or is invalid, the default format is used.
++      The default format is <code>yyyy/MM/dd HH:mm:ss:SSS zzz</code>.</li>
++  </ul>
++ 
++  <p>
++In addition to looking for system properties with the names specified
++above, this implementation also checks for a class loader resource named
++<code>"simplelog.properties"</code>, and includes any matching definitions
++from this resource (if it exists).
++  </p>
++</section>
++    <section name='Frequently Asked Questions'>
++<p>
++See the <a href="http://wiki.apache.org/commons/Logging/FrequentlyAskedQuestions">FAQ document</a>
++on the commons-logging wiki site
++</p>
++</section>
++
++</body>
++</document>
+diff -uNr /var/tmp/portage/dev-java/commons-logging-1.1.1/work/commons-logging-1.1.1-src/src/site/xdoc/index.xml /var/tmp/portage/dev-java/commons-logging-9999/work/commons-logging-9999/src/site/xdoc/index.xml
+--- /var/tmp/portage/dev-java/commons-logging-1.1.1/work/commons-logging-1.1.1-src/src/site/xdoc/index.xml	1970-01-01 09:00:00.000000000 +0900
++++ /var/tmp/portage/dev-java/commons-logging-9999/work/commons-logging-9999/src/site/xdoc/index.xml	2011-03-12 17:19:58.420000094 +0900
+@@ -0,0 +1,139 @@
++<?xml version="1.0"?>
++
++<!--
++
++ Licensed to the Apache Software Foundation (ASF) under one or more
++ contributor license agreements.  See the NOTICE file distributed with
++ this work for additional information regarding copyright ownership.
++ The ASF licenses this file to You under the Apache License, Version 2.0
++ (the "License"); you may not use this file except in compliance with
++ the License.  You may obtain a copy of the License at
++ 
++      http://www.apache.org/licenses/LICENSE-2.0
++ 
++ Unless required by applicable law or agreed to in writing, software
++ distributed under the License is distributed on an "AS IS" BASIS,
++ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ See the License for the specific language governing permissions and
++ limitations under the License.
++
++-->
++
++<document>
++
++ <properties>
++  <title>Overview</title>
++  <author email="dev@commons.apache.org">Commons Documentation Team</author>
++ </properties>
++
++ <body>
++
++<section name="The Logging Component">
++
++<p>When writing a library it is very useful to log information. However there
++are many logging implementations out there, and a library cannot impose the use
++of a particular one on the overall application that the library is a part of.</p>
++
++<p>The Logging package is an ultra-thin bridge between different logging
++implementations.  A library that uses the commons-logging API can be used with
++any logging implementation at runtime. Commons-logging comes with support for a
++number of popular logging implementations, and writing adapters for others is a
++reasonably simple task.</p>
++
++<p>Applications (rather than libraries) may also choose to use commons-logging.
++While logging-implementation independence is not as important for applications
++as it is for libraries, using commons-logging does allow the application to
++change to a different logging implementation without recompiling code. 
++</p><p>
++Note that commons-logging does not attempt to initialise or terminate the underlying
++logging implementation that is used at runtime; that is the responsibility of
++the application. However many popular logging implementations do automatically
++initialise themselves; in this case an application may be able to avoid
++containing any code that is specific to the logging implementation used.</p>
++
++</section>
++
++
++<section name="Documentation">
++
++<p>The <a href="RELEASE-NOTES.txt">
++Release Notes</a> document the new features and bug fixes that have been
++included in the latest release.</p>
++
++<p>The <a href="http://commons.apache.org/logging/apidocs/index.html">
++JavaDoc API documents</a> for the latest release are available online.
++In particular, you should read the package overview of the <code>org.apache.commons.logging</code>
++package. In addition, there is a (short)
++<a href="guide.html">User Guide</a>.</p>
++
++<p>The <a href="http://wiki.apache.org/commons/Logging">Wiki site</a> has
++the latest updates, an FAQ and much other useful information.</p>
++<p>
++Users needing to become experts or wanting to help develop JCL should
++(in addition) consult the <a href='tech.html'>Tech Guide</a>.
++This gives short introductions to topics such as advanced class loading.
++</p>
++</section>
++
++
++<section name="Releases">
++    <p>
++Binary and source distributions are available
++       <a href="http://commons.apache.org/logging/download_logging.cgi">here</a>.
++    </p>
++    <subsection name='1.1.1 Release - November 2007'>
++      <p>
++       This release is a minor update to the 1.1 release that fixes a number of bugs, and 
++       resolves packaging issues for maven 1.x and maven 2.x users.
++      </p>
++      <p>For the full details, see the release notes for this version.</p> 
++    </subsection>
++    <subsection name='1.1 Release - 10 May 2006'>
++      <p>This release makes several changes that are intended to resolve issues that
++      have been encountered when using commons-logging in servlet containers or j2ee
++      containers where complex classpaths are present and multiple copies of
++      commons-logging libraries are present at different levels.</p>
++      <p>This release also adds support for the TRACE level added to log4j in the
++      1.2.12 release. In former commons-logging versions, the log.trace method
++      caused log4j to output the message at the DEBUG level (the lowest level
++      supported by log4j at that time).</p>
++      <p>For the full details, see the release notes for this version.</p> 
++    </subsection>
++    <subsection name='1.0.5 Release (Alpha)'>
++      <p>
++        <strong>Note:</strong> the 1.0.5 release was abandoned at alpha status.
++      </p>
++      <p>
++    The next JCL release will be designated 1.1 since we feel this more 
++    accurately reflects the improvements made to the codebase.</p>
++    </subsection>
++    <subsection name='1.0.4 Release - 16 Jun 2004'>
++      <p>
++The 1.0.4 release of commons-logging is a service
++release containing support for both the 1.2.x and 1.3.x series of Log4J releases. 
++      </p>
++    </subsection>
++    <subsection name='1.0.3 Release - 7 Apr 2003'>
++      <p>
++The 1.0.3 release is primarily a maintenance and code cleanup release with minimal new features. 
++      </p>
++    </subsection>
++    <subsection name='1.0.2 Release - 27 September 2002'>
++      <p>
++The 1.0.2 release is a packaging of bug fixes since release 1.0.1.
++      </p>
++    </subsection>
++    <subsection name='1.0.1 Release - 13 August 2002'>
++      <p>
++The 1.0.1 release is a packaging of bug fixes and minor enhancements since release 1.0.
++      </p>
++    </subsection>
++</section>
++<section name="Development Builds">
++  <p>
++Regular builds of the current SVN HEAD code are made available. See the 
++<a href="http://wiki.apache.org/commons/Logging">wiki</a> for details.
++  </p>
++</section>
++</body>
++</document>
+diff -uNr /var/tmp/portage/dev-java/commons-logging-1.1.1/work/commons-logging-1.1.1-src/src/site/xdoc/issue-tracking.xml /var/tmp/portage/dev-java/commons-logging-9999/work/commons-logging-9999/src/site/xdoc/issue-tracking.xml
+--- /var/tmp/portage/dev-java/commons-logging-1.1.1/work/commons-logging-1.1.1-src/src/site/xdoc/issue-tracking.xml	1970-01-01 09:00:00.000000000 +0900
++++ /var/tmp/portage/dev-java/commons-logging-9999/work/commons-logging-9999/src/site/xdoc/issue-tracking.xml	2011-03-12 17:19:58.420000094 +0900
+@@ -0,0 +1,102 @@
++<?xml version="1.0"?>
++<!--
++Licensed to the Apache Software Foundation (ASF) under one or more
++contributor license agreements.  See the NOTICE file distributed with
++this work for additional information regarding copyright ownership.
++The ASF licenses this file to You under the Apache License, Version 2.0
++(the "License"); you may not use this file except in compliance with
++the License.  You may obtain a copy of the License at
++
++     http://www.apache.org/licenses/LICENSE-2.0
++
++Unless required by applicable law or agreed to in writing, software
++distributed under the License is distributed on an "AS IS" BASIS,
++WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++See the License for the specific language governing permissions and
++limitations under the License.
++-->
++<!--
++ +======================================================================+
++ |****                                                              ****|
++ |****      THIS FILE IS GENERATED BY THE COMMONS BUILD PLUGIN      ****|
++ |****                    DO NOT EDIT DIRECTLY                      ****|
++ |****                                                              ****|
++ +======================================================================+
++ | TEMPLATE FILE: issue-tracking-template.xml                           |
++ | commons-build-plugin/trunk/src/main/resources/commons-xdoc-templates |
++ +======================================================================+
++ |                                                                      |
++ | 1) Re-generate using: mvn commons:jira-page                          |
++ |                                                                      |
++ | 2) Set the following properties in the component's pom:              |
++ |    - commons.jira.id  (required, alphabetic, upper case)             |
++ |    - commons.jira.pid (required, numeric)                            |
++ |                                                                      |
++ | 3) Example Properties                                                |
++ |                                                                      |
++ |  <properties>                                                        |
++ |    <commons.jira.id>MATH</commons.jira.id>                           |
++ |    <commons.jira.pid>12310485</commons.jira.pid>                     |
++ |  </properties>                                                       |
++ |                                                                      |
++ +======================================================================+
++-->
++<document>
++  <properties>
++    <title>Commons Logging Issue tracking</title>
++    <author email="dev@commons.apache.org">Commons Documentation Team</author>
++  </properties>
++  <body>
++
++    <section name="Commons Logging Issue tracking">
++      <p>
++      Commons Logging uses <a href="http://issues.apache.org/jira/">ASF JIRA</a> for tracking issues.
++      See the <a href="http://issues.apache.org/jira/browse/LOGGING">Commons Logging JIRA project page</a>.
++      </p>
++
++      <p>
++      To use JIRA you may need to <a href="http://issues.apache.org/jira/secure/Signup!default.jspa">create an account</a>
++      (if you have previously created/updated Commons issues using Bugzilla an account will have been automatically
++      created and you can use the <a href="http://issues.apache.org/jira/secure/ForgotPassword!default.jspa">Forgot Password</a>
++      page to get a new password).
++      </p>
++
++      <p>
++      If you would like to report a bug, or raise an enhancement request with
++      Commons Logging please do the following:
++      <ol>
++        <li><a href="http://issues.apache.org/jira/secure/IssueNavigator.jspa?reset=true&amp;pid=12310484&amp;sorter/field=issuekey&amp;sorter/order=DESC&amp;status=1&amp;status=3&amp;status=4">Search existing open bugs</a>.
++            If you find your issue listed then please add a comment with your details.</li>
++        <li><a href="mail-lists.html">Search the mailing list archive(s)</a>.
++            You may find your issue or idea has already been discussed.</li>
++        <li>Decide if your issue is a bug or an enhancement.</li>
++        <li>Submit either a <a href="http://issues.apache.org/jira/secure/CreateIssueDetails!init.jspa?pid=12310484&amp;issuetype=1&amp;priority=4&amp;assignee=-1">bug report</a>
++            or <a href="http://issues.apache.org/jira/secure/CreateIssueDetails!init.jspa?pid=12310484&amp;issuetype=4&amp;priority=4&amp;assignee=-1">enhancement request</a>.</li>
++      </ol>
++      </p>
++
++      <p>
++      Please also remember these points:
++      <ul>
++        <li>the more information you provide, the better we can help you</li>
++        <li>test cases are vital, particularly for any proposed enhancements</li>
++        <li>the developers of Commons Logging are all unpaid volunteers</li>
++      </ul>
++      </p>
++
++      <p>
++      For more information on subversion and creating patches see the
++      <a href="http://www.apache.org/dev/contributors.html">Apache Contributors Guide</a>.
++      </p>
++
++      <p>
++      You may also find these links useful:
++      <ul>
++        <li><a href="http://issues.apache.org/jira/secure/IssueNavigator.jspa?reset=true&amp;pid=12310484&amp;sorter/field=issuekey&amp;sorter/order=DESC&amp;status=1&amp;status=3&amp;status=4">All Open Commons Logging bugs</a></li>
++        <li><a href="http://issues.apache.org/jira/secure/IssueNavigator.jspa?reset=true&amp;pid=12310484&amp;sorter/field=issuekey&amp;sorter/order=DESC&amp;status=5&amp;status=6">All Resolved Commons Logging bugs</a></li>
++        <li><a href="http://issues.apache.org/jira/secure/IssueNavigator.jspa?reset=true&amp;pid=12310484&amp;sorter/field=issuekey&amp;sorter/order=DESC">All Commons Logging bugs</a></li>
++      </ul>
++      </p>
++    </section>
++  </body>
++</document>
+diff -uNr /var/tmp/portage/dev-java/commons-logging-1.1.1/work/commons-logging-1.1.1-src/src/site/xdoc/issue-tracking.xml.bak /var/tmp/portage/dev-java/commons-logging-9999/work/commons-logging-9999/src/site/xdoc/issue-tracking.xml.bak
+--- /var/tmp/portage/dev-java/commons-logging-1.1.1/work/commons-logging-1.1.1-src/src/site/xdoc/issue-tracking.xml.bak	1970-01-01 09:00:00.000000000 +0900
++++ /var/tmp/portage/dev-java/commons-logging-9999/work/commons-logging-9999/src/site/xdoc/issue-tracking.xml.bak	2011-03-12 17:19:58.421000094 +0900
+@@ -0,0 +1,67 @@
++<?xml version="1.0"?>
++<!--
++Licensed to the Apache Software Foundation (ASF) under one or more
++contributor license agreements.  See the NOTICE file distributed with
++this work for additional information regarding copyright ownership.
++The ASF licenses this file to You under the Apache License, Version 2.0
++(the "License"); you may not use this file except in compliance with
++the License.  You may obtain a copy of the License at
++
++     http://www.apache.org/licenses/LICENSE-2.0
++
++Unless required by applicable law or agreed to in writing, software
++distributed under the License is distributed on an "AS IS" BASIS,
++WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++See the License for the specific language governing permissions and
++limitations under the License.
++-->
++<document>
++
++  <properties>
++    <title>Issue tracking</title>
++    <author email="dev@commons.apache.org">Commons Documentation Team</author>
++  </properties>
++
++  <body>
++    <!-- ================================================== -->
++    <section name="Issue tracking">
++      <p>
++        Commons Logging uses <a href="http://issues.apache.org/jira/browse/LOGGING">ASF JIRA</a> for tracking issues.
++      </p>
++      <p>
++        To use JIRA you may need to <a href="http://issues.apache.org/jira/secure/Signup!default.jspa">create an account</a>
++        (if you have previously created/updated Commons issues using Bugzilla an account will have been automatically
++        created and you can use the <a href="http://issues.apache.org/jira/secure/ForgotPassword!default.jspa">Forgot Password</a>
++        page to get a new password).
++      </p>
++      <p>
++        If you would like to report a bug, or raise an enhancement request with
++        Commons Logging please do the following:
++        <ol>
++        <li><a href="http://issues.apache.org/jira/secure/IssueNavigator.jspa?reset=true&amp;pid=12310484&amp;sorter/field=issuekey&amp;sorter/order=DESC&amp;status=1&amp;status=4">Search existing open bugs</a>.
++        If you find your issue listed then please add a comment with your details.</li>
++        <li><a href="http://mail-archives.apache.org/mod_mbox/commons-dev/">Search the mailing list archive</a>.
++        You may find your issue or idea has already been discussed.</li>
++        <li><a href="http://issues.apache.org/jira/browse/LOGGING">Submit a bug report or enhancement request</a>.</li>
++        </ol>
++      </p>
++      <p>
++        Please also remember these points:
++        <ul>
++          <li>the more information you provide, the better we can help you</li>
++          <li>test cases are vital, particularly for any proposed enhancements</li>
++          <li>the developers of Commons Logging are all unpaid volunteers</li>
++        </ul>
++      </p>
++      <p>
++        You may also find these links useful:
++        <ul>
++          <li><a href="http://issues.apache.org/jira/secure/IssueNavigator.jspa?reset=true&amp;pid=12310484&amp;sorter/field=issuekey&amp;sorter/order=DESC&amp;status=1&amp;status=4">All Open Logging bugs</a></li>
++          <li><a href="http://issues.apache.org/jira/secure/IssueNavigator.jspa?reset=true&amp;pid=12310484&amp;sorter/field=issuekey&amp;sorter/order=DESC&amp;status=5&amp;status=6">All Resolved Logging bugs</a></li>
++          <li><a href="http://issues.apache.org/jira/secure/IssueNavigator.jspa?reset=true&amp;pid=12310484&amp;sorter/field=issuekey&amp;sorter/order=DESC">All Logging bugs</a></li>
++        </ul>
++      </p>
++    </section>
++    <!-- ================================================== -->
++  </body>
++</document>
+diff -uNr /var/tmp/portage/dev-java/commons-logging-1.1.1/work/commons-logging-1.1.1-src/src/site/xdoc/junit-report.xml /var/tmp/portage/dev-java/commons-logging-9999/work/commons-logging-9999/src/site/xdoc/junit-report.xml
+--- /var/tmp/portage/dev-java/commons-logging-1.1.1/work/commons-logging-1.1.1-src/src/site/xdoc/junit-report.xml	1970-01-01 09:00:00.000000000 +0900
++++ /var/tmp/portage/dev-java/commons-logging-9999/work/commons-logging-9999/src/site/xdoc/junit-report.xml	2011-03-12 17:19:58.421000094 +0900
+@@ -0,0 +1,39 @@
++<?xml version="1.0"?>
++<!--
++Licensed to the Apache Software Foundation (ASF) under one or more
++contributor license agreements.  See the NOTICE file distributed with
++this work for additional information regarding copyright ownership.
++The ASF licenses this file to You under the Apache License, Version 2.0
++(the "License"); you may not use this file except in compliance with
++the License.  You may obtain a copy of the License at
++
++     http://www.apache.org/licenses/LICENSE-2.0
++
++Unless required by applicable law or agreed to in writing, software
++distributed under the License is distributed on an "AS IS" BASIS,
++WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++See the License for the specific language governing permissions and
++limitations under the License.
++-->
++<document>
++
++  <properties>
++    <title>JUnit Test Results</title>
++    <author email="dev@commons.apache.org">Commons Documentation Team</author>
++  </properties>
++  
++  <body>
++    <!-- ================================================== -->
++    <section name="Summary">
++      <p>
++        The Apache Commons Logging test cases make extensive use of
++        sophisticated classloader configurations in order to simulate the
++        behaviour of various containers. It is difficult to run these tests
++        under Maven (which is used to generate the website). Once JCL is
++        upgraded to Maven 2 it is hoped that we will be able to display a report
++        on the unit tests.
++      </p>
++    </section>
++    <!-- ================================================== -->
++  </body>
++</document>
+diff -uNr /var/tmp/portage/dev-java/commons-logging-1.1.1/work/commons-logging-1.1.1-src/src/site/xdoc/mail-lists.xml /var/tmp/portage/dev-java/commons-logging-9999/work/commons-logging-9999/src/site/xdoc/mail-lists.xml
+--- /var/tmp/portage/dev-java/commons-logging-1.1.1/work/commons-logging-1.1.1-src/src/site/xdoc/mail-lists.xml	1970-01-01 09:00:00.000000000 +0900
++++ /var/tmp/portage/dev-java/commons-logging-9999/work/commons-logging-9999/src/site/xdoc/mail-lists.xml	2011-03-12 17:19:58.422000094 +0900
+@@ -0,0 +1,202 @@
++<?xml version="1.0"?>
++<!--
++Licensed to the Apache Software Foundation (ASF) under one or more
++contributor license agreements.  See the NOTICE file distributed with
++this work for additional information regarding copyright ownership.
++The ASF licenses this file to You under the Apache License, Version 2.0
++(the "License"); you may not use this file except in compliance with
++the License.  You may obtain a copy of the License at
++
++     http://www.apache.org/licenses/LICENSE-2.0
++
++Unless required by applicable law or agreed to in writing, software
++distributed under the License is distributed on an "AS IS" BASIS,
++WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++See the License for the specific language governing permissions and
++limitations under the License.
++-->
++<!--
++ +======================================================================+
++ |****                                                              ****|
++ |****      THIS FILE IS GENERATED BY THE COMMONS BUILD PLUGIN      ****|
++ |****                    DO NOT EDIT DIRECTLY                      ****|
++ |****                                                              ****|
++ +======================================================================+
++ | TEMPLATE FILE: mail-lists-template.xml                               |
++ | commons-build-plugin/trunk/src/main/resources/commons-xdoc-templates |
++ +======================================================================+
++ |                                                                      |
++ | 1) Re-generate using: mvn commons:mail-page                          |
++ |                                                                      |
++ | 2) Set the following properties in the component's pom:              |
++ |    - commons.componentid (required, alphabetic, lower case)          |
++ |                                                                      |
++ | 3) Example Properties                                                |
++ |                                                                      |
++ |  <properties>                                                        |
++ |    <commons.componentid>math</commons.componentid>                   |
++ |  </properties>                                                       |
++ |                                                                      |
++ +======================================================================+
++-->
++<document>
++  <properties>
++    <title>Commons Logging Mailing Lists</title>
++    <author email="dev@commons.apache.org">Commons Documentation Team</author>
++  </properties>
++  <body>
++
++    <section name="Overview">
++      <p>
++        <a href="index.html">Commons Logging</a> shares mailing lists with all the other 
++        <a href="http://commons.apache.org/components.html">Commons Components</a>.
++        To make it easier for people to only read messages related to components they are interested in,
++        the convention in Commons is to prefix the subject line of messages with the component's name,
++        for example:
++        <ul>
++          <li>[logging] Problem with the ...</li>
++        </ul>
++      </p>
++      <p>
++        Questions related to the usage of Commons Logging should be posted to the
++        <a href="http://mail-archives.apache.org/mod_mbox/commons-user/">User List</a>.
++        <br />
++        The <a href="http://mail-archives.apache.org/mod_mbox/commons-dev/">Developer List</a>
++        is for questions and discussion related to the development of Commons Logging.
++        <br />
++        Please do not cross-post; developers are also subscribed to the user list.
++      </p>
++      <p>
++        <strong>Note:</strong> please don't send patches or attachments to any of the mailing lists.
++        Patches are best handled via the <a href="issue-tracking.html">Issue Tracking</a> system. 
++        Otherwise, please upload the file to a public server and include the URL in the mail. 
++      </p>
++    </section>
++
++    <section name="Commons Logging Mailing Lists">
++      <p>
++        <strong>Please prefix the subject line of any messages for <a href="index.html">Commons Logging</a>
++        with <i>[logging]</i></strong> - <i>thanks!</i>
++        <br />
++        <br />
++      </p>
++
++      <table>
++        <tr>
++          <th>Name</th>
++          <th>Subscribe</th>
++          <th>Unsubscribe</th>
++          <th>Post</th>
++          <th>Archive</th>
++          <th>Other Archives</th>
++        </tr>
++
++
++        <tr>
++          <td>
++            <strong>Commons User List</strong>
++            <br /><br />
++            Questions on using Commons Logging.
++            <br /><br />
++          </td>
++          <td><a href="mailto:user-subscribe@commons.apache.org">Subscribe</a></td>
++          <td><a href="mailto:user-unsubscribe@commons.apache.org">Unsubscribe</a></td>
++          <td><a href="mailto:user@commons.apache.org?subject=[logging]">Post</a></td>
++          <td><a href="http://mail-archives.apache.org/mod_mbox/commons-user/">mail-archives.apache.org</a></td>
++          <td><a href="http://markmail.org/list/org.apache.commons.users/">markmail.org</a><br />
++              <a href="http://www.mail-archive.com/user@commons.apache.org/">www.mail-archive.com</a><br />
++              <a href="http://news.gmane.org/gmane.comp.jakarta.commons.devel">news.gmane.org</a>
++          </td>
++        </tr>
++
++
++        <tr>
++          <td>
++            <strong>Commons Developer List</strong>
++            <br /><br />
++            Discussion of development of Commons Logging.
++            <br /><br />
++          </td>
++          <td><a href="mailto:dev-subscribe@commons.apache.org">Subscribe</a></td>
++          <td><a href="mailto:dev-unsubscribe@commons.apache.org">Unsubscribe</a></td>
++          <td><a href="mailto:dev@commons.apache.org?subject=[logging]">Post</a></td>
++          <td><a href="http://mail-archives.apache.org/mod_mbox/commons-dev/">mail-archives.apache.org</a></td>
++          <td><a href="http://markmail.org/list/org.apache.commons.dev/">markmail.org</a><br />
++              <a href="http://www.mail-archive.com/dev@commons.apache.org/">www.mail-archive.com</a><br />
++              <a href="http://news.gmane.org/gmane.comp.jakarta.commons.devel">news.gmane.org</a>
++          </td>
++        </tr>
++
++
++        <tr>
++          <td>
++            <strong>Commons Issues List</strong>
++            <br /><br />
++            Only for e-mails automatically generated by the <a href="issue-tracking.html">issue tracking</a> system.
++            <br /><br />
++          </td>
++          <td><a href="mailto:issues-subscribe@commons.apache.org">Subscribe</a></td>
++          <td><a href="mailto:issues-unsubscribe@commons.apache.org">Unsubscribe</a></td>
++          <td><i>read only</i></td>
++          <td><a href="http://mail-archives.apache.org/mod_mbox/commons-issues/">mail-archives.apache.org</a></td>
++          <td><a href="http://markmail.org/list/org.apache.commons.issues/">markmail.org</a><br />
++              <a href="http://www.mail-archive.com/issues@commons.apache.org/">www.mail-archive.com</a>
++          </td>
++        </tr>
++
++
++        <tr>
++          <td>
++            <strong>Commons Commits List</strong>
++            <br /><br />
++            Only for e-mails automatically generated by the <a href="source-repository.html">source control</a> sytem.
++            <br /><br />
++          </td>
++          <td><a href="mailto:commits-subscribe@commons.apache.org">Subscribe</a></td>
++          <td><a href="mailto:commits-unsubscribe@commons.apache.org">Unsubscribe</a></td>
++          <td><i>read only</i></td>
++          <td><a href="http://mail-archives.apache.org/mod_mbox/commons-commits/">mail-archives.apache.org</a></td>
++          <td><a href="http://markmail.org/list/org.apache.commons.commits/">markmail.org</a><br />
++              <a href="http://www.mail-archive.com/commits@commons.apache.org/">www.mail-archive.com</a>
++          </td>
++        </tr>
++
++      </table>
++
++    </section>
++    <section name="Apache Mailing Lists">
++      <p>
++        Other mailing lists which you may find useful include:
++      </p>
++
++      <table>
++        <tr>
++          <th>Name</th>
++          <th>Subscribe</th>
++          <th>Unsubscribe</th>
++          <th>Post</th>
++          <th>Archive</th>
++          <th>Other Archives</th>
++        </tr>
++        <tr>
++          <td>
++            <strong>Apache Announce List</strong>
++            <br /><br />
++            General announcements of Apache project releases.
++            <br /><br />
++          </td>
++          <td><a class="externalLink" href="mailto:announce-subscribe@apache.org">Subscribe</a></td> 
++          <td><a class="externalLink" href="mailto:announce-unsubscribe@apache.org">Unsubscribe</a></td> 
++          <td><i>read only</i></td>
++          <td><a class="externalLink" href="http://mail-archives.apache.org/mod_mbox/www-announce/">mail-archives.apache.org</a></td> 
++          <td><a class="externalLink" href="http://markmail.org/list/org.apache.announce/">markmail.org</a><br />
++              <a class="externalLink" href="http://old.nabble.com/Apache-News-and-Announce-f109.html">old.nabble.com</a><br />
++              <a class="externalLink" href="http://www.mail-archive.com/announce@apache.org/">www.mail-archive.com</a><br />
++              <a class="externalLink" href="http://news.gmane.org/gmane.comp.apache.announce">news.gmane.org</a>
++          </td>
++        </tr>
++      </table>
++
++    </section>
++  </body>
++</document>
+diff -uNr /var/tmp/portage/dev-java/commons-logging-1.1.1/work/commons-logging-1.1.1-src/src/site/xdoc/proposal.xml /var/tmp/portage/dev-java/commons-logging-9999/work/commons-logging-9999/src/site/xdoc/proposal.xml
+--- /var/tmp/portage/dev-java/commons-logging-1.1.1/work/commons-logging-1.1.1-src/src/site/xdoc/proposal.xml	1970-01-01 09:00:00.000000000 +0900
++++ /var/tmp/portage/dev-java/commons-logging-9999/work/commons-logging-9999/src/site/xdoc/proposal.xml	2011-03-12 17:19:58.422000094 +0900
+@@ -0,0 +1,127 @@
++<!--
++
++ Licensed to the Apache Software Foundation (ASF) under one or more
++ contributor license agreements.  See the NOTICE file distributed with
++ this work for additional information regarding copyright ownership.
++ The ASF licenses this file to You under the Apache License, Version 2.0
++ (the "License"); you may not use this file except in compliance with
++ the License.  You may obtain a copy of the License at
++ 
++      http://www.apache.org/licenses/LICENSE-2.0
++ 
++ Unless required by applicable law or agreed to in writing, software
++ distributed under the License is distributed on an "AS IS" BASIS,
++ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ See the License for the specific language governing permissions and
++ limitations under the License.
++
++-->
++
++<document>
++<properties>
++<title>Proposal for Logging Library Package</title>
++</properties>
++<body>
++
++
++<section name="Proposal for Logging Package">
++
++
++
++<subsection name="(0) Rationale">
++
++<p>There is a great need for debugging and logging information inside of
++Commons components such as HTTPClient and dbcp.  However, there are many
++logging APIs out there and it is difficult to choose among them.
++</p>
++
++<p>The Logging package will be an ultra-thin bridge between different logging
++libraries.  Commons components may use the Logging JAR to remove
++compile-time/runtime dependencies on any particular logging package,
++and contributors may write Log implementations for the library of their choice.
++</p>
++
++</subsection>
++<subsection name="(1) Scope of the Package">
++
++<p>The package shall create and maintain a package that provides extremely
++basic logging functionality and bridges to other, more sophisticated logging
++implementations.
++</p>
++
++<p>
++The package should :
++<ul>
++<li>Have an API which should be as simple to use as possible</li>
++<li>Provide support for log4j</li>
++<li>Provide pluggable support for other logging APIs</li>
++</ul>
++</p>
++
++<p>
++Non-goals:
++<ul>
++<li>This package will not perform logging itself, except at the most basic
++    level.</li>
++<li>We do not seek to become a "standard" API.</li>
++</ul>
++</p>
++
++</subsection>
++<subsection name="(1.5) Interaction With Other Packages">
++
++<p><em>Logging</em> relies on:
++</p>
++
++<ul>
++  <li>Java Development Kit (Version 1.1 or later)</li>
++  <li>Avalon Framework (compile-time dependency only unless this Log
++      implementation is selected at runtime)</li>
++  <li>Avalon LogKit (compile-time dependency only unless this Log
++      implementation is selected at runtime)</li>
++  <li>JDK 1.4 (compile-time dependency only unless this log implementation
++      is selected at runtime).</li>
++  <li>Log4J (compile-time dependency only unless this Log
++      implementation is selected at runtime)</li>
++  <li><a href="http://sourceforge.net/projects/lumberjack/">Lumberjack</a>
++      (compile-time dependency only unless this Log
++      implementation is selected at runtime)</li>
++</ul>
++
++</subsection>
++<subsection name="(2) Required Jakarta-Commons Resources">
++
++<ul>
++<li>CVS Repository - New directory <code>logging</code> in the 
++<code>jakarta-commons</code> CVS repository.</li>
++
++<li>Initial Committers - The list is provided below. </li>
++
++<li>Mailing List - Discussions will take place on the general
++<em>dev@commons.apache.org</em> mailing list. To help list
++subscribers identify messages of interest, it is suggested that the
++message subject of messages about this component be prefixed with
++[Logging].</li>
++
++<li>Bugzilla - New component "Logging" under the "Commons" product
++category, with appropriate version identifiers as needed.</li>
++
++<li>Jyve FAQ - New category "commons-logging" (when available).</li>
++</ul>
++
++
++</subsection>
++<subsection name="(4) Initial Committers">
++
++<p>The initial committers on the Logging component shall be:</p>
++
++<ul>
++  <li>Morgan Delagrange</li>
++  <li>Rodney Waldhoff</li>
++  <li>Craig McClanahan</li>
++</ul>
++
++</subsection>
++</section>
++</body>
++</document>
+diff -uNr /var/tmp/portage/dev-java/commons-logging-1.1.1/work/commons-logging-1.1.1-src/src/site/xdoc/tech.xml /var/tmp/portage/dev-java/commons-logging-9999/work/commons-logging-9999/src/site/xdoc/tech.xml
+--- /var/tmp/portage/dev-java/commons-logging-1.1.1/work/commons-logging-1.1.1-src/src/site/xdoc/tech.xml	1970-01-01 09:00:00.000000000 +0900
++++ /var/tmp/portage/dev-java/commons-logging-9999/work/commons-logging-9999/src/site/xdoc/tech.xml	2011-03-12 17:19:58.423000094 +0900
+@@ -0,0 +1,653 @@
++<?xml version="1.0"?>
++
++<!--
++Licensed to the Apache Software Foundation (ASF) under one or more
++contributor license agreements.  See the NOTICE file distributed with
++this work for additional information regarding copyright ownership.
++The ASF licenses this file to You under the Apache License, Version 2.0
++(the "License"); you may not use this file except in compliance with
++the License.  You may obtain a copy of the License at
++
++     http://www.apache.org/licenses/LICENSE-2.0
++
++Unless required by applicable law or agreed to in writing, software
++distributed under the License is distributed on an "AS IS" BASIS,
++WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++See the License for the specific language governing permissions and
++limitations under the License.
++-->
++
++<document>
++
++ <properties>
++  <title>Technology Guide</title>
++  <author email="dev@commons.apache.org">Commons Documentation Team</author>
++ </properties>
++
++ <body>
++    <section name='Overview'>
++      <subsection name='Contents'>
++        <ul>
++          <li>
++          Overview
++            <ul>
++              <li>
++              Contents
++              </li>
++              <li>
++              <a href='#Introduction'>Introduction</a>
++              </li>
++            </ul>
++          </li>
++          <li>
++            <a href='#A Short Introduction to Class Loading and Class Loaders'>
++            A Short Introduction to Class Loading and Class Loaders
++            </a>
++              <ul>
++              <li>
++                <a href='#Preamble'>
++            Preamble
++                </a>
++              </li>
++                  <li>
++                    <a href='#Resolution Of Symbolic References'>
++                Resolution Of Symbolic References
++                    </a>
++                  </li>
++                <li>
++                <a href='#Loading'>
++            Loading
++                </a>
++              </li>
++              <li>
++                <a href='#Linking'>
++            Linking
++                </a>
++              </li>
++              <li>
++                <a href='#Loading Classes'>
++            Loading Classes
++                </a>
++              </li>
++                <li>
++                  <a href='#Bootstrap Classloader'>
++            Bootstrap Classloader
++                </a>
++              </li>
++              <li>
++                <a href='#Runtime Package'>
++            Runtime Package
++                </a>
++                </li>
++              <li>
++                <a href='#Loader Used To Resolve A Symbolic Reference'>
++            Loader Used To Resolve A Symbolic Reference
++                </a>
++              </li>
++              <li>
++                <a href='#Bibliography'>
++            Bibliography
++                </a>
++              </li>
++          </ul>
++        </li>
++                <li>
++                  <a href='#A Short Guide To Hierarchical Class Loading'>
++          A Short Guide To Hierarchical Class Loading
++                  </a>
++          <ul>
++            <li>
++              <a href='#Delegating Class Loaders'>
++          Delegating Class Loaders
++              </a>
++            </li>
++            <li>
++              <a href='#Parent-First And Child-First Class Loaders'>
++          Parent-First And Child-First Class Loaders
++              </a>
++            </li>
++            <li>
++              <a href='#Class ClassLoader'>
++          Class ClassLoader
++              </a>
++            </li>
++            <li>
++              <a href='#Context ClassLoader'>
++          Context ClassLoader
++              </a>
++            </li>
++            <li>
++              <a href='#The Context Classloader in Container Applications'>
++          The Context Classloader in Container Applications
++              </a>
++            </li>
++            <li>
++              <a href='#Issues with Context ClassLoaders'>
++          Issues with Context ClassLoaders
++              </a>
++            </li>
++            <li>
++              <a href='#Reflection And The Context ClassLoader'>
++          Reflection And The Context ClassLoader
++              </a>
++            </li>
++            <li>
++              <a href='#More Information'>
++          More Information
++              </a>
++            </li>
++          </ul>
++        </li>
++        <li>
++          <a href='#A Short Theory Guide To JCL'>
++          A Short Theory Guide To JCL
++          </a>
++          <ul>
++            <li>
++              <a href='#Isolation And The Context Class Loader'>
++          Isolation And The Context Class Loader
++              </a>
++            </li>
++            <li>
++              <a href='#Log And LogFactory'>
++          Log And LogFactory
++              </a>
++            </li>
++            <li>
++              <a href='#Log Implementations'>
++          Log Implementations
++              </a>
++            </li>
++              <li>
++                <a href='#Using Reflection To Load Log Implementations'>
++            Using Reflection To Load Log Implementations
++                </a>
++              </li>
++            </ul>
++          </li>
++        </ul>
++      </subsection>
++    <subsection name='Introduction'>
++      <p>
++  This guide is aimed at describing the technologies that JCL developers and expert users
++  (and users who need to become experts)
++  should be familiar with. The aim is to give an understanding whilst being precise but brief.
++  Details which are not relevant for JCL have been suppressed.
++  References have been included.
++      </p>
++      <p>
++  These topics are a little difficult and it's easy for even experienced developers to make
++  mistakes. We need you to help us get it right! Please submit corrections, comments, additional references
++  and requests for clarification
++  by either:
++      </p>
++      <ul>
++        <li>
++  posting to the <a href='http://commons.apache.org/mail-lists.html'>Apache Commons dev mailing list</a> or
++        </li>
++        <li>
++  creating an issue in <a href='http://issues.apache.org/jira/browse/LOGGING/'>JIRA</a>.
++        </li>
++      </ul>
++      <p>
++  TIA
++      </p>
++    </subsection>
++
++  </section>
++  <section name='A Short Introduction to Class Loading and Class Loaders'>
++    <subsection name='Preamble'>
++      <p>
++  This is intended to present a guide to the process by which Java bytecode uses bytecode in other classes
++  from the perspective of the language and virtual machine specifications. The focus will be on deciding
++  which bytecode will be used (rather than the mechanics of the usage). It focusses on facts and terminology.
++      </p>
++      <p>
++  The process is recursive: it is therefore difficult to pick a starting point.
++  Sun's documentation starts from the persective of the startup of a new application.
++  This guide starts from the perspective of an executing application.
++      </p>
++      <p>
++  During this discussion, please assume that each time that <em>class</em> is mentioned,
++  the comments applied equally well to interfaces.
++      </p>
++      <p>
++  This document is targeted at Java 1.2 and above.
++      </p>
++      </subsection>
++       <subsection name='Resolution Of Symbolic References'>
++      <p>
++  (<a href='http://java.sun.com/docs/books/jls/second_edition/html/execution.doc.html#44524'>LangSpec 12.3.3</a>)
++  The bytecode representation of a class contains symbolic names for other classes referenced.
++      </p>
++      <p>
++        <em>
++  In practical development terms: If a class is imported (either explicitly in the list of imports at the top of
++  the source file or implicitly through a fully qualified name in the source code) it is referenced symbolically.
++        </em>
++      </p>
++      <p>
++  (<a href='http://java.sun.com/docs/books/vmspec/2nd-edition/html/ConstantPool.doc.html#73492'>VMSpec 5.4.3</a>)
++  Resolution of a symbolic reference occurs dynamically at runtime and is carried out by
++  the Java Virtual Machine. Resolution of a symbolic reference requires loading and linking of the new class.
++      </p>
++      <p>
++        <em>
++  Note: references are not statically resolved at compile time.
++        </em>
++      </p>
++      </subsection>
++    <subsection name='Loading'>
++      <p>
++  (<a href='http://java.sun.com/docs/books/vmspec/2nd-edition/html/Concepts.doc.html#19175'>VMSpec 2.17.2</a>)
++  Loading is the name given to the process by which a binary form of a class is obtained
++  by the Java Virtual Machine.
++  Java classes are always loaded and linked dynamically by the Java Virtual Machine
++  (rather than statically by the compiler).
++      </p>
++      <p>
++        <em>
++  In practical development terms:
++  This means that the developer has no certain knowledge about the actual
++  bytecode that will be used to execute any external call (one made outside the class). This is determined only
++  at execution time and is affected by the way that the code is deployed.
++        </em>
++      </p>
++      </subsection>
++    <subsection name='Linking'>
++      <p>
++  (<a href='http://java.sun.com/docs/books/vmspec/2nd-edition/html/Concepts.doc.html#22574'>VMSpec 2.17.3</a>)
++  Linking is the name used for combining the
++  binary form of a class into the Java Virtual Machine. This must happen before the class can be used.
++      </p>
++      <p>
++  (<a href='http://java.sun.com/docs/books/vmspec/2nd-edition/html/Concepts.doc.html#22574'>VMSpec 2.17.3</a>)
++  Linking is composed of verification, preparation and resolution (of symbolic references).
++  Flexibility is allowed over the timing of resolution. (Within limit) this may happen at any time after
++  preparation and before that reference is used.
++      </p>
++      <p>
++        <em>
++  In practical development terms: This means that different JVMs may realize that a reference cannot be
++  resolved at different times during execution. Consequently, the actual behaviour cannot be precisely predicted
++  without intimate knowledge of the JVM (on which the bytecode will be executed).
++  This makes it hard to give universal guidance to users.
++        </em>
++      </p>
++      </subsection>
++
++    <subsection name='Loading Classes'>
++      <p>
++  (<a href='http://java.sun.com/docs/books/vmspec/2nd-edition/html/Concepts.doc.html#19175'>VMSpec 2.17.2</a>)
++  The loading process is performed by a <code>ClassLoader</code>.
++      </p>
++      <p>
++  (<a href='http://java.sun.com/docs/books/vmspec/2nd-edition/html/ConstantPool.doc.html#72007'>VMSpec 5.3</a>)
++  A classloader may create a class either by delegation or by defining it directly.
++  The classloader that initiates loading of a class is known as the initiating loader.
++  The classloader that defines the class is known as the defining loader.
++      </p>
++      <p>
++        <em>
++  In practical terms: understanding and appreciating this distinction is crucial when debugging issues
++  concerning classloaders.
++        </em>
++      </p>
++      </subsection>
++
++    <subsection name='Bootstrap Classloader'>
++      <p>
++  (<a href='http://java.sun.com/docs/books/vmspec/2nd-edition/html/ConstantPool.doc.html#72007'>VMSPEC 5.3</a>)
++  The bootstrap is the base <code>ClassLoader</code> supplied by the Java Virtual Machine.
++  All others are user (also known as application) <code>ClassLoader</code> instances.
++      </p>
++      <p>
++        <em>
++  In practical development terms: The System classloader returned by <code>Classloader.getSystemClassLoader()</code>
++  will be either the bootstrap classloader or a direct descendent of the bootstrap classloader.
++  Only when debugging issues concerning the system classloader should there be any need to consider the detailed
++  differences between the bootstrap classloader and the system classloader.
++        </em>
++      </p>
++      </subsection>
++    <subsection name='Runtime Package'>
++      <p>
++  (<a href='http://java.sun.com/docs/books/vmspec/2nd-edition/html/ConstantPool.doc.html#72007'>VMSpec 5.3</a>)
++  At runtime, a class (or interface) is determined by its fully qualified name
++  and by the classloader that defines it. This is known as the class's runtime package.
++      </p>
++      <p>
++  (<a href='http://java.sun.com/docs/books/vmspec/2nd-edition/html/ConstantPool.doc.html#75929'>VMSpec 5.4.4</a>)
++  Only classes in the same runtime package are mutually accessible.
++      </p>
++      <p>
++        <em>
++  In practical development terms: two classes with the same symbolic name can only be used interchangably
++  if they are defined by the same classloader. A classic symptom indicative of a classloader issue is that
++  two classes with the same fully qualified name are found to be incompatible during a method call.
++  This may happen when a member is expecting an interface which is (seemingly) implemented by a class
++  but the class is in a different runtime package after being defined by a different classloader. This is a
++  fundamental java language security feature.
++        </em>
++      </p>
++      </subsection>
++
++    <subsection name='Loader Used To Resolve A Symbolic Reference'>
++      <p>
++  (<a href='http://java.sun.com/docs/books/vmspec/2nd-edition/html/ConstantPool.doc.html#72007'>VMSpec 5.3</a>)
++  The classloader which defines the class (whose reference is being resolved) is the one
++  used to initiate loading of the class referred to.
++      </p>
++      <p>
++        <em>
++  In practial development terms: This is very important to bear in mind when trying to solve classloader issues.
++  A classic misunderstanding is this: suppose class A defined by classloader C has a symbolic reference to
++  class B and further that when C initiates loading of B, this is delegated to classloader D which defines B.
++  Class B can now only resolve symbols that can be loaded by D, rather than all those which can be loaded by C.
++  This is a classic recipe for classloader problems.
++        </em>
++      </p>
++      </subsection>
++
++    <subsection name='Bibliography'>
++      <ul>
++        <li>
++    <a href='http://java.sun.com/docs/books/vmspec/'>VMSpec</a> <em>The Java Virtual Machine Specification, Second Edition</em>
++        </li>
++        <li>
++    <a href='http://java.sun.com/docs/books/jls/'>LangSpec</a> <em>The Java Language Specification, Second Edition</em>
++        </li>
++      </ul>
++      </subsection>
++  </section>
++  <section name='A Short Guide To Hierarchical Class Loading'>
++    <subsection name='Delegating Class Loaders'>
++      <p>
++  When asked to load a class, a class loader may either define the class itself or delegate.
++  The base <code>ClassLoader</code> class insists that every implementation has a parent class loader.
++  This delegation model therefore naturally forms a tree structure rooted in the bootstrap classloader.
++      </p>
++      <p>
++  Containers (i.e. applications such as servlet engines or application servers
++  that manage and provide support services for a number of "contained" applications
++  that run inside of them) often use complex trees to allow isolation of different applications
++  running within the container. This is particularly true of J2EE containers.
++      </p>
++    </subsection>
++
++    <subsection name='Parent-First And Child-First Class Loaders'>
++      <p>
++  When a classloader is asked to load a class, a question presents itself: should it immediately
++  delegate the loading to its parent (and thus only define those classes not defined by its parent)
++  or should it try to define it first itself (and only delegate to its parent those classes it does
++  not itself define). Classloaders which universally adopt the first approach are termed parent-first
++  and the second child-first.
++      </p>
++      <p>
++   <strong>Note:</strong> the term child-first (though commonly used) is misleading.
++   A better term (and one which may be encountered on the mailing list) is parent-last.
++   This more accurately describes the actual process of classloading performed
++   by such a classloader.
++      </p>
++      <p>
++  Parent-first loading has been the standard mechanism in the JDK
++  class loader, at least since Java 1.2 introduced hierarchical classloaders.
++      </p>
++      <p>
++  Child-first classloading has the advantage of helping to improve isolation
++  between containers and the applications inside them.  If an application
++  uses a library jar that is also used by the container, but the version of
++  the jar used by the two is different, child-first classloading allows the
++  contained application to load its version of the jar without affecting the
++  container.
++      </p>
++      <p>
++  The ability for a servlet container to offer child-first classloading
++  is made available, as an option, by language in the servlet spec (Section
++  9.7.2) that allows a container to offer child-first loading with
++  certain restrictions, such as not allowing replacement of java.* or
++  javax.* classes, or the container's implementation classes.
++      </p>
++      <p>
++  Though child-first and parent-first are not the only strategies possible,
++  they are by far the most common.
++  All other strategies are rare.
++  However, it is not uncommon to be faced with a mixture of parent-first and child-first
++  classloaders within the same hierarchy.
++      </p>
++    </subsection>
++
++    <subsection name='Class ClassLoader'>
++      <p>
++  The class loader used to define a class is available programmatically by calling
++  the <code>getClassLoader</code> method
++  on the class in question. This is often known as the class classloader.
++      </p>
++    </subsection>
++
++    <subsection name='Context ClassLoader'>
++      <p>
++  Java 1.2 introduces a mechanism which allows code to access classloaders
++  which are not the class classloader or one of its parents.
++  A thread may have a class loader associated with it by its creator for use
++  by code running in the thread when loading resources and classes.
++  This classloader is accessed by the <code>getContextClassLoader</code>
++  method on <code>Thread</code>. It is therefore often known as the context classloader.
++      </p>
++      <p>
++  Note that the quality and appropriateness of the context classloader depends on the
++  care with which the thread's owner manages it.
++      </p>
++    </subsection>
++
++    <subsection name='The Context Classloader in Container Applications'>
++      <p>
++  The Javadoc for
++  <a href="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/Thread.html#setContextClassLoader(java.lang.ClassLoader)">
++  <code>Thread.setContextClassLoader</code></a> emphasizes the setting of the
++  context classloader as an aspect of thread creation.  However, in many
++  applications the context classloader is not fixed at thread creation but
++  rather is changed throughout the life of a thread as thread execution moves
++  from one context to another.  This usage of the context classloader is
++  particularly important in container applications.
++      </p>
++      <p>
++  For example, in a hypothetical servlet container, a pool of threads
++  is created to handle HTTP requests.  When created these threads have their
++  context classloader set to a classloader that loads container classes.
++  After the thread is assigned to handle a request, container code parses
++  the request and then determines which of the deployed web applications
++  should handle it. Only when the container is about to call code associated
++  with a particular web application (i.e. is about to cross an "application
++  boundary") is the context classloader set to the classloader used to load
++  the web app's classes.  When the web application finishes handling the
++  request and the call returns, the context classloader is set back to the
++  container classloader.
++      </p>
++      <p>
++  In a properly managed container, changes in the context classloader are
++  made when code execution crosses an application boundary.  When contained
++  application <code>A</code> is handling a request, the context classloader
++  should be the one used to load <code>A</code>'s resources. When application
++  <code>B</code> is handling a request, the context classloader should be
++  <code>B</code>'s.
++        </p>
++      <p>
++  While a contained application is handling a request, it is not
++  unusual for it to call system or library code loaded by the container.
++  For example, a contained application may wish to call a utility function
++  provided by a shared library.  This kind of call is considered to be
++  within the "application boundary", so the context classloader remains
++  the contained application's classloader.  If the system or library code
++  needs to load classes or other resources only visible to the contained
++  application's classloader, it can use the context classloader to access
++  these resources.
++      </p>
++      <p>
++  If the context classloader is properly managed, system and library code
++  that can be accessed by multiple applications can not only use it to load
++  application-specific resources, but also can use it to detect which
++  application is making a call and thereby provided services tailored to the
++  caller.
++      </p>
++    </subsection>
++
++    <subsection name='Issues with Context ClassLoaders'>
++      <p>
++  In practice, context classloaders vary in quality and issues sometimes arise
++  when using them.
++  The owner of the thread is responsible for setting the classloader.
++  If the context classloader is not set then it will default to the system
++  classloader.
++  Any container doing so will cause difficulties for any code using the context classloader.
++      </p>
++      <p>
++  The owner is also at liberty to set the classloader as they wish.
++  Containers may set the context classloader so that it is neither a child nor a parent
++  of the classloader that defines the class using that loader.
++  Again, this will cause difficulties.
++      </p>
++      <p>
++  Introduced in <a href='http://java.sun.com/j2ee/j2ee-1_3-fr-spec.pdf'>Java J2EE 1.3</a>
++  is a requirement for vendors to appropriately set the context classloader.
++  Section 6.2.4.8 (1.4 text):
++      </p>
++<source>
++This specification requires that J2EE containers provide a per thread
++context class loader for the use of system or library classes in
++dynamicly loading classes provided by the application.  The EJB
++specification requires that all EJB client containers provide a per
++thread context class loader for dynamicly loading system value classes.
++The per thread context class loader is accessed using the Thread method
++getContextClassLoader.
++
++The classes used by an application will typically be loaded by a
++hierarchy of class loaders. There may be a top level application class
++loader, an extension class loader, and so on, down to a system class
++loader.  The top level application class loader delegates to the lower
++class loaders as needed.  Classes loaded by lower class loaders, such as
++portable EJB system value classes, need to be able to discover the top
++level application class loader used to dynamicly load application
++classes.
++
++We require that containers provide a per thread context class loader
++that can be used to load top level application classes as described
++above.
++</source>
++      <p>
++  This specification leaves quite a lot of freedom for vendors.
++  (As well as using unconventional terminology and containing the odd typo.)
++  It is a difficult passage (to say the least).
++      </p>
++    </subsection>
++
++    <subsection name='Reflection And The Context ClassLoader'>
++      <p>
++  Reflection cannot bypass restrictions imposed by the java language security model, but, by avoiding symbolic
++  references, reflection can be used to load classes which could not otherwise be loaded. Another <code>ClassLoader</code>
++  can be used to load a class and then reflection used to create an instance.
++      </p>
++      <p>
++  Recall that the runtime packaging is used to determine accessibility.
++  Reflection cannot be used to avoid basic java security.
++  Therefore, the runtime packaging becomes an issue when attempting to cast classes
++  created by reflection using other class loaders.
++  When using this strategy, various modes of failure are possible
++  when common class references are defined by the different class loaders.
++      </p>
++      <p>
++  Reflection is often used with the context classloader. In theory, this allows a class defined in
++  a parent classloader to load any class that is loadable by the application.
++  In practice, this only works well when the context classloader is set carefully.
++      </p>
++    </subsection>
++
++    <subsection name='More Information'>
++      <ul>
++        <li>
++          Articles On Class Loaders And Class Loading
++          <ul>
++            <li>
++              <a
++    href='http://www.onjava.com/pub/a/onjava/2001/07/25/ejb.html'>
++  Article on J2EE class loading
++              </a>
++            </li>
++            <li>
++              <a
++    href='http://www.onjava.com/pub/a/onjava/2003/11/12/classloader.html'>
++  Article on class loading
++              </a>
++            </li>
++            <li>
++              <a
++    href='http://www.javaworld.com/javaworld/javaqa/2003-06/01-qa-0606-load.html'>
++  Article on context class loaders
++              </a>
++            </li>
++          </ul>
++        </li>
++        <li>Specific Containers
++          <ul>
++            <li>
++              <a
++    href='http://tomcat.apache.org/tomcat-4.1-doc/class-loader-howto.html'>
++  Tomcat 4.1 ClassLoader Guide
++              </a>
++            </li>
++            <li>
++              <a
++    href='http://tomcat.apache.org/tomcat-5.0-doc/class-loader-howto.html'>
++  Tomcat 5.0 ClassLoader Guide
++              </a>
++            </li>
++            <li>
++              <a
++href='http://publib.boulder.ibm.com/infocenter/wasinfo/v6r0/index.jsp?topic=/com.ibm.websphere.express.doc/info/exp/ae/trun_classload_web.html'>
++  Classloading In WebSphere
++              </a>
++            </li>
++          </ul>
++        </li>
++      </ul>
++    </subsection>
++  </section>
++
++  <section name='A Short Theory Guide To JCL'>
++    <subsection name='Isolation And The Context Class Loader'>
++      <p>
++  JCL takes the view that different context class loader indicate boundaries between applications
++  running in a container environment. Isolation requires that JCL honours these boundaries
++  and therefore allows different isolated applications to configure their logging systems
++  independently.
++      </p>
++      </subsection>
++      <subsection name='Log And LogFactory'>
++      <p>
++  Performance dictates that symbolic references to these classes are present in the calling application code
++  (reflection would simply be too slow). Therefore, these classes must be loadable by the classloader
++  that loads the application code.
++      </p>
++      </subsection>
++      <subsection name='Log Implementations'>
++      <p>
++  Performance dictates that symbolic references to the logging systems are present in the implementation
++  classes (again, reflection would simply be too slow). So, for an implementation to be able to function,
++  it is neccessary for the logging system to be loadable by the classloader that defines the implementing class.
++      </p>
++      </subsection>
++
++      <subsection name='Using Reflection To Load Log Implementations'>
++      <p>
++  However, there is actually no reason why <code>LogFactory</code> requires symbolic references to particular <code>Log</code>
++  implementations. Reflection can be used to load these from an appropriate classloader
++  without unacceptable performance degradation.
++  This is the strategy adopted by JCL.
++      </p>
++      <p>
++  JCL uses the context classloader to load the <code>Log</code> implementation.
++      </p>
++      </subsection>
++  </section>
++</body>
++</document>
+diff -uNr /var/tmp/portage/dev-java/commons-logging-1.1.1/work/commons-logging-1.1.1-src/src/site/xdoc/troubleshooting.xml /var/tmp/portage/dev-java/commons-logging-9999/work/commons-logging-9999/src/site/xdoc/troubleshooting.xml
+--- /var/tmp/portage/dev-java/commons-logging-1.1.1/work/commons-logging-1.1.1-src/src/site/xdoc/troubleshooting.xml	1970-01-01 09:00:00.000000000 +0900
++++ /var/tmp/portage/dev-java/commons-logging-9999/work/commons-logging-9999/src/site/xdoc/troubleshooting.xml	2011-03-12 17:19:58.424000094 +0900
+@@ -0,0 +1,467 @@
++<?xml version="1.0"?>
++
++<!--
++
++ Licensed to the Apache Software Foundation (ASF) under one or more
++ contributor license agreements.  See the NOTICE file distributed with
++ this work for additional information regarding copyright ownership.
++ The ASF licenses this file to You under the Apache License, Version 2.0
++ (the "License"); you may not use this file except in compliance with
++ the License.  You may obtain a copy of the License at
++ 
++      http://www.apache.org/licenses/LICENSE-2.0
++ 
++ Unless required by applicable law or agreed to in writing, software
++ distributed under the License is distributed on an "AS IS" BASIS,
++ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ See the License for the specific language governing permissions and
++ limitations under the License.
++
++-->
++
++<document>
++
++ <properties>
++  <title>Troubleshooting Guide</title>
++  <author email="dev@commons.apache.org">Commons Documentation Team</author>
++ </properties>
++
++ <body> 
++<section name="Contents">
++<ul>
++<li>
++<a href="#Contents">Contents</a>
++</li>
++<li>
++<a href="#Using JCL Diagnostics">Using JCL Diagnostics</a>
++<ul>
++<li>
++<a href="#When To Use Diagnostic Logging">When To Use Diagnostic Logging</a>
++<ul/>
++</li>
++<li>
++<a href="#How To Use Diagnostic logging">How To Use Diagnostic logging</a>
++</li>
++<li>
++<a href="#OIDs">OIDs</a>
++</li>
++<li>
++<a href="#Diagnostic Message Prefix">Diagnostic Message Prefix</a>
++</li>
++<li>
++<a href="#ClassLoader Hierarchy Tree">ClassLoader Hierarchy Tree</a>
++</li>
++<li>
++<a href="#LogFactory Class Bootstrap">LogFactory Class Bootstrap</a>
++</li>
++<li>
++<a href="#Construction Of LogFactoryImpl Instances">Construction Of LogFactoryImpl Instances</a>
++</li>
++<li>
++<a href="#Log Discovery Diagnostics">Log Discovery Diagnostics</a>
++</li>
++</ul>
++</li>
++<li>
++<a href="#Containers With Custom LogFactory Implementations">Containers With Custom LogFactory Implementations</a>
++<ul>
++<li>
++<a href="#The Incompatible LogFactory Issue">The Incompatible LogFactory Issue</a>
++<ul>
++<li>
++<a href="#Symptoms">Symptoms</a>
++</li>
++<li>
++<a href="#Explanation">Explanation</a>
++</li>
++<li>
++<a href="#Fixes">Fixes</a>
++</li>
++</ul>
++</li>
++</ul>
++</li>
++<li>
++<a href="#Containers With Custom ClassLoading Behaviour for Logging">Containers With Custom ClassLoading Behaviour for Logging</a>
++<ul>
++<li>
++<a href="#Apache Tomcat">Apache Tomcat</a>
++<ul/>
++</li>
++<li>
++<a href="#JBoss Application Server">JBoss Application Server</a>
++<ul/>
++</li>
++<li>
++<a href="#Other Containers">Other Containers</a>
++<ul/>
++</li>
++</ul>
++</li>
++</ul>
++</section>
++  <section name='Using JCL Diagnostics'>
++    <p>
++Diagnostics is a feature introduced in JCL 1.1 as an aid to debugging problems 
++with JCL configurations. When diagnostics are switched on, messages are logged 
++to a stream (specified by the user) by the two main classes involved in discovery
++in JCL (<code>LogFactory</code> and <code>LogFactoryImpl</code>).
++    </p>
++    <p>
++Diagnostics are intended to be used in conjunction with the source. The source
++contains numerous and lengthy comments. Often these are intended to help explain
++the meaning of the messages.
++    </p>
++    <subsection name='When To Use Diagnostic Logging'>
++      <p>
++Diagnostic logging is intended only to be used when debugging a problematic 
++configuration. It <em>should</em> be switched off for production. 
++      </p>
++    </subsection>
++    <subsection name='How To Use Diagnostic logging'>
++      <p>
++Diagnostic logging is controlled through the system property 
++<code>org.apache.commons.logging.diagnostics.dest</code>. Setting the property value
++to the special strings <code>STDOUT</code> or <code>STDERR</code> (case-sensitive) 
++will output messages to <code>System.out</code> and <code>System.err</code> respectively.
++Setting the property value to a valid file name will result in the messages being logged
++to that file.
++      </p>
++    </subsection> 
++    <subsection name='OIDs'>
++      <p>
++Diagnostics uses the concept of an Object ID (OID). This allows the identity of objects 
++to be tracked without relying on useful <code>toString</code> implementations. 
++These are of the form: 
++      </p>
++<code><pre>
++<em>classname</em>@<em>system identity hash code</em>
++</pre></code>
++      <p>
++The <em>system identity hash code</em> is found by calling <code>System.identityHashCode()</code> 
++which should uniquely identify a particular instance. The classname is usually the fully qualified
++class name though in a few cases, <code>org.apache.commons.logging.impl.LogFactoryImpl</code> may be
++shortened to <code>LogFactoryImpl</code> to increase ease of reading. For example:
++      </p>
++<code><pre>
++sun.misc.Launcher$AppClassLoader@20120943
++LogFactoryImpl@1671711
++</pre></code>
++      <p>
++OIDs are intended to be used to cross-reference. They allow particular instances of classloaders
++and JCL classes to be tracked in different contexts. This plays a vital role in building
++up the understanding of the classloader environment required to diagnose JCL problems. 
++      </p> 
++    </subsection>
++    <subsection name='Diagnostic Message Prefix'>
++      <p>
++Each diagnostic message is prefixed with details of the relevant class in a standard format.
++This takes the form:
++    </p>
++<code><pre>
++[<em>class-identifier</em> from <em>ClassLoader OID</em>]
++</pre></code>
++    <p>
++<em>ClassLoader OID</em> is the <a href='#OIDs'>OID</a> of a classloader which loaded 
++the class issuing the message.
++<em>class-identifier</em> identifies the object issuing the message. 
++    </p>
++    <p>
++In the case of 
++<code>LogFactory</code>, this is just <code>LogFactory</code>. For example (line split):
++    </p>
++<code><pre>
++[LogFactory 
++   from sun.misc.Launcher$AppClassLoader@20120943] BOOTSTRAP COMPLETED
++</pre></code>
++    <p>
++In the case of 
++<code>LogFactoryImpl</code>, the prefix is the instance OID. This can be cross referenced
++to discover the details of the TCCL used to manage this instance. For example (line split):
++    </p>
++<code><pre>
++[LogFactoryImpl@1671711 
++   from sun.misc.Launcher$AppClassLoader@20120943] Instance created.
++</pre></code>
++    </subsection>
++    <subsection name='ClassLoader Hierarchy Tree'>
++      <p>
++Understanding the relationships between classloaders is vital when debugging JCL.
++At various points, JCL will print to the diagnostic log the hierarchy for important
++classloaders. This is obtained by walking the tree using <code>getParent</code>.
++Each classloader is represented (visually) by an OID (to allow cross referencing) 
++and the relationship indicated in <code><em>child</em> --> <em>parent</em></code> fashion.
++For example (line split for easy reading):
++      </p>
++<code><pre>
++ClassLoader tree:java.net.URLClassLoader@3526198  
++      --> sun.misc.Launcher$AppClassLoader@20120943 (SYSTEM) 
++      --> sun.misc.Launcher$ExtClassLoader@11126876 
++      --> BOOT
++</pre></code>
++      <p>
++Represents a hierarchy with four elements ending in the boot classloader.
++      </p>
++    </subsection>
++    <subsection name='LogFactory Class Bootstrap'>
++      <p>
++Whenever the <code>LogFactory</code> class is initialized, diagnostic messages about 
++the classloader environment are logged. The content of each of these messages is prefixed by 
++<code>[ENV]</code> to help distinguish them. The extension directories, application classpath, 
++details of the classloader (including the <a href='#OIDs'>OID</a> and <code>toString</code> 
++value) used to load <code>LogFactory</code> and the 
++<a href='#ClassLoader%20Hierarchy%20Tree'>classloader tree</a> for that classloader 
++are logged.
++      </p>
++      <p>
++Many Sun classloaders have confusing <code>toString</code> values. For example, the OID may be
++      </p>
++<code><pre>
++sun.misc.Launcher$AppClassLoader@20120943
++</pre></code>
++      <p>
++with a <code>toString</code> value of
++      </p>
++<code><pre>
++sun.misc.Launcher$AppClassLoader@133056f
++</pre></code>
++      <p>
++Other classloader implementations may give very useful information (such as the local classpath).
++      </p>
++      <p>
++Finally, once initialization is complete a <code>BOOTSTRAP COMPLETED</code> message is issued.
++      </p>
++    </subsection>
++    <subsection name='Construction Of LogFactoryImpl Instances'>
++      <p>
++<code>LogFactoryImpl</code> is the standard and default <code>LogFactory</code> implementation.
++This section obviously only applies to configurations using this implementation.
++      </p>
++      <p>
++Before assigning a <code>Log</code> instance, <code>LogFactory</code> loads a 
++<code>LogFactory</code> implementation. The content is prefixed by <code>[LOOKUP]</code>
++for each diagnostic message logged by this process.
++      </p> 
++      <p>
++The implementation used can vary per Thread context classloader (TCCL). If this is the first time 
++that a Log has been requested for a particular TCCL a new instance will be created.
++      </p>
++      <p>
++Information of particular interest is logged at this stage. Details of the TCCL are logged
++allowing the <a href='#OIDs'>OID</a> later to be cross-referenced to the <code>toString</code> value 
++and the <a href='#ClassLoader%20Hierarchy%20Tree'>classloader tree</a>. For example, the 
++following log snippet details the TCCL (lines split):
++      </p>
++<code><pre>
++[LogFactory from sun.misc.Launcher$AppClassLoader@20120943] 
++    [LOOKUP] LogFactory implementation requested for the first time for context 
++        classloader java.net.URLClassLoader@3526198
++[LogFactory from sun.misc.Launcher$AppClassLoader@20120943] 
++    [LOOKUP] java.net.URLClassLoader@3526198 == 'java.net.URLClassLoader@35ce36'
++[LogFactory from sun.misc.Launcher$AppClassLoader@20120943] 
++    [LOOKUP] ClassLoader tree:java.net.URLClassLoader@3526198 
++        --> sun.misc.Launcher$AppClassLoader@20120943 (SYSTEM)  
++          --> sun.misc.Launcher$ExtClassLoader@11126876 
++            --> BOOT
++</pre></code>
++    </subsection>
++    <subsection name='Log Discovery Diagnostics'>
++      <p>
++The standard <code>LogFactoryImpl</code> issues many diagnostic messages when discovering
++the <code>Log</code> implementation to be used.
++      </p>
++      <p>
++During discovery, environment variables are loaded and values set. This content is prefixed by 
++<code>[ENV]</code> to make it easier to distinguish this material.
++      </p>
++      <p>
++The possible messages issued during discovery are numerous. To understand them, the source
++should be consulted. Attention should be paid to the classloader hierarchy trees for the
++classloader used to load <code>LogFactory</code> and to the TCCL.
++      </p>
++    </subsection>
++  </section>
++  <section name='Containers With Custom LogFactory Implementations'>
++    <p>
++ Some containers use a custom <code>LogFactory</code> implementation to adapt JCL to their particular
++ logging system. This has some important consequences for the deployment of applications using JCL within 
++ these containers.
++    </p>
++    <p>
++ Containers known to use this mechanism:
++    </p>
++    <ul>
++      <li><a href='http://www.ibm.com/software/websphere/'>WebSphere Application Server</a> from
++      <a href='http://www.ibm.com/software/websphere/'>IBM</a> (versions 5 and 6).</li>
++    </ul>
++    <p>
++ Containers suspected to use this mechanism:
++    </p>
++    <ul>
++      <li>WebSphere Application Server (other versions).</li>
++    </ul>
++    <p>
++The Apache Commons team would be grateful if reports were posted to the development list
++of other containers using a custom implementation.
++    </p>
++    <subsection name='The Incompatible LogFactory Issue'>
++      <subsection name='Symptoms'>
++        <p>
++  An exception is thrown by JCL with a message similar to:
++        </p>
++  <code><pre>
++  The chosen LogFactory implementation does not extend LogFactory. Please check your configuration. 
++  (Caused by java.lang.ClassCastException: The application has specified that a custom LogFactory 
++  implementation should be used but Class 'com.ibm.ws.commons.logging.TrLogFactory' cannot be converted 
++  to 'org.apache.commons.logging.LogFactory'. The conflict is caused by the presence of multiple 
++  LogFactory classes in incompatible classloaders. Background can be found in 
++  http://commons.apache.org/logging/tech.html. If you have not explicitly specified a custom
++  LogFactory then it is likely that the container has set one without your knowledge. 
++  In this case, consider using the commons-logging-adapters.jar file or specifying the standard 
++  LogFactory from the command line. Help can be found @http://commons.apache.org/logging.
++  </pre></code>
++        <p>
++  This is a WebSphere example so the name of the custom LogFactory is 
++  <code>com.ibm.ws.commons.logging.TrLogFactory</code>. For other containers, this class name will
++  differ.
++        </p>
++      </subsection>
++      <subsection name='Explanation'>
++      <p>
++ A custom <code>LogFactory</code> implementation can only be used if the implementation class loaded 
++ dynamically at runtime can be cast to the <code>LogFactory</code> class that loaded it. There are 
++ several ways in which this cast can fail. The most obvious is that the source code may not actually 
++ extend <code>LogFactory</code>. The source may be compatible but if the <code>LogFactory</code> class
++ against which the source is compiled is not binary compatible then the cast will also fail.
++      </p>
++      <p>
++ There is also another more unusual way in which this cast can fail: even when the binary is compatible,
++ the implementation class loaded at runtime may be linked to a different instance of the 
++ <code>LogFactory</code> class. For more information, see the <a href='tech.html'>tech guide</a>.
++      </p>
++      <p>
++ This situation may be encountered in containers which use a custom <code>LogFactory</code> implementation.
++ The implementation will typically be provided in a shared, high level classloader together with JCL.
++ When an application classloader contains <code>LogFactory</code>, the implementation will be loaded 
++ from that higher level classloader. The implementation class will be linked to the <code>LogFactory</code>
++ class loaded by the higher level classloader. Even if the 
++ <code>LogFactory</code> implementations are binary compatible, since they are loaded by different classloaders
++ the two <code>LogFactory</code> Class instances are not equal and so the cast must fail.
++      </p>
++      <p>
++The policy adopted by JCL in this situation is to re-throw this exception. Additional information
++is included in the message to help diagnosis. The reasoning behind this choice is that a 
++particular <code>LogFactory</code> implementation has been actively specified and this
++choice should not be ignored. This policy has unfortunate consequences when running in
++containers which have custom implementations: the above runtime exception may be thrown
++under certain classloading policies without the user knowingly specifying a custom 
++implementation.
++      </p>
++      </subsection>
++      <subsection name='Fixes'>
++        <p>
++ There are various ways to fix this problem. Which fix is right depends on the circumstances.
++        </p>
++        <p>
++ If you are happy using another classloading policy for the application, select a 
++ classloading policy which ensures that <code>LogFactory</code> will be loaded from the
++ shared classloader containing the custom implementation.
++        </p>
++        <p>
++ If you want to bypass the container adaption mechanism then set the appropriate system property 
++ to the default value when the container is started:
++        </p>
++ <code><pre>
++ -Dorg.apache.commons.logging.LogFactory=org.apache.commons.logging.impl.LogFactoryImpl
++ </pre></code>
++      <p>
++ If you want to continue to use the default container mechanism then:
++      </p>
++      <ul>
++        <li>
++ Find and replace the commons-logging implementation used by the container with
++ the most modern release
++        </li>
++        <li>
++ Replace the commons-logging jar in the application with the commons-logging-adapters jar.
++ This will ensure that application classloader will delegate to it's parent when loading
++ <code>LogFactory</code>.
++        </li>
++      </ul>
++      <p>
++ If you encounter difficulties when applying the fixes recommended, please turn on
++ <a href='#Using JCL Diagnostics'>diagnostics</a> and consult the logs.
++      </p>
++      </subsection>
++    </subsection>
++  </section>
++  <section name='Containers With Custom ClassLoading Behaviour for Logging'>
++    <p>
++ Because commons-logging is such a fundamental library, some containers modify the way
++ in which classloading behaves for commons-logging classes.
++   </p>
++   <subsection name="Apache Tomcat">
++   <p>
++ At the current date, Tomcat 5.5.16 is the current release. All releases from version
++ 4.1.x through 5.5.16 have a startup process that places jarfile 
++ ${tomcat.home}/bin/commons-logging-api.jar in the system classpath and then
++ prevents any webapp from overriding the classes in that jarfile. Effectively, all
++ webapps behave as if "parent-first" classloading were enabled for those classes.
++   </p>
++   <p>
++ This has some benefits; in particular it means that there are no problems in
++ these Tomcat versions with having multiple copies of the commons-logging Log
++ interface in the classpath (which avoids the "Log does not implement Log"
++ problem described elsewhere).
++   </p>
++   <p>
++ However it also means that no webapp can override the core commons-logging
++ classes by including an updated commons-logging jarfile in WEB-INF/lib; any
++ class already loaded via the container takes priority. In particular, as
++ Tomcat bundles logging 1.0.4 only, the new diagnostics and memory-leak-prevention
++ features of the 1.1 release will not be available unless the container's
++ library version is updated.
++   </p>
++   <p>
++ Because the commons-logging-api.jar in the container does not contain any
++ log-library-adapter classes, updated behaviour for these <i>will</i> be
++ seen when logging 1.1 is bundled in WEB-INF/lib. In particular, the 
++ support for log4j's TRACE level will take effect without having to update
++ the container.
++   </p>
++   <p>
++ If you do wish to update Tomcat's version of commons-logging, then you
++ <i>must</i> use the commons-logging-1.1-api jar only, not the full jar.
++ Classes in the webapp cannot override classes loaded from the system
++ classpath set up during Tomcat's startup process, and logging adapters
++ can only see their matching concrete logging library if that library is
++ available in the same classpath. Bundling the full commons-logging jarfile
++ (with adapters) into the system classpath therefore means that logging
++ libraries (eg log4j) within WEB-INF/lib are not accessable.
++   </p>
++   <p>
++ Note that the behaviour described here only applies if the standard Tomcat
++ startup process is run. When Tomcat is embedded in a larger
++ framework (eg run embedded within an IDE) this may not apply.
++   </p>
++   </subsection>
++   <subsection name="JBoss Application Server">
++   <p>
++   The JBoss Application Server can be configured to prevent deployed
++   code from overriding classes higher in the hierarchy, effectively
++   forcing "parent-first" behaviour for selected classes. By default,
++   commons-logging is in this list (at least for some JBoss versions
++   starting with 4.0.2), and therefore including an updated version
++   of commons-logging in WEB-INF/lib or similar will have no effect.
++   See the JBoss classloading documentation for more details.
++   </p>
++   </subsection>
++   <subsection name="Other Containers">
++   <p>
++   As more information becomes available on this topic, it may be added
++   to the commons-logging wiki site.
++   </p>
++   </subsection>
++  </section>
++ </body>
++</document>
+diff -uNr /var/tmp/portage/dev-java/commons-logging-1.1.1/work/commons-logging-1.1.1-src/src/test/org/apache/commons/logging/avalon/AvalonLoggerTestCase.java /var/tmp/portage/dev-java/commons-logging-9999/work/commons-logging-9999/src/test/org/apache/commons/logging/avalon/AvalonLoggerTestCase.java
+--- /var/tmp/portage/dev-java/commons-logging-1.1.1/work/commons-logging-1.1.1-src/src/test/org/apache/commons/logging/avalon/AvalonLoggerTestCase.java	2011-03-12 18:08:50.174000095 +0900
++++ /var/tmp/portage/dev-java/commons-logging-9999/work/commons-logging-9999/src/test/org/apache/commons/logging/avalon/AvalonLoggerTestCase.java	2011-03-12 17:19:58.430000094 +0900
+@@ -26,7 +26,7 @@
+ 
+ /**
+  * @author <a href="mailto:neeme@apache.org">Neeme Praks</a>
+- * @version $Revision: 581090 $ $Date: 2007-10-02 00:01:06 +0200 (ti, 02 okt 2007) $
++ * @version $Revision: 581090 $ $Date: 2007-10-02 07:01:06 +0900 (Tue, 02 Oct 2007) $
+  */
+ public class AvalonLoggerTestCase extends AbstractLogTest {
+ 
+diff -uNr /var/tmp/portage/dev-java/commons-logging-1.1.1/work/commons-logging-1.1.1-src/src/test/org/apache/commons/logging/jdk14/CustomConfigTestCase.java /var/tmp/portage/dev-java/commons-logging-9999/work/commons-logging-9999/src/test/org/apache/commons/logging/jdk14/CustomConfigTestCase.java
+--- /var/tmp/portage/dev-java/commons-logging-1.1.1/work/commons-logging-1.1.1-src/src/test/org/apache/commons/logging/jdk14/CustomConfigTestCase.java	2011-03-12 18:08:50.186000095 +0900
++++ /var/tmp/portage/dev-java/commons-logging-9999/work/commons-logging-9999/src/test/org/apache/commons/logging/jdk14/CustomConfigTestCase.java	2011-03-12 17:19:58.434000094 +0900
+@@ -41,7 +41,7 @@
+  * logger configured per the configuration properties.</p>
+  *
+  * @author Craig R. McClanahan
+- * @version $Revision: 568760 $ $Date: 2007-08-23 00:19:45 +0200 (to, 23 aug 2007) $
++ * @version $Revision: 568760 $ $Date: 2007-08-23 07:19:45 +0900 (Thu, 23 Aug 2007) $
+  */
+ 
+ public class CustomConfigTestCase extends DefaultConfigTestCase {
+diff -uNr /var/tmp/portage/dev-java/commons-logging-1.1.1/work/commons-logging-1.1.1-src/src/test/org/apache/commons/logging/jdk14/DefaultConfigTestCase.java /var/tmp/portage/dev-java/commons-logging-9999/work/commons-logging-9999/src/test/org/apache/commons/logging/jdk14/DefaultConfigTestCase.java
+--- /var/tmp/portage/dev-java/commons-logging-1.1.1/work/commons-logging-1.1.1-src/src/test/org/apache/commons/logging/jdk14/DefaultConfigTestCase.java	2011-03-12 18:08:50.187000095 +0900
++++ /var/tmp/portage/dev-java/commons-logging-9999/work/commons-logging-9999/src/test/org/apache/commons/logging/jdk14/DefaultConfigTestCase.java	2011-03-12 17:19:58.435000094 +0900
+@@ -25,7 +25,6 @@
+ 
+ import junit.framework.Test;
+ import junit.framework.TestCase;
+-import junit.framework.TestSuite;
+ 
+ import org.apache.commons.logging.Log;
+ import org.apache.commons.logging.LogFactory;
+@@ -39,7 +38,7 @@
+  * should be automatically configured.</p>
+  *
+  * @author Craig R. McClanahan
+- * @version $Revision: 427808 $ $Date: 2006-08-02 02:08:20 +0200 (on, 02 aug 2006) $
++ * @version $Revision: 695209 $ $Date: 2008-09-14 21:31:09 +0900 (Sun, 14 Sep 2008) $
+  */
+ 
+ public class DefaultConfigTestCase extends TestCase {
+diff -uNr /var/tmp/portage/dev-java/commons-logging-1.1.1/work/commons-logging-1.1.1-src/src/test/org/apache/commons/logging/jdk14/TestHandler.java /var/tmp/portage/dev-java/commons-logging-9999/work/commons-logging-9999/src/test/org/apache/commons/logging/jdk14/TestHandler.java
+--- /var/tmp/portage/dev-java/commons-logging-1.1.1/work/commons-logging-1.1.1-src/src/test/org/apache/commons/logging/jdk14/TestHandler.java	2011-03-12 18:08:50.188000095 +0900
++++ /var/tmp/portage/dev-java/commons-logging-9999/work/commons-logging-9999/src/test/org/apache/commons/logging/jdk14/TestHandler.java	2011-03-12 17:19:58.435000094 +0900
+@@ -28,7 +28,7 @@
+  * <p>Test implementation of <code>java.util.logging.Handler</code>.</p>
+  *
+  * @author Craig R. McClanahan
+- * @version $Revision: 424108 $ $Date: 2006-07-21 01:19:55 +0200 (fr, 21 jul 2006) $
++ * @version $Revision: 424108 $ $Date: 2006-07-21 08:19:55 +0900 (Fri, 21 Jul 2006) $
+  */
+ 
+ public class TestHandler extends Handler {
+diff -uNr /var/tmp/portage/dev-java/commons-logging-1.1.1/work/commons-logging-1.1.1-src/src/test/org/apache/commons/logging/simple/CustomConfigTestCase.java /var/tmp/portage/dev-java/commons-logging-9999/work/commons-logging-9999/src/test/org/apache/commons/logging/simple/CustomConfigTestCase.java
+--- /var/tmp/portage/dev-java/commons-logging-1.1.1/work/commons-logging-1.1.1-src/src/test/org/apache/commons/logging/simple/CustomConfigTestCase.java	2011-03-12 18:08:50.208000095 +0900
++++ /var/tmp/portage/dev-java/commons-logging-9999/work/commons-logging-9999/src/test/org/apache/commons/logging/simple/CustomConfigTestCase.java	2011-03-12 17:19:58.442000094 +0900
+@@ -36,7 +36,7 @@
+  * properties.</p>
+  *
+  * @author Craig R. McClanahan
+- * @version $Revision: 563165 $ $Date: 2007-08-06 17:08:05 +0200 $
++ * @version $Revision: 563165 $ $Date: 2007-08-07 00:08:05 +0900 (Tue, 07 Aug 2007) $
+  */
+ public class CustomConfigTestCase extends DefaultConfigTestCase {
+ 
+diff -uNr /var/tmp/portage/dev-java/commons-logging-1.1.1/work/commons-logging-1.1.1-src/src/test/org/apache/commons/logging/simple/DefaultConfigTestCase.java /var/tmp/portage/dev-java/commons-logging-9999/work/commons-logging-9999/src/test/org/apache/commons/logging/simple/DefaultConfigTestCase.java
+--- /var/tmp/portage/dev-java/commons-logging-1.1.1/work/commons-logging-1.1.1-src/src/test/org/apache/commons/logging/simple/DefaultConfigTestCase.java	2011-03-12 18:08:50.212000095 +0900
++++ /var/tmp/portage/dev-java/commons-logging-9999/work/commons-logging-9999/src/test/org/apache/commons/logging/simple/DefaultConfigTestCase.java	2011-03-12 17:19:58.443000094 +0900
+@@ -38,7 +38,7 @@
+  * other than selecting the SimpleLog implementation.</p>
+  *
+  * @author Craig R. McClanahan
+- * @version $Revision: 425249 $ $Date: 2006-07-25 03:30:16 +0200 (ti, 25 jul 2006) $
++ * @version $Revision: 425249 $ $Date: 2006-07-25 10:30:16 +0900 (Tue, 25 Jul 2006) $
+  */
+ 
+ public class DefaultConfigTestCase extends TestCase {

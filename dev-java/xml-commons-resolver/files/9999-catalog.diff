@@ -1,0 +1,19 @@
+--- xml-commons-resolver-9999.orig/src/org/apache/xml/resolver/Catalog.java	2011-10-11 02:02:28.980150546 +0900
++++ xml-commons-resolver-9999/src/org/apache/xml/resolver/Catalog.java	2011-10-11 02:06:58.638779350 +0900
+@@ -2243,13 +2243,15 @@
+    */
+   protected void addDelegate(CatalogEntry entry) {
+     int pos = 0;
++    int type = entry.getEntryType();
+     String partial = entry.getEntryArg(0);
+ 
+     Enumeration local = localDelegate.elements();
+     while (local.hasMoreElements()) {
+       CatalogEntry dpe = (CatalogEntry) local.nextElement();
+       String dp = dpe.getEntryArg(0);
+-      if (dp.equals(partial)) {
++      int dptype = dpe.getEntryType();
++      if (dp.equals(partial) && (type == dptype)) {
+ 	// we already have this prefix
+ 	return;
+       }

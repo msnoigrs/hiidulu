@@ -1,0 +1,24 @@
+--- commons-logging-9999.orig/build.xml	2009-01-28 22:44:11.000000000 +0900
++++ commons-logging-9999/build.xml	2009-01-28 22:49:25.000000000 +0900
+@@ -785,4 +785,21 @@
+     </fail>
+   </target>
+ 
++  <target name="javadoc" description="o Generate javadoc" depends="">
++    <mkdir dir="${build.home}/docs">
++    </mkdir>
++    <tstamp>
++      <format pattern="2001-yyyy" property="year">
++      </format>
++    </tstamp>
++    <property name="copyright" value="Copyright &amp;copy;  The Apache Software Foundation. All Rights Reserved.">
++    </property>
++    <javadoc use="true" private="true" destdir="${build.home}/docs" author="true" version="true" sourcepath="src/java" packagenames="org.apache.commons.logging.*">
++      <classpath>
++        <path refid="javadoc.classpath">
++        </path>
++      </classpath>
++    </javadoc>
++  </target>
++
+ </project>

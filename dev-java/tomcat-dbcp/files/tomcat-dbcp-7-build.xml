@@ -1,0 +1,67 @@
+<?xml version="1.0"?>
+<project name="tomcat-dbcp 7.0" default="build-tomcat-dbcp" basedir=".">
+
+  <!-- Can't be lower - jsp uses templates -->
+  <property name="compile.source" value="1.6"/>
+
+  <property name="tomcat-dbcp.home" value="${base.path}/tomcat7-deps/dbcp" />
+  <property name="tomcat-dbcp.jar" value="${tomcat-dbcp.home}/tomcat-dbcp.jar"/>
+
+  <path id="tomcat-dbcp.classpath">
+    <pathelement location="${jta-spec.jar}"/>
+  </path>
+
+  <target name="build-tomcat-dbcp">
+
+    <mkdir dir="${tomcat-dbcp.home}"/>
+
+    <copy todir="${tomcat-dbcp.home}">
+      <fileset dir="${commons-pool.home}">
+        <include name="**/*.java" />
+        <exclude name="**/test/**" />
+      </fileset>
+      <fileset dir="${commons-dbcp.home}">
+        <include name="**/*.java" />
+        <exclude name="**/test/**" />
+      </fileset>
+    </copy>
+    <replace dir="${tomcat-dbcp.home}/src/java/org/apache/commons" >
+      <replacefilter token="org.apache.commons"
+            value="org.apache.tomcat.dbcp" />
+    </replace>
+    <replace dir="${tomcat-dbcp.home}/src/java/org/apache/commons/pool/impl" >
+      <replacefilter token="enum"
+            value="enumeration" />
+    </replace>
+
+    <mkdir dir="${tomcat-dbcp.home}/src/java/org/apache/tomcat/dbcp" />
+    <move todir="${tomcat-dbcp.home}/src/java/org/apache/tomcat/dbcp">
+      <fileset dir="${tomcat-dbcp.home}/src/java/org/apache/commons" />
+    </move>
+    <mkdir dir="${tomcat-dbcp.home}/classes"/>
+    <javac destdir="${tomcat-dbcp.home}/classes"
+           optimize="off"
+           debug="${compile.debug}"
+           deprecation="${compile.deprecation}"
+           source="${compile.source}"
+           sourcepath="${tomcat-dbcp.home}/src/java"
+           srcdir="${tomcat-dbcp.home}/src/java" >
+      <classpath refid="tomcat-dbcp.classpath" />
+      <include name="**" />
+    </javac>
+    <jar jarfile="${tomcat-dbcp.jar}"
+         index="true">
+      <fileset dir="${tomcat-dbcp.home}/classes">
+        <include name="**/*.class" />
+        <include name="**/*.properties" />
+      </fileset>
+    </jar>
+  </target>
+
+  <target name="clean-depend"
+	     description="Clean depend src components">
+	 <delete dir="${tomcat-dbcp.home}"/>    
+	 <delete dir="${jasper-jdt.home}"/>
+  </target>
+
+</project>

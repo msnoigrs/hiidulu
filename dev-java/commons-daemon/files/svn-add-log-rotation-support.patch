@@ -1,0 +1,113 @@
+diff -uNr commons-daemon-9999.orig/src/native/unix/native/java.c commons-daemon-9999/src/native/unix/native/java.c
+--- commons-daemon-9999.orig/src/native/unix/native/java.c	2009-02-14 13:21:10.000000000 +0900
++++ commons-daemon-9999/src/native/unix/native/java.c	2009-02-14 13:22:24.000000000 +0900
+@@ -46,7 +46,7 @@
+     else main_shutdown();
+ }
+ /* Automaticly restart when the JVM crashes */
+-static void java_abort123()
++static void java_abort123(void)
+ {
+     exit(123);
+ }
+diff -uNr commons-daemon-9999.orig/src/native/unix/native/jsvc-unix.c commons-daemon-9999/src/native/unix/native/jsvc-unix.c
+--- commons-daemon-9999.orig/src/native/unix/native/jsvc-unix.c	2009-02-14 13:21:10.000000000 +0900
++++ commons-daemon-9999/src/native/unix/native/jsvc-unix.c	2009-02-14 13:31:19.000000000 +0900
+@@ -49,7 +49,9 @@
+ static bool doreload=false;
+ static void (*handler_int)(int)=NULL;
+ static void (*handler_hup)(int)=NULL;
++static void (*handler_usr1)(int)=NULL;
+ static void (*handler_trm)(int)=NULL;
++static void set_output(char*, char*, uid_t, gid_t);
+ 
+ #ifdef OS_CYGWIN
+ /*
+@@ -111,6 +113,12 @@
+             break;
+         }
+ 
++        case SIGUSR1: {
++            log_debug("Caught SIGUSR1: Reopening logs");
++            set_output(NULL,NULL,-1,-1);
++            break;
++        }
++
+         default: {
+             log_debug("Caught unknown signal %d",sig);
+             break;
+@@ -273,6 +281,9 @@
+ #endif
+ static void controller(int sig) {
+     switch (sig) {
++	case SIGUSR1:
++            log_debug("Reopening logs");
++            set_output(NULL,NULL,-1,-1);
+         case SIGTERM:
+         case SIGINT:
+         case SIGHUP:
+@@ -568,6 +579,7 @@
+ 
+     /* Install signal handlers */
+     handler_hup=signal_set(SIGHUP,handler);
++    handler_usr1=signal_set(SIGUSR1,handler);
+     handler_trm=signal_set(SIGTERM,handler);
+     handler_int=signal_set(SIGINT,handler);
+     controlled = getpid();
+@@ -619,7 +631,25 @@
+ /**
+  *  Redirect stdin, stdout, stderr.
+  */
+-static void set_output(char *outfile, char *errfile) {
++static void set_output(char *outfile_arg, char *errfile_arg,
++                       uid_t uid_arg, gid_t gid_arg) {
++    static char *outfile=NULL;
++    static char *errfile=NULL;
++    static uid_t uid=0;
++    static gid_t gid=0;
++    if (outfile_arg!=NULL) {
++      outfile=(char *)realloc((void *)outfile, strlen(outfile_arg)+1);
++      strcpy(outfile,outfile_arg);
++    }
++    if (errfile_arg!=NULL) {
++      errfile=(char *)realloc((void *)errfile, strlen(errfile_arg)+1);
++      strcpy(errfile,errfile_arg);
++    }
++    if (uid_arg != -1)
++      uid = uid_arg;
++    if (gid_arg != -1)
++      gid = gid_arg;
++
+     freopen("/dev/null", "r", stdin); 
+     log_debug("redirecting stdout to %s and stderr to %s",outfile,errfile);
+ 
+@@ -633,10 +663,12 @@
+     }
+     if(strcmp(outfile, "&2") != 0) {
+       loc_freopen(outfile, "a", stdout);
++      chown(outfile,uid,gid);
+     }
+ 
+     if(strcmp(errfile,"&1") != 0) {
+       loc_freopen(errfile, "a", stderr);
++      chown(errfile,uid,gid);
+     } else {
+       close(2);
+       dup(1);
+@@ -751,7 +783,7 @@
+     }
+ 
+     envmask = umask(0077);
+-    set_output(args->outfile, args->errfile);
++    set_output(args->outfile, args->errfile,uid,gid);
+ 
+     /* We have to fork: this process will become the controller and the other
+        will be the child */
+@@ -767,6 +799,7 @@
+        SetTerm(cygwincontroller);
+ #endif
+         signal(SIGHUP,controller);
++        signal(SIGUSR1,controller);
+         signal(SIGTERM,controller);
+         signal(SIGINT,controller);
+ 

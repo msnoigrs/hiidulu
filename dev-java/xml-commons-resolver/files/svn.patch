@@ -1,0 +1,86 @@
+diff -uNr xml-commons-resolver-1.2/src/org/apache/xml/resolver/CatalogManager.java java/src/org/apache/xml/resolver/CatalogManager.java
+--- xml-commons-resolver-1.2/src/org/apache/xml/resolver/CatalogManager.java	2006-11-21 05:23:06.000000000 +0900
++++ java/src/org/apache/xml/resolver/CatalogManager.java	2008-06-25 17:09:12.000000000 +0900
+@@ -205,11 +205,9 @@
+   /** Constructor. */
+   public CatalogManager() {
+     debug = new Debug();
+-    // Note that we don't setDebug() here; we do that lazily. Either the
+-    // user will set it explicitly, or we'll do it automagically if they
+-    // read from the propertyFile for some other reason. That way, there's
+-    // no attempt to read from the file before the caller has had a chance
+-    // to avoid it.
++    queryVerbosityFromSysProp();
++    // Make sure verbosity is set by xml.catalog.verbosity sysprop
++    // setting, if defined.
+   }
+ 
+   /** Constructor that specifies an explicit property file. */
+@@ -217,11 +215,9 @@
+     this.propertyFile = propertyFile;
+ 
+     debug = new Debug();
+-    // Note that we don't setDebug() here; we do that lazily. Either the
+-    // user will set it explicitly, or we'll do it automagically if they
+-    // read from the propertyFile for some other reason. That way, there's
+-    // no attempt to read from the file before the caller has had a chance
+-    // to avoid it.
++    queryVerbosityFromSysProp();
++    // Make sure verbosity is set by xml.catalog.verbosity sysprop
++    // setting, if defined.
+   }
+ 
+   /** Set the bootstrap resolver.*/
+@@ -234,6 +230,20 @@
+     return bResolver;
+   }
+ 
++  /** Query system property for verbosity level. */
++  private void queryVerbosityFromSysProp() {
++    String verbStr = System.getProperty(pVerbosity);
++    if (verbStr != null) {
++      try {
++        int verb = Integer.parseInt(verbStr.trim());
++        verbosity = Integer.valueOf(verb);
++        debug.setDebug(verb);
++      } catch (Exception e) {
++        System.err.println("Cannot parse verbosity: \"" + verbStr + "\"");
++      }
++    }
++  }
++
+   /**
+    * Load the properties from the propertyFile and build the
+    * resources from it.
+--- xml-commons-resolver-1.2/resolver.xml	2006-11-21 05:23:07.000000000 +0900
++++ java/resolver.xml	2006-04-19 12:41:10.000000000 +0900
+@@ -182,7 +182,7 @@
+       <arg value="-OUT"/>
+       <arg value="${build.dir}/docs/resolver.html"/>
+       <arg value="-XSL"/>
+-      <arg value="file:///C:/docbook-xsl-1.71.1/xhtml/docbook.xsl"/>
++      <arg value="${docbook.dir}/html/docbook.xsl"/>
+     </java>
+     <java fork="true" classname="org.apache.xalan.xslt.Process">
+       <classpath>
+@@ -190,16 +190,16 @@
+ 	<pathelement location="${build.dir}/resolver.jar"/>
+     <pathelement path="${java.class.path}"/>
+       </classpath>
+-<!--      <arg value="-URIRESOLVER"/>
++      <arg value="-URIRESOLVER"/>
+       <arg value="org.apache.xml.resolver.tools.CatalogResolver"/>
+       <arg value="-ENTITYRESOLVER"/>
+-      <arg value="org.apache.xml.resolver.tools.CatalogResolver"/> -->
++      <arg value="org.apache.xml.resolver.tools.CatalogResolver"/>
+       <arg value="-IN"/>
+       <arg value="${docs.src.dir}/resolver-release-notes.xml"/>
+       <arg value="-OUT"/>
+-      <arg value="${build.dir}/docs/resolver-release-notes.html"/>
++      <arg value="${build.dir}/docs/release-notes.html"/>
+       <arg value="-XSL"/>
+-      <arg value="file:///C:/docbook-xsl-1.71.1/xhtml/docbook.xsl"/>
++      <arg value="${docbook.dir}/html/docbook.xsl"/>
+     </java>
+ 
+     <!-- Copy the docs that Forrest built. -->

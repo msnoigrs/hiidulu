@@ -1,0 +1,45 @@
+--- commons-logging-9999.orig/build.xml	2009-01-28 22:49:25.000000000 +0900
++++ commons-logging-9999/build.xml	2009-01-28 22:56:15.000000000 +0900
+@@ -276,6 +276,10 @@
+                classpathref="compile.classpath"
+                classname="org.apache.log.Logger"/>
+ 
++    <available property="servletapi.present"
++               classpathref="compile.classpath"
++               classname="javax.servlet.ServletContextEvent"/>
++
+     <available property="avalon-framework.present"
+                classpathref="compile.classpath"
+                classname="org.apache.avalon.framework.logger.Logger"/>
+@@ -312,6 +316,13 @@
+     </echo>
+   </target>
+   
++  <target name="servletapi-warning" unless='servletapi.present' depends="init,discovery">
++    <echo>
++    *** WARNING ***
++    ServletAPI not found: Cannot Build ServletContextCleaner
++    </echo>
++  </target>
++
+   <target name="avalon-framework-warning" unless='avalon-framework.present' depends='init,discovery'>
+     <echo>
+     *** WARNING ***
+@@ -334,7 +345,7 @@
+   </target>
+     
+   <target name='warning' 
+-    depends='log4j12-warning,log4j13-warning,logkit-warning,jdk1.4-warning,avalon-framework-warning,compile-1.4'/>
++    depends='log4j12-warning,log4j13-warning,logkit-warning,jdk1.4-warning,avalon-framework-warning,servletapi-warning,compile-1.4'/>
+ 
+   <target name="compile-only" 
+     depends="prepare,discovery,warning,show-lib-presence,compile-non-log4j,compile-log4j12,compile-log4j13,build-jar"/>
+@@ -362,6 +373,8 @@
+     
+       <exclude name="org/apache/commons/logging/impl/Log4J*.java"/>
+ 
++      <exclude name="org/apache/commons/logging/impl/ServletContextCleaner.java"
++               unless="servletapi.present"/>
+       <exclude name="org/apache/commons/logging/impl/Jdk13LumberjackLogger.java"
+                unless="jdk.1.4.present"/>
+       <exclude name="org/apache/commons/logging/impl/Jdk14Logger.java"

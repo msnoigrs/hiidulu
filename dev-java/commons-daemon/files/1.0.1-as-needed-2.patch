@@ -1,0 +1,9 @@
+diff -uNr commons-daemon-1.0.1_p536530.orig/src/native/unix/support/apsupport.m4 commons-daemon-1.0.1_p536530/src/native/unix/support/apsupport.m4
+--- commons-daemon-1.0.1_p536530.orig/src/native/unix/support/apsupport.m4	2007-06-02 15:10:43.000000000 +0900
++++ commons-daemon-1.0.1_p536530/src/native/unix/support/apsupport.m4	2007-06-02 15:11:53.000000000 +0900
+@@ -126,4 +126,5 @@
+   AC_MSG_RESULT([ok])
+   AC_SUBST(CFLAGS)
+   AC_SUBST(LDFLAGS)
++  AC_SUBST(LIBS)
+ ])

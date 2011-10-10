@@ -1,0 +1,1206 @@
+diff -uNr xml-commons-resolver-1.2.orig/resolver.xml xml-commons-resolver-1.2/resolver.xml
+--- xml-commons-resolver-1.2.orig/resolver.xml	2009-01-25 14:07:25.000000000 +0900
++++ xml-commons-resolver-1.2/resolver.xml	2006-04-19 12:41:10.000000000 +0900
+@@ -182,7 +182,7 @@
+       <arg value="-OUT"/>
+       <arg value="${build.dir}/docs/resolver.html"/>
+       <arg value="-XSL"/>
+-      <arg value="file:///C:/docbook-xsl-1.71.1/xhtml/docbook.xsl"/>
++      <arg value="${docbook.dir}/html/docbook.xsl"/>
+     </java>
+     <java fork="true" classname="org.apache.xalan.xslt.Process">
+       <classpath>
+@@ -190,16 +190,16 @@
+ 	<pathelement location="${build.dir}/resolver.jar"/>
+     <pathelement path="${java.class.path}"/>
+       </classpath>
+-<!--      <arg value="-URIRESOLVER"/>
++      <arg value="-URIRESOLVER"/>
+       <arg value="org.apache.xml.resolver.tools.CatalogResolver"/>
+       <arg value="-ENTITYRESOLVER"/>
+-      <arg value="org.apache.xml.resolver.tools.CatalogResolver"/> -->
++      <arg value="org.apache.xml.resolver.tools.CatalogResolver"/>
+       <arg value="-IN"/>
+       <arg value="${docs.src.dir}/resolver-release-notes.xml"/>
+       <arg value="-OUT"/>
+-      <arg value="${build.dir}/docs/resolver-release-notes.html"/>
++      <arg value="${build.dir}/docs/release-notes.html"/>
+       <arg value="-XSL"/>
+-      <arg value="file:///C:/docbook-xsl-1.71.1/xhtml/docbook.xsl"/>
++      <arg value="${docbook.dir}/html/docbook.xsl"/>
+     </java>
+ 
+     <!-- Copy the docs that Forrest built. -->
+diff -uNr xml-commons-resolver-1.2.orig/src/org/apache/xml/resolver/Catalog.java xml-commons-resolver-1.2/src/org/apache/xml/resolver/Catalog.java
+--- xml-commons-resolver-1.2.orig/src/org/apache/xml/resolver/Catalog.java	2009-01-25 14:07:25.000000000 +0900
++++ xml-commons-resolver-1.2/src/org/apache/xml/resolver/Catalog.java	2008-11-10 13:23:04.000000000 +0900
+@@ -20,28 +20,26 @@
+ 
+ package org.apache.xml.resolver;
+ 
+-import java.io.IOException;
++import java.io.DataInputStream;
+ import java.io.FileNotFoundException;
++import java.io.IOException;
+ import java.io.InputStream;
+ import java.io.UnsupportedEncodingException;
+-import java.io.DataInputStream;
+-
++import java.net.MalformedURLException;
++import java.net.URL;
+ import java.util.Enumeration;
+ import java.util.Hashtable;
++import java.util.Locale;
+ import java.util.Vector;
+ 
+-import java.net.URL;
+-import java.net.MalformedURLException;
+-
+ import javax.xml.parsers.SAXParserFactory;
+ 
+-import org.apache.xml.resolver.CatalogManager;
++import org.apache.xml.resolver.helpers.FileURL;
+ import org.apache.xml.resolver.helpers.PublicId;
+ import org.apache.xml.resolver.readers.CatalogReader;
++import org.apache.xml.resolver.readers.OASISXMLCatalogReader;
+ import org.apache.xml.resolver.readers.SAXCatalogReader;
+ import org.apache.xml.resolver.readers.TR9401CatalogReader;
+-import org.apache.xml.resolver.readers.OASISXMLCatalogReader;
+-import org.apache.xml.resolver.helpers.FileURL;
+ 
+ /**
+  * Represents OASIS Open Catalog files.
+@@ -2114,59 +2112,104 @@
+    * @return The normalized URI reference.
+    */
+   protected String normalizeURI(String uriref) {
+-    String newRef = "";
+-    byte[] bytes;
+-
+-    if (uriref == null) {
+-      return null;
+-    }
+-
+-    try {
+-      bytes = uriref.getBytes("UTF-8");
+-    } catch (UnsupportedEncodingException uee) {
+-      // this can't happen
+-      catalogManager.debug.message(1, "UTF-8 is an unsupported encoding!?");
++      if (uriref == null) {
++          return null;
++      }
++      final int length = uriref.length();
++      for (int i = 0; i < length; ++i) {
++          char c = uriref.charAt(i);
++          if ((c <= 0x20)    // ctrl
++                  || (c > 0x7F)  // high ascii
++                  || (c == 0x22) // "
++                  || (c == 0x3C) // <
++                  || (c == 0x3E) // >
++                  || (c == 0x5C) // \
++                  || (c == 0x5E) // ^
++                  || (c == 0x60) // `
++                  || (c == 0x7B) // {
++                  || (c == 0x7C) // |
++                  || (c == 0x7D) // }
++                  || (c == 0x7F)) {
++              return normalizeURI(uriref, i);
++          }
++      }
+       return uriref;
+-    }
+-
+-    for (int count = 0; count < bytes.length; count++) {
+-      int ch = bytes[count] & 0xFF;
+-
+-      if ((ch <= 0x20)    // ctrl
+-	  || (ch > 0x7F)  // high ascii
+-	  || (ch == 0x22) // "
+-	  || (ch == 0x3C) // <
+-	  || (ch == 0x3E) // >
+-	  || (ch == 0x5C) // \
+-	  || (ch == 0x5E) // ^
+-	  || (ch == 0x60) // `
+-	  || (ch == 0x7B) // {
+-	  || (ch == 0x7C) // |
+-	  || (ch == 0x7D) // }
+-	  || (ch == 0x7F)) {
+-	newRef += encodedByte(ch);
+-      } else {
+-	newRef += (char) bytes[count];
++  }
++  
++  /**
++   * Perform character normalization on a URI reference.
++   *
++   * @param uriref The URI reference
++   * @param index The index of the first character which requires escaping.
++   * @return The normalized URI reference.
++   */
++  private String normalizeURI(String uriref, int index) {
++      final StringBuffer buffer = new StringBuffer();
++      for (int i = 0; i < index; ++i) {
++          buffer.append(uriref.charAt(i));
+       }
+-    }
+-
+-    return newRef;
++      final byte[] bytes;
++      try {
++          bytes = uriref.substring(index).getBytes("UTF-8");
++      } 
++      catch (UnsupportedEncodingException uee) {
++          // this can't happen
++          catalogManager.debug.message(1, "UTF-8 is an unsupported encoding!?");
++          return uriref;
++      }
++      for (int count = 0; count < bytes.length; ++count) {
++          int ch = bytes[count] & 0xFF;
++          if ((ch <= 0x20)    // ctrl
++                  || (ch > 0x7F)  // high ascii
++                  || (ch == 0x22) // "
++                  || (ch == 0x3C) // <
++                  || (ch == 0x3E) // >
++                  || (ch == 0x5C) // \
++                  || (ch == 0x5E) // ^
++                  || (ch == 0x60) // `
++                  || (ch == 0x7B) // {
++                  || (ch == 0x7C) // |
++                  || (ch == 0x7D) // }
++                  || (ch == 0x7F)) {
++              writeEncodedByte(ch, buffer);
++          } 
++          else {
++              buffer.append((char) bytes[count]);
++          }
++      }
++      return buffer.toString();
+   }
+ 
+   /**
+    * Perform %-encoding on a single byte.
+    *
+-   * @param b The 8-bit integer that represents th byte. (Bytes are signed
+-              but encoding needs to look at the bytes unsigned.)
++   * @param b The 8-bit integer that represents the byte. (Bytes are signed
++   *          but encoding needs to look at the bytes unsigned.)
+    * @return The %-encoded string for the byte in question.
+    */
+-  protected String encodedByte (int b) {
+-    String hex = Integer.toHexString(b).toUpperCase();
+-    if (hex.length() < 2) {
+-      return "%0" + hex;
+-    } else {
+-      return "%" + hex;
+-    }
++  protected String encodedByte(int b) {
++      StringBuffer buffer = new StringBuffer(3);
++      writeEncodedByte(b, buffer);
++      return buffer.toString();
++  }
++  
++  /**
++   * Perform %-encoding on a single byte.
++   *
++   * @param b The 8-bit integer that represents the byte. (Bytes are signed
++   *          but encoding needs to look at the bytes unsigned.)
++   * @param buffer The target for the %-encoded string for the byte in question.
++   */
++  private void writeEncodedByte(int b, StringBuffer buffer) {
++      String hex = Integer.toHexString(b).toUpperCase(Locale.ENGLISH);
++      if (hex.length() < 2) {
++          buffer.append("%0");
++          buffer.append(hex);
++      } 
++      else {
++          buffer.append('%');
++          buffer.append(hex);
++      }
+   }
+ 
+   // -----------------------------------------------------------------
+diff -uNr xml-commons-resolver-1.2.orig/src/org/apache/xml/resolver/CatalogManager.java xml-commons-resolver-1.2/src/org/apache/xml/resolver/CatalogManager.java
+--- xml-commons-resolver-1.2.orig/src/org/apache/xml/resolver/CatalogManager.java	2009-01-25 14:07:25.000000000 +0900
++++ xml-commons-resolver-1.2/src/org/apache/xml/resolver/CatalogManager.java	2008-11-10 13:23:04.000000000 +0900
+@@ -20,19 +20,16 @@
+ package org.apache.xml.resolver;
+ 
+ import java.io.InputStream;
+-
+-import java.net.URL;
+ import java.net.MalformedURLException;
+-
++import java.net.URL;
+ import java.util.MissingResourceException;
+ import java.util.PropertyResourceBundle;
+ import java.util.ResourceBundle;
+ import java.util.StringTokenizer;
+ import java.util.Vector;
+ 
+-import org.apache.xml.resolver.helpers.Debug;
+ import org.apache.xml.resolver.helpers.BootstrapResolver;
+-import org.apache.xml.resolver.Catalog;
++import org.apache.xml.resolver.helpers.Debug;
+ 
+ /**
+  * CatalogManager provides an interface to the catalog properties.
+@@ -205,11 +202,9 @@
+   /** Constructor. */
+   public CatalogManager() {
+     debug = new Debug();
+-    // Note that we don't setDebug() here; we do that lazily. Either the
+-    // user will set it explicitly, or we'll do it automagically if they
+-    // read from the propertyFile for some other reason. That way, there's
+-    // no attempt to read from the file before the caller has had a chance
+-    // to avoid it.
++    queryVerbosityFromSysProp();
++    // Make sure verbosity is set by xml.catalog.verbosity sysprop
++    // setting, if defined.
+   }
+ 
+   /** Constructor that specifies an explicit property file. */
+@@ -217,11 +212,9 @@
+     this.propertyFile = propertyFile;
+ 
+     debug = new Debug();
+-    // Note that we don't setDebug() here; we do that lazily. Either the
+-    // user will set it explicitly, or we'll do it automagically if they
+-    // read from the propertyFile for some other reason. That way, there's
+-    // no attempt to read from the file before the caller has had a chance
+-    // to avoid it.
++    queryVerbosityFromSysProp();
++    // Make sure verbosity is set by xml.catalog.verbosity sysprop
++    // setting, if defined.
+   }
+ 
+   /** Set the bootstrap resolver.*/
+@@ -234,6 +227,20 @@
+     return bResolver;
+   }
+ 
++  /** Query system property for verbosity level. */
++  private void queryVerbosityFromSysProp() {
++    String verbStr = System.getProperty(pVerbosity);
++    if (verbStr != null) {
++      try {
++        int verb = Integer.parseInt(verbStr.trim());
++        verbosity = new Integer(verb);
++        debug.setDebug(verb);
++      } catch (Exception e) {
++        System.err.println("Cannot parse verbosity: \"" + verbStr + "\"");
++      }
++    }
++  }
++
+   /**
+    * Load the properties from the propertyFile and build the
+    * resources from it.
+@@ -433,7 +440,7 @@
+    */
+   public boolean getRelativeCatalogs () {
+     if (relativeCatalogs == null) {
+-      relativeCatalogs = new Boolean(queryRelativeCatalogs());
++      relativeCatalogs = queryRelativeCatalogs() ? Boolean.TRUE : Boolean.FALSE;
+     }
+ 
+     return relativeCatalogs.booleanValue();
+@@ -445,7 +452,7 @@
+    * @see #getRelativeCatalogs()
+    */
+   public void setRelativeCatalogs (boolean relative) {
+-    relativeCatalogs = new Boolean(relative);
++    relativeCatalogs = relative ? Boolean.TRUE : Boolean.FALSE;
+   }
+ 
+   /**
+@@ -574,7 +581,7 @@
+    */
+   public boolean getPreferPublic () {
+     if (preferPublic == null) {
+-      preferPublic = new Boolean(queryPreferPublic());
++      preferPublic = queryPreferPublic() ? Boolean.TRUE : Boolean.FALSE;
+     }
+     return preferPublic.booleanValue();
+   }
+@@ -583,7 +590,7 @@
+    * Set the prefer public setting.
+    */
+   public void setPreferPublic (boolean preferPublic) {
+-    this.preferPublic = new Boolean(preferPublic);
++    this.preferPublic = preferPublic ? Boolean.TRUE : Boolean.FALSE;
+   }
+ 
+   /**
+@@ -633,7 +640,7 @@
+    */
+   public boolean getUseStaticCatalog() {
+     if (useStaticCatalog == null) {
+-      useStaticCatalog = new Boolean(queryUseStaticCatalog());
++      useStaticCatalog = queryUseStaticCatalog() ? Boolean.TRUE : Boolean.FALSE;
+     }
+ 
+     return useStaticCatalog.booleanValue();
+@@ -643,7 +650,7 @@
+    * Set the use static catalog setting.
+    */
+   public void setUseStaticCatalog(boolean useStatic) {
+-    useStaticCatalog = new Boolean(useStatic);
++    useStaticCatalog = useStatic ? Boolean.TRUE : Boolean.FALSE;
+   }
+ 
+   /**
+@@ -664,7 +671,7 @@
+     Catalog catalog = staticCatalog;
+ 
+     if (useStaticCatalog == null) {
+-      useStaticCatalog = new Boolean(getUseStaticCatalog());
++      useStaticCatalog = getUseStaticCatalog() ? Boolean.TRUE : Boolean.FALSE;
+     }
+ 
+     if (catalog == null || !useStaticCatalog.booleanValue()) {
+@@ -715,7 +722,7 @@
+     Catalog catalog = staticCatalog;
+ 
+     if (useStaticCatalog == null) {
+-      useStaticCatalog = new Boolean(getUseStaticCatalog());
++      useStaticCatalog = getUseStaticCatalog() ? Boolean.TRUE : Boolean.FALSE;
+     }
+ 
+     if (catalog == null || !useStaticCatalog.booleanValue()) {
+@@ -764,7 +771,7 @@
+    */
+   public boolean getAllowOasisXMLCatalogPI () {
+     if (oasisXMLCatalogPI == null) {
+-      oasisXMLCatalogPI = new Boolean(queryAllowOasisXMLCatalogPI());
++      oasisXMLCatalogPI = queryAllowOasisXMLCatalogPI() ? Boolean.TRUE : Boolean.FALSE;
+     }
+ 
+     return oasisXMLCatalogPI.booleanValue();
+@@ -774,7 +781,7 @@
+    * Set the XML Catalog PI setting
+    */
+   public void setAllowOasisXMLCatalogPI(boolean allowPI) {
+-    oasisXMLCatalogPI = new Boolean(allowPI);
++    oasisXMLCatalogPI = allowPI ? Boolean.TRUE : Boolean.FALSE;
+   }
+ 
+   /**
+diff -uNr xml-commons-resolver-1.2.orig/src/org/apache/xml/resolver/Resolver.java xml-commons-resolver-1.2/src/org/apache/xml/resolver/Resolver.java
+--- xml-commons-resolver-1.2.orig/src/org/apache/xml/resolver/Resolver.java	2009-01-25 14:07:25.000000000 +0900
++++ xml-commons-resolver-1.2/src/org/apache/xml/resolver/Resolver.java	2008-11-10 13:23:04.000000000 +0900
+@@ -19,18 +19,20 @@
+ 
+ package org.apache.xml.resolver;
+ 
++import java.io.FileNotFoundException;
+ import java.io.IOException;
+ import java.io.InputStream;
+-import java.io.FileNotFoundException;
+-import java.util.Enumeration;
+-import java.util.Vector;
++import java.net.MalformedURLException;
+ import java.net.URL;
+ import java.net.URLConnection;
+-import java.net.MalformedURLException;
+-import org.apache.xml.resolver.readers.SAXCatalogReader;
++import java.util.Enumeration;
++import java.util.Vector;
++
++import javax.xml.parsers.SAXParserFactory;
++
+ import org.apache.xml.resolver.readers.OASISXMLCatalogReader;
++import org.apache.xml.resolver.readers.SAXCatalogReader;
+ import org.apache.xml.resolver.readers.TR9401CatalogReader;
+-import javax.xml.parsers.SAXParserFactory;
+ 
+ /**
+  * An extension to OASIS Open Catalog files, this class supports
+diff -uNr xml-commons-resolver-1.2.orig/src/org/apache/xml/resolver/Version.java xml-commons-resolver-1.2/src/org/apache/xml/resolver/Version.java
+--- xml-commons-resolver-1.2.orig/src/org/apache/xml/resolver/Version.java	2009-01-25 14:07:25.000000000 +0900
++++ xml-commons-resolver-1.2/src/org/apache/xml/resolver/Version.java	1970-01-01 09:00:00.000000000 +0900
+@@ -1,67 +0,0 @@
+-/*
+- * Licensed to the Apache Software Foundation (ASF) under one or more
+- * contributor license agreements.  See the NOTICE file distributed with
+- * this work for additional information regarding copyright ownership.
+- * The ASF licenses this file to You under the Apache License, Version 2.0
+- * (the "License"); you may not use this file except in compliance with
+- * the License.  You may obtain a copy of the License at
+- * 
+- *      http://www.apache.org/licenses/LICENSE-2.0
+- * 
+- * Unless required by applicable law or agreed to in writing, software
+- * distributed under the License is distributed on an "AS IS" BASIS,
+- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+- * See the License for the specific language governing permissions and
+- * limitations under the License.
+- */
+-package org.apache.xml.resolver;
+-
+-/**
+- * <meta name="usage" content="general"/>
+- * Administrative class to keep track of the version number of
+- * xml-commons external sources releases.
+- * See xml-commons/java/resolver.xml for filtering on 1.0, etc.
+- */
+-public class Version
+-{
+-
+-  /**
+-   * Get the version string for xml-commons-resolver.  
+-   * Version String formatted like: 
+-   * <CODE>"XmlResolver v.r"</CODE>.
+-   *
+-   * @return String denoting our current version
+-   */
+-  public static String getVersion()
+-  {
+-    return getProduct()+" "+getVersionNum();
+-  }
+-
+-  /**
+-   * Get just the product name.
+-   *
+-   * @return String denoting our product name
+-   */
+-  public static String getProduct()
+-  {
+-    return "XmlResolver";
+-  }
+-
+-  /**
+-   * Get just the version number v.r.
+-   * @return String denoting our current version number
+-   */
+-  public static String getVersionNum()
+-  {
+-    return "1.2";
+-  }
+-
+-  /**
+-   * Print the release version to the command line.
+-   * @param argv command line arguments, unused.
+-   */
+-  public static void main(String argv[])
+-  {
+-    System.out.println(getVersion());
+-  }
+-}
+diff -uNr xml-commons-resolver-1.2.orig/src/org/apache/xml/resolver/apps/XParseError.java xml-commons-resolver-1.2/src/org/apache/xml/resolver/apps/XParseError.java
+--- xml-commons-resolver-1.2.orig/src/org/apache/xml/resolver/apps/XParseError.java	2009-01-25 14:07:25.000000000 +0900
++++ xml-commons-resolver-1.2/src/org/apache/xml/resolver/apps/XParseError.java	2008-11-10 13:23:04.000000000 +0900
+@@ -19,13 +19,12 @@
+ 
+ package org.apache.xml.resolver.apps;
+ 
+-import java.net.URL;
+ import java.net.MalformedURLException;
+-
+-import org.xml.sax.SAXParseException;
+-import org.xml.sax.ErrorHandler;
++import java.net.URL;
+ 
+ import org.apache.xml.resolver.helpers.FileURL;
++import org.xml.sax.ErrorHandler;
++import org.xml.sax.SAXParseException;
+ 
+ /**
+  * An ErrorHandler for xparse.
+diff -uNr xml-commons-resolver-1.2.orig/src/org/apache/xml/resolver/apps/resolver.java xml-commons-resolver-1.2/src/org/apache/xml/resolver/apps/resolver.java
+--- xml-commons-resolver-1.2.orig/src/org/apache/xml/resolver/apps/resolver.java	2009-01-25 14:07:25.000000000 +0900
++++ xml-commons-resolver-1.2/src/org/apache/xml/resolver/apps/resolver.java	2008-11-10 13:23:04.000000000 +0900
+@@ -21,8 +21,8 @@
+ 
+ import java.io.FileNotFoundException;
+ import java.io.IOException;
+-import java.net.URL;
+ import java.net.MalformedURLException;
++import java.net.URL;
+ import java.util.Vector;
+ 
+ import org.apache.xml.resolver.Catalog;
+diff -uNr xml-commons-resolver-1.2.orig/src/org/apache/xml/resolver/apps/xparse.java xml-commons-resolver-1.2/src/org/apache/xml/resolver/apps/xparse.java
+--- xml-commons-resolver-1.2.orig/src/org/apache/xml/resolver/apps/xparse.java	2009-01-25 14:07:25.000000000 +0900
++++ xml-commons-resolver-1.2/src/org/apache/xml/resolver/apps/xparse.java	2008-11-10 13:23:04.000000000 +0900
+@@ -21,18 +21,14 @@
+ 
+ import java.io.FileNotFoundException;
+ import java.io.IOException;
+-import java.util.Vector;
+ import java.util.Date;
++import java.util.Vector;
+ 
+-import org.xml.sax.*;
+-import org.xml.sax.helpers.*;
+-
+-import javax.xml.parsers.*;
+-
+-import org.apache.xml.resolver.tools.ResolvingParser;
+ import org.apache.xml.resolver.Catalog;
+ import org.apache.xml.resolver.CatalogManager;
+ import org.apache.xml.resolver.helpers.Debug;
++import org.apache.xml.resolver.tools.ResolvingParser;
++import org.xml.sax.SAXException;
+ 
+ /**
+  * A simple command-line XML parsing application.
+diff -uNr xml-commons-resolver-1.2.orig/src/org/apache/xml/resolver/apps/xread.java xml-commons-resolver-1.2/src/org/apache/xml/resolver/apps/xread.java
+--- xml-commons-resolver-1.2.orig/src/org/apache/xml/resolver/apps/xread.java	2009-01-25 14:07:25.000000000 +0900
++++ xml-commons-resolver-1.2/src/org/apache/xml/resolver/apps/xread.java	2008-11-10 13:23:04.000000000 +0900
+@@ -21,18 +21,14 @@
+ 
+ import java.io.FileNotFoundException;
+ import java.io.IOException;
+-import java.util.Vector;
+ import java.util.Date;
++import java.util.Vector;
+ 
+-import org.xml.sax.*;
+-import org.xml.sax.helpers.*;
+-
+-import javax.xml.parsers.*;
+-
+-import org.apache.xml.resolver.tools.ResolvingXMLReader;
+ import org.apache.xml.resolver.Catalog;
+ import org.apache.xml.resolver.CatalogManager;
+ import org.apache.xml.resolver.helpers.Debug;
++import org.apache.xml.resolver.tools.ResolvingXMLReader;
++import org.xml.sax.SAXException;
+ 
+ /**
+  * A simple command-line XML parsing application.
+diff -uNr xml-commons-resolver-1.2.orig/src/org/apache/xml/resolver/helpers/BootstrapResolver.java xml-commons-resolver-1.2/src/org/apache/xml/resolver/helpers/BootstrapResolver.java
+--- xml-commons-resolver-1.2.orig/src/org/apache/xml/resolver/helpers/BootstrapResolver.java	2009-01-25 14:07:25.000000000 +0900
++++ xml-commons-resolver-1.2/src/org/apache/xml/resolver/helpers/BootstrapResolver.java	2008-11-10 13:23:04.000000000 +0900
+@@ -19,15 +19,15 @@
+ 
+ package org.apache.xml.resolver.helpers;
+ 
+-import java.util.Hashtable;
+-import java.net.URL;
+-import java.net.MalformedURLException;
+ import java.io.InputStream;
++import java.net.MalformedURLException;
++import java.net.URL;
++import java.util.Hashtable;
+ 
+-import javax.xml.transform.URIResolver;
+ import javax.xml.transform.Source;
+-import javax.xml.transform.sax.SAXSource;
+ import javax.xml.transform.TransformerException;
++import javax.xml.transform.URIResolver;
++import javax.xml.transform.sax.SAXSource;
+ 
+ import org.xml.sax.EntityResolver;
+ import org.xml.sax.InputSource;
+diff -uNr xml-commons-resolver-1.2.orig/src/org/apache/xml/resolver/helpers/FileURL.java xml-commons-resolver-1.2/src/org/apache/xml/resolver/helpers/FileURL.java
+--- xml-commons-resolver-1.2.orig/src/org/apache/xml/resolver/helpers/FileURL.java	2009-01-25 14:07:25.000000000 +0900
++++ xml-commons-resolver-1.2/src/org/apache/xml/resolver/helpers/FileURL.java	2008-11-10 13:23:04.000000000 +0900
+@@ -19,8 +19,8 @@
+ 
+ package org.apache.xml.resolver.helpers;
+ 
+-import java.net.URL;
+ import java.net.MalformedURLException;
++import java.net.URL;
+ 
+ /**
+  * Static method for dealing with file: URLs.
+diff -uNr xml-commons-resolver-1.2.orig/src/org/apache/xml/resolver/helpers/Namespaces.java xml-commons-resolver-1.2/src/org/apache/xml/resolver/helpers/Namespaces.java
+--- xml-commons-resolver-1.2.orig/src/org/apache/xml/resolver/helpers/Namespaces.java	2009-01-25 14:07:25.000000000 +0900
++++ xml-commons-resolver-1.2/src/org/apache/xml/resolver/helpers/Namespaces.java	2008-11-10 13:23:04.000000000 +0900
+@@ -19,7 +19,8 @@
+ 
+ package org.apache.xml.resolver.helpers;
+ 
+-import org.w3c.dom.*;
++import org.w3c.dom.Element;
++import org.w3c.dom.Node;
+ 
+ /**
+  * Static Namespace query methods.
+diff -uNr xml-commons-resolver-1.2.orig/src/org/apache/xml/resolver/helpers/PublicId.java xml-commons-resolver-1.2/src/org/apache/xml/resolver/helpers/PublicId.java
+--- xml-commons-resolver-1.2.orig/src/org/apache/xml/resolver/helpers/PublicId.java	2009-01-25 14:07:25.000000000 +0900
++++ xml-commons-resolver-1.2/src/org/apache/xml/resolver/helpers/PublicId.java	2008-11-09 12:53:13.000000000 +0900
+@@ -31,7 +31,8 @@
+  * @version 1.0
+  */
+ public abstract class PublicId {
+-  protected PublicId() { }
++    
++  protected PublicId() {}
+ 
+   /**
+    * Normalize a public identifier.
+@@ -55,18 +56,17 @@
+    * @return The normalized identifier.
+    */
+   public static String normalize(String publicId) {
+-    String normal = publicId.replace('\t', ' ');
+-    normal = normal.replace('\r', ' ');
+-    normal = normal.replace('\n', ' ');
+-    normal = normal.trim();
+-
+-    int pos;
+-
+-    while ((pos = normal.indexOf("  ")) >= 0) {
+-      normal = normal.substring(0, pos) + normal.substring(pos+1);
+-    }
+-
+-    return normal;
++      String normal = publicId.replace('\t', ' ');
++      normal = normal.replace('\r', ' ');
++      normal = normal.replace('\n', ' ');
++      normal = normal.trim();
++
++      int pos;
++
++      while ((pos = normal.indexOf("  ")) >= 0) {
++          normal = normal.substring(0, pos) + normal.substring(pos+1);
++      }
++      return normal;
+   }
+ 
+   /**
+@@ -80,21 +80,24 @@
+    * @return The normalized identifier.
+    */
+   public static String encodeURN(String publicId) {
+-    String urn = PublicId.normalize(publicId);
+-
+-    urn = PublicId.stringReplace(urn, "%", "%25");
+-    urn = PublicId.stringReplace(urn, ";", "%3B");
+-    urn = PublicId.stringReplace(urn, "'", "%27");
+-    urn = PublicId.stringReplace(urn, "?", "%3F");
+-    urn = PublicId.stringReplace(urn, "#", "%23");
+-    urn = PublicId.stringReplace(urn, "+", "%2B");
+-    urn = PublicId.stringReplace(urn, " ", "+");
+-    urn = PublicId.stringReplace(urn, "::", ";");
+-    urn = PublicId.stringReplace(urn, ":", "%3A");
+-    urn = PublicId.stringReplace(urn, "//", ":");
+-    urn = PublicId.stringReplace(urn, "/", "%2F");
++      String urn = PublicId.normalize(publicId);
+ 
+-    return "urn:publicid:" + urn;
++      urn = PublicId.stringReplace(urn, "%", "%25");
++      urn = PublicId.stringReplace(urn, ";", "%3B");
++      urn = PublicId.stringReplace(urn, "'", "%27");
++      urn = PublicId.stringReplace(urn, "?", "%3F");
++      urn = PublicId.stringReplace(urn, "#", "%23");
++      urn = PublicId.stringReplace(urn, "+", "%2B");
++      urn = PublicId.stringReplace(urn, " ", "+");
++      urn = PublicId.stringReplace(urn, "::", ";");
++      urn = PublicId.stringReplace(urn, ":", "%3A");
++      urn = PublicId.stringReplace(urn, "//", ":");
++      urn = PublicId.stringReplace(urn, "/", "%2F");
++      
++      StringBuffer buffer = new StringBuffer(13 + urn.length());
++      buffer.append("urn:publicid:");
++      buffer.append(urn);
++      return buffer.toString();
+   }
+ 
+   /**
+@@ -108,51 +111,62 @@
+    * @return The normalized identifier.
+    */
+   public static String decodeURN(String urn) {
+-    String publicId = "";
+-
+-    if (urn.startsWith("urn:publicid:")) {
+-      publicId = urn.substring(13);
+-    } else {
+-      return urn;
+-    }
+-
+-    publicId = PublicId.stringReplace(publicId, "%2F", "/");
+-    publicId = PublicId.stringReplace(publicId, ":", "//");
+-    publicId = PublicId.stringReplace(publicId, "%3A", ":");
+-    publicId = PublicId.stringReplace(publicId, ";", "::");
+-    publicId = PublicId.stringReplace(publicId, "+", " ");
+-    publicId = PublicId.stringReplace(publicId, "%2B", "+");
+-    publicId = PublicId.stringReplace(publicId, "%23", "#");
+-    publicId = PublicId.stringReplace(publicId, "%3F", "?");
+-    publicId = PublicId.stringReplace(publicId, "%27", "'");
+-    publicId = PublicId.stringReplace(publicId, "%3B", ";");
+-    publicId = PublicId.stringReplace(publicId, "%25", "%");
+-
+-    return publicId;
+-    }
++      String publicId;
++      if (urn.startsWith("urn:publicid:")) {
++          publicId = urn.substring(13);
++      } 
++      else {
++          return urn;
++      }
++      
++      final boolean hasEscape = (publicId.indexOf('%') >= 0);
++      if (hasEscape) {
++          publicId = PublicId.stringReplace(publicId, "%2F", "/");
++      }
++      publicId = PublicId.stringReplace(publicId, ":", "//");
++      if (hasEscape) {
++          publicId = PublicId.stringReplace(publicId, "%3A", ":");
++      }
++      publicId = PublicId.stringReplace(publicId, ";", "::");
++      publicId = PublicId.stringReplace(publicId, "+", " ");
++      if (hasEscape) {
++          publicId = PublicId.stringReplace(publicId, "%2B", "+");
++          publicId = PublicId.stringReplace(publicId, "%23", "#");
++          publicId = PublicId.stringReplace(publicId, "%3F", "?");
++          publicId = PublicId.stringReplace(publicId, "%27", "'");
++          publicId = PublicId.stringReplace(publicId, "%3B", ";");
++          publicId = PublicId.stringReplace(publicId, "%25", "%");
++      }
++      
++      return publicId;
++  }
+ 
+   /**
+    * Replace one string with another.
+-   *
+    */
+   private static String stringReplace(String str,
+-				      String oldStr,
+-				      String newStr) {
+-
+-    String result = "";
+-    int pos = str.indexOf(oldStr);
+-
+-    //    System.out.println(str + ": " + oldStr + " => " + newStr);
+-
+-    while (pos >= 0) {
+-      //      System.out.println(str + " (" + pos + ")");
+-      result += str.substring(0, pos);
+-      result += newStr;
+-      str = str.substring(pos+1);
+-
+-      pos = str.indexOf(oldStr);
+-    }
+-
+-    return result + str;
++          String oldStr,
++          String newStr) {
++      int pos = str.indexOf(oldStr);
++      if (pos >= 0) {
++          final StringBuffer buffer = new StringBuffer();
++          final int oldStrLength = oldStr.length();
++          int start = 0;
++          do {
++              for (int i = start; i < pos; ++i) {
++                  buffer.append(str.charAt(i));
++              }
++              buffer.append(newStr);
++              start = pos + oldStrLength;
++              pos = str.indexOf(oldStr, start);
++          } 
++          while (pos >= 0);
++          final int strLength = str.length();
++          for (int i = start; i < strLength; ++i) {
++              buffer.append(str.charAt(i));
++          }
++          return buffer.toString();
++      }
++      return str;
+   }
+ }
+diff -uNr xml-commons-resolver-1.2.orig/src/org/apache/xml/resolver/readers/CatalogReader.java xml-commons-resolver-1.2/src/org/apache/xml/resolver/readers/CatalogReader.java
+--- xml-commons-resolver-1.2.orig/src/org/apache/xml/resolver/readers/CatalogReader.java	2009-01-25 14:07:25.000000000 +0900
++++ xml-commons-resolver-1.2/src/org/apache/xml/resolver/readers/CatalogReader.java	2008-11-10 13:23:04.000000000 +0900
+@@ -20,11 +20,11 @@
+ package org.apache.xml.resolver.readers;
+ 
+ import java.io.IOException;
++import java.io.InputStream;
+ import java.net.MalformedURLException;
+-import org.apache.xml.resolver.CatalogException;
+ 
+-import java.io.InputStream;
+ import org.apache.xml.resolver.Catalog;
++import org.apache.xml.resolver.CatalogException;
+ 
+ /**
+  * The CatalogReader interface.
+diff -uNr xml-commons-resolver-1.2.orig/src/org/apache/xml/resolver/readers/DOMCatalogReader.java xml-commons-resolver-1.2/src/org/apache/xml/resolver/readers/DOMCatalogReader.java
+--- xml-commons-resolver-1.2.orig/src/org/apache/xml/resolver/readers/DOMCatalogReader.java	2009-01-25 14:07:25.000000000 +0900
++++ xml-commons-resolver-1.2/src/org/apache/xml/resolver/readers/DOMCatalogReader.java	2008-11-10 13:23:04.000000000 +0900
+@@ -19,24 +19,24 @@
+ 
+ package org.apache.xml.resolver.readers;
+ 
+-import java.util.Hashtable;
+ import java.io.IOException;
+ import java.io.InputStream;
++import java.net.MalformedURLException;
+ import java.net.URL;
+ import java.net.URLConnection;
+-import java.net.MalformedURLException;
++import java.util.Hashtable;
+ 
+-import javax.xml.parsers.DocumentBuilderFactory;
+ import javax.xml.parsers.DocumentBuilder;
++import javax.xml.parsers.DocumentBuilderFactory;
+ import javax.xml.parsers.ParserConfigurationException;
+ 
+ import org.apache.xml.resolver.Catalog;
+ import org.apache.xml.resolver.CatalogException;
+-import org.apache.xml.resolver.readers.CatalogReader;
+ import org.apache.xml.resolver.helpers.Namespaces;
+-
++import org.w3c.dom.Document;
++import org.w3c.dom.Element;
++import org.w3c.dom.Node;
+ import org.xml.sax.SAXException;
+-import org.w3c.dom.*;
+ 
+ /**
+  * A DOM-based CatalogReader.
+diff -uNr xml-commons-resolver-1.2.orig/src/org/apache/xml/resolver/readers/ExtendedXMLCatalogReader.java xml-commons-resolver-1.2/src/org/apache/xml/resolver/readers/ExtendedXMLCatalogReader.java
+--- xml-commons-resolver-1.2.orig/src/org/apache/xml/resolver/readers/ExtendedXMLCatalogReader.java	2009-01-25 14:07:25.000000000 +0900
++++ xml-commons-resolver-1.2/src/org/apache/xml/resolver/readers/ExtendedXMLCatalogReader.java	2008-11-10 13:23:04.000000000 +0900
+@@ -20,13 +20,13 @@
+ package org.apache.xml.resolver.readers;
+ 
+ import java.util.Vector;
++
+ import org.apache.xml.resolver.Catalog;
+-import org.apache.xml.resolver.Resolver;
+ import org.apache.xml.resolver.CatalogEntry;
+ import org.apache.xml.resolver.CatalogException;
+-
+-import org.xml.sax.*;
+-import org.w3c.dom.*;
++import org.apache.xml.resolver.Resolver;
++import org.xml.sax.Attributes;
++import org.xml.sax.SAXException;
+ 
+ /**
+  * Parse Extended OASIS Entity Resolution Technical Committee 
+diff -uNr xml-commons-resolver-1.2.orig/src/org/apache/xml/resolver/readers/OASISXMLCatalogReader.java xml-commons-resolver-1.2/src/org/apache/xml/resolver/readers/OASISXMLCatalogReader.java
+--- xml-commons-resolver-1.2.orig/src/org/apache/xml/resolver/readers/OASISXMLCatalogReader.java	2009-01-25 14:07:25.000000000 +0900
++++ xml-commons-resolver-1.2/src/org/apache/xml/resolver/readers/OASISXMLCatalogReader.java	2008-11-10 13:23:04.000000000 +0900
+@@ -19,17 +19,19 @@
+ 
+ package org.apache.xml.resolver.readers;
+ 
++import java.util.Enumeration;
+ import java.util.Stack;
+ import java.util.Vector;
+-import java.util.Enumeration;
++
++import javax.xml.parsers.SAXParserFactory;
++
+ import org.apache.xml.resolver.Catalog;
+ import org.apache.xml.resolver.CatalogEntry;
+ import org.apache.xml.resolver.CatalogException;
+ import org.apache.xml.resolver.helpers.PublicId;
+-
+-import org.xml.sax.*;
+-
+-import javax.xml.parsers.*;
++import org.xml.sax.Attributes;
++import org.xml.sax.Locator;
++import org.xml.sax.SAXException;
+ 
+ /**
+  * Parse OASIS Entity Resolution Technical Committee 
+diff -uNr xml-commons-resolver-1.2.orig/src/org/apache/xml/resolver/readers/SAXCatalogParser.java xml-commons-resolver-1.2/src/org/apache/xml/resolver/readers/SAXCatalogParser.java
+--- xml-commons-resolver-1.2.orig/src/org/apache/xml/resolver/readers/SAXCatalogParser.java	2009-01-25 14:07:25.000000000 +0900
++++ xml-commons-resolver-1.2/src/org/apache/xml/resolver/readers/SAXCatalogParser.java	2008-11-10 13:23:04.000000000 +0900
+@@ -20,7 +20,8 @@
+ package org.apache.xml.resolver.readers;
+ 
+ import org.apache.xml.resolver.Catalog;
+-import org.xml.sax.*;
++import org.xml.sax.ContentHandler;
++import org.xml.sax.DocumentHandler;
+ 
+ /**
+  * The SAXCatalogParser interface.
+diff -uNr xml-commons-resolver-1.2.orig/src/org/apache/xml/resolver/readers/SAXCatalogReader.java xml-commons-resolver-1.2/src/org/apache/xml/resolver/readers/SAXCatalogReader.java
+--- xml-commons-resolver-1.2.orig/src/org/apache/xml/resolver/readers/SAXCatalogReader.java	2009-01-25 14:07:25.000000000 +0900
++++ xml-commons-resolver-1.2/src/org/apache/xml/resolver/readers/SAXCatalogReader.java	2008-11-10 13:23:04.000000000 +0900
+@@ -19,19 +19,23 @@
+ 
+ package org.apache.xml.resolver.readers;
+ 
+-import java.util.Hashtable;
+-import java.io.IOException;
+ import java.io.FileNotFoundException;
++import java.io.IOException;
+ import java.io.InputStream;
++import java.net.MalformedURLException;
+ import java.net.URL;
+ import java.net.URLConnection;
+-import java.net.MalformedURLException;
+ import java.net.UnknownHostException;
++import java.util.Hashtable;
+ 
+ import javax.xml.parsers.ParserConfigurationException;
+-import javax.xml.parsers.SAXParserFactory;
+ import javax.xml.parsers.SAXParser;
++import javax.xml.parsers.SAXParserFactory;
+ 
++import org.apache.xml.resolver.Catalog;
++import org.apache.xml.resolver.CatalogException;
++import org.apache.xml.resolver.CatalogManager;
++import org.apache.xml.resolver.helpers.Debug;
+ import org.xml.sax.AttributeList;
+ import org.xml.sax.Attributes;
+ import org.xml.sax.ContentHandler;
+@@ -42,12 +46,6 @@
+ import org.xml.sax.Parser;
+ import org.xml.sax.SAXException;
+ 
+-import org.apache.xml.resolver.Catalog;
+-import org.apache.xml.resolver.CatalogManager;
+-import org.apache.xml.resolver.CatalogException;
+-import org.apache.xml.resolver.readers.CatalogReader;
+-import org.apache.xml.resolver.helpers.Debug;
+-
+ /**
+  * A SAX-based CatalogReader.
+  *
+diff -uNr xml-commons-resolver-1.2.orig/src/org/apache/xml/resolver/readers/SAXParserHandler.java xml-commons-resolver-1.2/src/org/apache/xml/resolver/readers/SAXParserHandler.java
+--- xml-commons-resolver-1.2.orig/src/org/apache/xml/resolver/readers/SAXParserHandler.java	2009-01-25 14:07:25.000000000 +0900
++++ xml-commons-resolver-1.2/src/org/apache/xml/resolver/readers/SAXParserHandler.java	2008-11-10 13:23:04.000000000 +0900
+@@ -21,8 +21,13 @@
+ 
+ import java.io.IOException;
+ 
+-import org.xml.sax.*;
+-import org.xml.sax.helpers.*;
++import org.xml.sax.Attributes;
++import org.xml.sax.ContentHandler;
++import org.xml.sax.EntityResolver;
++import org.xml.sax.InputSource;
++import org.xml.sax.Locator;
++import org.xml.sax.SAXException;
++import org.xml.sax.helpers.DefaultHandler;
+ 
+ /**
+  * An entity-resolving DefaultHandler.
+diff -uNr xml-commons-resolver-1.2.orig/src/org/apache/xml/resolver/readers/TR9401CatalogReader.java xml-commons-resolver-1.2/src/org/apache/xml/resolver/readers/TR9401CatalogReader.java
+--- xml-commons-resolver-1.2.orig/src/org/apache/xml/resolver/readers/TR9401CatalogReader.java	2009-01-25 14:07:25.000000000 +0900
++++ xml-commons-resolver-1.2/src/org/apache/xml/resolver/readers/TR9401CatalogReader.java	2008-11-10 13:23:04.000000000 +0900
+@@ -19,10 +19,12 @@
+ 
+ package org.apache.xml.resolver.readers;
+ 
+-import java.io.InputStream;
+ import java.io.IOException;
++import java.io.InputStream;
+ import java.net.MalformedURLException;
++import java.util.Locale;
+ import java.util.Vector;
++
+ import org.apache.xml.resolver.Catalog;
+ import org.apache.xml.resolver.CatalogEntry;
+ import org.apache.xml.resolver.CatalogException;
+@@ -94,7 +96,7 @@
+ 	if (caseSensitive) {
+ 	  entryToken = token;
+ 	} else {
+-	  entryToken = token.toUpperCase();
++	  entryToken = token.toUpperCase(Locale.ENGLISH);
+ 	}
+ 
+ 	if (entryToken.equals("DELEGATE")) {
+diff -uNr xml-commons-resolver-1.2.orig/src/org/apache/xml/resolver/readers/TextCatalogReader.java xml-commons-resolver-1.2/src/org/apache/xml/resolver/readers/TextCatalogReader.java
+--- xml-commons-resolver-1.2.orig/src/org/apache/xml/resolver/readers/TextCatalogReader.java	2009-01-25 14:07:25.000000000 +0900
++++ xml-commons-resolver-1.2/src/org/apache/xml/resolver/readers/TextCatalogReader.java	2008-11-10 13:23:04.000000000 +0900
+@@ -19,18 +19,19 @@
+ 
+ package org.apache.xml.resolver.readers;
+ 
+-import java.io.InputStream;
+-import java.io.IOException;
+ import java.io.FileNotFoundException;
++import java.io.IOException;
++import java.io.InputStream;
++import java.net.MalformedURLException;
+ import java.net.URL;
+ import java.net.URLConnection;
+-import java.net.MalformedURLException;
+-import java.util.Vector;
++import java.util.Locale;
+ import java.util.Stack;
++import java.util.Vector;
++
+ import org.apache.xml.resolver.Catalog;
+ import org.apache.xml.resolver.CatalogEntry;
+ import org.apache.xml.resolver.CatalogException;
+-import org.apache.xml.resolver.readers.CatalogReader;
+ 
+ /**
+  * Parses plain text Catalog files.
+@@ -137,7 +138,7 @@
+ 	if (caseSensitive) {
+ 	  entryToken = token;
+ 	} else {
+-	  entryToken = token.toUpperCase();
++	  entryToken = token.toUpperCase(Locale.ENGLISH);
+ 	}
+ 
+ 	try {
+diff -uNr xml-commons-resolver-1.2.orig/src/org/apache/xml/resolver/readers/XCatalogReader.java xml-commons-resolver-1.2/src/org/apache/xml/resolver/readers/XCatalogReader.java
+--- xml-commons-resolver-1.2.orig/src/org/apache/xml/resolver/readers/XCatalogReader.java	2009-01-25 14:07:25.000000000 +0900
++++ xml-commons-resolver-1.2/src/org/apache/xml/resolver/readers/XCatalogReader.java	2008-11-10 13:23:04.000000000 +0900
+@@ -20,14 +20,16 @@
+ package org.apache.xml.resolver.readers;
+ 
+ import java.util.Vector;
++
++import javax.xml.parsers.SAXParserFactory;
++
+ import org.apache.xml.resolver.Catalog;
+ import org.apache.xml.resolver.CatalogEntry;
+ import org.apache.xml.resolver.CatalogException;
+ import org.apache.xml.resolver.helpers.PublicId;
+-
+-import org.xml.sax.*;
+-
+-import javax.xml.parsers.*;
++import org.xml.sax.Attributes;
++import org.xml.sax.Locator;
++import org.xml.sax.SAXException;
+ 
+ /**
+  * Parse "XCatalog" XML Catalog files, this is the XML Catalog format
+diff -uNr xml-commons-resolver-1.2.orig/src/org/apache/xml/resolver/tests/BasicResolverTests.java xml-commons-resolver-1.2/src/org/apache/xml/resolver/tests/BasicResolverTests.java
+--- xml-commons-resolver-1.2.orig/src/org/apache/xml/resolver/tests/BasicResolverTests.java	2009-01-25 14:07:25.000000000 +0900
++++ xml-commons-resolver-1.2/src/org/apache/xml/resolver/tests/BasicResolverTests.java	2008-11-10 13:23:04.000000000 +0900
+@@ -18,11 +18,8 @@
+ 
+ import junit.framework.TestCase;
+ 
+-import java.net.URL;
+-
+ import org.apache.xml.resolver.Catalog;
+ import org.apache.xml.resolver.CatalogManager;
+-import org.apache.xml.resolver.tools.CatalogResolver;
+ 
+ public class BasicResolverTests extends TestCase {
+   protected Catalog catalog;
+diff -uNr xml-commons-resolver-1.2.orig/src/org/apache/xml/resolver/tools/CatalogResolver.java xml-commons-resolver-1.2/src/org/apache/xml/resolver/tools/CatalogResolver.java
+--- xml-commons-resolver-1.2.orig/src/org/apache/xml/resolver/tools/CatalogResolver.java	2009-01-25 14:07:25.000000000 +0900
++++ xml-commons-resolver-1.2/src/org/apache/xml/resolver/tools/CatalogResolver.java	2008-11-10 13:23:04.000000000 +0900
+@@ -21,24 +21,23 @@
+ 
+ import java.io.IOException;
+ import java.io.InputStream;
+-import java.net.URL;
+ import java.net.MalformedURLException;
++import java.net.URL;
+ 
+-import org.xml.sax.SAXException;
+-import org.xml.sax.XMLReader;
+-import org.xml.sax.InputSource;
+-import org.xml.sax.EntityResolver;
+-
+-import javax.xml.transform.sax.SAXSource;
+-import javax.xml.transform.Source;
+-import javax.xml.transform.URIResolver;
+-import javax.xml.transform.TransformerException;
+ import javax.xml.parsers.ParserConfigurationException;
+ import javax.xml.parsers.SAXParserFactory;
++import javax.xml.transform.Source;
++import javax.xml.transform.TransformerException;
++import javax.xml.transform.URIResolver;
++import javax.xml.transform.sax.SAXSource;
+ 
+ import org.apache.xml.resolver.Catalog;
+ import org.apache.xml.resolver.CatalogManager;
+ import org.apache.xml.resolver.helpers.FileURL;
++import org.xml.sax.EntityResolver;
++import org.xml.sax.InputSource;
++import org.xml.sax.SAXException;
++import org.xml.sax.XMLReader;
+ 
+ /**
+  * A SAX EntityResolver/JAXP URIResolver that uses catalogs.
+diff -uNr xml-commons-resolver-1.2.orig/src/org/apache/xml/resolver/tools/ResolvingParser.java xml-commons-resolver-1.2/src/org/apache/xml/resolver/tools/ResolvingParser.java
+--- xml-commons-resolver-1.2.orig/src/org/apache/xml/resolver/tools/ResolvingParser.java	2009-01-25 14:07:25.000000000 +0900
++++ xml-commons-resolver-1.2/src/org/apache/xml/resolver/tools/ResolvingParser.java	2008-11-10 13:23:04.000000000 +0900
+@@ -21,26 +21,25 @@
+ 
+ import java.io.IOException;
+ import java.io.InputStream;
+-import java.net.URL;
+ import java.net.MalformedURLException;
++import java.net.URL;
+ import java.util.Locale;
+ 
+-import org.xml.sax.Parser;
+-import org.xml.sax.InputSource;
+-import org.xml.sax.Locator;
+-import org.xml.sax.ErrorHandler;
+-import org.xml.sax.DTDHandler;
+-import org.xml.sax.DocumentHandler;
+-import org.xml.sax.AttributeList;
+-import org.xml.sax.EntityResolver;
+-import org.xml.sax.SAXException;
+-
+-import javax.xml.parsers.SAXParserFactory;
+ import javax.xml.parsers.SAXParser;
++import javax.xml.parsers.SAXParserFactory;
+ 
+ import org.apache.xml.resolver.Catalog;
+ import org.apache.xml.resolver.CatalogManager;
+ import org.apache.xml.resolver.helpers.FileURL;
++import org.xml.sax.AttributeList;
++import org.xml.sax.DTDHandler;
++import org.xml.sax.DocumentHandler;
++import org.xml.sax.EntityResolver;
++import org.xml.sax.ErrorHandler;
++import org.xml.sax.InputSource;
++import org.xml.sax.Locator;
++import org.xml.sax.Parser;
++import org.xml.sax.SAXException;
+ 
+ /**
+  * A SAX Parser that performs catalog-based entity resolution.
+diff -uNr xml-commons-resolver-1.2.orig/src/org/apache/xml/resolver/tools/ResolvingXMLFilter.java xml-commons-resolver-1.2/src/org/apache/xml/resolver/tools/ResolvingXMLFilter.java
+--- xml-commons-resolver-1.2.orig/src/org/apache/xml/resolver/tools/ResolvingXMLFilter.java	2009-01-25 14:07:25.000000000 +0900
++++ xml-commons-resolver-1.2/src/org/apache/xml/resolver/tools/ResolvingXMLFilter.java	2008-11-10 13:23:04.000000000 +0900
+@@ -24,17 +24,15 @@
+ import java.net.MalformedURLException;
+ import java.net.URL;
+ 
++import org.apache.xml.resolver.Catalog;
++import org.apache.xml.resolver.CatalogManager;
++import org.apache.xml.resolver.helpers.FileURL;
++import org.xml.sax.Attributes;
+ import org.xml.sax.InputSource;
+ import org.xml.sax.SAXException;
+ import org.xml.sax.XMLReader;
+-import org.xml.sax.Attributes;
+ import org.xml.sax.helpers.XMLFilterImpl;
+ 
+-import org.apache.xml.resolver.Catalog;
+-import org.apache.xml.resolver.CatalogManager;
+-
+-import org.apache.xml.resolver.helpers.FileURL;
+-
+ /**
+  * A SAX XMLFilter that performs catalog-based entity resolution.
+  *
+diff -uNr xml-commons-resolver-1.2.orig/src/org/apache/xml/resolver/tools/ResolvingXMLReader.java xml-commons-resolver-1.2/src/org/apache/xml/resolver/tools/ResolvingXMLReader.java
+--- xml-commons-resolver-1.2.orig/src/org/apache/xml/resolver/tools/ResolvingXMLReader.java	2009-01-25 14:07:25.000000000 +0900
++++ xml-commons-resolver-1.2/src/org/apache/xml/resolver/tools/ResolvingXMLReader.java	2008-11-10 13:23:04.000000000 +0900
+@@ -19,11 +19,10 @@
+ 
+ package org.apache.xml.resolver.tools;
+ 
+-import org.xml.sax.*;
++import javax.xml.parsers.SAXParser;
++import javax.xml.parsers.SAXParserFactory;
+ 
+-import javax.xml.parsers.*;
+-
+-import org.apache.xml.resolver.*;
++import org.apache.xml.resolver.CatalogManager;
+ 
+ /**
+  * A SAX XMLReader that performs catalog-based entity resolution.

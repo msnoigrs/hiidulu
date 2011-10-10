@@ -1,0 +1,38 @@
+--- xml-commons-resolver-9999.orig/src/org/apache/xml/resolver/tools/CatalogResolver.java	2011-10-11 02:02:28.530156171 +0900
++++ xml-commons-resolver-9999/src/org/apache/xml/resolver/tools/CatalogResolver.java	2011-10-11 02:04:40.110511190 +0900
+@@ -191,33 +191,8 @@
+     String resolved = getResolvedEntity(publicId, systemId);
+ 
+     if (resolved != null) {
+-      try {
+-	InputSource iSource = new InputSource(resolved);
+-	iSource.setPublicId(publicId);
+-
+-	// Ideally this method would not attempt to open the
+-	// InputStream, but there is a bug (in Xerces, at least)
+-	// that causes the parser to mistakenly open the wrong
+-	// system identifier if the returned InputSource does
+-	// not have a byteStream.
+-	//
+-	// It could be argued that we still shouldn't do this here,
+-	// but since the purpose of calling the entityResolver is
+-	// almost certainly to open the input stream, it seems to
+-	// do little harm.
+-	//
+-	URL url = new URL(resolved);
+-	InputStream iStream = url.openStream();
+-	iSource.setByteStream(iStream);
+-
+-	return iSource;
+-      } catch (Exception e) {
+-	catalogManager.debug.message(1,
+-				     "Failed to create InputSource ("
+-				     + e.toString()
+-				     + ")", resolved);
+-	return null;
+-      }
++      InputSource iSource = new InputSource(resolved);
++      iSource.setPublicId(publicId);
+     }
+ 
+     return null;

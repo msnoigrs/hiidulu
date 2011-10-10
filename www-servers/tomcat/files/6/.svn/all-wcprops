@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/proj/java/!svn/ver/7391/java-experimental/www-servers/tomcat/files/6
+END
+tomcat.init
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svn/proj/java/!svn/ver/7391/java-experimental/www-servers/tomcat/files/6/tomcat.init
+END
+catalina.policy
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/svn/proj/java/!svn/ver/7314/java-experimental/www-servers/tomcat/files/6/catalina.policy
+END
+build-xml.patch
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/svn/proj/java/!svn/ver/7314/java-experimental/www-servers/tomcat/files/6/build-xml.patch
+END
+tomcat.conf
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svn/proj/java/!svn/ver/7314/java-experimental/www-servers/tomcat/files/6/tomcat.conf
+END
+tomcat-openrc.init
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/svn/proj/java/!svn/ver/7391/java-experimental/www-servers/tomcat/files/6/tomcat-openrc.init
+END

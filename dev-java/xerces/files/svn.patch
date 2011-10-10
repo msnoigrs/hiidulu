@@ -1,0 +1,2418 @@
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLAnchorElementImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLAnchorElementImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLAnchorElementImpl.java	2011-10-11 02:36:55.800311738 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLAnchorElementImpl.java	2011-10-11 02:36:54.197331777 +0900
+@@ -20,7 +20,7 @@
+ 
+ /**
+  * @xerces.internal
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLAnchorElement
+  * @see org.apache.xerces.dom.ElementImpl
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLAppletElementImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLAppletElementImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLAppletElementImpl.java	2011-10-11 02:36:55.801311725 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLAppletElementImpl.java	2011-10-11 02:36:54.199331753 +0900
+@@ -20,7 +20,7 @@
+ 
+ /**
+  * @xerces.internal
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLAppletElement
+  * @see HTMLElementImpl
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLAreaElementImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLAreaElementImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLAreaElementImpl.java	2011-10-11 02:36:55.803311700 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLAreaElementImpl.java	2011-10-11 02:36:54.201331728 +0900
+@@ -20,7 +20,7 @@
+ 
+ /**
+  * @xerces.internal
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLAreaElement
+  * @see org.apache.xerces.dom.ElementImpl
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLBRElementImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLBRElementImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLBRElementImpl.java	2011-10-11 02:36:55.804311688 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLBRElementImpl.java	2011-10-11 02:36:54.202331715 +0900
+@@ -20,7 +20,7 @@
+ 
+ /**
+  * @xerces.internal
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLBRElement
+  * @see org.apache.xerces.dom.ElementImpl
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLBaseElementImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLBaseElementImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLBaseElementImpl.java	2011-10-11 02:36:55.806311663 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLBaseElementImpl.java	2011-10-11 02:36:54.204331690 +0900
+@@ -20,7 +20,7 @@
+ 
+ /**
+  * @xerces.internal
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLBaseElement
+  * @see org.apache.xerces.dom.ElementImpl
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLBaseFontElementImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLBaseFontElementImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLBaseFontElementImpl.java	2011-10-11 02:36:55.808311637 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLBaseFontElementImpl.java	2011-10-11 02:36:54.206331666 +0900
+@@ -20,7 +20,7 @@
+ 
+ /**
+  * @xerces.internal
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLBaseFontElement
+  * @see org.apache.xerces.dom.ElementImpl
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLBodyElementImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLBodyElementImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLBodyElementImpl.java	2011-10-11 02:36:55.810311613 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLBodyElementImpl.java	2011-10-11 02:36:54.207331653 +0900
+@@ -20,7 +20,7 @@
+ 
+ /**
+  * @xerces.internal
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLBodyElement
+  * @see org.apache.xerces.dom.ElementImpl
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLBuilder.java xerces-2.11.0/src/org/apache/html/dom/HTMLBuilder.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLBuilder.java	2011-10-11 02:36:55.812311588 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLBuilder.java	2011-10-11 02:36:54.209331627 +0900
+@@ -35,7 +35,7 @@
+  * for working with the OpenXML HTML parser.
+  * 
+  * 
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@openxml.org">Assaf Arkin</a>
+  */
+ public class HTMLBuilder
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLButtonElementImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLButtonElementImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLButtonElementImpl.java	2011-10-11 02:36:55.814311562 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLButtonElementImpl.java	2011-10-11 02:36:54.210331615 +0900
+@@ -20,7 +20,7 @@
+ 
+ /**
+  * @xerces.internal
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLButtonElement
+  * @see org.apache.xerces.dom.ElementImpl
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLCollectionImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLCollectionImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLCollectionImpl.java	2011-10-11 02:36:55.815311550 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLCollectionImpl.java	2011-10-11 02:36:54.212331591 +0900
+@@ -56,7 +56,7 @@
+  * 
+  * @xerces.internal
+  * 
+- * @version $Revision: 1035042 $ $Date: 2010-11-14 13:41:49 -0500 (Sun, 14 Nov 2010) $
++ * @version $Revision: 1035042 $ $Date: 2010-11-15 03:41:49 +0900 (Mon, 15 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLCollection
+  */
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLDListElementImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLDListElementImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLDListElementImpl.java	2011-10-11 02:36:55.816311538 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLDListElementImpl.java	2011-10-11 02:36:54.215331552 +0900
+@@ -20,7 +20,7 @@
+ 
+ /**
+  * @xerces.internal
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLDListElement
+  * @see org.apache.xerces.dom.ElementImpl
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLDOMImplementationImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLDOMImplementationImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLDOMImplementationImpl.java	2011-10-11 02:36:55.818311513 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLDOMImplementationImpl.java	2011-10-11 02:36:54.216331540 +0900
+@@ -31,7 +31,7 @@
+  * 
+  * @xerces.internal
+  * 
+- * @version $Revision: 645327 $ $Date: 2008-04-06 19:17:54 -0400 (Sun, 06 Apr 2008) $
++ * @version $Revision: 645327 $ $Date: 2008-04-07 08:17:54 +0900 (Mon, 07 Apr 2008) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.DOMImplementation
+  */
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLDirectoryElementImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLDirectoryElementImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLDirectoryElementImpl.java	2011-10-11 02:36:55.819311500 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLDirectoryElementImpl.java	2011-10-11 02:36:54.219331503 +0900
+@@ -20,7 +20,7 @@
+ 
+ /**
+  * @xerces.internal
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLDirectoryElement
+  * @see org.apache.xerces.dom.ElementImpl
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLDivElementImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLDivElementImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLDivElementImpl.java	2011-10-11 02:36:55.821311474 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLDivElementImpl.java	2011-10-11 02:36:54.220331490 +0900
+@@ -20,7 +20,7 @@
+ 
+ /**
+  * @xerces.internal
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLDivElement
+  * @see org.apache.xerces.dom.ElementImpl
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLDocumentImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLDocumentImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLDocumentImpl.java	2011-10-11 02:36:55.823311450 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLDocumentImpl.java	2011-10-11 02:36:54.222331464 +0900
+@@ -55,7 +55,7 @@
+  *
+  * @xerces.internal
+  *
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLDocument
+  */
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLElementImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLElementImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLElementImpl.java	2011-10-11 02:36:55.825311426 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLElementImpl.java	2011-10-11 02:36:54.223331452 +0900
+@@ -36,7 +36,7 @@
+  * 
+  * @xerces.internal
+  * 
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLElement
+  */
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLFieldSetElementImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLFieldSetElementImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLFieldSetElementImpl.java	2011-10-11 02:36:55.826311413 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLFieldSetElementImpl.java	2011-10-11 02:36:54.227331403 +0900
+@@ -20,7 +20,7 @@
+ 
+ /**
+  * @xerces.internal
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLFieldSetElement
+  * @see org.apache.xerces.dom.ElementImpl
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLFontElementImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLFontElementImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLFontElementImpl.java	2011-10-11 02:36:55.828311387 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLFontElementImpl.java	2011-10-11 02:36:54.228331390 +0900
+@@ -20,7 +20,7 @@
+ 
+ /**
+  * @xerces.internal
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLFontElement
+  * @see org.apache.xerces.dom.ElementImpl
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLFormControl.java xerces-2.11.0/src/org/apache/html/dom/HTMLFormControl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLFormControl.java	2011-10-11 02:36:55.829311374 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLFormControl.java	2011-10-11 02:36:54.231331352 +0900
+@@ -22,7 +22,7 @@
+  * collection. All form control elements implement this empty interface.
+  * 
+  * @xerces.internal
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  */
+ public interface HTMLFormControl
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLFormElementImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLFormElementImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLFormElementImpl.java	2011-10-11 02:36:55.832311338 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLFormElementImpl.java	2011-10-11 02:36:54.232331340 +0900
+@@ -23,7 +23,7 @@
+ 
+ /**
+  * @xerces.internal
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLFormElement
+  * @see org.apache.xerces.dom.ElementImpl
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLFrameElementImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLFrameElementImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLFrameElementImpl.java	2011-10-11 02:36:55.833311326 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLFrameElementImpl.java	2011-10-11 02:36:54.234331316 +0900
+@@ -20,7 +20,7 @@
+ 
+ /**
+  * @xerces.internal
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLFrameElement
+  * @see org.apache.xerces.dom.ElementImpl
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLFrameSetElementImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLFrameSetElementImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLFrameSetElementImpl.java	2011-10-11 02:36:55.835311300 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLFrameSetElementImpl.java	2011-10-11 02:36:54.243331203 +0900
+@@ -20,7 +20,7 @@
+ 
+ /**
+  * @xerces.internal
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLFrameSetElement
+  * @see org.apache.xerces.dom.ElementImpl
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLHRElementImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLHRElementImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLHRElementImpl.java	2011-10-11 02:36:55.836311287 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLHRElementImpl.java	2011-10-11 02:36:54.244331190 +0900
+@@ -20,7 +20,7 @@
+ 
+ /**
+  * @xerces.internal
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLHRElement
+  * @see org.apache.xerces.dom.ElementImpl
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLHeadElementImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLHeadElementImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLHeadElementImpl.java	2011-10-11 02:36:55.837311274 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLHeadElementImpl.java	2011-10-11 02:36:54.249331128 +0900
+@@ -20,7 +20,7 @@
+ 
+ /**
+  * @xerces.internal
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLHeadElement
+  * @see org.apache.xerces.dom.ElementImpl
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLHeadingElementImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLHeadingElementImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLHeadingElementImpl.java	2011-10-11 02:36:55.839311250 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLHeadingElementImpl.java	2011-10-11 02:36:54.250331116 +0900
+@@ -20,7 +20,7 @@
+ 
+ /**
+  * @xerces.internal
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLHeadingElement
+  * @see org.apache.xerces.dom.ElementImpl
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLHtmlElementImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLHtmlElementImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLHtmlElementImpl.java	2011-10-11 02:36:55.842311213 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLHtmlElementImpl.java	2011-10-11 02:36:54.251331103 +0900
+@@ -20,7 +20,7 @@
+ 
+ /**
+  * @xerces.internal
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLHtmlElement
+  * @see org.apache.xerces.dom.ElementImpl
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLIFrameElementImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLIFrameElementImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLIFrameElementImpl.java	2011-10-11 02:36:55.843311200 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLIFrameElementImpl.java	2011-10-11 02:36:54.252331090 +0900
+@@ -20,7 +20,7 @@
+ 
+ /**
+  * @xerces.internal
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLIFrameElement
+  * @see org.apache.xerces.dom.ElementImpl
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLImageElementImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLImageElementImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLImageElementImpl.java	2011-10-11 02:36:55.845311174 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLImageElementImpl.java	2011-10-11 02:36:54.255331052 +0900
+@@ -20,7 +20,7 @@
+ 
+ /**
+  * @xerces.internal
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLImageElement
+  * @see org.apache.xerces.dom.ElementImpl
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLInputElementImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLInputElementImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLInputElementImpl.java	2011-10-11 02:36:55.847311150 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLInputElementImpl.java	2011-10-11 02:36:54.256331040 +0900
+@@ -20,7 +20,7 @@
+ 
+ /**
+  * @xerces.internal
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLInputElement
+  * @see org.apache.xerces.dom.ElementImpl
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLIsIndexElementImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLIsIndexElementImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLIsIndexElementImpl.java	2011-10-11 02:36:55.848311138 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLIsIndexElementImpl.java	2011-10-11 02:36:54.257331028 +0900
+@@ -20,7 +20,7 @@
+ 
+ /**
+  * @xerces.internal
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLIsIndexElement
+  * @see org.apache.xerces.dom.ElementImpl
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLLIElementImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLLIElementImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLLIElementImpl.java	2011-10-11 02:36:55.850311113 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLLIElementImpl.java	2011-10-11 02:36:54.258331016 +0900
+@@ -20,7 +20,7 @@
+ 
+ /**
+  * @xerces.internal
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLLIElement
+  * @see org.apache.xerces.dom.ElementImpl
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLLabelElementImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLLabelElementImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLLabelElementImpl.java	2011-10-11 02:36:55.851311100 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLLabelElementImpl.java	2011-10-11 02:36:54.259331003 +0900
+@@ -20,7 +20,7 @@
+ 
+ /**
+  * @xerces.internal
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLLabelElement
+  * @see org.apache.xerces.dom.ElementImpl
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLLegendElementImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLLegendElementImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLLegendElementImpl.java	2011-10-11 02:36:55.852311087 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLLegendElementImpl.java	2011-10-11 02:36:54.264330940 +0900
+@@ -20,7 +20,7 @@
+ 
+ /**
+  * @xerces.internal
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLLegendElement
+  * @see org.apache.xerces.dom.ElementImpl
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLLinkElementImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLLinkElementImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLLinkElementImpl.java	2011-10-11 02:36:55.853311074 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLLinkElementImpl.java	2011-10-11 02:36:54.265330928 +0900
+@@ -20,7 +20,7 @@
+ 
+ /**
+  * @xerces.internal
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLLinkElement
+  * @see org.apache.xerces.dom.ElementImpl
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLMapElementImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLMapElementImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLMapElementImpl.java	2011-10-11 02:36:55.855311050 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLMapElementImpl.java	2011-10-11 02:36:54.266330916 +0900
+@@ -22,7 +22,7 @@
+ 
+ /**
+  * @xerces.internal
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLMapElement
+  * @see org.apache.xerces.dom.ElementImpl
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLMenuElementImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLMenuElementImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLMenuElementImpl.java	2011-10-11 02:36:55.856311038 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLMenuElementImpl.java	2011-10-11 02:36:54.271330852 +0900
+@@ -20,7 +20,7 @@
+ 
+ /**
+  * @xerces.internal
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLMenuElement
+  * @see org.apache.xerces.dom.ElementImpl
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLMetaElementImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLMetaElementImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLMetaElementImpl.java	2011-10-11 02:36:55.858311013 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLMetaElementImpl.java	2011-10-11 02:36:54.272330840 +0900
+@@ -20,7 +20,7 @@
+ 
+ /**
+  * @xerces.internal
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLMetaElement
+  * @see org.apache.xerces.dom.ElementImpl
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLModElementImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLModElementImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLModElementImpl.java	2011-10-11 02:36:55.860310987 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLModElementImpl.java	2011-10-11 02:36:54.276330790 +0900
+@@ -20,7 +20,7 @@
+ 
+ /**
+  * @xerces.internal
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLModElement
+  * @see org.apache.xerces.dom.ElementImpl
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLOListElementImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLOListElementImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLOListElementImpl.java	2011-10-11 02:36:55.861310974 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLOListElementImpl.java	2011-10-11 02:36:54.277330777 +0900
+@@ -20,7 +20,7 @@
+ 
+ /**
+  * @xerces.internal
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLOListElement
+  * @see org.apache.xerces.dom.ElementImpl
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLObjectElementImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLObjectElementImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLObjectElementImpl.java	2011-10-11 02:36:55.863310950 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLObjectElementImpl.java	2011-10-11 02:36:54.278330764 +0900
+@@ -20,7 +20,7 @@
+ 
+ /**
+  * @xerces.internal
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLObjectElement
+  * @see org.apache.xerces.dom.ElementImpl
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLOptGroupElementImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLOptGroupElementImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLOptGroupElementImpl.java	2011-10-11 02:36:55.865310926 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLOptGroupElementImpl.java	2011-10-11 02:36:54.284330690 +0900
+@@ -20,7 +20,7 @@
+ 
+ /**
+  * @xerces.internal
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLOptGroupElement
+  * @see org.apache.xerces.dom.ElementImpl
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLOptionElementImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLOptionElementImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLOptionElementImpl.java	2011-10-11 02:36:55.866310913 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLOptionElementImpl.java	2011-10-11 02:36:54.286330664 +0900
+@@ -25,7 +25,7 @@
+ 
+ /**
+  * @xerces.internal
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@openxml.org">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLOptionElement
+  * @see org.apache.xerces.dom.ElementImpl
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLParagraphElementImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLParagraphElementImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLParagraphElementImpl.java	2011-10-11 02:36:55.867310900 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLParagraphElementImpl.java	2011-10-11 02:36:54.289330628 +0900
+@@ -20,7 +20,7 @@
+ 
+ /**
+  * @xerces.internal
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLParagraphElement
+  * @see org.apache.xerces.dom.ElementImpl
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLParamElementImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLParamElementImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLParamElementImpl.java	2011-10-11 02:36:55.868310887 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLParamElementImpl.java	2011-10-11 02:36:54.292330590 +0900
+@@ -20,7 +20,7 @@
+ 
+ /**
+  * @xerces.internal
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLParamElement
+  * @see org.apache.xerces.dom.ElementImpl
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLPreElementImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLPreElementImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLPreElementImpl.java	2011-10-11 02:36:55.870310862 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLPreElementImpl.java	2011-10-11 02:36:54.293330577 +0900
+@@ -20,7 +20,7 @@
+ 
+ /**
+  * @xerces.internal
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLPreElement
+  * @see org.apache.xerces.dom.ElementImpl
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLQuoteElementImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLQuoteElementImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLQuoteElementImpl.java	2011-10-11 02:36:55.874310813 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLQuoteElementImpl.java	2011-10-11 02:36:54.298330516 +0900
+@@ -20,7 +20,7 @@
+ 
+ /**
+  * @xerces.internal
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLQuoteElement
+  * @see org.apache.xerces.dom.ElementImpl
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLScriptElementImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLScriptElementImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLScriptElementImpl.java	2011-10-11 02:36:55.876310787 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLScriptElementImpl.java	2011-10-11 02:36:54.300330490 +0900
+@@ -22,7 +22,7 @@
+ 
+ /**
+  * @xerces.internal
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLScriptElement
+  * @see org.apache.xerces.dom.ElementImpl
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLSelectElementImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLSelectElementImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLSelectElementImpl.java	2011-10-11 02:36:55.877310774 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLSelectElementImpl.java	2011-10-11 02:36:54.302330464 +0900
+@@ -25,7 +25,7 @@
+ 
+ /**
+  * @xerces.internal
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLSelectElement
+  * @see org.apache.xerces.dom.ElementImpl
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLStyleElementImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLStyleElementImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLStyleElementImpl.java	2011-10-11 02:36:55.879310750 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLStyleElementImpl.java	2011-10-11 02:36:54.307330403 +0900
+@@ -20,7 +20,7 @@
+ 
+ /**
+  * @xerces.internal
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLStyleElement
+  * @see org.apache.xerces.dom.ElementImpl
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLTableCaptionElementImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLTableCaptionElementImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLTableCaptionElementImpl.java	2011-10-11 02:36:55.880310738 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLTableCaptionElementImpl.java	2011-10-11 02:36:54.308330390 +0900
+@@ -20,7 +20,7 @@
+ 
+ /**
+  * @xerces.internal
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLTableCaptionElement
+  * @see org.apache.xerces.dom.ElementImpl
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLTableCellElementImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLTableCellElementImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLTableCellElementImpl.java	2011-10-11 02:36:55.881310726 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLTableCellElementImpl.java	2011-10-11 02:36:54.309330377 +0900
+@@ -22,7 +22,7 @@
+ 
+ /**
+  * @xerces.internal
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLTableCellElement
+  * @see org.apache.xerces.dom.ElementImpl
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLTableColElementImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLTableColElementImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLTableColElementImpl.java	2011-10-11 02:36:55.882310713 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLTableColElementImpl.java	2011-10-11 02:36:54.311330352 +0900
+@@ -20,7 +20,7 @@
+ 
+ /**
+  * @xerces.internal
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLTableColElement
+  * @see org.apache.xerces.dom.ElementImpl
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLTableElementImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLTableElementImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLTableElementImpl.java	2011-10-11 02:36:55.885310674 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLTableElementImpl.java	2011-10-11 02:36:54.312330340 +0900
+@@ -26,7 +26,7 @@
+ 
+ /**
+  * @xerces.internal
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLAnchorElement
+  * @see org.apache.xerces.dom.ElementImpl
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLTableRowElementImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLTableRowElementImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLTableRowElementImpl.java	2011-10-11 02:36:55.887310650 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLTableRowElementImpl.java	2011-10-11 02:36:54.315330303 +0900
+@@ -27,7 +27,7 @@
+ 
+ /**
+  * @xerces.internal
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLTableRowElement
+  * @see org.apache.xerces.dom.ElementImpl
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLTableSectionElementImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLTableSectionElementImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLTableSectionElementImpl.java	2011-10-11 02:36:55.888310638 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLTableSectionElementImpl.java	2011-10-11 02:36:54.317330277 +0900
+@@ -24,7 +24,7 @@
+ 
+ /**
+  * @xerces.internal
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLTableSectionElement
+  * @see org.apache.xerces.dom.ElementImpl
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLTextAreaElementImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLTextAreaElementImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLTextAreaElementImpl.java	2011-10-11 02:36:55.889310626 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLTextAreaElementImpl.java	2011-10-11 02:36:54.320330240 +0900
+@@ -20,7 +20,7 @@
+ 
+ /**
+  * @xerces.internal
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLTextAreaElement
+  * @see org.apache.xerces.dom.ElementImpl
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLTitleElementImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLTitleElementImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLTitleElementImpl.java	2011-10-11 02:36:55.890310613 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLTitleElementImpl.java	2011-10-11 02:36:54.321330228 +0900
+@@ -22,7 +22,7 @@
+ 
+ /**
+  * @xerces.internal
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLTitleElement
+  * @see org.apache.xerces.dom.ElementImpl
+diff -uNr xerces-2_11_0/src/org/apache/html/dom/HTMLUListElementImpl.java xerces-2.11.0/src/org/apache/html/dom/HTMLUListElementImpl.java
+--- xerces-2_11_0/src/org/apache/html/dom/HTMLUListElementImpl.java	2011-10-11 02:36:55.891310600 +0900
++++ xerces-2.11.0/src/org/apache/html/dom/HTMLUListElementImpl.java	2011-10-11 02:36:54.322330216 +0900
+@@ -20,7 +20,7 @@
+ 
+ /**
+  * @xerces.internal
+- * @version $Revision: 1029415 $ $Date: 2010-10-31 13:02:22 -0400 (Sun, 31 Oct 2010) $
++ * @version $Revision: 1029415 $ $Date: 2010-11-01 02:02:22 +0900 (Mon, 01 Nov 2010) $
+  * @author <a href="mailto:arkin@exoffice.com">Assaf Arkin</a>
+  * @see org.w3c.dom.html.HTMLUListElement
+  * @see org.apache.xerces.dom.ElementImpl
+diff -uNr xerces-2_11_0/src/org/apache/xerces/dom/CharacterDataImpl.java xerces-2.11.0/src/org/apache/xerces/dom/CharacterDataImpl.java
+--- xerces-2_11_0/src/org/apache/xerces/dom/CharacterDataImpl.java	2011-10-11 02:36:56.037308774 +0900
++++ xerces-2.11.0/src/org/apache/xerces/dom/CharacterDataImpl.java	2011-10-11 02:36:54.498328015 +0900
+@@ -35,7 +35,7 @@
+  * 
+  * @xerces.internal 
+  *
+- * @version $Id: CharacterDataImpl.java 447266 2006-09-18 05:57:49Z mrglavas $
++ * @version $Id: CharacterDataImpl.java 1057476 2011-01-11 03:31:36Z mrglavas $
+  * @since  PR-DOM-Level-1-19980818.
+  */
+ public abstract class CharacterDataImpl
+@@ -55,7 +55,7 @@
+     protected String data;
+ 
+     /** Empty child nodes. */
+-    private static transient NodeList singletonNodeList = new NodeList() {
++    private static final transient NodeList singletonNodeList = new NodeList() {
+         public Node item(int index) { return null; }
+         public int getLength() { return 0; }
+     };
+diff -uNr xerces-2_11_0/src/org/apache/xerces/dom/CoreDOMImplementationImpl.java xerces-2.11.0/src/org/apache/xerces/dom/CoreDOMImplementationImpl.java
+--- xerces-2_11_0/src/org/apache/xerces/dom/CoreDOMImplementationImpl.java	2011-10-11 02:36:56.042308713 +0900
++++ xerces-2.11.0/src/org/apache/xerces/dom/CoreDOMImplementationImpl.java	2011-10-11 02:36:54.503327953 +0900
+@@ -50,7 +50,7 @@
+  * 
+  * @xerces.internal
+  * 
+- * @version $Id: CoreDOMImplementationImpl.java 826681 2009-10-19 14:15:37Z mrglavas $
++ * @version $Id: CoreDOMImplementationImpl.java 1175661 2011-09-26 04:24:01Z mrglavas $
+  * @since PR-DOM-Level-1-19980818.
+  */
+ public class CoreDOMImplementationImpl
+@@ -395,7 +395,7 @@
+ 		if (schemaType != null
+ 			&& schemaType.equals("http://www.w3.org/TR/REC-xml")) {
+ 			return new DOMParserImpl(
+-				"org.apache.xerces.parsers.DTDConfiguration",
++				"org.apache.xerces.parsers.XML11DTDConfiguration",
+ 				schemaType);
+ 		}
+ 		else {
+diff -uNr xerces-2_11_0/src/org/apache/xerces/dom/DOMNormalizer.java xerces-2.11.0/src/org/apache/xerces/dom/DOMNormalizer.java
+--- xerces-2_11_0/src/org/apache/xerces/dom/DOMNormalizer.java	2011-10-11 02:36:56.062308462 +0900
++++ xerces-2.11.0/src/org/apache/xerces/dom/DOMNormalizer.java	2011-10-11 02:36:54.532327590 +0900
+@@ -85,7 +85,7 @@
+  * 
+  * @author Elena Litani, IBM
+  * @author Neeraj Bajaj, Sun Microsystems, inc.
+- * @version $Id: DOMNormalizer.java 677489 2008-07-17 02:34:20Z mrglavas $
++ * @version $Id: DOMNormalizer.java 1085512 2011-03-25 18:49:35Z mrglavas $
+  */
+ public class DOMNormalizer implements XMLDocumentHandler {
+ 
+@@ -345,13 +345,21 @@
+                     // remove default attributes
+                     namespaceFixUp(elem, attributes);
+                     
+-                    if ((fConfiguration.features & DOMConfigurationImpl.NSDECL) == 0 && attributes != null ) {
+-                        for (int i = 0; i < attributes.getLength(); ++i) {
+-                            Attr att = (Attr)attributes.getItem(i);
+-                            if (XMLSymbols.PREFIX_XMLNS.equals(att.getPrefix()) ||
+-                                XMLSymbols.PREFIX_XMLNS.equals(att.getName())) {
+-                                elem.removeAttributeNode(att);
+-                                --i;
++                    if ((fConfiguration.features & DOMConfigurationImpl.NSDECL) == 0) {
++                        // Namespace declarations may have been added by namespace fix-up. Need
++                        // to fetch the AttributeMap again if it contained no attributes prior
++                        // to namespace fix-up.
++                        if (attributes == null) {
++                            attributes = (elem.hasAttributes()) ? (AttributeMap) elem.getAttributes() : null;
++                        }
++                        if (attributes != null) {
++                            for (int i = 0; i < attributes.getLength(); ++i) {
++                                Attr att = (Attr)attributes.getItem(i);
++                                if (XMLSymbols.PREFIX_XMLNS.equals(att.getPrefix()) ||
++                                        XMLSymbols.PREFIX_XMLNS.equals(att.getName())) {
++                                    elem.removeAttributeNode(att);
++                                    --i;
++                                }
+                             }
+                         }
+                     }  
+diff -uNr xerces-2_11_0/src/org/apache/xerces/dom/PSVIAttrNSImpl.java xerces-2.11.0/src/org/apache/xerces/dom/PSVIAttrNSImpl.java
+--- xerces-2_11_0/src/org/apache/xerces/dom/PSVIAttrNSImpl.java	2011-10-11 02:36:56.121307725 +0900
++++ xerces-2.11.0/src/org/apache/xerces/dom/PSVIAttrNSImpl.java	2011-10-11 02:36:54.654326065 +0900
+@@ -23,8 +23,10 @@
+ import java.io.ObjectOutputStream;
+ 
+ import org.apache.xerces.impl.dv.ValidatedInfo;
++import org.apache.xerces.impl.xs.AttributePSVImpl;
+ import org.apache.xerces.impl.xs.util.StringListImpl;
+ import org.apache.xerces.xs.AttributePSVI;
++import org.apache.xerces.xs.ItemPSVI;
+ import org.apache.xerces.xs.ShortList;
+ import org.apache.xerces.xs.StringList;
+ import org.apache.xerces.xs.XSAttributeDeclaration;
+@@ -39,7 +41,7 @@
+  * 
+  * @author Sandy Gao, IBM
+  * 
+- * @version $Id: PSVIAttrNSImpl.java 1024038 2010-10-18 22:06:35Z sandygao $
++ * @version $Id: PSVIAttrNSImpl.java 1065753 2011-01-31 20:31:00Z mrglavas $
+  */
+ public class PSVIAttrNSImpl extends AttrNSImpl implements AttributePSVI {
+ 
+@@ -93,6 +95,20 @@
+     //
+     // AttributePSVI methods
+     //
++    
++    /* (non-Javadoc)
++     * @see org.apache.xerces.xs.ItemPSVI#constant()
++     */
++    public ItemPSVI constant() {
++        return new AttributePSVImpl(true, this);
++    }
++    
++    /* (non-Javadoc)
++     * @see org.apache.xerces.xs.ItemPSVI#isConstant()
++     */
++    public boolean isConstant() {
++        return false;
++    }
+ 
+     /**
+      * [schema default]
+diff -uNr xerces-2_11_0/src/org/apache/xerces/dom/PSVIElementNSImpl.java xerces-2.11.0/src/org/apache/xerces/dom/PSVIElementNSImpl.java
+--- xerces-2_11_0/src/org/apache/xerces/dom/PSVIElementNSImpl.java	2011-10-11 02:36:56.125307675 +0900
++++ xerces-2.11.0/src/org/apache/xerces/dom/PSVIElementNSImpl.java	2011-10-11 02:36:54.658326014 +0900
+@@ -23,8 +23,10 @@
+ import java.io.ObjectOutputStream;
+ 
+ import org.apache.xerces.impl.dv.ValidatedInfo;
++import org.apache.xerces.impl.xs.ElementPSVImpl;
+ import org.apache.xerces.impl.xs.util.StringListImpl;
+ import org.apache.xerces.xs.ElementPSVI;
++import org.apache.xerces.xs.ItemPSVI;
+ import org.apache.xerces.xs.ShortList;
+ import org.apache.xerces.xs.StringList;
+ import org.apache.xerces.xs.XSComplexTypeDefinition;
+@@ -42,7 +44,7 @@
+  * 
+  * @author Sandy Gao, IBM
+  * 
+- * @version $Id: PSVIElementNSImpl.java 1024038 2010-10-18 22:06:35Z sandygao $
++ * @version $Id: PSVIElementNSImpl.java 1065753 2011-01-31 20:31:00Z mrglavas $
+  */
+ public class PSVIElementNSImpl extends ElementNSImpl implements ElementPSVI {
+ 
+@@ -107,6 +109,20 @@
+     //
+     // ElementPSVI methods
+     //
++    
++    /* (non-Javadoc)
++     * @see org.apache.xerces.xs.ItemPSVI#constant()
++     */
++    public ItemPSVI constant() {
++        return new ElementPSVImpl(true, this);
++    }
++    
++    /* (non-Javadoc)
++     * @see org.apache.xerces.xs.ItemPSVI#isConstant()
++     */
++    public boolean isConstant() {
++        return false;
++    }
+ 
+     /**
+      * [schema default]
+diff -uNr xerces-2_11_0/src/org/apache/xerces/dom/ParentNode.java xerces-2.11.0/src/org/apache/xerces/dom/ParentNode.java
+--- xerces-2_11_0/src/org/apache/xerces/dom/ParentNode.java	2011-10-11 02:36:56.127307650 +0900
++++ xerces-2.11.0/src/org/apache/xerces/dom/ParentNode.java	2011-10-11 02:36:54.660325990 +0900
+@@ -65,7 +65,7 @@
+  * @author Arnaud  Le Hors, IBM
+  * @author Joe Kesselman, IBM
+  * @author Andy Clark, IBM
+- * @version $Id: ParentNode.java 724081 2008-12-07 05:46:26Z mrglavas $
++ * @version $Id: ParentNode.java 1103164 2011-05-14 17:21:42Z mrglavas $
+  */
+ public abstract class ParentNode
+     extends ChildNode {
+@@ -502,6 +502,9 @@
+ 
+         // notify document
+         ownerDocument.removingNode(this, oldInternal, replace);
++        
++        // Save previous sibling for normalization checking.
++        final ChildNode oldPreviousSibling = oldInternal.previousSibling();
+ 
+         // update cached length if we have any
+         if (fNodeListCache != null) {
+@@ -513,7 +516,7 @@
+                 // move the cache to its (soon former) previous sibling
+                 if (fNodeListCache.fChild == oldInternal) {
+                     fNodeListCache.fChildIndex--;
+-                    fNodeListCache.fChild = oldInternal.previousSibling();
++                    fNodeListCache.fChild = oldPreviousSibling;
+                 } else {
+                     // otherwise just invalidate the cache
+                     fNodeListCache.fChildIndex = -1;
+@@ -544,9 +547,6 @@
+             }
+         }
+ 
+-        // Save previous sibling for normalization checking.
+-        ChildNode oldPreviousSibling = oldInternal.previousSibling();
+-
+         // Remove oldInternal's references to tree
+         oldInternal.ownerNode       = ownerDocument;
+         oldInternal.isOwned(false);
+diff -uNr xerces-2_11_0/src/org/apache/xerces/impl/dtd/XMLDTDValidator.java xerces-2.11.0/src/org/apache/xerces/impl/dtd/XMLDTDValidator.java
+--- xerces-2_11_0/src/org/apache/xerces/impl/dtd/XMLDTDValidator.java	2011-10-11 02:36:56.238306261 +0900
++++ xerces-2.11.0/src/org/apache/xerces/impl/dtd/XMLDTDValidator.java	2011-10-11 02:36:54.740324990 +0900
+@@ -80,7 +80,7 @@
+  * @author Jeffrey Rodriguez IBM
+  * @author Neil Graham, IBM
+  *
+- * @version $Id: XMLDTDValidator.java 965250 2010-07-18 16:04:58Z mrglavas $
++ * @version $Id: XMLDTDValidator.java 1147663 2011-07-17 15:53:02Z mrglavas $
+  */
+ public class XMLDTDValidator
+         implements XMLComponent, XMLDocumentFilter, XMLDTDValidatorFilter, RevalidationHandler {
+@@ -332,7 +332,7 @@
+     // temporary variables
+ 
+     /** Temporary element declaration. */
+-    private XMLElementDecl fTempElementDecl = new XMLElementDecl();
++    private final XMLElementDecl fTempElementDecl = new XMLElementDecl();
+ 
+     /** Temporary atribute declaration. */
+     private final XMLAttributeDecl fTempAttDecl = new XMLAttributeDecl();
+diff -uNr xerces-2_11_0/src/org/apache/xerces/impl/msg/DOMMessages.properties xerces-2.11.0/src/org/apache/xerces/impl/msg/DOMMessages.properties
+--- xerces-2_11_0/src/org/apache/xerces/impl/msg/DOMMessages.properties	2011-10-11 02:38:17.924285047 +0900
++++ xerces-2.11.0/src/org/apache/xerces/impl/msg/DOMMessages.properties	2011-10-11 02:38:17.827286259 +0900
+@@ -20,7 +20,7 @@
+ #
+ # The messages are arranged in key and value tuples in a ListResourceBundle.
+ #
+-# @version $Id: DOMMessages.properties 595211 2007-11-15 05:28:12Z mrglavas $
++# @version $Id: DOMMessages.properties 1157205 2011-08-12 18:34:04Z mrglavas $
+ 
+         BadMessageKey = The error message corresponding to the message key can not be found.
+         FormatFailed = An internal error occurred while formatting the following message:\n  
+@@ -28,23 +28,23 @@
+ # DOM Core
+ 
+ # exception codes
+-DOMSTRING_SIZE_ERR = The specified range of text does not fit into a DOMString. 
+-HIERARCHY_REQUEST_ERR  = An attempt was made to insert a node where it is not permitted. 
++DOMSTRING_SIZE_ERR = The specified range of text does not fit into a DOMString.
++HIERARCHY_REQUEST_ERR  = An attempt was made to insert a node where it is not permitted.
+ INDEX_SIZE_ERR = The index or size is negative, or greater than the allowed value.
+ INUSE_ATTRIBUTE_ERR = An attempt is made to add an attribute that is already in use elsewhere.
+-INVALID_ACCESS_ERR  = A parameter or an operation is not supported by the underlying object. 
+-INVALID_CHARACTER_ERR = An invalid or illegal XML character is specified. 
+-INVALID_MODIFICATION_ERR =  An attempt is made to modify the type of the underlying object. 
+-INVALID_STATE_ERR = An attempt is made to use an object that is not, or is no longer, usable. 
++INVALID_ACCESS_ERR  = A parameter or an operation is not supported by the underlying object.
++INVALID_CHARACTER_ERR = An invalid or illegal XML character is specified.
++INVALID_MODIFICATION_ERR =  An attempt is made to modify the type of the underlying object.
++INVALID_STATE_ERR = An attempt is made to use an object that is not, or is no longer, usable.
+ NAMESPACE_ERR = An attempt is made to create or change an object in a way which is incorrect with regard to namespaces.
+ NOT_FOUND_ERR = An attempt is made to reference a node in a context where it does not exist.
+-NOT_SUPPORTED_ERR = The implementation does not support the requested type of object or operation. 
++NOT_SUPPORTED_ERR = The implementation does not support the requested type of object or operation.
+ NO_DATA_ALLOWED_ERR = Data is specified for a node which does not support data.
+ NO_MODIFICATION_ALLOWED_ERR = An attempt is made to modify an object where modifications are not allowed.
+-SYNTAX_ERR = An invalid or illegal string is specified. 
++SYNTAX_ERR = An invalid or illegal string is specified.
+ VALIDATION_ERR = A call to a method such as insertBefore or removeChild would make the Node invalid with respect to document grammar.
+ WRONG_DOCUMENT_ERR = A node is used in a different document than the one that created it.
+-TYPE_MISMATCH_ERR = The value type for this parameter name is incompatible with the expected value type. 
++TYPE_MISMATCH_ERR = The value type for this parameter name is incompatible with the expected value type.
+  
+ #error messages or exceptions
+ FEATURE_NOT_SUPPORTED = The parameter {0} is recognized but the requested value cannot be set.
+@@ -78,7 +78,6 @@
+ BAD_BOUNDARYPOINTS_ERR = The boundary-points of a Range do not meet specific requirements.
+ INVALID_NODE_TYPE_ERR = The container of a boundary-point of a Range is being set to either a node of an invalid type or a node with an ancestor of an invalid type.
+ 
+-
+ #Events
+-UNSPECIFIED_EVENT_TYPE_ERR = The Event's type was not specified by initializing the event before the method was called. 
++UNSPECIFIED_EVENT_TYPE_ERR = The Event's type was not specified by initializing the event before the method was called.
+ 
+diff -uNr xerces-2_11_0/src/org/apache/xerces/impl/msg/SAXMessages.properties xerces-2.11.0/src/org/apache/xerces/impl/msg/SAXMessages.properties
+--- xerces-2_11_0/src/org/apache/xerces/impl/msg/SAXMessages.properties	2011-10-11 02:38:17.937284885 +0900
++++ xerces-2.11.0/src/org/apache/xerces/impl/msg/SAXMessages.properties	2011-10-11 02:38:17.869285734 +0900
+@@ -20,14 +20,14 @@
+ #
+ # The messages are arranged in key and value tuples in a ListResourceBundle.
+ #
+-# @version $Id: SAXMessages.properties 595211 2007-11-15 05:28:12Z mrglavas $
++# @version $Id: SAXMessages.properties 1157452 2011-08-14 01:19:51Z mrglavas $
+ 
+ BadMessageKey = The error message corresponding to the message key can not be found.
+ FormatFailed = An internal error occurred while formatting the following message:\n
+ 
+ # JAXP messages
+ schema-not-supported = The specified schema language is not supported.
+-jaxp-order-not-supported = Property ''{0}'' must be set before setting property ''{1}''. 
++jaxp-order-not-supported = Property ''{0}'' must be set before setting property ''{1}''.
+ schema-already-specified = Property ''{0}'' cannot be set when a non-null Schema object has already been specified.
+ 
+ # feature messages
+diff -uNr xerces-2_11_0/src/org/apache/xerces/impl/msg/XMLMessages.properties xerces-2.11.0/src/org/apache/xerces/impl/msg/XMLMessages.properties
+--- xerces-2_11_0/src/org/apache/xerces/impl/msg/XMLMessages.properties	2011-10-11 02:38:17.939284859 +0900
++++ xerces-2.11.0/src/org/apache/xerces/impl/msg/XMLMessages.properties	2011-10-11 02:38:17.881285585 +0900
+@@ -18,7 +18,7 @@
+ # This file contains error and warning messages related to XML
+ # The messages are arranged in key and value tuples in a ListResourceBundle.
+ #
+-# @version $Id: XMLMessages.properties 595214 2007-11-15 05:32:38Z mrglavas $
++# @version $Id: XMLMessages.properties 1157452 2011-08-14 01:19:51Z mrglavas $
+ 
+         BadMessageKey = The error message corresponding to the message key can not be found.
+         FormatFailed = An internal error occurred while formatting the following message:\n  
+@@ -125,7 +125,7 @@
+         EncodingDeclRequired = The encoding declaration is required in the text declaration.
+         NoMorePseudoAttributes = No more pseudo attributes are allowed.
+         MorePseudoAttributes = More pseudo attributes are expected.
+-        PseudoAttrNameExpected = A pseudo attribute name is expected. 
++        PseudoAttrNameExpected = A pseudo attribute name is expected.
+ # 4.3.2 Well-Formed Parsed Entities
+         CommentNotInOneEntity = The comment must be entirely contained within the same parsed entity.
+         PINotInOneEntity = The processing instruction must be entirely contained within the same parsed entity.
+@@ -133,7 +133,7 @@
+         EncodingDeclInvalid = Invalid encoding name \"{0}\".
+         EncodingByteOrderUnsupported = Given byte order for encoding \"{0}\" is not supported.
+         InvalidByte = Invalid byte {0} of {1}-byte UTF-8 sequence.
+-        ExpectedByte = Expected byte {0} of {1}-byte UTF-8 sequence.  
++        ExpectedByte = Expected byte {0} of {1}-byte UTF-8 sequence.
+         InvalidHighSurrogate = High surrogate bits in UTF-8 sequence must not exceed 0x10 but found 0x{0}.
+         OperationNotSupported = Operation \"{0}\" not supported by {1} reader.
+         InvalidASCII = Byte \"{0}\" is not a member of the (7-bit) ASCII character set.
+@@ -212,7 +212,7 @@
+         MSG_SPACE_REQUIRED_BEFORE_NDATA_IN_UNPARSED_ENTITYDECL = White space is required before \"NDATA\" in the declaration for the entity \"{0}\".
+         MSG_NOTATION_NAME_REQUIRED_FOR_UNPARSED_ENTITYDECL = The notation name is required after \"NDATA\" in the declaration for the entity \"{0}\".
+         EntityDeclUnterminated = The declaration for the entity \"{0}\" must end with ''>''.
+-        MSG_DUPLICATE_ENTITY_DEFINITION = Entity \"{0}\" is declared more than once.        
++        MSG_DUPLICATE_ENTITY_DEFINITION = Entity \"{0}\" is declared more than once.
+ # 4.2.2 External Entities
+         ExternalIDRequired = The external entity declaration must begin with either \"SYSTEM\" or \"PUBLIC\".
+         MSG_SPACE_REQUIRED_BEFORE_PUBIDLITERAL_IN_EXTERNALID = White space is required between \"PUBLIC\" and the public identifier.
+@@ -288,7 +288,7 @@
+         
+ # Namespaces support
+ # 4. Using Qualified Names
+-        IllegalQName = Element or attribute do not match QName production: QName::=(NCName':')?NCName. 
++        IllegalQName = Element or attribute do not match QName production: QName::=(NCName':')?NCName.
+         ElementXMLNSPrefix = Element \"{0}\" cannot have \"xmlns\" as its prefix.
+         ElementPrefixUnbound = The prefix \"{0}\" for element \"{1}\" is not bound.
+         AttributePrefixUnbound = The prefix \"{2}\" for attribute \"{1}\" associated with an element type \"{0}\" is not bound.
+diff -uNr xerces-2_11_0/src/org/apache/xerces/impl/msg/XMLSchemaMessages.properties xerces-2.11.0/src/org/apache/xerces/impl/msg/XMLSchemaMessages.properties
+--- xerces-2_11_0/src/org/apache/xerces/impl/msg/XMLSchemaMessages.properties	2011-10-11 02:38:17.942284821 +0900
++++ xerces-2.11.0/src/org/apache/xerces/impl/msg/XMLSchemaMessages.properties	2011-10-11 02:38:17.887285510 +0900
+@@ -18,7 +18,7 @@
+ # This file contains error and warning messages related to XML Schema
+ # The messages are arranged in key and value tuples in a ListResourceBundle.
+ #
+-# @version $Id: XMLSchemaMessages.properties 806363 2009-08-20 21:18:48Z mrglavas $
++# @version $Id: XMLSchemaMessages.properties 1157452 2011-08-14 01:19:51Z mrglavas $
+ 
+         BadMessageKey = The error message corresponding to the message key can not be found.
+         FormatFailed = An internal error occurred while formatting the following message:\n
+@@ -212,11 +212,11 @@
+         fractionDigits-valid-restriction = fractionDigits-valid-restriction: In the definition of {2}, the value ''{0}'' for the facet ''fractionDigits'' is invalid, because it must be <= the value for ''fractionDigits'' which was set to ''{1}'' in one of the ancestor types.
+         fractionDigits-totalDigits = fractionDigits-totalDigits: In the definition of {2}, the value ''{0}'' for the facet ''fractionDigits'' is invalid, because the value must be <= the value for ''totalDigits'' which is ''{1}''.
+         length-minLength-maxLength.1.1 = length-minLength-maxLength.1.1: For type {0}, it is an error for the value of length ''{1}'' to be less than the value of minLength ''{2}''.
+-        length-minLength-maxLength.1.2.a = length-minLength-maxLength.1.2.a: For type {0}, it is an error for the base to not have a minLength facet if the current restriction has the minLength facet and the current restriction or base has the length facet. 
++        length-minLength-maxLength.1.2.a = length-minLength-maxLength.1.2.a: For type {0}, it is an error for the base to not have a minLength facet if the current restriction has the minLength facet and the current restriction or base has the length facet.
+         length-minLength-maxLength.1.2.b = length-minLength-maxLength.1.2.b: For type {0}, it is an error for the current minLength ''{1}'' to not equal the base minLength ''{2}''.
+-        length-minLength-maxLength.2.1 = length-minLength-maxLength.2.1: For type {0}, it is an error for the value of length ''{1}'' to be greater than the value of maxLength ''{2}''. 
+-        length-minLength-maxLength.2.2.a = length-minLength-maxLength.2.2.a: For type {0}, it is an error for the base to not have a maxLength facet if the current restriction has the maxLength facet and the current restriction or base has the length facet. 
+-        length-minLength-maxLength.2.2.b = length-minLength-maxLength.2.2.b: For type {0}, it is an error for the current maxLength ''{1}'' to not equal the base maxLength ''{2}''.        
++        length-minLength-maxLength.2.1 = length-minLength-maxLength.2.1: For type {0}, it is an error for the value of length ''{1}'' to be greater than the value of maxLength ''{2}''.
++        length-minLength-maxLength.2.2.a = length-minLength-maxLength.2.2.a: For type {0}, it is an error for the base to not have a maxLength facet if the current restriction has the maxLength facet and the current restriction or base has the length facet.
++        length-minLength-maxLength.2.2.b = length-minLength-maxLength.2.2.b: For type {0}, it is an error for the current maxLength ''{1}'' to not equal the base maxLength ''{2}''.
+         length-valid-restriction = length-valid-restriction: Error for type ''{2}''. The value of length = ''{0}'' must be = the value of that of the base type ''{1}''.
+         maxExclusive-valid-restriction.1 = maxExclusive-valid-restriction.1: Error for type ''{2}''. The maxExclusive value =''{0}'' must be <= maxExclusive of the base type ''{1}''.
+         maxExclusive-valid-restriction.2 = maxExclusive-valid-restriction.2: Error for type ''{2}''. The maxExclusive value =''{0}'' must be <= maxInclusive of the base type ''{1}''.
+diff -uNr xerces-2_11_0/src/org/apache/xerces/impl/msg/XMLSerializerMessages.properties xerces-2.11.0/src/org/apache/xerces/impl/msg/XMLSerializerMessages.properties
+--- xerces-2_11_0/src/org/apache/xerces/impl/msg/XMLSerializerMessages.properties	2011-10-11 02:38:17.943284809 +0900
++++ xerces-2.11.0/src/org/apache/xerces/impl/msg/XMLSerializerMessages.properties	2011-10-11 02:38:17.888285498 +0900
+@@ -16,13 +16,13 @@
+ #
+ 
+ # This file stores error messages for the Xerces XML
+-# serializer.  Many DOM Load/Save error messages also 
++# serializer.  Many DOM Load/Save error messages also
+ # live here, since the serializer largely implements that package.
+ #
+ # As usual with properties files, the messages are arranged in
+ # key/value tuples.
+ # 
+-# @version $Id: XMLSerializerMessages.properties 595211 2007-11-15 05:28:12Z mrglavas $
++# @version $Id: XMLSerializerMessages.properties 1157452 2011-08-14 01:19:51Z mrglavas $
+ 
+     BadMessageKey = The error message corresponding to the message key can not be found.
+     FormatFailed = An internal error occurred while formatting the following message:\n
+diff -uNr xerces-2_11_0/src/org/apache/xerces/impl/msg/XPointerMessages.properties xerces-2.11.0/src/org/apache/xerces/impl/msg/XPointerMessages.properties
+--- xerces-2_11_0/src/org/apache/xerces/impl/msg/XPointerMessages.properties	2011-10-11 02:38:17.945284785 +0900
++++ xerces-2.11.0/src/org/apache/xerces/impl/msg/XPointerMessages.properties	2011-10-11 02:38:17.890285472 +0900
+@@ -19,7 +19,7 @@
+ #
+ # The messages are arranged in key and value tuples in a ListResourceBundle.
+ #
+-# @version $Id: XPointerMessages.properties 595211 2007-11-15 05:28:12Z mrglavas $
++# @version $Id: XPointerMessages.properties 1157452 2011-08-14 01:19:51Z mrglavas $
+ 
+ # Messages for message reporting
+ BadMessageKey = The error message corresponding to the message key can not be found.
+@@ -29,8 +29,8 @@
+ XPointerProcessingError = XPointerProcessingError: An error occurred while processing the XPointer expression.
+ InvalidXPointerToken = InvalidXPointerToken: The XPointer expression contains the invalid token ''{0}''
+ InvalidXPointerExpression = InvalidXPointerExpression: The XPointer expression ''{0}'' is invalid.
+-MultipleShortHandPointers = MultipleShortHandPointers:  The XPointer expression ''{0}'' is invalid.  It has more than one ShortHand Pointer. 
+-SchemeDataNotFollowedByCloseParenthesis = SchemeDataNotFollowedByCloseParenthesis: The XPointer expression ''{0}'' is invalid.  The SchemeData was not followed by a '')'' character. 
++MultipleShortHandPointers = MultipleShortHandPointers:  The XPointer expression ''{0}'' is invalid.  It has more than one ShortHand Pointer.
++SchemeDataNotFollowedByCloseParenthesis = SchemeDataNotFollowedByCloseParenthesis: The XPointer expression ''{0}'' is invalid.  The SchemeData was not followed by a '')'' character.
+ SchemeUnsupported = SchemeUnsupported: The XPointer scheme ''{0}'' is not supported.
+ InvalidShortHandPointer = InvalidShortHandPointer: The NCName of the ShortHand Pointer ''{0}'' is invalid.
+ UnbalancedParenthesisInXPointerExpression = UnbalancedParenthesisInXPointerExpression: The XPointer expression ''{0}'' is invalid.  The number of open parenthesis ''{1}'' is not equal to the number of close parenthesis ''{2}''.
+@@ -41,4 +41,4 @@
+ InvalidElementSchemeXPointer = InvalidElementSchemeXPointer: The Element Scheme XPointer expression ''{0}'' is invalid.
+ XPointerElementSchemeProcessingError = XPointerElementSchemeProcessingError: An error occurred while processing the XPointer element() Scheme expression.
+ InvalidNCNameInElementSchemeData = InvalidNCNameInElementSchemeData: The element() Scheme contains a ShortHand Pointer ''{0}'' with an invalid NCName.
+-InvalidChildSequenceCharacter = InvalidChildSequenceCharacter: The element() Scheme contains an invalid child sequence character ''{0}''. 
+\ No newline at end of file
++InvalidChildSequenceCharacter = InvalidChildSequenceCharacter: The element() Scheme contains an invalid child sequence character ''{0}''.
+\ No newline at end of file
+diff -uNr xerces-2_11_0/src/org/apache/xerces/impl/xpath/regex/ParserForXMLSchema.java xerces-2.11.0/src/org/apache/xerces/impl/xpath/regex/ParserForXMLSchema.java
+--- xerces-2_11_0/src/org/apache/xerces/impl/xpath/regex/ParserForXMLSchema.java	2011-10-11 02:36:56.379304500 +0900
++++ xerces-2.11.0/src/org/apache/xerces/impl/xpath/regex/ParserForXMLSchema.java	2011-10-11 02:36:54.895323052 +0900
+@@ -26,7 +26,7 @@
+  * @xerces.internal
+  *
+  * @author TAMURA Kent &lt;kent@trl.ibm.co.jp&gt;
+- * @version $Id: ParserForXMLSchema.java 831926 2009-11-02 15:38:53Z knoaman $
++ * @version $Id: ParserForXMLSchema.java 1129316 2011-05-30 19:31:20Z knoaman $
+  */
+ class ParserForXMLSchema extends RegexParser {
+ 
+@@ -249,7 +249,7 @@
+                     if (c == ']')  throw this.ex("parser.cc.7", this.offset-2);
+                     if (c == '-' && this.chardata != ']' && !firstloop)  throw this.ex("parser.cc.8", this.offset-2);	// if regex = '[-]' then invalid
+                 }
+-                if (this.read() != T_CHAR || this.chardata != '-' || c == '-' && firstloop) { // Here is no '-'.
++                if (this.read() != T_CHAR || this.chardata != '-' || c == '-' && !wasDecoded && firstloop) { // Here is no '-'.
+                     if (!this.isSet(RegularExpression.IGNORE_CASE) || c > 0xffff) {
+                         tok.addRange(c, c);
+                     }
+@@ -379,12 +379,8 @@
+             ranges2.put("xml:isSpace", Token.complementRanges(tok));
+ 
+             tok = Token.createRange();
+-            setupRange(tok, DIGITS);
+-            ranges.put("xml:isDigit", tok);
+-            ranges2.put("xml:isDigit", Token.complementRanges(tok));
+-
+-            tok = Token.createRange();
+-            setupRange(tok, DIGITS);
++//            setupRange(tok, DIGITS);
++            setupRange(tok, DIGITS_INTS);
+             ranges.put("xml:isDigit", tok);
+             ranges2.put("xml:isDigit", Token.complementRanges(tok));
+ 
+@@ -417,6 +413,12 @@
+             range.addRange(src.charAt(i), src.charAt(i+1));
+     }
+ 
++    static void setupRange(Token range, int[] src) {
++        int len = src.length;
++        for (int i = 0;  i < len;  i += 2)
++            range.addRange(src[i], src[i+1]);
++    }
++
+     private static final String SPACES = "\t\n\r\r  ";
+     private static final String NAMECHARS =
+         "\u002d\u002e\u0030\u003a\u0041\u005a\u005f\u005f\u0061\u007a\u00b7\u00b7\u00c0\u00d6"
+@@ -496,4 +498,12 @@
+         "\u0030\u0039\u0660\u0669\u06F0\u06F9\u0966\u096F\u09E6\u09EF\u0A66\u0A6F\u0AE6\u0AEF"
+         +"\u0B66\u0B6F\u0BE7\u0BEF\u0C66\u0C6F\u0CE6\u0CEF\u0D66\u0D6F\u0E50\u0E59\u0ED0\u0ED9"
+         +"\u0F20\u0F29";
++    private static final int[] DIGITS_INTS = {
++        0x0030, 0x0039, 0x0660, 0x0669, 0x06F0, 0x06F9, 0x0966, 0x096F,
++        0x09E6, 0x09EF, 0x0A66, 0x0A6F, 0x0AE6, 0x0AEF, 0x0B66, 0x0B6F,
++        0x0BE7, 0x0BEF, 0x0C66, 0x0C6F, 0x0CE6, 0x0CEF, 0x0D66, 0x0D6F,
++        0x0E50, 0x0E59, 0x0ED0, 0x0ED9, 0x0F20, 0x0F29, 0x1040, 0x1049,
++        0x1369, 0x1371, 0x17E0, 0x17E9, 0x1810, 0x1819, 0xFF10, 0xFF19,
++        0x1D7CE, 0x1D7FF
++    };
+ }
+diff -uNr xerces-2_11_0/src/org/apache/xerces/impl/xpath/regex/RegexParser.java xerces-2.11.0/src/org/apache/xerces/impl/xpath/regex/RegexParser.java
+--- xerces-2_11_0/src/org/apache/xerces/impl/xpath/regex/RegexParser.java	2011-10-11 02:36:56.385304425 +0900
++++ xerces-2.11.0/src/org/apache/xerces/impl/xpath/regex/RegexParser.java	2011-10-11 02:36:54.900322988 +0900
+@@ -27,7 +27,7 @@
+  * 
+  * @xerces.internal
+  *
+- * @version $Id: RegexParser.java 1033661 2010-11-10 19:31:44Z knoaman $
++ * @version $Id: RegexParser.java 1129306 2011-05-30 19:18:04Z sandygao $
+  */
+ class RegexParser {
+     static final int T_CHAR = 0;
+@@ -128,6 +128,9 @@
+         Token ret = this.parseRegex();
+         if (this.offset != this.regexlen)
+             throw ex("parser.parse.1", this.offset);
++        if (this.read() != T_EOF) {
++            throw ex("parser.parse.1", this.offset-1);
++        }
+         if (this.references != null) {
+             for (int i = 0;  i < this.references.size();  i ++) {
+                 ReferencePosition position = (ReferencePosition)this.references.elementAt(i);
+diff -uNr xerces-2_11_0/src/org/apache/xerces/impl/xs/AttributePSVImpl.java xerces-2.11.0/src/org/apache/xerces/impl/xs/AttributePSVImpl.java
+--- xerces-2_11_0/src/org/apache/xerces/impl/xs/AttributePSVImpl.java	2011-10-11 02:36:56.509302875 +0900
++++ xerces-2.11.0/src/org/apache/xerces/impl/xs/AttributePSVImpl.java	2011-10-11 02:36:55.030321364 +0900
+@@ -20,6 +20,7 @@
+ import org.apache.xerces.impl.dv.ValidatedInfo;
+ import org.apache.xerces.impl.xs.util.StringListImpl;
+ import org.apache.xerces.xs.AttributePSVI;
++import org.apache.xerces.xs.ItemPSVI;
+ import org.apache.xerces.xs.ShortList;
+ import org.apache.xerces.xs.StringList;
+ import org.apache.xerces.xs.XSAttributeDeclaration;
+@@ -34,7 +35,7 @@
+  * @xerces.internal 
+  *
+  * @author Elena Litani IBM
+- * @version $Id: AttributePSVImpl.java 1024038 2010-10-18 22:06:35Z sandygao $
++ * @version $Id: AttributePSVImpl.java 1065753 2011-01-31 20:31:00Z mrglavas $
+  */
+ public class AttributePSVImpl implements AttributePSVI {
+ 
+@@ -62,10 +63,61 @@
+ 
+     /** validation context: could be QName or XPath expression*/
+     protected String fValidationContext = null;
++    
++    /** true if this object is immutable **/
++    protected boolean fIsConstant;
++    
++    public AttributePSVImpl() {}
++    
++    public AttributePSVImpl(boolean isConstant, AttributePSVI attrPSVI) {
++        fDeclaration = attrPSVI.getAttributeDeclaration();
++        fTypeDecl = attrPSVI.getTypeDefinition();
++        fSpecified = attrPSVI.getIsSchemaSpecified();
++        fValue.copyFrom(attrPSVI.getSchemaValue());
++        fValidationAttempted = attrPSVI.getValidationAttempted();
++        fValidity = attrPSVI.getValidity();
++        if (attrPSVI instanceof AttributePSVImpl) {
++            final AttributePSVImpl attrPSVIImpl = (AttributePSVImpl) attrPSVI;
++            fErrors = (attrPSVIImpl.fErrors != null) ?
++                    (String[]) attrPSVIImpl.fErrors.clone() : null;
++        }
++        else {
++            final StringList errorCodes = attrPSVI.getErrorCodes();
++            final int length = errorCodes.getLength();
++            if (length > 0) {
++                final StringList errorMessages = attrPSVI.getErrorMessages();
++                final String[] errors = new String[length << 1];
++                for (int i = 0, j = 0; i < length; ++i) {
++                    errors[j++] = errorCodes.item(i);
++                    errors[j++] = errorMessages.item(i);
++                }
++                fErrors = errors;
++            }
++        }
++        fValidationContext = attrPSVI.getValidationContext();
++        fIsConstant = isConstant;
++    }
+ 
+     //
+     // AttributePSVI methods
+     //
++    
++    /* (non-Javadoc)
++     * @see org.apache.xerces.xs.ItemPSVI#constant()
++     */
++    public ItemPSVI constant() {
++        if (isConstant()) {
++            return this;
++        }
++        return new AttributePSVImpl(true, this);
++    }
++    
++    /* (non-Javadoc)
++     * @see org.apache.xerces.xs.ItemPSVI#isConstant()
++     */
++    public boolean isConstant() {
++        return fIsConstant;
++    }
+ 
+     /**
+      * [schema default]
+diff -uNr xerces-2_11_0/src/org/apache/xerces/impl/xs/ElementPSVImpl.java xerces-2.11.0/src/org/apache/xerces/impl/xs/ElementPSVImpl.java
+--- xerces-2_11_0/src/org/apache/xerces/impl/xs/ElementPSVImpl.java	2011-10-11 02:36:56.511302849 +0900
++++ xerces-2.11.0/src/org/apache/xerces/impl/xs/ElementPSVImpl.java	2011-10-11 02:36:55.032321340 +0900
+@@ -20,6 +20,7 @@
+ import org.apache.xerces.impl.dv.ValidatedInfo;
+ import org.apache.xerces.impl.xs.util.StringListImpl;
+ import org.apache.xerces.xs.ElementPSVI;
++import org.apache.xerces.xs.ItemPSVI;
+ import org.apache.xerces.xs.ShortList;
+ import org.apache.xerces.xs.StringList;
+ import org.apache.xerces.xs.XSElementDeclaration;
+@@ -41,7 +42,7 @@
+  * @xerces.internal 
+  *
+  * @author Elena Litani IBM
+- * @version $Id: ElementPSVImpl.java 1024038 2010-10-18 22:06:35Z sandygao $
++ * @version $Id: ElementPSVImpl.java 1065753 2011-01-31 20:31:00Z mrglavas $
+  */
+ public class ElementPSVImpl implements ElementPSVI {
+ 
+@@ -84,9 +85,64 @@
+     /** the schema information property */
+     protected XSModel fSchemaInformation = null;
+     
++    /** true if this object is immutable **/
++    protected boolean fIsConstant;
++    
++    public ElementPSVImpl() {}
++    
++    public ElementPSVImpl(boolean isConstant, ElementPSVI elementPSVI) {
++        fDeclaration = elementPSVI.getElementDeclaration();
++        fTypeDecl = elementPSVI.getTypeDefinition();
++        fNil = elementPSVI.getNil();
++        fSpecified = elementPSVI.getIsSchemaSpecified();
++        fValue.copyFrom(elementPSVI.getSchemaValue());
++        fNotation = elementPSVI.getNotation();
++        fValidationAttempted = elementPSVI.getValidationAttempted();
++        fValidity = elementPSVI.getValidity();
++        fValidationContext = elementPSVI.getValidationContext();
++        if (elementPSVI instanceof ElementPSVImpl) {
++            final ElementPSVImpl elementPSVIImpl = (ElementPSVImpl) elementPSVI;
++            fErrors = (elementPSVIImpl.fErrors != null) ?
++                    (String[]) elementPSVIImpl.fErrors.clone() : null;
++            elementPSVIImpl.copySchemaInformationTo(this);
++        }
++        else {
++            final StringList errorCodes = elementPSVI.getErrorCodes();
++            final int length = errorCodes.getLength();
++            if (length > 0) {
++                final StringList errorMessages = elementPSVI.getErrorMessages();
++                final String[] errors = new String[length << 1];
++                for (int i = 0, j = 0; i < length; ++i) {
++                    errors[j++] = errorCodes.item(i);
++                    errors[j++] = errorMessages.item(i);
++                }
++                fErrors = errors;
++            }
++            fSchemaInformation = elementPSVI.getSchemaInformation();
++        }
++        fIsConstant = isConstant;
++    }
++    
+     //
+     // ElementPSVI methods
+     //
++    
++    /* (non-Javadoc)
++     * @see org.apache.xerces.xs.ItemPSVI#constant()
++     */
++    public ItemPSVI constant() {
++        if (isConstant()) {
++            return this;
++        }
++        return new ElementPSVImpl(true, this);
++    }
++    
++    /* (non-Javadoc)
++     * @see org.apache.xerces.xs.ItemPSVI#isConstant()
++     */
++    public boolean isConstant() {
++        return fIsConstant;
++    }
+ 
+     /**
+      * [schema default]
+diff -uNr xerces-2_11_0/src/org/apache/xerces/impl/xs/SchemaGrammar.java xerces-2.11.0/src/org/apache/xerces/impl/xs/SchemaGrammar.java
+--- xerces-2_11_0/src/org/apache/xerces/impl/xs/SchemaGrammar.java	2011-10-11 02:36:56.517302775 +0900
++++ xerces-2.11.0/src/org/apache/xerces/impl/xs/SchemaGrammar.java	2011-10-11 02:36:55.038321264 +0900
+@@ -53,7 +53,6 @@
+ import org.apache.xerces.xs.XSNamespaceItem;
+ import org.apache.xerces.xs.XSNotationDeclaration;
+ import org.apache.xerces.xs.XSObjectList;
+-import org.apache.xerces.xs.XSParticle;
+ import org.apache.xerces.xs.XSTypeDefinition;
+ import org.apache.xerces.xs.XSWildcard;
+ import org.apache.xerces.xs.datatypes.ObjectList;
+@@ -73,7 +72,7 @@
+  * @author Sandy Gao, IBM
+  * @author Elena Litani, IBM
+  *
+- * @version $Id: SchemaGrammar.java 1024038 2010-10-18 22:06:35Z sandygao $
++ * @version $Id: SchemaGrammar.java 1082533 2011-03-17 15:22:26Z knoaman $
+  */
+ 
+ public class SchemaGrammar implements XSGrammar, XSNamespaceItem {
+@@ -144,35 +143,39 @@
+         fGrammarDescription = grammarDesc;
+         fSymbolTable = symbolTable;
+ 
+-        // REVISIT: do we know the numbers of the following global decls
+-        // when creating this grammar? If so, we can pass the numbers in,
+-        // and use that number to initialize the following hashtables.
+-        fGlobalAttrDecls  = new SymbolHash();
+-        fGlobalAttrGrpDecls = new SymbolHash();
+-        fGlobalElemDecls = new SymbolHash();
+-        fGlobalGroupDecls = new SymbolHash();
+-        fGlobalNotationDecls = new SymbolHash();
+-        fGlobalIDConstraintDecls = new SymbolHash();
++        // REVISIT: the initial sizes being chosen for each SymbolHash
++        // may not be ideal and could still be tuned. They were chosen
++        // somewhat arbitrarily to reduce the initial footprint of
++        // SymbolHash buckets from 1,515 to 177 (about 12% of the 
++        // default size).
++        fGlobalAttrDecls  = new SymbolHash(12);
++        fGlobalAttrGrpDecls = new SymbolHash(5);
++        fGlobalElemDecls = new SymbolHash(25);
++        fGlobalGroupDecls = new SymbolHash(5);
++        fGlobalNotationDecls = new SymbolHash(1);
++        fGlobalIDConstraintDecls = new SymbolHash(3);
+ 
+         // Extended tables
+-        fGlobalAttrDeclsExt  = new SymbolHash();
+-        fGlobalAttrGrpDeclsExt = new SymbolHash();
+-        fGlobalElemDeclsExt = new SymbolHash();
+-        fGlobalGroupDeclsExt = new SymbolHash();
+-        fGlobalNotationDeclsExt = new SymbolHash();
+-        fGlobalIDConstraintDeclsExt = new SymbolHash();
+-        fGlobalTypeDeclsExt = new SymbolHash();
++        fGlobalAttrDeclsExt  = new SymbolHash(12);
++        fGlobalAttrGrpDeclsExt = new SymbolHash(5);
++        fGlobalElemDeclsExt = new SymbolHash(25);
++        fGlobalGroupDeclsExt = new SymbolHash(5);
++        fGlobalNotationDeclsExt = new SymbolHash(1);
++        fGlobalIDConstraintDeclsExt = new SymbolHash(3);
++        fGlobalTypeDeclsExt = new SymbolHash(25);
+         
+         // All global elements table
+-        fAllGlobalElemDecls = new SymbolHash();
++        fAllGlobalElemDecls = new SymbolHash(25);
+ 
+         // if we are parsing S4S, put built-in types in first
+         // they might get overwritten by the types from S4S, but that's
+         // considered what the application wants to do.
+-        if (fTargetNamespace == SchemaSymbols.URI_SCHEMAFORSCHEMA)
++        if (fTargetNamespace == SchemaSymbols.URI_SCHEMAFORSCHEMA) {
+             fGlobalTypeDecls = SG_SchemaNS.fGlobalTypeDecls.makeClone();
+-        else
+-            fGlobalTypeDecls = new SymbolHash();
++        }
++        else {
++            fGlobalTypeDecls = new SymbolHash(25);
++        }
+     } // <init>(String, XSDDescription)
+     
+     // Clone an existing schema grammar
+@@ -231,7 +234,7 @@
+             fRedefinedGroupDecls = new XSGroupDecl[grammar.fRedefinedGroupDecls.length];
+             fRGLocators = new SimpleLocator[grammar.fRGLocators.length];
+             System.arraycopy(grammar.fRedefinedGroupDecls, 0, fRedefinedGroupDecls, 0, fRGCount);
+-            System.arraycopy(grammar.fRGLocators, 0, fRGLocators, 0, fRGCount);
++            System.arraycopy(grammar.fRGLocators, 0, fRGLocators, 0, fRGCount/2);
+         }
+ 
+         // List of imported grammars
+@@ -625,19 +628,19 @@
+             // fill complex types
+             annotationType.setValues("#AnonType_" + SchemaSymbols.ELT_ANNOTATION, fTargetNamespace, SchemaGrammar.fAnyType,
+                     XSConstants.DERIVATION_RESTRICTION, XSConstants.DERIVATION_NONE, (short) (XSConstants.DERIVATION_EXTENSION | XSConstants.DERIVATION_RESTRICTION),
+-                    XSComplexTypeDecl.CONTENTTYPE_ELEMENT, false, annotationAttrs, null, annotationParticle, new XSObjectListImpl(null, 0));
++                    XSComplexTypeDecl.CONTENTTYPE_ELEMENT, false, annotationAttrs, null, annotationParticle, XSObjectListImpl.EMPTY_LIST);
+             annotationType.setName("#AnonType_" + SchemaSymbols.ELT_ANNOTATION);
+             annotationType.setIsAnonymous();
+             
+             documentationType.setValues("#AnonType_" + SchemaSymbols.ELT_DOCUMENTATION, fTargetNamespace, SchemaGrammar.fAnyType,
+                     XSConstants.DERIVATION_RESTRICTION, XSConstants.DERIVATION_NONE, (short) (XSConstants.DERIVATION_EXTENSION | XSConstants.DERIVATION_RESTRICTION),
+-                    XSComplexTypeDecl.CONTENTTYPE_MIXED, false, documentationAttrs, null, anyWCSequenceParticle, new XSObjectListImpl(null, 0));
++                    XSComplexTypeDecl.CONTENTTYPE_MIXED, false, documentationAttrs, null, anyWCSequenceParticle, XSObjectListImpl.EMPTY_LIST);
+             documentationType.setName("#AnonType_" + SchemaSymbols.ELT_DOCUMENTATION);
+             documentationType.setIsAnonymous();
+             
+             appinfoType.setValues("#AnonType_" + SchemaSymbols.ELT_APPINFO, fTargetNamespace, SchemaGrammar.fAnyType,
+                     XSConstants.DERIVATION_RESTRICTION, XSConstants.DERIVATION_NONE, (short) (XSConstants.DERIVATION_EXTENSION | XSConstants.DERIVATION_RESTRICTION),
+-                    XSComplexTypeDecl.CONTENTTYPE_MIXED, false, appinfoAttrs, null, anyWCSequenceParticle, new XSObjectListImpl(null, 0));
++                    XSComplexTypeDecl.CONTENTTYPE_MIXED, false, appinfoAttrs, null, anyWCSequenceParticle, XSObjectListImpl.EMPTY_LIST);
+             appinfoType.setName("#AnonType_" + SchemaSymbols.ELT_APPINFO);
+             appinfoType.setIsAnonymous();
+             
+@@ -1177,8 +1180,8 @@
+             fDerivedBy = XSConstants.DERIVATION_RESTRICTION;
+             fContentType = XSComplexTypeDecl.CONTENTTYPE_MIXED;
+ 
+-            fParticle = null;
+-            fAttrGrp = null;
++            fParticle = createParticle();
++            fAttrGrp = createAttrGrp();
+         }
+ 
+         // overridden methods
+@@ -1210,25 +1213,23 @@
+             // null implementation
+         }
+ 
+-        public XSObjectList getAttributeUses() {
++        public XSObjectList getAnnotations() {
+             return XSObjectListImpl.EMPTY_LIST;
+         }
+-
+-        public XSAttributeGroupDecl getAttrGrp() {
++        
++        public XSNamespaceItem getNamespaceItem() {
++            return SG_SchemaNS;
++        }
++        
++        private XSAttributeGroupDecl createAttrGrp() {
+             XSWildcardDecl wildcard = new XSWildcardDecl();
+             wildcard.fProcessContents = XSWildcardDecl.PC_LAX;
+             XSAttributeGroupDecl attrGrp = new XSAttributeGroupDecl();
+             attrGrp.fAttributeWC = wildcard;
+             return attrGrp;
+-        }
+-
+-        public XSWildcard getAttributeWildcard() {
+-            XSWildcardDecl wildcard = new XSWildcardDecl();
+-            wildcard.fProcessContents = XSWildcardDecl.PC_LAX;
+-            return wildcard;
+-        }
+-
+-        public XSParticle getParticle() {
++        }   
++        
++        private XSParticleDecl createParticle() {
+             // the wildcard used in anyType (content and attribute)
+             // the spec will change strict to skip for anyType
+             XSWildcardDecl wildcard = new XSWildcardDecl();
+@@ -1252,14 +1253,6 @@
+         
+             return particleG;
+         }
+-
+-        public XSObjectList getAnnotations() {
+-            return XSObjectListImpl.EMPTY_LIST;
+-        }
+-        
+-        public XSNamespaceItem getNamespaceItem() {
+-            return SG_SchemaNS;
+-        }
+     }
+     private static class BuiltinAttrDecl extends XSAttributeDecl {
+         public BuiltinAttrDecl(String name, String tns, 
+diff -uNr xerces-2_11_0/src/org/apache/xerces/impl/xs/XMLSchemaValidator.java xerces-2.11.0/src/org/apache/xerces/impl/xs/XMLSchemaValidator.java
+--- xerces-2_11_0/src/org/apache/xerces/impl/xs/XMLSchemaValidator.java	2011-10-11 02:36:56.535302549 +0900
++++ xerces-2.11.0/src/org/apache/xerces/impl/xs/XMLSchemaValidator.java	2011-10-11 02:36:55.056321040 +0900
+@@ -106,7 +106,7 @@
+  * @author Elena Litani IBM
+  * @author Andy Clark IBM
+  * @author Neeraj Bajaj, Sun Microsystems, inc.
+- * @version $Id: XMLSchemaValidator.java 1024038 2010-10-18 22:06:35Z sandygao $
++ * @version $Id: XMLSchemaValidator.java 1129328 2011-05-30 19:54:26Z sandygao $
+  */
+ public class XMLSchemaValidator
+     implements XMLComponent, XMLDocumentFilter, FieldActivator, RevalidationHandler, XSElementDeclHelper {
+@@ -1953,6 +1953,7 @@
+                     && (next = fCurrentCM.whatCanGoHere(fCurrCMState)).size() > 0) {
+                     String expected = expectedStr(next);
+                     final int[] occurenceInfo = fCurrentCM.occurenceInfo(fCurrCMState);
++                    String elemExpandedQname = (element.uri != null) ? "{"+'"'+element.uri+'"'+":"+element.localpart+"}" : element.localpart;
+                     if (occurenceInfo != null) {
+                         final int minOccurs = occurenceInfo[0];
+                         final int maxOccurs = occurenceInfo[1];
+@@ -1975,11 +1976,11 @@
+                                     expected, Integer.toString(maxOccurs) });
+                         }
+                         else {
+-                            reportSchemaError("cvc-complex-type.2.4.a", new Object[] { element.rawname, expected });
++                            reportSchemaError("cvc-complex-type.2.4.a", new Object[] { elemExpandedQname, expected });
+                         }
+                     }
+                     else {
+-                        reportSchemaError("cvc-complex-type.2.4.a", new Object[] { element.rawname, expected });
++                        reportSchemaError("cvc-complex-type.2.4.a", new Object[] { elemExpandedQname, expected });
+                     }
+                 }
+                 else {
+@@ -1989,7 +1990,7 @@
+                         final int count = occurenceInfo[2];
+                         // Check if this is a violation of maxOccurs
+                         if (count >= maxOccurs && maxOccurs != SchemaSymbols.OCCURRENCE_UNBOUNDED) {
+-                            reportSchemaError("cvc-complex-type.2.4.f", new Object[] { element.rawname, Integer.toString(maxOccurs) });
++                            reportSchemaError("cvc-complex-type.2.4.f", new Object[] { fCurrentCM.getTermName(occurenceInfo[3]), Integer.toString(maxOccurs) });
+                         }
+                         else {
+                             reportSchemaError("cvc-complex-type.2.4.d", new Object[] { element.rawname });
+@@ -2438,7 +2439,9 @@
+                             && id.getCategory() == IdentityConstraint.IC_KEYREF) {
+                         ValueStoreBase values =
+                             fValueStoreCache.getValueStoreFor(id, selMatcher.getInitialDepth());
+-                        if (values != null) // nothing to do if nothing matched!
++                        // nothing to do if nothing matched, or if not all
++                        // fields are present.
++                        if (values != null && values.fValuesCount == values.fFieldCount)
+                             values.endDocumentFragment();
+                     }
+                 }
+diff -uNr xerces-2_11_0/src/org/apache/xerces/impl/xs/XSAttributeGroupDecl.java xerces-2.11.0/src/org/apache/xerces/impl/xs/XSAttributeGroupDecl.java
+--- xerces-2_11_0/src/org/apache/xerces/impl/xs/XSAttributeGroupDecl.java	2011-10-11 02:36:56.539302499 +0900
++++ xerces-2.11.0/src/org/apache/xerces/impl/xs/XSAttributeGroupDecl.java	2011-10-11 02:36:55.059321001 +0900
+@@ -36,7 +36,7 @@
+  * @author Sandy Gao, IBM
+  * @author Rahul Srivastava, Sun Microsystems Inc.
+  *
+- * @version $Id: XSAttributeGroupDecl.java 834253 2009-11-09 22:07:23Z sandygao $
++ * @version $Id: XSAttributeGroupDecl.java 1051303 2010-12-20 22:14:58Z mrglavas $
+  */
+ public class XSAttributeGroupDecl implements XSAttributeGroupDefinition {
+ 
+@@ -358,8 +358,13 @@
+      * {attribute uses} A set of attribute uses.
+      */
+     public XSObjectList getAttributeUses() {
+-        if (fAttrUses == null){
+-            fAttrUses = new XSObjectListImpl(fAttributeUses, fAttrUseNum);
++        if (fAttrUses == null) {
++            if (fAttrUseNum > 0) {
++                fAttrUses = new XSObjectListImpl(fAttributeUses, fAttrUseNum);
++            }
++            else {
++                fAttrUses = XSObjectListImpl.EMPTY_LIST;
++            }
+         }
+         return fAttrUses;
+     }
+diff -uNr xerces-2_11_0/src/org/apache/xerces/impl/xs/traversers/XSDAbstractTraverser.java xerces-2.11.0/src/org/apache/xerces/impl/xs/traversers/XSDAbstractTraverser.java
+--- xerces-2_11_0/src/org/apache/xerces/impl/xs/traversers/XSDAbstractTraverser.java	2011-10-11 02:36:56.465303423 +0900
++++ xerces-2.11.0/src/org/apache/xerces/impl/xs/traversers/XSDAbstractTraverser.java	2011-10-11 02:36:54.983321952 +0900
+@@ -55,7 +55,7 @@
+  * @author Rahul Srivastava, Sun Microsystems Inc.
+  * @author Neeraj Bajaj, Sun Microsystems Inc.
+  *
+- * @version $Id: XSDAbstractTraverser.java 912153 2010-02-20 17:18:22Z mrglavas $
++ * @version $Id: XSDAbstractTraverser.java 1129307 2011-05-30 19:20:04Z sandygao $
+  */
+ abstract class XSDAbstractTraverser {
+     
+@@ -287,6 +287,7 @@
+         Vector enumNSDecls = hasQName ? new Vector() : null;       
+         int currentFacet = 0;
+         xsFacets.reset();
++        boolean seenPattern = false;
+         while (content != null) {           
+             // General Attribute Checking
+             Object[] attrs = null;
+@@ -369,6 +370,7 @@
+                     continue;
+                 }
+                 
++                seenPattern = true;
+                 if (fPattern.length() == 0) {
+                     fPattern.append(patternVal);
+                 } else {
+@@ -559,7 +561,7 @@
+             xsFacets.enumNSDecls = enumNSDecls;
+             xsFacets.enumAnnotations = enumAnnotations;
+         }
+-        if (fPattern.length() != 0) {
++        if (seenPattern) {
+             facetsPresent |= XSSimpleType.FACET_PATTERN;
+             xsFacets.pattern = fPattern.toString();
+             xsFacets.patternAnnotations = patternAnnotations;
+diff -uNr xerces-2_11_0/src/org/apache/xerces/impl/xs/traversers/XSDComplexTypeTraverser.java xerces-2.11.0/src/org/apache/xerces/impl/xs/traversers/XSDComplexTypeTraverser.java
+--- xerces-2_11_0/src/org/apache/xerces/impl/xs/traversers/XSDComplexTypeTraverser.java	2011-10-11 02:36:56.470303362 +0900
++++ xerces-2.11.0/src/org/apache/xerces/impl/xs/traversers/XSDComplexTypeTraverser.java	2011-10-11 02:36:54.990321864 +0900
+@@ -59,7 +59,7 @@
+  * 
+  * @xerces.internal  
+  * 
+- * @version $Id: XSDComplexTypeTraverser.java 834253 2009-11-09 22:07:23Z sandygao $
++ * @version $Id: XSDComplexTypeTraverser.java 1087608 2011-04-01 07:26:31Z mukulg $
+  */
+ 
+ class  XSDComplexTypeTraverser extends XSDAbstractParticleTraverser {
+@@ -1189,10 +1189,7 @@
+         fParticle = getErrorContent();
+         // REVISIT: do we need to remove all attribute uses already added into
+         // the attribute group? maybe it's ok to leave them there. -SG
+-        fAttrGrp.fAttributeWC = getErrorWildcard();
+-        
+-        return;
+-        
++        fAttrGrp.fAttributeWC = getErrorWildcard();        
+     }
+     
+     private void contentBackup() {
+diff -uNr xerces-2_11_0/src/org/apache/xerces/impl/xs/traversers/XSDElementTraverser.java xerces-2.11.0/src/org/apache/xerces/impl/xs/traversers/XSDElementTraverser.java
+--- xerces-2_11_0/src/org/apache/xerces/impl/xs/traversers/XSDElementTraverser.java	2011-10-11 02:36:56.472303336 +0900
++++ xerces-2.11.0/src/org/apache/xerces/impl/xs/traversers/XSDElementTraverser.java	2011-10-11 02:36:54.992321840 +0900
+@@ -66,7 +66,7 @@
+  *
+  * @author Sandy Gao, IBM
+  *
+- * @version $Id: XSDElementTraverser.java 821931 2009-10-05 17:42:57Z sandygao $
++ * @version $Id: XSDElementTraverser.java 1135022 2011-06-13 03:41:15Z mrglavas $
+  */
+ class XSDElementTraverser extends XSDAbstractTraverser {
+     
+@@ -415,7 +415,7 @@
+                         fSchemaHandler.checkForDuplicateNames(
+                                 (schemaDoc.fTargetNamespace == null) ? ","+DOMUtil.getAttrValue(child, SchemaSymbols.ATT_NAME)
+                                         : schemaDoc.fTargetNamespace+","+ DOMUtil.getAttrValue(child, SchemaSymbols.ATT_NAME),
+-                                        fSchemaHandler.ATTRIBUTE_TYPE, fSchemaHandler.getIDRegistry(), fSchemaHandler.getIDRegistry_sub(),
++                                        XSDHandler.ATTRIBUTE_TYPE, fSchemaHandler.getIDRegistry(), fSchemaHandler.getIDRegistry_sub(),
+                                         child, schemaDoc);
+                     }
+                 } else if (childName.equals(SchemaSymbols.ELT_KEYREF)) {
+diff -uNr xerces-2_11_0/src/org/apache/xerces/impl/xs/traversers/XSDHandler.java xerces-2.11.0/src/org/apache/xerces/impl/xs/traversers/XSDHandler.java
+--- xerces-2_11_0/src/org/apache/xerces/impl/xs/traversers/XSDHandler.java	2011-10-11 02:36:56.480303236 +0900
++++ xerces-2.11.0/src/org/apache/xerces/impl/xs/traversers/XSDHandler.java	2011-10-11 02:36:55.000321740 +0900
+@@ -69,8 +69,9 @@
+ import org.apache.xerces.util.StAXLocationWrapper;
+ import org.apache.xerces.util.SymbolHash;
+ import org.apache.xerces.util.SymbolTable;
+-import org.apache.xerces.util.XMLSymbols;
++import org.apache.xerces.util.XMLChar;
+ import org.apache.xerces.util.URI.MalformedURIException;
++import org.apache.xerces.util.XMLSymbols;
+ import org.apache.xerces.xni.QName;
+ import org.apache.xerces.xni.XNIException;
+ import org.apache.xerces.xni.grammars.Grammar;
+@@ -122,7 +123,7 @@
+  * @author Neil Graham, IBM
+  * @author Pavani Mukthipudi, Sun Microsystems
+  * 
+- * @version $Id: XSDHandler.java 1027805 2010-10-27 02:55:35Z mrglavas $
++ * @version $Id: XSDHandler.java 1148437 2011-07-19 16:33:35Z mukulg $
+  */
+ public class XSDHandler {
+     
+@@ -445,13 +446,13 @@
+     private String [][] fKeyrefNamespaceContext = new String[INIT_KEYREF_STACK][1];
+     
+     // global decls: map from decl name to decl object
+-    SymbolHash fGlobalAttrDecls = new SymbolHash();
+-    SymbolHash fGlobalAttrGrpDecls = new SymbolHash();
+-    SymbolHash fGlobalElemDecls = new SymbolHash();
+-    SymbolHash fGlobalGroupDecls = new SymbolHash();
+-    SymbolHash fGlobalNotationDecls = new SymbolHash();
+-    SymbolHash fGlobalIDConstraintDecls = new SymbolHash();
+-    SymbolHash fGlobalTypeDecls = new SymbolHash();
++    SymbolHash fGlobalAttrDecls = new SymbolHash(12);
++    SymbolHash fGlobalAttrGrpDecls = new SymbolHash(5);
++    SymbolHash fGlobalElemDecls = new SymbolHash(25);
++    SymbolHash fGlobalGroupDecls = new SymbolHash(5);
++    SymbolHash fGlobalNotationDecls = new SymbolHash(1);
++    SymbolHash fGlobalIDConstraintDecls = new SymbolHash(3);
++    SymbolHash fGlobalTypeDecls = new SymbolHash(25);
+ 
+     // Constructors
+     public XSDHandler(){
+@@ -561,10 +562,27 @@
+         } //is instanceof XMLInputSource
+ 
+         if (schemaRoot == null) {
+-            // something went wrong right off the hop
+             if (is instanceof XSInputSource) {
+-                return fGrammarBucket.getGrammar(desc.getTargetNamespace());
++                // Need to return a grammar. If the XSInputSource has a list
++                // of grammar objects, then get the first one and return it.
++                // If it has a list of components, then get the grammar that
++                // contains the first component and return it.
++                // If we return null, the XMLSchemaLoader will think nothing
++                // was loaded, and will not try to put the grammar objects
++                // into the grammar pool.
++                XSInputSource xsinput = (XSInputSource)is;
++                SchemaGrammar[] grammars = xsinput.getGrammars();
++                if (grammars != null && grammars.length > 0) {
++                    grammar = fGrammarBucket.getGrammar(grammars[0].getTargetNamespace());
++                }
++                else {
++                    XSObject[] components = xsinput.getComponents();
++                    if (components != null && components.length > 0) {
++                        grammar = fGrammarBucket.getGrammar(components[0].getNamespace());
++                    }
++                }
+             }
++            // something went wrong right off the hop
+             return grammar;
+         }
+ 
+@@ -1252,6 +1270,7 @@
+                         String qName = currSchemaDoc.fTargetNamespace == null ?
+                                 ","+lName:
+                                     currSchemaDoc.fTargetNamespace +","+lName;
++                        qName = XMLChar.trim(qName);
+                         String componentType = DOMUtil.getLocalName(redefineComp);
+                         if (componentType.equals(SchemaSymbols.ELT_ATTRIBUTEGROUP)) {
+                             checkForDuplicateNames(qName, ATTRIBUTEGROUP_TYPE, fUnparsedAttributeGroupRegistry, fUnparsedAttributeGroupRegistrySub, redefineComp, currSchemaDoc);
+@@ -1296,6 +1315,7 @@
+                     String qName = currSchemaDoc.fTargetNamespace == null?
+                             ","+lName:
+                                 currSchemaDoc.fTargetNamespace +","+lName;
++                    qName = XMLChar.trim(qName);
+                     String componentType = DOMUtil.getLocalName(globalComp);
+ 
+                     if (componentType.equals(SchemaSymbols.ELT_ATTRIBUTE)) {
+@@ -2686,16 +2706,31 @@
+     }
+ 
+     private void addNewImportedGrammars(SchemaGrammar srcGrammar, SchemaGrammar dstGrammar) {
+-        final Vector igs1 = srcGrammar.getImportedGrammars();
+-        if (igs1 != null) {
+-            Vector igs2 = dstGrammar.getImportedGrammars();
+-            
+-            if (igs2 == null) {
+-                igs2 = ((Vector) igs1.clone());
+-                dstGrammar.setImportedGrammars(igs2);
+-            }
+-            else {
+-                updateImportList(igs1, igs2);
++        final Vector src = srcGrammar.getImportedGrammars();
++        if (src != null) {
++            Vector dst = dstGrammar.getImportedGrammars();
++            if (dst == null) {
++                dst = new Vector();
++                dstGrammar.setImportedGrammars(dst);
++            }
++            final int size = src.size();
++            for (int i=0; i<size; i++) {
++                SchemaGrammar sg = (SchemaGrammar) src.elementAt(i);
++                // Can't use the object from the source import list directly.
++                // It's possible there is already a grammar with the same
++                // namespace in the bucket but a different object.
++                // This can happen if the bucket has grammar A1, and we try
++                // to add B and A2, where A2 imports B. When B is added, we
++                // create a new object B' and store it in the bucket. Then we
++                // try to merge A2 and A1. We can't use B. Need to get B' from
++                // the bucket and store it in A's import list.
++                SchemaGrammar sg1 = fGrammarBucket.getGrammar(sg.getTargetNamespace());
++                if (sg1 != null) {
++                    sg = sg1;
++                }
++                if (!containedImportedGrammar(dst, sg)) {
++                    dst.add(sg);
++                }
+             }
+         }
+     }
+diff -uNr xerces-2_11_0/src/org/apache/xerces/impl/xs/traversers/XSDSimpleTypeTraverser.java xerces-2.11.0/src/org/apache/xerces/impl/xs/traversers/XSDSimpleTypeTraverser.java
+--- xerces-2_11_0/src/org/apache/xerces/impl/xs/traversers/XSDSimpleTypeTraverser.java	2011-10-11 02:36:56.486303162 +0900
++++ xerces-2.11.0/src/org/apache/xerces/impl/xs/traversers/XSDSimpleTypeTraverser.java	2011-10-11 02:36:55.005321676 +0900
+@@ -21,9 +21,7 @@
+ import java.util.Vector;
+ 
+ import org.apache.xerces.impl.dv.InvalidDatatypeFacetException;
+-import org.apache.xerces.impl.dv.SchemaDVFactory;
+ import org.apache.xerces.impl.dv.XSSimpleType;
+-import org.apache.xerces.impl.dv.xs.SchemaDVFactoryImpl;
+ import org.apache.xerces.impl.dv.xs.XSSimpleTypeDecl;
+ import org.apache.xerces.impl.xs.SchemaGrammar;
+ import org.apache.xerces.impl.xs.SchemaSymbols;
+@@ -75,7 +73,7 @@
+  * @author Neeraj Bajaj, Sun Microsystems, Inc.
+  * @author Sandy Gao, IBM
+  * 
+- * @version $Id: XSDSimpleTypeTraverser.java 819653 2009-09-28 17:29:56Z knoaman $
++ * @version $Id: XSDSimpleTypeTraverser.java 1135024 2011-06-13 03:43:15Z mrglavas $
+  */
+ class XSDSimpleTypeTraverser extends XSDAbstractTraverser {
+     
+diff -uNr xerces-2_11_0/src/org/apache/xerces/parsers/AbstractSAXParser.java xerces-2.11.0/src/org/apache/xerces/parsers/AbstractSAXParser.java
+--- xerces-2_11_0/src/org/apache/xerces/parsers/AbstractSAXParser.java	2011-10-11 02:36:56.692300587 +0900
++++ xerces-2.11.0/src/org/apache/xerces/parsers/AbstractSAXParser.java	2011-10-11 02:36:55.218319014 +0900
+@@ -73,7 +73,7 @@
+  * @author Arnaud Le Hors, IBM
+  * @author Andy Clark, IBM
+  *
+- * @version $Id: AbstractSAXParser.java 965250 2010-07-18 16:04:58Z mrglavas $
++ * @version $Id: AbstractSAXParser.java 1135017 2011-06-13 03:31:26Z mrglavas $
+  */
+ public abstract class AbstractSAXParser
+     extends AbstractXMLDocumentParser
+@@ -336,8 +336,8 @@
+         }
+ 
+         // is there a DeclHandler?
+-        if(fDeclHandler != null) {
+-            fDeclaredAttrs = new SymbolHash();
++        if (fDeclHandler != null) {
++            fDeclaredAttrs = new SymbolHash(25);
+         }
+ 
+     } // doctypeDecl(String,String,String)
+diff -uNr xerces-2_11_0/src/org/apache/xerces/parsers/org.apache.xerces.xni.parser.DTDConfiguration xerces-2.11.0/src/org/apache/xerces/parsers/org.apache.xerces.xni.parser.DTDConfiguration
+--- xerces-2_11_0/src/org/apache/xerces/parsers/org.apache.xerces.xni.parser.DTDConfiguration	2010-11-27 05:42:04.000000000 +0900
++++ xerces-2.11.0/src/org/apache/xerces/parsers/org.apache.xerces.xni.parser.DTDConfiguration	2011-10-11 02:29:36.247806900 +0900
+@@ -1 +1 @@
+-org.apache.xerces.parsers.DTDConfiguration
++org.apache.xerces.parsers.DTDConfiguration
+diff -uNr xerces-2_11_0/src/org/apache/xerces/parsers/org.apache.xerces.xni.parser.XML11Configuration xerces-2.11.0/src/org/apache/xerces/parsers/org.apache.xerces.xni.parser.XML11Configuration
+--- xerces-2_11_0/src/org/apache/xerces/parsers/org.apache.xerces.xni.parser.XML11Configuration	2010-11-27 05:42:09.000000000 +0900
++++ xerces-2.11.0/src/org/apache/xerces/parsers/org.apache.xerces.xni.parser.XML11Configuration	2011-10-11 02:29:36.247806900 +0900
+@@ -1 +1 @@
+-org.apache.xerces.parsers.XML11Configuration
++org.apache.xerces.parsers.XML11Configuration
+diff -uNr xerces-2_11_0/src/org/apache/xerces/parsers/org.apache.xerces.xni.parser.XMLParserConfiguration xerces-2.11.0/src/org/apache/xerces/parsers/org.apache.xerces.xni.parser.XMLParserConfiguration
+--- xerces-2_11_0/src/org/apache/xerces/parsers/org.apache.xerces.xni.parser.XMLParserConfiguration	2010-11-27 05:42:07.000000000 +0900
++++ xerces-2.11.0/src/org/apache/xerces/parsers/org.apache.xerces.xni.parser.XMLParserConfiguration	2011-10-11 02:29:36.247806900 +0900
+@@ -1 +1 @@
+-org.apache.xerces.parsers.XIncludeAwareParserConfiguration
++org.apache.xerces.parsers.XIncludeAwareParserConfiguration
+diff -uNr xerces-2_11_0/src/org/apache/xerces/parsers/org.xml.sax.driver xerces-2.11.0/src/org/apache/xerces/parsers/org.xml.sax.driver
+--- xerces-2_11_0/src/org/apache/xerces/parsers/org.xml.sax.driver	2010-11-27 05:42:04.000000000 +0900
++++ xerces-2.11.0/src/org/apache/xerces/parsers/org.xml.sax.driver	2011-10-11 02:29:36.248806887 +0900
+@@ -1,2 +1,2 @@
+-org.apache.xerces.parsers.SAXParser
+-
++org.apache.xerces.parsers.SAXParser
++
+diff -uNr xerces-2_11_0/src/org/apache/xerces/util/SoftReferenceSymbolTable.java xerces-2.11.0/src/org/apache/xerces/util/SoftReferenceSymbolTable.java
+--- xerces-2_11_0/src/org/apache/xerces/util/SoftReferenceSymbolTable.java	2011-10-11 02:36:56.816299037 +0900
++++ xerces-2.11.0/src/org/apache/xerces/util/SoftReferenceSymbolTable.java	2011-10-11 02:36:55.359317250 +0900
+@@ -24,13 +24,13 @@
+  * This symbol table uses SoftReferences to its String entries, which means that table entries
+  * that have no references to them can be garbage collected when memory is needed.  Thus, in
+  * documents with very very large numbers of unique strings, using this SymbolTable will prevent
+- * an out of memory error from occuring.
++ * an out of memory error from occurring.
+  * 
+  * @see SymbolTable
+  *
+  * @author Peter McCracken, IBM
+  *
+- * @version $Id: SoftReferenceSymbolTable.java 924298 2010-03-17 13:57:20Z mrglavas $
++ * @version $Id: SoftReferenceSymbolTable.java 1155386 2011-08-09 14:51:31Z mrglavas $
+  */
+ /*
+  * This class extends SymbolTable.  Logically, it would make more sense if it and SymbolTable
+@@ -65,9 +65,12 @@
+      */
+     public SoftReferenceSymbolTable(int initialCapacity, float loadFactor) {
+         /*
+-         * Not calling super() because we don't want to initialize the Entry buckets
+-         * used by the base class.
++         * The Entry buckets in the base class are not used by this class.
++         * We call super() with 1 as the initial capacity to minimize the
++         * memory used by the field in the base class.
+          */
++        super(1, loadFactor);
++        
+         if (initialCapacity < 0) {
+             throw new IllegalArgumentException("Illegal Capacity: " + initialCapacity);
+         }
+@@ -200,12 +203,26 @@
+      * and load factor. 
+      */
+     protected void rehash() {
+-
+-        int oldCapacity = fBuckets.length;
+-        SREntry[] oldTable = fBuckets;
+-
+-        int newCapacity = oldCapacity * 2 + 1;
+-        SREntry[] newTable = new SREntry[newCapacity];
++        rehashCommon(fBuckets.length * 2 + 1);
++    }
++    
++    /**
++     * Reduces the capacity of and internally reorganizes this 
++     * SymbolTable, in order to accommodate and access its entries in
++     * a more memory efficient way. This method is called automatically when 
++     * the number of keys in the SymbolTable drops below 25% of this
++     * hashtable's load factor (as a result of SoftReferences which have
++     * been cleared).
++     */
++    protected void compact() {
++        rehashCommon(((int) (fCount / fLoadFactor)) * 2 + 1);
++    }
++    
++    private void rehashCommon(final int newCapacity) {
++        
++        final int oldCapacity = fBuckets.length;
++        final SREntry[] oldTable = fBuckets;
++        final SREntry[] newTable = new SREntry[newCapacity];
+ 
+         fThreshold = (int)(newCapacity * fLoadFactor);
+         fBuckets = newTable;
+@@ -222,13 +239,16 @@
+                     if (newTable[index] != null) {
+                         newTable[index].prev = e;
+                     }
++                    e.bucket = index;
+                     e.next = newTable[index];
+-                    e.prev = null;
+                     newTable[index] = e;
+                 }
+                 else {
+-                    fCount--;
++                    e.bucket = -1;
++                    e.next = null;
++                    --fCount;
+                 }
++                e.prev = null;
+             }
+         }
+     }
+@@ -295,16 +315,19 @@
+     } // containsSymbol(char[],int,int):boolean
+ 
+     private void removeEntry(SREntry entry) {
+-        if (entry.next != null) {
+-            entry.next.prev = entry.prev;
+-        }
+-        if (entry.prev != null) {
+-            entry.prev.next = entry.next;
+-        }
+-        else {
+-            fBuckets[entry.bucket] = entry.next;
++        final int bucket = entry.bucket;
++        if (bucket >= 0) {
++            if (entry.next != null) {
++                entry.next.prev = entry.prev;
++            }
++            if (entry.prev != null) {
++                entry.prev.next = entry.next;
++            }
++            else {
++                fBuckets[bucket] = entry.next;
++            }
++            --fCount;
+         }
+-        fCount--;
+     }
+     
+     /**
+@@ -312,9 +335,17 @@
+      */
+     private void clean() {
+         SREntry entry = (SREntry)fReferenceQueue.poll();
+-        while (entry != null) {
+-            removeEntry(entry);
+-            entry = (SREntry)fReferenceQueue.poll();
++        if (entry != null) {
++            do {
++                removeEntry(entry);
++                entry = (SREntry)fReferenceQueue.poll();
++            }
++            while (entry != null);
++            // Reduce the number of buckets if the number of items
++            // in the table has dropped below 25% of the threshold.
++            if (fCount < (fThreshold >> 2)) {
++                compact();
++            }
+         }
+     }
+         
+@@ -336,6 +367,7 @@
+         /** The previous entry. */
+         public SREntry prev;
+ 
++        /** The bucket this entry is contained in; -1 if it has been removed from the table. */
+         public int bucket;
+         
+         //
+diff -uNr xerces-2_11_0/src/org/apache/xerces/util/SymbolHash.java xerces-2.11.0/src/org/apache/xerces/util/SymbolHash.java
+--- xerces-2_11_0/src/org/apache/xerces/util/SymbolHash.java	2011-10-11 02:36:56.820298985 +0900
++++ xerces-2.11.0/src/org/apache/xerces/util/SymbolHash.java	2011-10-11 02:36:55.362317214 +0900
+@@ -17,7 +17,6 @@
+ 
+ package org.apache.xerces.util;
+ 
+-
+ /**
+  * This class is an unsynchronized hash table primary used for String
+  * to Object mapping.
+@@ -25,7 +24,7 @@
+  * The hash code uses the same algorithm as SymbolTable class.
+  * 
+  * @author Elena Litani
+- * @version $Id: SymbolHash.java 819653 2009-09-28 17:29:56Z knoaman $
++ * @version $Id: SymbolHash.java 1082175 2011-03-16 15:57:02Z mrglavas $
+  */
+ public class SymbolHash {
+ 
+@@ -78,7 +77,8 @@
+      * @param value 
+      */
+     public void put(Object key, Object value) {
+-        int bucket = (key.hashCode() & 0x7FFFFFFF) % fTableSize;
++        final int hash = hash(key);
++        int bucket = hash % fTableSize;
+         Entry entry = search(key, bucket);
+ 
+         // replace old value
+@@ -87,6 +87,12 @@
+         }
+         // create new entry
+         else {
++            if (fNum >= fTableSize) {
++                // Rehash the table if the number of entries
++                // would exceed the number of buckets.
++                rehash();
++                bucket = hash % fTableSize;
++            }
+             entry = new Entry(key, value, fBuckets[bucket]);
+             fBuckets[bucket] = entry;
+             fNum++;
+@@ -100,7 +106,7 @@
+      * @return the value associated with the given key.
+      */
+     public Object get(Object key) {
+-        int bucket = (key.hashCode() & 0x7FFFFFFF) % fTableSize;
++        int bucket = hash(key) % fTableSize;
+         Entry entry = search(key, bucket);
+         if (entry != null) {
+             return entry.value;
+@@ -156,14 +162,15 @@
+         SymbolHash newTable = new SymbolHash(fTableSize);
+         newTable.fNum = fNum;
+         for (int i = 0; i < fTableSize; i++) {
+-            if (fBuckets[i] != null)
++            if (fBuckets[i] != null) {
+                 newTable.fBuckets[i] = fBuckets[i].makeClone();
++            }
+         }
+         return newTable;
+     }
+     
+     /**
+-     * Remove all key/value assocaition. This tries to save a bit of GC'ing
++     * Remove all key/value association. This tries to save a bit of GC'ing
+      * by at least keeping the fBuckets array around.
+      */
+     public void clear() {
+@@ -182,6 +189,44 @@
+         return null;
+     }
+     
++    /**
++     * Returns a hashcode value for the specified key.
++     *
++     * @param key The key to hash.
++     */
++    protected int hash(Object key) {
++        return key.hashCode() & 0x7FFFFFFF;
++    }
++    
++    /**
++     * Increases the capacity of and internally reorganizes this 
++     * SymbolHash, in order to accommodate and access its entries more 
++     * efficiently.  This method is called automatically when the 
++     * number of keys in the SymbolHash exceeds its number of buckets.
++     */
++    protected void rehash() {
++
++        final int oldCapacity = fBuckets.length;
++        final Entry[] oldTable = fBuckets;
++
++        final int newCapacity = (oldCapacity << 1) + 1;
++        final Entry[] newTable = new Entry[newCapacity];
++
++        fBuckets = newTable;
++        fTableSize = fBuckets.length;
++
++        for (int i = oldCapacity; i-- > 0;) {
++            for (Entry old = oldTable[i]; old != null; ) {
++                Entry e = old;
++                old = old.next;
++
++                int index = hash(e.key) % newCapacity;
++                e.next = newTable[index];
++                newTable[index] = e;
++            }
++        }
++    }
++    
+     //
+     // Classes
+     //
+diff -uNr xerces-2_11_0/src/org/apache/xerces/xs/ItemPSVI.java xerces-2.11.0/src/org/apache/xerces/xs/ItemPSVI.java
+--- xerces-2_11_0/src/org/apache/xerces/xs/ItemPSVI.java	2011-10-11 02:36:56.952297337 +0900
++++ xerces-2.11.0/src/org/apache/xerces/xs/ItemPSVI.java	2011-10-11 02:36:55.478315763 +0900
+@@ -54,6 +54,19 @@
+      * performed on the item. 
+      */
+     public static final short VALIDATION_FULL           = 2;
++    
++    /**
++     * Returns a reference to an immutable instance with the same data
++     * that this instance of <code>ItemPSVI</code> currently has.
++     */
++    public ItemPSVI constant();
++    
++    /** 
++     * Returns <code>true</code> if this specific instance of
++     * <code>ItemPSVI</code> is immutable, otherwise <code>false</code>.
++     */
++    public boolean isConstant();
++    
+     /**
+      * The nearest ancestor element information item with a 
+      * <code>[schema information]</code> property (or this element item 
+diff -uNr xerces-2_11_0/src/org/apache/xml/serialize/BaseMarkupSerializer.java xerces-2.11.0/src/org/apache/xml/serialize/BaseMarkupSerializer.java
+--- xerces-2_11_0/src/org/apache/xml/serialize/BaseMarkupSerializer.java	2011-10-11 02:36:57.001296724 +0900
++++ xerces-2.11.0/src/org/apache/xml/serialize/BaseMarkupSerializer.java	2011-10-11 02:36:55.531315100 +0900
+@@ -114,7 +114,7 @@
+  * that new applications use the DOM Level 3 LSSerializer or JAXP's Transformation 
+  * API for XML (TrAX) for serializing XML. See the Xerces documentation for more 
+  * information.
+- * @version $Revision: 923974 $ $Date: 2010-03-16 16:47:04 -0400 (Tue, 16 Mar 2010) $
++ * @version $Revision: 923974 $ $Date: 2010-03-17 05:47:04 +0900 (Wed, 17 Mar 2010) $
+  * @author <a href="mailto:arkin@intalio.com">Assaf Arkin</a>
+  * @author <a href="mailto:rahul.srivastava@sun.com">Rahul Srivastava</a>
+  * @author Elena Litani, IBM 
+diff -uNr xerces-2_11_0/src/org/apache/xml/serialize/DOMSerializer.java xerces-2.11.0/src/org/apache/xml/serialize/DOMSerializer.java
+--- xerces-2_11_0/src/org/apache/xml/serialize/DOMSerializer.java	2011-10-11 02:36:57.002296711 +0900
++++ xerces-2.11.0/src/org/apache/xml/serialize/DOMSerializer.java	2011-10-11 02:36:55.532315088 +0900
+@@ -34,7 +34,7 @@
+  * that new applications use the DOM Level 3 LSSerializer or JAXP's Transformation 
+  * API for XML (TrAX) for serializing XML. See the Xerces documentation for more 
+  * information.
+- * @version $Revision: 699892 $ $Date: 2008-09-28 17:08:27 -0400 (Sun, 28 Sep 2008) $
++ * @version $Revision: 699892 $ $Date: 2008-09-29 06:08:27 +0900 (Mon, 29 Sep 2008) $
+  * @author <a href="mailto:Scott_Boag/CAM/Lotus@lotus.com">Scott Boag</a>
+  * @author <a href="mailto:arkin@intalio.com">Assaf Arkin</a>
+  */
+diff -uNr xerces-2_11_0/src/org/apache/xml/serialize/ElementState.java xerces-2.11.0/src/org/apache/xml/serialize/ElementState.java
+--- xerces-2_11_0/src/org/apache/xml/serialize/ElementState.java	2011-10-11 02:36:57.006296661 +0900
++++ xerces-2.11.0/src/org/apache/xml/serialize/ElementState.java	2011-10-11 02:36:55.537315025 +0900
+@@ -29,7 +29,7 @@
+  * that new applications use the DOM Level 3 LSSerializer or JAXP's Transformation 
+  * API for XML (TrAX) for serializing XML. See the Xerces documentation for more 
+  * information.
+- * @version $Revision: 476047 $ $Date: 2006-11-16 23:27:45 -0500 (Thu, 16 Nov 2006) $
++ * @version $Revision: 476047 $ $Date: 2006-11-17 13:27:45 +0900 (Fri, 17 Nov 2006) $
+  * @author <a href="mailto:arkin@intalio.com">Assaf Arkin</a>
+  * @see BaseMarkupSerializer
+  */
+diff -uNr xerces-2_11_0/src/org/apache/xml/serialize/HTMLEntities.res xerces-2.11.0/src/org/apache/xml/serialize/HTMLEntities.res
+--- xerces-2_11_0/src/org/apache/xml/serialize/HTMLEntities.res	2011-10-11 02:38:39.353017151 +0900
++++ xerces-2.11.0/src/org/apache/xml/serialize/HTMLEntities.res	2011-10-11 02:38:39.187019225 +0900
+@@ -1,6 +1,6 @@
+ # $Id: HTMLEntities.res 316040 2000-08-30 18:59:22Z arkin $
+ #
+-# @version $Revision: 316040 $ $Date: 2000-08-30 14:59:22 -0400 (Wed, 30 Aug 2000) $
++# @version $Revision: 316040 $ $Date: 2000-08-31 03:59:22 +0900 (Thu, 31 Aug 2000) $
+ # @author <a href="mailto:arkin@intalio.com">Assaf Arkin</a>
+ #
+ # Character entity references for markup-significant
+diff -uNr xerces-2_11_0/src/org/apache/xml/serialize/HTMLSerializer.java xerces-2.11.0/src/org/apache/xml/serialize/HTMLSerializer.java
+--- xerces-2_11_0/src/org/apache/xml/serialize/HTMLSerializer.java	2011-10-11 02:36:57.013296573 +0900
++++ xerces-2.11.0/src/org/apache/xml/serialize/HTMLSerializer.java	2011-10-11 02:36:55.543314951 +0900
+@@ -87,7 +87,7 @@
+  * recommended that new applications use JAXP's Transformation API 
+  * for XML (TrAX) for serializing HTML. See the Xerces documentation
+  * for more information.
+- * @version $Revision: 704573 $ $Date: 2008-10-14 12:11:22 -0400 (Tue, 14 Oct 2008) $
++ * @version $Revision: 704573 $ $Date: 2008-10-15 01:11:22 +0900 (Wed, 15 Oct 2008) $
+  * @author <a href="mailto:arkin@intalio.com">Assaf Arkin</a>
+  * @see Serializer
+  */
+diff -uNr xerces-2_11_0/src/org/apache/xml/serialize/HTMLdtd.java xerces-2.11.0/src/org/apache/xml/serialize/HTMLdtd.java
+--- xerces-2_11_0/src/org/apache/xml/serialize/HTMLdtd.java	2011-10-11 02:36:57.015296549 +0900
++++ xerces-2.11.0/src/org/apache/xml/serialize/HTMLdtd.java	2011-10-11 02:36:55.546314912 +0900
+@@ -42,7 +42,7 @@
+  * @deprecated This class was deprecated in Xerces 2.9.0. It is recommended 
+  * that new applications use JAXP's Transformation API for XML (TrAX) for 
+  * serializing HTML. See the Xerces documentation for more information.
+- * @version $Revision: 699892 $ $Date: 2008-09-28 17:08:27 -0400 (Sun, 28 Sep 2008) $
++ * @version $Revision: 699892 $ $Date: 2008-09-29 06:08:27 +0900 (Mon, 29 Sep 2008) $
+  * @author <a href="mailto:arkin@intalio.com">Assaf Arkin</a>
+  */
+ public final class HTMLdtd
+diff -uNr xerces-2_11_0/src/org/apache/xml/serialize/IndentPrinter.java xerces-2.11.0/src/org/apache/xml/serialize/IndentPrinter.java
+--- xerces-2_11_0/src/org/apache/xml/serialize/IndentPrinter.java	2011-10-11 02:36:57.016296537 +0900
++++ xerces-2.11.0/src/org/apache/xml/serialize/IndentPrinter.java	2011-10-11 02:36:55.548314888 +0900
+@@ -32,7 +32,7 @@
+  * that new applications use the DOM Level 3 LSSerializer or JAXP's Transformation 
+  * API for XML (TrAX) for serializing XML. See the Xerces documentation for more 
+  * information.
+- * @version $Revision: 699892 $ $Date: 2008-09-28 17:08:27 -0400 (Sun, 28 Sep 2008) $
++ * @version $Revision: 699892 $ $Date: 2008-09-29 06:08:27 +0900 (Mon, 29 Sep 2008) $
+  * @author <a href="mailto:arkin@intalio.com">Assaf Arkin</a>
+  */
+ public class IndentPrinter
+diff -uNr xerces-2_11_0/src/org/apache/xml/serialize/LineSeparator.java xerces-2.11.0/src/org/apache/xml/serialize/LineSeparator.java
+--- xerces-2_11_0/src/org/apache/xml/serialize/LineSeparator.java	2011-10-11 02:36:57.018296511 +0900
++++ xerces-2.11.0/src/org/apache/xml/serialize/LineSeparator.java	2011-10-11 02:36:55.549314876 +0900
+@@ -24,7 +24,7 @@
+  * that new applications use the DOM Level 3 LSSerializer or JAXP's Transformation 
+  * API for XML (TrAX) for serializing XML. See the Xerces documentation for more 
+  * information.
+- * @version $Revision: 476047 $ $Date: 2006-11-16 23:27:45 -0500 (Thu, 16 Nov 2006) $
++ * @version $Revision: 476047 $ $Date: 2006-11-17 13:27:45 +0900 (Fri, 17 Nov 2006) $
+  * @author <a href="mailto:arkin@intalio..com">Assaf Arkin</a>
+  * @see OutputFormat
+  */
+diff -uNr xerces-2_11_0/src/org/apache/xml/serialize/Method.java xerces-2.11.0/src/org/apache/xml/serialize/Method.java
+--- xerces-2_11_0/src/org/apache/xml/serialize/Method.java	2011-10-11 02:36:57.020296485 +0900
++++ xerces-2.11.0/src/org/apache/xml/serialize/Method.java	2011-10-11 02:36:55.552314838 +0900
+@@ -24,7 +24,7 @@
+  * that new applications use the DOM Level 3 LSSerializer or JAXP's Transformation 
+  * API for XML (TrAX) for serializing XML. See the Xerces documentation for more 
+  * information.
+- * @version $Revision: 476047 $ $Date: 2006-11-16 23:27:45 -0500 (Thu, 16 Nov 2006) $
++ * @version $Revision: 476047 $ $Date: 2006-11-17 13:27:45 +0900 (Fri, 17 Nov 2006) $
+  * @author <a href="mailto:arkin@intalio.com">Assaf Arkin</a>
+  * @see OutputFormat
+  */
+diff -uNr xerces-2_11_0/src/org/apache/xml/serialize/OutputFormat.java xerces-2.11.0/src/org/apache/xml/serialize/OutputFormat.java
+--- xerces-2_11_0/src/org/apache/xml/serialize/OutputFormat.java	2011-10-11 02:36:57.024296437 +0900
++++ xerces-2.11.0/src/org/apache/xml/serialize/OutputFormat.java	2011-10-11 02:36:55.555314800 +0900
+@@ -55,7 +55,7 @@
+  * that new applications use the DOM Level 3 LSSerializer or JAXP's Transformation 
+  * API for XML (TrAX) for serializing XML and HTML. See the Xerces documentation for 
+  * more information.
+- * @version $Revision: 476048 $ $Date: 2006-11-16 23:32:47 -0500 (Thu, 16 Nov 2006) $
++ * @version $Revision: 476048 $ $Date: 2006-11-17 13:32:47 +0900 (Fri, 17 Nov 2006) $
+  * @author <a href="mailto:arkin@intalio.com">Assaf Arkin</a>
+  *         <a href="mailto:visco@intalio.com">Keith Visco</a>
+  * @see Serializer
+diff -uNr xerces-2_11_0/src/org/apache/xml/serialize/Printer.java xerces-2.11.0/src/org/apache/xml/serialize/Printer.java
+--- xerces-2_11_0/src/org/apache/xml/serialize/Printer.java	2011-10-11 02:36:57.026296411 +0900
++++ xerces-2.11.0/src/org/apache/xml/serialize/Printer.java	2011-10-11 02:36:55.557314776 +0900
+@@ -40,7 +40,7 @@
+  * that new applications use the DOM Level 3 LSSerializer or JAXP's Transformation 
+  * API for XML (TrAX) for serializing XML. See the Xerces documentation for more 
+  * information.
+- * @version $Revision: 699892 $ $Date: 2008-09-28 17:08:27 -0400 (Sun, 28 Sep 2008) $
++ * @version $Revision: 699892 $ $Date: 2008-09-29 06:08:27 +0900 (Mon, 29 Sep 2008) $
+  * @author <a href="mailto:arkin@intalio.com">Assaf Arkin</a>
+  */
+ public class Printer
+diff -uNr xerces-2_11_0/src/org/apache/xml/serialize/Serializer.java xerces-2.11.0/src/org/apache/xml/serialize/Serializer.java
+--- xerces-2_11_0/src/org/apache/xml/serialize/Serializer.java	2011-10-11 02:36:57.028296385 +0900
++++ xerces-2.11.0/src/org/apache/xml/serialize/Serializer.java	2011-10-11 02:36:55.560314738 +0900
+@@ -56,7 +56,7 @@
+  * that new applications use the DOM Level 3 LSSerializer or JAXP's Transformation 
+  * API for XML (TrAX) for serializing XML and HTML. See the Xerces documentation for more 
+  * information.
+- * @version $Revision: 699892 $ $Date: 2008-09-28 17:08:27 -0400 (Sun, 28 Sep 2008) $
++ * @version $Revision: 699892 $ $Date: 2008-09-29 06:08:27 +0900 (Mon, 29 Sep 2008) $
+  * @author <a href="mailto:arkin@intalio.com">Assaf Arkin</a>
+  * @author <a href="mailto:Scott_Boag/CAM/Lotus@lotus.com">Scott Boag</a>
+  * @see DocumentHandler
+diff -uNr xerces-2_11_0/src/org/apache/xml/serialize/SerializerFactory.java xerces-2.11.0/src/org/apache/xml/serialize/SerializerFactory.java
+--- xerces-2_11_0/src/org/apache/xml/serialize/SerializerFactory.java	2011-10-11 02:36:57.029296373 +0900
++++ xerces-2.11.0/src/org/apache/xml/serialize/SerializerFactory.java	2011-10-11 02:36:55.561314725 +0900
+@@ -28,7 +28,7 @@
+  * that new applications use the DOM Level 3 LSSerializer or JAXP's Transformation 
+  * API for XML (TrAX) for serializing XML and HTML. See the Xerces documentation for more 
+  * information.
+- * @version $Revision: 699892 $ $Date: 2008-09-28 17:08:27 -0400 (Sun, 28 Sep 2008) $
++ * @version $Revision: 699892 $ $Date: 2008-09-29 06:08:27 +0900 (Mon, 29 Sep 2008) $
+  * @author <a href="mailto:Scott_Boag/CAM/Lotus@lotus.com">Scott Boag</a>
+  * @author <a href="mailto:arkin@intalio.com">Assaf Arkin</a>
+  */
+diff -uNr xerces-2_11_0/src/org/apache/xml/serialize/SerializerFactoryImpl.java xerces-2.11.0/src/org/apache/xml/serialize/SerializerFactoryImpl.java
+--- xerces-2_11_0/src/org/apache/xml/serialize/SerializerFactoryImpl.java	2011-10-11 02:36:57.030296361 +0900
++++ xerces-2.11.0/src/org/apache/xml/serialize/SerializerFactoryImpl.java	2011-10-11 02:36:55.562314712 +0900
+@@ -33,7 +33,7 @@
+  * that new applications use the DOM Level 3 LSSerializer or JAXP's Transformation 
+  * API for XML (TrAX) for serializing XML and HTML. See the Xerces documentation for more 
+  * information.
+- * @version $Revision: 699892 $ $Date: 2008-09-28 17:08:27 -0400 (Sun, 28 Sep 2008) $
++ * @version $Revision: 699892 $ $Date: 2008-09-29 06:08:27 +0900 (Mon, 29 Sep 2008) $
+  * @author <a href="mailto:Scott_Boag/CAM/Lotus@lotus.com">Scott Boag</a>
+  * @author <a href="mailto:arkin@intalio.com">Assaf Arkin</a>
+  */
+diff -uNr xerces-2_11_0/src/org/apache/xml/serialize/TextSerializer.java xerces-2.11.0/src/org/apache/xml/serialize/TextSerializer.java
+--- xerces-2_11_0/src/org/apache/xml/serialize/TextSerializer.java	2011-10-11 02:36:57.031296349 +0900
++++ xerces-2.11.0/src/org/apache/xml/serialize/TextSerializer.java	2011-10-11 02:36:55.563314700 +0900
+@@ -56,7 +56,7 @@
+  * that new applications use the DOM Level 3 LSSerializer or JAXP's Transformation 
+  * API for XML (TrAX) for serializing XML and HTML. See the Xerces documentation for more 
+  * information.
+- * @version $Revision: 476047 $ $Date: 2006-11-16 23:27:45 -0500 (Thu, 16 Nov 2006) $
++ * @version $Revision: 476047 $ $Date: 2006-11-17 13:27:45 +0900 (Fri, 17 Nov 2006) $
+  * @author <a href="mailto:arkin@intalio.com">Assaf Arkin</a>
+  * @see Serializer
+  */
+diff -uNr xerces-2_11_0/src/org/apache/xml/serialize/XHTMLSerializer.java xerces-2.11.0/src/org/apache/xml/serialize/XHTMLSerializer.java
+--- xerces-2_11_0/src/org/apache/xml/serialize/XHTMLSerializer.java	2011-10-11 02:36:57.032296336 +0900
++++ xerces-2.11.0/src/org/apache/xml/serialize/XHTMLSerializer.java	2011-10-11 02:36:55.564314688 +0900
+@@ -32,7 +32,7 @@
+  * recommended that new applications use JAXP's Transformation API 
+  * for XML (TrAX) for serializing XHTML. See the Xerces documentation
+  * for more information.
+- * @version $Revision: 447253 $ $Date: 2006-09-18 01:32:50 -0400 (Mon, 18 Sep 2006) $
++ * @version $Revision: 447253 $ $Date: 2006-09-18 14:32:50 +0900 (Mon, 18 Sep 2006) $
+  * @author <a href="mailto:arkin@intalio.com">Assaf Arkin</a>
+  * @see Serializer
+  */
+diff -uNr xerces-2_11_0/src/org/apache/xml/serialize/XML11Serializer.java xerces-2.11.0/src/org/apache/xml/serialize/XML11Serializer.java
+--- xerces-2_11_0/src/org/apache/xml/serialize/XML11Serializer.java	2011-10-11 02:36:57.034296310 +0900
++++ xerces-2.11.0/src/org/apache/xml/serialize/XML11Serializer.java	2011-10-11 02:36:55.568314638 +0900
+@@ -77,7 +77,7 @@
+  * @author <a href="mailto:arkin@intalio.com">Assaf Arkin</a>
+  * @author <a href="mailto:rahul.srivastava@sun.com">Rahul Srivastava</a>
+  * @author Elena Litani IBM
+- * @version $Revision: 476047 $ $Date: 2006-11-16 23:27:45 -0500 (Thu, 16 Nov 2006) $
++ * @version $Revision: 476047 $ $Date: 2006-11-17 13:27:45 +0900 (Fri, 17 Nov 2006) $
+  * @see Serializer
+  */
+ public class XML11Serializer 
+diff -uNr xerces-2_11_0/src/org/apache/xml/serialize/XMLSerializer.java xerces-2.11.0/src/org/apache/xml/serialize/XMLSerializer.java
+--- xerces-2_11_0/src/org/apache/xml/serialize/XMLSerializer.java	2011-10-11 02:36:57.036296286 +0900
++++ xerces-2.11.0/src/org/apache/xml/serialize/XMLSerializer.java	2011-10-11 02:36:55.570314612 +0900
+@@ -88,7 +88,7 @@
+  * @author <a href="mailto:arkin@intalio.com">Assaf Arkin</a>
+  * @author <a href="mailto:rahul.srivastava@sun.com">Rahul Srivastava</a>
+  * @author Elena Litani IBM
+- * @version $Revision: 704573 $ $Date: 2008-10-14 12:11:22 -0400 (Tue, 14 Oct 2008) $
++ * @version $Revision: 704573 $ $Date: 2008-10-15 01:11:22 +0900 (Wed, 15 Oct 2008) $
+  * @see Serializer
+  */
+ public class XMLSerializer

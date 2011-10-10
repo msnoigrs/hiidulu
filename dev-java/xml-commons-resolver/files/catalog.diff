@@ -1,0 +1,20 @@
+diff -ur libxml-commons-resolver1.1-java.old/src/org/apache/xml/resolver/Catalog.java libxml-commons-resolver1.1-java-1.2/src/org/apache/xml/resolver/Catalog.java
+--- libxml-commons-resolver1.1-java.old/src/org/apache/xml/resolver/Catalog.java	2010-01-25 22:18:12.000000000 +0000
++++ libxml-commons-resolver1.1-java-1.2/src/org/apache/xml/resolver/Catalog.java	2010-01-25 22:19:51.000000000 +0000
+@@ -2182,13 +2182,15 @@
+    */
+   protected void addDelegate(CatalogEntry entry) {
+     int pos = 0;
++    int type = entry.getEntryType();
+     String partial = entry.getEntryArg(0);
+ 
+     Enumeration local = localDelegate.elements();
+     while (local.hasMoreElements()) {
+       CatalogEntry dpe = (CatalogEntry) local.nextElement();
+       String dp = dpe.getEntryArg(0);
+-      if (dp.equals(partial)) {
++      int dptype = dpe.getEntryType();
++      if (dp.equals(partial) && (type == dptype)) {
+ 	// we already have this prefix
+ 	return;
+       }

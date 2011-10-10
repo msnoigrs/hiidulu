@@ -1,0 +1,20 @@
+--- xerces-2_11_0.orig/build.xml	2011-03-13 01:02:37.319000096 +0900
++++ xerces-2_11_0/build.xml	2011-03-13 01:03:34.989000082 +0900
+@@ -512,17 +512,6 @@
+       bottom='${copyright}'
+       additionalparam='${additional.param}'
+       />
+-    <mkdir dir='${build.dir}/docs/javadocs/other'/>
+-    <javadoc packagenames='org.apache.html.*,
+-                           org.apache.wml.*,
+-                           org.apache.xml.serialize.*'
+-      locale='en_US'
+-      sourcepath='${build.src}' destdir='${build.dir}/docs/javadocs/other'
+-      author='true' version='true'
+-      windowtitle='Other Classes' doctitle='Other Classes'
+-      bottom='${copyright}'
+-      additionalparam='${additional.param}'
+-      />
+   </target>
+ 
+   <!-- =================================================================== -->
