@@ -16,6 +16,7 @@ IUSE=""
 RDEPEND=">=app-admin/eselect-1.2.3"
 PDEPEND="
 || (
+	dev-java/eclipse-ecj:3.7
 	dev-java/eclipse-ecj:3.6
 	dev-java/eclipse-ecj:3.5
 	dev-java/eclipse-ecj:3.4

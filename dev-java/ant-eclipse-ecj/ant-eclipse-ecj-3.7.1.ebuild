@@ -5,16 +5,16 @@
 EAPI="2"
 inherit java-pkg-2
 
-DMF="R-${PV}-201106131736"
+DMF="R-${PV}-201109091335"
 S="${WORKDIR}"
 
 DESCRIPTION="Ant Compiler Adapter for Eclipse Java Compiler"
 HOMEPAGE="http://www.eclipse.org/"
-SRC_URI="http://download.eclipse.org/eclipse/downloads/drops/${DMF/.0}/ecjsrc-${PV}.zip"
+SRC_URI="http://download.eclipse.org/eclipse/downloads/drops/${DMF/.0}/ecjsrc-${PV}.jar"
 
 LICENSE="EPL-1.0"
 KEYWORDS="~amd64 ~ppc ~ppc64 ~x86 ~x86-fbsd"
-SLOT="3.6"
+SLOT="3.7"
 IUSE=""
 
 RDEPEND=">=virtual/jre-1.6
