@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+  @notes: Call using the following: ant -f build.xml -Dproject.name=${project name}
+-->
+
+<project name="Gentoo_Builder" default="jar" basedir=".">
+  <property name="srcdir" value="src/main/java"/>
+  <property name="resourcesdir" value="src/main/resources"/>
+  <property name="dist" value="target"/>
+  <property name="builddir" value="${dist}/classes"/>
+  <property name="buildtestdir" value="${dist}/test-classes"/>
+  <property name="testreportsdir" value="${dist}/surefire-reports"/>
+  <property name="javadocdir" value="${dist}/site/apidocs"/>
+  <property name="libdir" value="lib"/>
+
+  <property name="project.name" value="target"/>
+  <property name="jarfile" value="${project.name}.jar"/>
+
+  <property name="debug" value="true"/>
+
+  <property name="description" value="${project.name}"/>
+  <property name="vendor" value="Gentoo"/>
+  <property name="version" value="1.0"/>
+  <property name="activator" value="example.class"/>
+  <property name="import.package" value="a,b,c,d"/>
+  <property name="export.package" value="a,b,c,d"/>
+
+  <property name="source.tz" value="${srcdir}/org/joda/time/tz/src"/>
+  <property name="build.tz" value="${builddir}/org/joda/time/tz/data"/>
+  <uptodate property="tz.build.notneeded" targetfile="${build.tz}/ZoneInfoMap" >
+    <srcfiles dir= "${source.tz}" includes="**/*.*"/>
+  </uptodate>
+
+  <path id="lib.classpath">
+    <fileset dir="${libdir}">
+      <include name="**/*.jar"/>
+    </fileset>
+  </path>
+
+  <!-- Override any defined properties -->
+  <property file="build.properties"/>
+
+  <target name="init">
+    <tstamp/>
+    <mkdir dir="${libdir}"/>
+    <mkdir dir="${builddir}"/>
+    <mkdir dir="${dist}"/>
+    <mkdir dir="${javadocdir}"/>
+    <available property="available.resources" file="${resourcesdir}" type="dir"/>
+  </target>
+
+  <target name="clean">
+    <delete dir="${builddir}"/>
+    <delete dir="${dist}"/>
+    <delete dir="${javadocdir}"/>
+  </target>
+
+  <target name="process-resources" depends="init" if="available.resources">
+    <copy todir="${builddir}">
+      <fileset dir="src/main/resources"/>
+    </copy>
+  </target>
+
+  <target name="compile" depends="process-resources">
+    <javac debug="${debug}"
+           srcdir="${srcdir}"
+           destdir="${builddir}"
+           classpathref="lib.classpath"/>
+  </target>
+
+  <target name="compile.zoneinfo"
+          depends="compile"
+          description="Compile timezone data files"
+          unless="tz.build.notneeded">
+    <!-- Invoke the newly built ZoneInfoCompiler to compile the zoneinfo data files -->
+    <mkdir dir="${build.tz}" />
+    <java classname="org.joda.time.tz.ZoneInfoCompiler"
+          fork="true"
+          failonerror="true">
+      <classpath path="${builddir}" />
+      <!-- Override default provider since data directory doesn't exist yet -->
+      <sysproperty key="org.joda.time.DateTimeZone.Provider"
+                   value="org.joda.time.tz.UTCProvider" />
+      <!-- Specify source and destination directories -->
+      <arg line="-src ${source.tz} -dst ${build.tz}" />
+      <!-- Specify all the data files to compile -->
+      <arg value="africa" />
+      <arg value="antarctica" />
+      <arg value="asia" />
+      <arg value="australasia" />
+      <arg value="europe" />
+      <arg value="northamerica" />
+      <arg value="southamerica" />
+      <arg value="pacificnew" />
+      <arg value="etcetera" />
+      <arg value="backward" />
+      <arg value="systemv" />
+    </java>
+  </target>
+
+  <target name="jar" depends="compile,compile.zoneinfo">
+    <copy todir="${builddir}">
+      <fileset dir="${srcdir}">
+        <include name="**/*.properties"/>
+        <include name="**/*.html"/>
+        <include name="**/*.xml"/>
+        <exclude name="**/package.html"/>
+      </fileset>
+    </copy>
+    <jar jarfile="${dist}/${jarfile}" manifest="src/conf/MANIFEST.MF">
+<!--
+      <manifest>
+        <attribute name="Build-Jdk" value="${java.runtime.version}"/>
+        <attribute name="Package" value="org.joda.time"/>
+        <attribute name="Extension-Name" value="joda-time"/>
+        <attribute name="Specification-Title" value="Joda-Time"/>
+        <attribute name="Specification-Vendor" value="Joda.org"/>
+        <attribute name="Specification-Version" value="1.6"/>
+        <attribute name="Implementation-Vendor" value="Joda.org"/>
+        <attribute name="Implementation-Title" value="org.joda.time"/>
+        <attribute name="Implementation-Version" value="1.6.2"/>
+        <attribute name="Implementation-Vendor-Id" value="org.joda"/>
+        <attribute name="Bundle-ManifestVersion" value="2"/>
+        <attribute name="Bundle-Vendor" value="Joda.org"/>
+        <attribute name="Bundle-Name" value="Joda-Time"/>
+        <attribute name="Bundle-SymbolicName" value="joda-time"/>
+        <attribute name="Bundle-Version" value="1.6.2"/>
+        <attribute name="Export-Package" value="org.joda.time;version=1.6.2,org.joda.time.base;version=1.6.2,org.joda.time.chrono;version=1.6.2,org.joda.time.convert;version=1.6.2,org.joda.time.field;version=1.6.2,org.joda.time.format;version=1.6.2,org.joda.time.tz;version=1.6.2"/>
+        <attribute name="Bundle-License" value="Apache 2.0"/>
+        <attribute name="Bundle-RequiredExecutionEnvironment" value="J2SE-1.5"/>
+        <attribute name="Bundle-DocURL" value="http://joda-time.sourceforge.net/"/>
+      </manifest>
+-->
+      <fileset dir="${builddir}">
+        <!--
+        <include name="**/*.class"/>
+        <include name="**/*.properties"/>
+        -->
+      </fileset>
+    </jar>
+  </target>
+
+  <target name="javadoc">
+    <tstamp>
+      <format pattern="1999-yyyy" property="year"/>
+    </tstamp>
+    <javadoc use="true"
+             private="true"
+             destdir="${javadocdir}"
+             author="true"
+             version="true"
+             windowtitle="${project.name} API"
+             doctitle="${project.name}"
+             sourcepath="${srcdir}"
+             classpathref="lib.classpath"/>
+  </target>
+
+</project>

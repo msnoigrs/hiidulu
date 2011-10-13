@@ -1,0 +1,14 @@
+--- joda-time-1.6.2-src.orig/src/test/java/org/joda/time/convert/MockUnknownCalendar.java	2010-08-08 21:38:49.000000000 +0900
++++ joda-time-1.6.2-src/src/test/java/org/joda/time/convert/MockUnknownCalendar.java	2011-03-16 14:49:19.166000007 +0900
+@@ -34,7 +34,10 @@
+     MockUnknownCalendar(TimeZone zone) {
+         this.zone = zone;
+     }
+-    
++
++    public int compareTo(Object o) {
++        return super.compareTo((Calendar) o);
++    }
+     public long getTimeInMillis() {
+         return millis;
+     }
