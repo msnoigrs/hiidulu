@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="Jython" default="jar" basedir=".">
+
+  <property name="build.dir" value="build" />
+  <property name="src.dir" value="src" />
+  <property name="jar.name" value="jython.jar" />
+
+  <property name="stem" value="org/python" />
+  <property name="comziclix" value="com/ziclix/python/sql" />
+
+  <property name="libreadline-java.jar" value="libreadline-java.jar" />
+  <property name="servlet-api.jar" value="servlet-api.jar" />
+
+  <path id="compile.classpath">
+    <pathelement location="${build.dir}" />
+    <pathelement location="${libreadline-java.jar}" />
+    <pathelement location="${jakarta-oro.jar}" />
+    <pathelement location="${servlet-api.jar}" />
+  </path>
+
+  <target name="libCheck">
+    <available file="${libreadline-java.jar}" property="libreadline-java-present" />
+    <available file="${servlet-api.jar}" property="servlet-api-present" />
+  </target>
+
+  <target name="libreadline" depends="libCheck" if="libreadline-java-present">
+    <echo message="libreadline-java.jar present. ${libreadline-java.jar}" />
+  </target>
+
+  <target name="servlet-api" depends="libCheck" if="servlet-api-present">
+    <echo message="servlet-api.jar present. ${servlet-api.jar}" />
+  </target>
+
+  <target name="prepare" description="Prepare build directory">
+    <mkdir dir="${build.dir}" />
+  </target>
+
+  <target name="compile.libreadline" depends="libreadline" if="libreadline-java-present">
+    <javac srcdir="${src.dir}" destdir="${build.dir}"
+           includes="${stem}/util/ReadlineConsole.java">
+      <classpath refid="compile.classpath" />
+    </javac>
+  </target>
+
+  <target name="compile.servlet" depends="servlet-api" if="servlet-api-present">
+    <javac srcdir="${src.dir}" destdir="${build.dir}"
+           includes="${stem}/util/PyServlet.java">
+      <classpath refid="compile.classpath" />
+    </javac>
+  </target>
+
+  <target name="compile" depends="prepare,libCheck,compile.libreadline,compile.servlet">
+    <javac srcdir="${src.dir}" destdir="${build.dir}"
+           includes="${stem}/**/*.java"
+           excludes="${stem}/util/PyServlet.java,${stem}/util/ReadlineConsole.java">
+      <classpath refid="compile.classpath" />
+    </javac>
+  </target>
+
+  <target name="jar" depends="compile" description="Create jar">
+    <copy todir="${build.dir}">
+      <fileset dir="${src.dir}">
+        <include name="**/*.properties" />
+      </fileset>
+    </copy>
+    <jar jarfile="${jar.name}" index="true">
+      <fileset dir="${build.dir}">
+        <include name="**/*.class" />
+        <include name="**/*.properties" />
+      </fileset>
+    </jar>
+  </target>
+
+  <target name="javadoc" depends="compile">
+    <mkdir dir="./Doc/javadoc" />
+    <javadoc destdir="./Doc/javadoc">
+      <fileset dir="${src.dir}" />
+    </javadoc>
+  </target>
+</project>

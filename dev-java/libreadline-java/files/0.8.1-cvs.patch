@@ -1,0 +1,2174 @@
+diff -uNr libreadline-java-0.8.0/Makefile java-readline/Makefile
+--- libreadline-java-0.8.0/Makefile	2003-01-07 19:14:35.000000000 +0900
++++ java-readline/Makefile	2008-03-14 03:10:35.000000000 +0900
+@@ -24,9 +24,81 @@
+ # Toplevel Makefile for Java-Readline
+ #
+ # $Author: bablokb $
+-# $Revision: 1.18 $
++# $Revision: 1.22 $
+ #
+ 
++export 
++
++# what to build   -------------------------------------------------------------
++
++T_LIBS    = JavaReadline
++
++# java-compiler flavor   ------------------------------------------------------
++
++## normal javac
++JAVAC = javac
++JC_FLAGS = 
++
++## with jikes
++#JAVAC = jikes
++#JC_FLAGS = -O +E
++
++# installation directories   --------------------------------------------------
++
++PREFIX    = /usr
++BINLIBDIR = $(PREFIX)/lib
++DOCDIR    = $(PREFIX)/doc
++JAVALIBDIR= $(PREFIX)/share/java
++
++# OS-specific stuff   ---------------------------------------------------------
++
++# Operating system/compiler dependent, default is LINUX.
++# Note that both CYGWIN and MSWIN use the cygwin-environment,
++# but the latter uses a native MS-compiler.
++
++OS_FLAVOR = LINUX
++#OS_FLAVOR = CYGWIN
++#OS_FLAVOR = MSWIN
++#OS_FLAVOR = MAC
++
++# Linux
++
++ifeq (LINUX,$(OS_FLAVOR))
++JAVAINCLUDE = $(JAVA_HOME)/include
++JAVANATINC  = $(JAVA_HOME)/include/linux
++endif
++
++# Cygwin (builds fine, but does not work)
++
++ifeq (CYGWIN,$(OS_FLAVOR))
++DRIVE_C := /cygdrive/c
++JAVA_HOME := c:/j2sdk1.4.0
++JAVAINCLUDE = $(JAVA_HOME)/include
++JAVANATINC := $(JAVA_HOME)/include/win32
++PATH:=$(subst c:,$(DRIVE_C),$(JAVA_HOME))/bin:$(PATH)
++endif
++
++# Visual C++ (only suppports getline)
++
++ifeq (MSWIN,$(OS_FLAVOR))
++DRIVE_C := /cygdrive/c
++JAVA_HOME := c:/j2sdk1.4.0
++JAVAINCLUDE = $(JAVA_HOME)/include
++JAVANATINC := $(JAVA_HOME)/include/win32
++PATH:=$(subst c:,$(DRIVE_C),$(JAVA_HOME))/bin:$(PATH)
++PATH:=$(DRIVE_C)/Programme/DevStudio/VC/bin:$(DRIVE_C)/Programme/DevStudio/SharedIDE/bin/:$(PATH)
++T_LIBS = JavaGetline
++ARGS   = Getline
++endif
++
++# MAC
++ifeq (MAC,$(OS_FLAVOR))
++JAVAINCLUDE = /System/Library/Frameworks/JavaVM.framework/Headers
++JAVANATINC  =
++endif
++
++# some constants, you should not need to change these variables   -------------
++
+ TARGET    = libreadline-java
+ README    = README README.1st
+ NEWS      = NEWS
+@@ -47,42 +119,14 @@
+              Makefile VERSION $(SUBDIRS) contrib src etc
+ MF_STUB   = etc/manifest.stub
+ 
+-# installation procedure
+-PREFIX    = /usr
+-BINLIBDIR = $(PREFIX)/lib
+-DOCDIR    = $(PREFIX)/doc
+-JAVALIBDIR= $(PREFIX)/share/java
+-
+-# libraries to build
+-T_LIBS    = JavaReadline
+-
+-# Operating system dependent
+-JAVAINCLUDE       = $(JAVA_HOME)/include
+-JAVANATINC        = $(JAVA_HOME)/include/linux
+-
+-ifeq (MSC,$(WIN32))
+-JAVA_HOME := c:/j2sdk1.4.0
+-JAVANATINC = $(JAVA_HOME)/include/win32
+-export PATH:=/cygdrive/$(subst :,,$(JAVA_HOME))/bin:/cygdrive/c/Programme/DevStudio/VC/bin:/cygdrive/c/Programme/DevStudio/SharedIDE/bin/:$(PATH)
+-T_LIBS    = JavaGetline
+-ARGS      = Getline
+-endif
+-
+-## normal javac
+-JAVAC = javac
+-JC_FLAGS = 
+-
+-## with jikes
+-#JAVAC = jikes
+-#JC_FLAGS = -O +E
+-
+ VERSION         = `cat VERSION`
+ JAR             = $(TARGET).jar
+ APIDIR          = ./api
+ BUILDDIR        = ./build
+-# we build the rpm relative to our build..
+ RPM_BASE        = `pwd`/$(BUILDDIR)/
+ 
++# targets, finally ;-)   ------------------------------------------------------
++
+ world : jar build-native
+ 
+ jar: build-java
+@@ -92,11 +136,12 @@
+ 	cd $(BUILDDIR) ; jar -cvmf ../$(MF_STUB) ../$(JAR) *
+ 
+ build-java: $(BUILDDIR)
+-	cd src ; $(MAKE) JAVAC="$(JAVAC)" JC_FLAGS="$(JC_FLAGS)" java
++	cd src ; $(MAKE) JAVAC="$(JAVAC)" JC_FLAGS="$(JC_FLAGS)" \
++		OS_FLAVOR=$(OS_FLAVOR) java
+ 
+ build-native: 
+ 	cd src; $(MAKE) T_LIBS="$(T_LIBS)" JAVAINCLUDE="$(JAVAINCLUDE)" \
+-		        JAVANATINC="$(JAVANATINC)" native
++		        OS_FLAVOR=$(OS_FLAVOR) JAVANATINC="$(JAVANATINC)" native
+ 
+ apidoc: $(APIDIR)
+ 	javadoc -sourcepath src -d $(APIDIR) -windowtitle $(WTITLE) \
+@@ -140,10 +185,10 @@
+ 	rpm --define _topdir$(RPM_BASE) -ba $(RPM_BASE)/SPECS/libreadline-java.spec
+ 
+ test: $(JAR) build-native
+-	LD_LIBRARY_PATH=. java -jar $(JAR) src/test/tinputrc $(ARGS)
++	java  -Djava.library.path=. -jar $(JAR) src/test/tinputrc $(ARGS)
+ 
+ clean:
+ 	$(MAKE) -C src/native clean
+ 	-rm -fr `find . -name "*.o" -o -name "*~"` \
+ 		$(JAR) $(TARGET)-*.tar.*z* $(APIDIR) \
+-		$(BUILDDIR) *.so .rltest_history
++		$(BUILDDIR) *.so *.rpm .rltest_history
+diff -uNr libreadline-java-0.8.0/TODO java-readline/TODO
+--- libreadline-java-0.8.0/TODO	2003-01-07 19:14:35.000000000 +0900
++++ java-readline/TODO	2008-03-14 03:10:35.000000000 +0900
+@@ -1,3 +1,16 @@
+-- Add support for the following readline functions/variables:
+-  * rl_initialize
+-  * rl_library_version
++Next release:
++============
++
++- mark methods replaced with [gs]etVar() as deprecated
++
++- fix Getline under Linux
++
++- make iLib writable (test loading multiple libraries)
++
++
++Later release:
++==============
++
++- replace make with ant
++- add test-suite
++- implement wrapper for jline
+diff -uNr libreadline-java-0.8.0/VERSION java-readline/VERSION
+--- libreadline-java-0.8.0/VERSION	2003-01-07 19:14:35.000000000 +0900
++++ java-readline/VERSION	2008-03-14 03:10:35.000000000 +0900
+@@ -1 +1 @@
+-0.8.0
++0.8.1
+diff -uNr libreadline-java-0.8.0/etc/libreadline-java.spec java-readline/etc/libreadline-java.spec
+--- libreadline-java-0.8.0/etc/libreadline-java.spec	2003-01-07 19:14:35.000000000 +0900
++++ java-readline/etc/libreadline-java.spec	2008-03-14 03:10:35.000000000 +0900
+@@ -1,4 +1,4 @@
+-%define version 0.8.0
++%define version 0.8.1
+ 
+ Summary: java wrapper for the GNU-readline library
+ Copyright: GNU Lesser General Public License
+diff -uNr libreadline-java-0.8.0/src/Makefile java-readline/src/Makefile
+--- libreadline-java-0.8.0/src/Makefile	2003-01-07 19:14:35.000000000 +0900
++++ java-readline/src/Makefile	2008-03-14 03:10:35.000000000 +0900
+@@ -10,7 +10,7 @@
+ 
+ native: always
+ 	cd native ; $(MAKE) T_LIBS="$(T_LIBS)" JAVAINCLUDE="$(JAVAINCLUDE)" \
+-                            JAVANATINC="$(JAVANATINC)" all
++                            OS_FLAVOR=$(OS_FLAVOR) JAVANATINC="$(JAVANATINC)" all
+ 
+ $(BUILD):
+ 	mkdir $@
+diff -uNr libreadline-java-0.8.0/src/native/Makefile java-readline/src/native/Makefile
+--- libreadline-java-0.8.0/src/native/Makefile	2003-01-07 19:14:35.000000000 +0900
++++ java-readline/src/native/Makefile	2008-03-14 03:10:35.000000000 +0900
+@@ -24,46 +24,92 @@
+ # Makefile for JNI-library libJava*.so
+ #
+ # $Author: bablokb $
+-# $Revision: 1.13 $
++# $Revision: 1.16 $
+ #
+ 
+ export 
+ 
+ .PHONY: org_gnu_readline_Readline.o
+ 
+-ROOTDIR=../..
+-BUILDDIR=$(ROOTDIR)/build
++# OS-specific stuff   ---------------------------------------------------------
+ 
+-ifeq (MSC,$(WIN32))
+-INCLUDES = -I "c:/Programme/DevStudio/VC/include" \
+-			-I $(JAVAINCLUDE) -I $(JAVANATINC)
+-LIB = "c:/Programme/DevStudio/VC/lib"
+-CC = cl
+-OBJ_EXT := obj
++
++ifeq (LINUX,$(OS_FLAVOR))
++CC      := gcc
++OBJ_EXT := o
++LIB_PRE := lib
++LIB_EXT := so
++CFLAGS   = -fpic -DPOSIX
++LD_FLAGS = -shared
++
++INCLUDES          = -I $(JAVAINCLUDE) -I $(JAVANATINC)
++LIBPATH           = -L/usr/lib/termcap 
++
++JavaReadline_LIBS = -lreadline -ltermcap -lhistory
++JavaEditline_LIBS = -ledit -ltermcap
++JavaGetline_LIBS  = 
++endif
++
++ifeq (CYGWIN,$(OS_FLAVOR))
++CC      := gcc
++OBJ_EXT := o
+ LIB_PRE := 
+ LIB_EXT := dll
+-CFLAGS=-DWIN32=$(WIN32) -D__IBMC__
+-else
++CFLAGS  := -DWIN32
++LD_FLAGS = -shared
++
+ INCLUDES          = -I $(JAVAINCLUDE) -I $(JAVANATINC)
+ LIBPATH           = -L/usr/lib/termcap 
++
+ JavaReadline_LIBS = -lreadline -ltermcap -lhistory
+ JavaEditline_LIBS = -ledit -ltermcap
+-ifeq (cygwin,$(WIN32))
+-JavaGetline_LIBS = -lcygwin
++JavaGetline_LIBS  = -ltermcap
+ endif
+-CC = gcc
++
++ifeq (MSWIN,$(OS_FLAVOR))
++CC      := cl
++OBJ_EXT := obj
++LIB_PRE := 
++LIB_EXT := dll
++CFLAGS  := -DWIN32
++LD_FLAGS = -LD
++
++INCLUDES          = -I "c:/Programme/DevStudio/VC/include" \
++			-I $(JAVAINCLUDE) -I $(JAVANATINC)
++LIBPATH           =
++LIB               = "c:/Programme/DevStudio/VC/lib"
++JavaReadline_LIBS =
++JavaEditline_LIBS =
++JavaGetline_LIBS  = 
++endif
++
++ifeq (MAC,$(OS_FLAVOR))
++CC      := gcc
+ OBJ_EXT := o
+ LIB_PRE := lib
+-LIB_EXT := so
+-CFLAGS=-fPIC -DPOSIX
++LIB_EXT := jnilib
++CFLAGS   = -fPIC -DPOSIX
++LD_FLAGS = -dynamiclib -framework JavaVM
++
++INCLUDES          = -I/sw/include -I $(JAVAINCLUDE) -I $(JAVANATINC)
++LIBPATH           = -L/usr/lib -L/sw/lib
++
++JavaReadline_LIBS = -lreadline -ltermcap -lhistory
++JavaEditline_LIBS = -ledit -ltermcap
++JavaGetline_LIBS  = 
+ endif
+ 
++# some constants, you should not need to change these variables   -------------
+ 
++ROOTDIR=../..
++BUILDDIR=$(ROOTDIR)/build
+ OBJECTS := org_gnu_readline_Readline.$(OBJ_EXT)
+ ifeq ($(TG),JavaGetline)
+ OBJECTS += getline.$(OBJ_EXT)
+ endif
+ 
++# targets, finally ;-)   ------------------------------------------------------
++
+ all: $(T_LIBS) 
+ 
+ lib: $(ROOTDIR)/$(LIB_PRE)$(TG).$(LIB_EXT)
+@@ -78,27 +124,14 @@
+ 	make TG=$@ lib
+ 
+ $(ROOTDIR)/$(LIB_PRE)$(TG).$(LIB_EXT): $(OBJECTS)
+-ifeq (MSC,$(WIN32))
+-	$(CC) $(INCLUDES) -LD $(OBJECTS) -Fe$@
+-else
+-ifeq (CYGWIN,$(WIN32))
+-	$(CC) -s -W1,--base-file,$(ROOTDIR)/lib$(TG).base -o $@ \
+-		$(OBJECTS) -W1,-e,_readline_init@12
+-	dlltool --base-file $(ROOTDIR)/lib$(TG).base \
+-		--def $(ROOTDIR)/lib$(TG).def \
+-		--output-exp $(ROOTDIR)/lib$(TG).exp \
+-		--dllname $(ROOTDIR)/lib$(TG).dll
+-	$(CC) -s -W1,--base-file $(ROOTDIR)/lib$(TG).base,$(ROOTDIR)/lib$(TG).exp \
+-		-o $@ $(OBJECTS) -W1,-e,_readline_init@12
+-	dlltool --base-file $(ROOTDIR)/lib$(TG).base \
+-		--def $(ROOTDIR)/lib$(TG).def \
+-		--output-exp $(ROOTDIR)/lib$(TG).exp \
+-		--dllname $(ROOTDIR)/lib$(TG).dll
+-	$(CC) -W1,$(ROOTDIR)/lib$(TG).exp -o $@ \
+-		$(OBJECTS) -W1,-e,_readline_init@12
+-else
+-	$(CC) -shared $(OBJECTS) $(LIBPATH) $($(TG)_LIBS) -o $@
++ifeq (MSWIN,$(OS_FLAVOR))
++	$(CC) $(LD_FLAGS) $(OBJECTS) $(LIBPATH) $($(TG)_LIBS) -Fe$@
++endif
++ifeq (LINUX,$(OS_FLAVOR))
++	$(CC) $(LD_FLAGS) $(OBJECTS) $(LIBPATH) $($(TG)_LIBS) -o $@
+ endif
++ifeq (MAC,$(OS_FLAVOR))
++	$(CC) $(LD_FLAGS) $(OBJECTS) $(LIBPATH) $($(TG)_LIBS) -o $@
+ endif
+ 
+ getline.$(OBJ_EXT): getline.c
+diff -uNr libreadline-java-0.8.0/src/native/getline.c java-readline/src/native/getline.c
+--- libreadline-java-0.8.0/src/native/getline.c	2003-01-07 19:14:35.000000000 +0900
++++ java-readline/src/native/getline.c	2008-03-14 03:10:35.000000000 +0900
+@@ -1,6 +1,6 @@
+ #ifndef lint
+ static char     rcsid[] =
+-"$Id: getline.c,v 1.1 2002/06/25 15:24:26 bablokb Exp $";
++"$Id: getline.c,v 1.2 2004/01/06 16:19:03 bablokb Exp $";
+ static char    *copyright = "Copyright (C) 1991-1994, Chris Thewalt";
+ #endif
+ 
+@@ -59,11 +59,11 @@
+ static int      gl_scroll = 27;		/* width of EOL scrolling region */
+ static int      gl_width = 0;		/* net size available for input */
+ static int      gl_extent = 0;		/* how far to redraw, 0 means all */
+-static int      gl_overwrite = 0;	/* overwrite mode */
+-static int      gl_pos, gl_cnt = 0;     /* position and size of input */
+-static char     gl_buf[BUF_SIZE];       /* input buffer */
++ int      gl_overwrite = 0;	/* overwrite mode */
++ int      gl_pos, gl_cnt = 0;     /* position and size of input */
++ char     gl_buf[BUF_SIZE];       /* input buffer */
+ static char     gl_killbuf[BUF_SIZE]=""; /* killed text */
+-static char    *gl_prompt;		/* to save the prompt string */
++ char    *gl_prompt;		/* to save the prompt string */
+ static char     gl_intrc = 0;		/* keyboard SIGINT char */
+ static char     gl_quitc = 0;		/* keyboard SIGQUIT char */
+ static char     gl_suspc = 0;		/* keyboard SIGTSTP char */
+diff -uNr libreadline-java-0.8.0/src/native/org_gnu_readline_Readline.c java-readline/src/native/org_gnu_readline_Readline.c
+--- libreadline-java-0.8.0/src/native/org_gnu_readline_Readline.c	2003-01-07 19:14:35.000000000 +0900
++++ java-readline/src/native/org_gnu_readline_Readline.c	2008-03-14 03:10:35.000000000 +0900
+@@ -24,7 +24,7 @@
+  * This file implements the native method interface for class
+  * gnu.readline.Readline
+  *
+- * $Revision: 1.16 $
++ * $Revision: 1.20 $
+  * $Author: bablokb $
+  */
+ 
+@@ -50,11 +50,247 @@
+ #include <assert.h>
+ #include <string.h>
+ #include <errno.h>
+-#ifndef WIN32
++#ifndef _MSC_VER
+ #include <unistd.h>
+ #endif
+ 
+ /* -------------------------------------------------------------------------- */
++/* Internal status variables of the backing implementation. The functions     */
++/* [sg]etVar\(String\|Int\)Impl() use these arrays. Since the functions use   */
++/* index-based access, it is important that the variables are in sync with    */
++/* the constants in Readline.java.                                            */
++/* Also, some of the variables are actually read-only. You should check the   */
++/* documentation/source before using setVar                                   */
++/*                                                                            */
++/* TODO: redirect all variables marked as const in globalStringInternals to   */
++/* static buffers, so that free() works in setVarStringImpl                   */
++/* -------------------------------------------------------------------------- */
++
++static int undefinedInternalInt = 0;
++static char* undefinedInternalString = NULL;
++static char undefinedInternalChar = '0';
++
++/*
++ * Some variables are available with editline but are not declared in
++ * the appropriate headers.
++ */
++#ifdef JavaEditline
++extern int rl_inhibit_completion;
++#endif
++
++/*
++ * Some variables are available with getline but are not declared in
++ * the appropriate headers.
++ */
++#ifdef JavaGetline
++extern int gl_overwrite;
++extern int gl_pos;
++extern int gl_cnt;
++extern char* gl_prompt;
++extern char* gl_buf;
++#endif
++
++#ifdef JavaReadline
++static int* globalIntegerInternals[] = {
++  &rl_readline_version,
++  &rl_gnu_readline_p,
++  &rl_readline_state,
++  &rl_editing_mode,
++  &rl_insert_mode,
++  &rl_point,
++  &rl_end,
++  &rl_mark,
++  &rl_done,
++  &rl_pending_input,
++  &rl_dispatching,
++  &rl_explicit_arg,
++  &rl_numeric_arg,
++  &rl_erase_empty_line,
++  &rl_already_prompted,
++  &rl_num_chars_to_read,
++  &rl_catch_signals,
++  &rl_catch_sigwinch,
++  &rl_filename_completion_desired,
++  &rl_filename_quoting_desired,
++  &rl_attempted_completion_over,
++  &rl_completion_type,
++  &rl_completion_append_character,
++  &rl_completion_suppress_append,
++  &rl_completion_query_items,
++  &rl_completion_mark_symlink_dirs,
++  &rl_ignore_completion_duplicates,
++  &rl_inhibit_completion,
++
++  &history_base,
++  &history_length,
++  &history_max_entries,
++  &history_quotes_inhibit_expansion,        /* index: 31 */
++  NULL
++};
++
++static char** globalStringInternals[] = {
++ /* const */ &rl_library_version,
++ /* const */ &rl_readline_name,
++ &rl_prompt,
++ &rl_line_buffer,
++ /* const */ &rl_terminal_name,
++ &rl_executing_macro,
++ /* const */ &rl_basic_word_break_characters,
++ /* const */ &rl_completer_word_break_characters,
++ /* const */ &rl_completer_quote_characters,
++ /* const */ &rl_basic_quote_characters,
++ /* const */ &rl_filename_quote_characters,
++ /* const */ &rl_special_prefixes,
++
++ &history_word_delimiters,
++ &history_no_expand_chars,
++ &history_search_delimiter_chars,        /* index: 14 */
++ NULL
++};
++
++/* unused: needs [sg]etVarCharImpl */
++
++static char* globalCharInternals[] = {
++ &history_expansion_char,
++ &history_subst_char,
++ &history_comment_char,
++ NULL
++};
++#endif
++
++#ifdef JavaEditline
++static int* globalIntegerInternals[] = {
++  &undefinedInternalInt, /*  &rl_readline_version, */
++  &undefinedInternalInt, /*  &rl_gnu_readline_p, */
++  &undefinedInternalInt, /*  &rl_readline_state, */
++  &undefinedInternalInt, /*  &rl_editing_mode, */
++  &undefinedInternalInt, /*  &rl_insert_mode, */
++  &rl_point,
++  &rl_end,
++  &undefinedInternalInt, /*  &rl_mark, */
++  &undefinedInternalInt, /*  &rl_done, */
++  &undefinedInternalInt, /*  &rl_pending_input, */
++  &undefinedInternalInt, /*  &rl_dispatching, */
++  &undefinedInternalInt, /*  &rl_explicit_arg, */
++  &undefinedInternalInt, /*  &rl_numeric_arg, */
++  &undefinedInternalInt, /*  &rl_erase_empty_line, */
++  &undefinedInternalInt, /*  &rl_already_prompted, */
++  &undefinedInternalInt, /*  &rl_num_chars_to_read, */
++  &undefinedInternalInt, /*  &rl_catch_signals, */
++  &undefinedInternalInt, /*  &rl_catch_sigwinch, */
++  &undefinedInternalInt, /*  &rl_filename_completion_desired, */
++  &undefinedInternalInt, /*  &rl_filename_quoting_desired, */
++  &undefinedInternalInt, /*  &rl_attempted_completion_over, */
++  &rl_completion_type,
++  &rl_completion_append_character,
++  &undefinedInternalInt, /*  &rl_completion_suppress_append, */
++  &rl_completion_query_items,
++  &undefinedInternalInt, /*  &rl_completion_mark_symlink_dirs, */
++  &undefinedInternalInt, /*  &rl_ignore_completion_duplicates, */
++  &rl_inhibit_completion,
++
++  &history_base,
++  &history_length,
++  &undefinedInternalInt, /*  &history_max_entries, */
++  &undefinedInternalInt, /*  &history_quotes_inhibit_expansion, */
++  NULL
++};
++
++static char** globalStringInternals[] = {
++  /* const */ &rl_library_version,
++  /* const */ &rl_readline_name,
++  &undefinedInternalString, /*  &rl_prompt, */
++  &rl_line_buffer,
++  &undefinedInternalString, /* const  &rl_terminal_name, */
++  &undefinedInternalString, /*  &rl_executing_macro, */
++  /* const */ &rl_basic_word_break_characters,
++  /* const */ &rl_completer_word_break_characters,
++  /* const */ &rl_completer_quote_characters,
++  &undefinedInternalString, /* const  &rl_basic_quote_characters, */
++  &undefinedInternalString, /* const  &rl_filename_quote_characters, */
++  /* const */ &rl_special_prefixes,
++
++  &undefinedInternalString, /*  &history_word_delimiters, */
++  &undefinedInternalString, /*  &history_no_expand_chars, */
++  &undefinedInternalString, /*  &history_search_delimiter_chars */
++};
++
++/* unused: needs [sg]etVarCharImpl */
++
++static char* globalCharInternals[] = {
++  &undefinedInternalChar, /*  &history_expansion_char, */
++  &undefinedInternalChar, /*  &history_subst_char, */
++  &undefinedInternalChar, /*  &history_comment_char */
++};
++#endif
++
++#ifdef JavaGetline
++static int* globalIntegerInternals[] = {
++  &undefinedInternalInt, /*  &rl_readline_version, */
++  &undefinedInternalInt, /*  &rl_gnu_readline_p, */
++  &undefinedInternalInt, /*  &rl_readline_state, */
++  &undefinedInternalInt, /*  &rl_editing_mode, */
++  &gl_overwrite,         /*  &rl_insert_mode, gl_overwrite == !rl_insert_mode */
++  &gl_pos,               /*  &rl_point, */
++  &gl_cnt,               /*  &rl_end, */
++  &undefinedInternalInt, /*  &rl_mark, */
++  &undefinedInternalInt, /*  &rl_done, */
++  &undefinedInternalInt, /*  &rl_pending_input, */
++  &undefinedInternalInt, /*  &rl_dispatching, */
++  &undefinedInternalInt, /*  &rl_explicit_arg, */
++  &undefinedInternalInt, /*  &rl_numeric_arg, */
++  &undefinedInternalInt, /*  &rl_erase_empty_line, */
++  &undefinedInternalInt, /*  &rl_already_prompted, */
++  &undefinedInternalInt, /*  &rl_num_chars_to_read, */
++  &undefinedInternalInt, /*  &rl_catch_signals, */
++  &undefinedInternalInt, /*  &rl_catch_sigwinch, */
++  &undefinedInternalInt, /*  &rl_filename_completion_desired, */
++  &undefinedInternalInt, /*  &rl_filename_quoting_desired, */
++  &undefinedInternalInt, /*  &rl_attempted_completion_over, */
++  &undefinedInternalInt, /*  &rl_completion_type, */
++  &undefinedInternalInt, /*  &rl_completion_append_character, */
++  &undefinedInternalInt, /*  &rl_completion_suppress_append, */
++  &undefinedInternalInt, /*  &rl_completion_query_items, */
++  &undefinedInternalInt, /*  &rl_completion_mark_symlink_dirs, */
++  &undefinedInternalInt, /*  &rl_ignore_completion_duplicates, */
++  &undefinedInternalInt, /*  &rl_inhibit_completion, */
++
++  &undefinedInternalInt, /*  &history_base, */
++  &undefinedInternalInt, /*  &history_length, */
++  &undefinedInternalInt, /*  &history_max_entries, */
++  &undefinedInternalInt, /*  &history_quotes_inhibit_expansion, */
++  NULL
++};
++
++static char** globalStringInternals[] = {
++  &undefinedInternalString, /* const  &rl_library_version, */
++  &undefinedInternalString, /* const  &rl_readline_name, */
++  &gl_prompt,               /*  &rl_prompt, */
++  &gl_buf,                  /*  &rl_line_buffer, */
++  &undefinedInternalString, /* const  &rl_terminal_name, */
++  &undefinedInternalString, /*  &rl_executing_macro, */
++  &undefinedInternalString, /* const  &rl_basic_word_break_characters, */
++  &undefinedInternalString, /* const  &rl_completer_word_break_characters, */
++  &undefinedInternalString, /* const  &rl_completer_quote_characters, */
++  &undefinedInternalString, /* const  &rl_basic_quote_characters, */
++  &undefinedInternalString, /* const  &rl_filename_quote_characters, */
++  &undefinedInternalString, /* const  &rl_special_prefixes, */
++
++  &undefinedInternalString, /*  &history_word_delimiters, */
++  &undefinedInternalString, /*  &history_no_expand_chars, */
++  &undefinedInternalString, /*  &history_search_delimiter_chars */
++};
++
++/* unused: needs [sg]etVarCharImpl */
++
++static char* globalCharInternals[] = {
++  &undefinedInternalChar, /*  &history_expansion_char, */
++  &undefinedInternalChar, /*  &history_subst_char, */
++  &undefinedInternalChar, /*  &history_comment_char */
++};
++#endif
++
++/* -------------------------------------------------------------------------- */
+ /* Global buffer. The buffer is allocated when needed and grows in steps of   */
+ /* 1024. It is never freed, but this is not a problem since in realistic      */
+ /* environments it should never be larger than a few KB. This strategy will   */
+@@ -523,6 +759,8 @@
+ 
+ /* -------------------------------------------------------------------------- */
+ /* Sets rl_completer_word_break_characters                                    */
++/* You should not use this function, since rl_completer_word_break_characters */
++/* is const char* !!!                                                         */
+ /* -------------------------------------------------------------------------- */
+ 
+ #ifndef JavaGetline
+@@ -560,6 +798,103 @@
+ #endif
+ 
+ /* -------------------------------------------------------------------------- */
++/* Sets an internal integer variable                                          */
++/* -------------------------------------------------------------------------- */
++
++JNIEXPORT jint JNICALL 
++  Java_org_gnu_readline_Readline_setVarIntImpl(JNIEnv *env, jclass class,
++                                                     jint jindex, jint jvalue) {
++  int oldValue;
++  oldValue = *(globalIntegerInternals[(int) jindex]);
++  *(globalIntegerInternals[(int) jindex]) = (int) jvalue;
++  return (jint) oldValue;
++}
++
++/* -------------------------------------------------------------------------- */
++/* Queries an internal integer variable                                       */
++/* -------------------------------------------------------------------------- */
++
++JNIEXPORT jint JNICALL 
++  Java_org_gnu_readline_Readline_getVarIntImpl(JNIEnv *env, jclass class,
++                                                                   jint jindex) {
++  return (jint) *(globalIntegerInternals[(int) jindex]);
++}
++
++/* -------------------------------------------------------------------------- */
++/* Sets an internal string variable                                           */
++/* -------------------------------------------------------------------------- */
++
++JNIEXPORT jstring JNICALL 
++  Java_org_gnu_readline_Readline_setVarStringImpl(JNIEnv *env, jclass class,
++                                                  jint jindex, jstring jvalue) {
++  char *oldValue;
++  char **value;
++  const char *newValue;
++  jboolean is_copy;
++
++  /* save old value */
++
++  if (*(globalStringInternals[(int) jindex])) {
++    oldValue = strdup(*(globalStringInternals[(int) jindex]));
++    if (!oldValue) {
++      jclass newExcCls;
++      newExcCls = (*env)->FindClass(env,"java/lang/OutOfMemoryError");
++      if (newExcCls != NULL)
++        (*env)->ThrowNew(env,newExcCls,"");
++      return;    
++    }
++  } else
++    oldValue = NULL;
++
++  /* read new value from argument */
++
++  newValue = (*env)->GetStringUTFChars(env,jvalue,&is_copy);
++  if (!utf2ucs(newValue)) {
++    jclass newExcCls;
++    if (is_copy == JNI_TRUE)
++      (*env)->ReleaseStringUTFChars(env,jvalue,newValue);
++    newExcCls = (*env)->FindClass(env,"java/io/UnsupportedEncodingException");
++    if (newExcCls != NULL)
++      (*env)->ThrowNew(env,newExcCls,"");
++    return;
++  }
++  if (is_copy == JNI_TRUE)
++    (*env)->ReleaseStringUTFChars(env,jvalue,newValue);
++  
++  /* set new value */
++
++  value = globalStringInternals[(int) jindex];
++  // TODO: currently a memory-leak, but otherwise it crashes
++  // free(*value);
++  *value = strdup(buffer);
++  
++  /* return old value */
++  
++  if (oldValue) {
++    ucs2utf(oldValue);
++    free(oldValue);
++    return (*env)->NewStringUTF(env,buffer);
++  } else
++    return NULL;
++}
++
++/* -------------------------------------------------------------------------- */
++/* Queries an internal string variable                                        */
++/* -------------------------------------------------------------------------- */
++
++JNIEXPORT jstring JNICALL 
++  Java_org_gnu_readline_Readline_getVarStringImpl(JNIEnv *env, jclass class,
++                                                                  jint jindex) {
++  char *value;
++  value = *(globalStringInternals[(int) jindex]);
++  if (value) {
++    ucs2utf(value);
++    return (*env)->NewStringUTF(env,buffer);
++  }
++  return NULL;
++}
++
++/* -------------------------------------------------------------------------- */
+ /* Convert utf8-string to ucs1-string                   .                     */
+ /* -------------------------------------------------------------------------- */
+ 
+diff -uNr libreadline-java-0.8.0/src/org/gnu/readline/Readline.java java-readline/src/org/gnu/readline/Readline.java
+--- libreadline-java-0.8.0/src/org/gnu/readline/Readline.java	2003-01-07 19:14:35.000000000 +0900
++++ java-readline/src/org/gnu/readline/Readline.java	2008-03-14 03:10:35.000000000 +0900
+@@ -66,12 +66,789 @@
+ 
+ </pre>
+ 
+- @version $Revision: 1.27 $
++ @version $Revision: 1.31 $
+  @author  $Author: bablokb $
+ */
+ 
+ public class Readline {
++
++  /**
++     Constant to access rl_library_version using
++     <code>getVar()</code> or <code>setVar()</code>.
++
++     <p>Supporting implementations:
++        <ul>
++	  <li>GNU-Readline</li>
++	  <li>Editline</li>
++        </ul>
++     </p>     
++  */
++  
++  public final static ReadlineConstString RL_LIBRARY_VERSION = 
++    new ReadlineConstString(0, new ReadlineLibrary[] 
++      {ReadlineLibrary.GnuReadline, ReadlineLibrary.Editline});
++
++
++  /**
++     Constant to access rl_readline_name using
++     <code>getVar()</code> or <code>setVar()</code>.
++
++     <p>Supporting implementations:
++        <ul>
++	  <li>GNU-Readline</li>
++	  <li>Editline</li>
++        </ul>
++     </p>     
++  */
++  
++  public final static ReadlineConstString RL_READLINE_NAME = 
++    new ReadlineConstString(1, new ReadlineLibrary[] 
++      {ReadlineLibrary.GnuReadline, ReadlineLibrary.Editline});
++
++
++  /**
++     Constant to access rl_prompt using
++     <code>getVar()</code> or <code>setVar()</code>.
++
++     <p>Supporting implementations:
++        <ul>
++	  <li>GNU-Readline</li>
++	  <li>Getline</li>
++        </ul>
++     </p>     
++  */
++  
++  public final static ReadlineConstString RL_PROMPT = 
++    new ReadlineConstString(2, new ReadlineLibrary[] 
++      {ReadlineLibrary.GnuReadline, ReadlineLibrary.Getline});
++
++
++  /**
++     Constant to access rl_line_buffer using
++     <code>getVar()</code> or <code>setVar()</code>.
++
++     <p>Supporting implementations:
++        <ul>
++	  <li>GNU-Readline</li>
++	  <li>Editline</li>
++	  <li>Getline</li>
++        </ul>
++     </p>     
++  */
++  
++  public final static ReadlineConstString RL_LINE_BUFFER = 
++    new ReadlineConstString(3, new ReadlineLibrary[] 
++      {ReadlineLibrary.GnuReadline,
++       ReadlineLibrary.Editline, ReadlineLibrary.Getline});
++
++
++  /**
++     Constant to access rl_terminal_name using
++     <code>getVar()</code> or <code>setVar()</code>.
++
++     <p>Supporting implementations:
++        <ul>
++	  <li>GNU-Readline</li>
++        </ul>
++     </p>     
++  */
++  
++  public final static ReadlineConstString RL_TERMINAL_NAME = 
++    new ReadlineConstString(4, new ReadlineLibrary[] 
++      {ReadlineLibrary.GnuReadline});
++
++
++  /**
++     Constant to access rl_executing_macro using
++     <code>getVar()</code> or <code>setVar()</code>.
++
++     <p>Supporting implementations:
++        <ul>
++	  <li>GNU-Readline</li>
++        </ul>
++     </p>     
++  */
++  
++  public final static ReadlineConstString RL_EXECUTING_MACRO =
++    new ReadlineConstString(5, new ReadlineLibrary[] 
++      {ReadlineLibrary.GnuReadline});
++
++
++  /**
++     Constant to access rl_basic_word_break_characters using
++     <code>getVar()</code> or <code>setVar()</code>.
++
++     <p>Supporting implementations:
++        <ul>
++	  <li>GNU-Readline</li>
++	  <li>Editline</li>
++        </ul>
++     </p>     
++  */
++  
++  public final static ReadlineConstString RL_BASIC_WORD_BREAK_CHARACTERS =
++    new ReadlineConstString(6, new ReadlineLibrary[] 
++      {ReadlineLibrary.GnuReadline, ReadlineLibrary.Editline});
++
++
++  /**
++     Constant to access rl_completer_word_break_characters using
++     <code>getVar()</code> or <code>setVar()</code>.
++
++     <p>Supporting implementations:
++        <ul>
++	  <li>GNU-Readline</li>
++	  <li>Editline</li>
++        </ul>
++     </p>     
++  */
++  
++  public final static ReadlineConstString RL_COMPLETER_WORD_BREAK_CHARACTERS = 
++    new ReadlineConstString(7, new ReadlineLibrary[] 
++      {ReadlineLibrary.GnuReadline, ReadlineLibrary.Editline});
++
++
++  /**
++     Constant to access rl_completer_quote_characters using
++     <code>getVar()</code> or <code>setVar()</code>.
++
++     <p>Supporting implementations:
++        <ul>
++	  <li>GNU-Readline</li>
++	  <li>Editline</li>
++        </ul>
++     </p>     
++  */
++  
++  public final static ReadlineConstString RL_COMPLETER_QUOTE_CHARACTERS = 
++    new ReadlineConstString(8, new ReadlineLibrary[] 
++      {ReadlineLibrary.GnuReadline, ReadlineLibrary.Editline});
++
++
++  /**
++     Constant to access rl_basic_quote_characters using
++     <code>getVar()</code> or <code>setVar()</code>.
++
++     <p>Supporting implementations:
++        <ul>
++	  <li>GNU-Readline</li>
++        </ul>
++     </p>     
++  */
++  
++  public final static ReadlineConstString RL_BASIC_QUOTE_CHARACTERS = 
++    new ReadlineConstString(9, new ReadlineLibrary[] 
++      {ReadlineLibrary.GnuReadline});
++
++
++  /**
++     Constant to access rl_filename_quote_characters using
++     <code>getVar()</code> or <code>setVar()</code>.
++
++     <p>Supporting implementations:
++        <ul>
++	  <li>GNU-Readline</li>
++        </ul>
++     </p>     
++  */
++  
++  public final static ReadlineConstString RL_FILENAME_QUOTE_CHARACTERS = 
++    new ReadlineConstString(10, new ReadlineLibrary[] 
++      {ReadlineLibrary.GnuReadline});
++
++
++  /**
++     Constant to access rl_special_prefixes using
++     <code>getVar()</code> or <code>setVar()</code>.
++
++     <p>Supporting implementations:
++        <ul>
++	  <li>GNU-Readline</li>
++	  <li>Editline</li>
++        </ul>
++     </p>     
++  */
++  
++  public final static ReadlineConstString RL_SPECIAL_PREFIXES = 
++    new ReadlineConstString(11, new ReadlineLibrary[] 
++      {ReadlineLibrary.GnuReadline, ReadlineLibrary.Editline});
++
++
++  /**
++     Constant to access history_word_delimiters using
++     <code>getVar()</code> or <code>setVar()</code>.
++
++     <p>Supporting implementations:
++        <ul>
++	  <li>GNU-Readline</li>
++        </ul>
++     </p>     
++  */
++  
++  public final static ReadlineConstString HISTORY_WORD_DELIMITERS = 
++    new ReadlineConstString(12, new ReadlineLibrary[] 
++      {ReadlineLibrary.GnuReadline});
++
++  /**
++     Constant to access history_no_expand_chars using
++     <code>getVar()</code> or <code>setVar()</code>.
++
++     <p>Supporting implementations:
++        <ul>
++	  <li>GNU-Readline</li>
++        </ul>
++     </p>     
++  */
++  
++  public final static ReadlineConstString HISTORY_NO_EXPAND_CHARS = 
++    new ReadlineConstString(13, new ReadlineLibrary[] 
++      {ReadlineLibrary.GnuReadline});
++
++
++  /**
++     Constant to access history_search_delimiter_chars using
++     <code>getVar()</code> or <code>setVar()</code>.
++
++     <p>Supporting implementations:
++        <ul>
++	  <li>GNU-Readline</li>
++        </ul>
++     </p>     
++  */
++  
++  public final static ReadlineConstString HISTORY_SEARCH_DELIMITERS = 
++    new ReadlineConstString(14, new ReadlineLibrary[] 
++      {ReadlineLibrary.GnuReadline});
++
++
++  /**
++     Constant to access rl_readline_version using
++     <code>getVar()</code> or <code>setVar()</code>.
++
++     <p>Supporting implementations:
++        <ul>
++	  <li>GNU-Readline</li>
++        </ul>
++     </p>     
++  */
++  
++  public final static ReadlineConstInt RL_READLINE_VERSION = 
++    new ReadlineConstInt(0, new ReadlineLibrary[] 
++      {ReadlineLibrary.GnuReadline});
++
++
++  /**
++     Constant to access rl_gnu_readline_p using
++     <code>getVar()</code> or <code>setVar()</code>.
++
++     <p>Supporting implementations:
++        <ul>
++	  <li>GNU-Readline</li>
++        </ul>
++     </p>     
++  */
++  
++  public final static ReadlineConstInt RL_GNU_READLINE_P = 
++    new ReadlineConstInt(1, new ReadlineLibrary[] 
++      {ReadlineLibrary.GnuReadline});
++
++
++  /**
++     Constant to access rl_readline_state using
++     <code>getVar()</code> or <code>setVar()</code>.
++
++     <p>Supporting implementations:
++        <ul>
++	  <li>GNU-Readline</li>
++        </ul>
++     </p>     
++  */
++  
++  public final static ReadlineConstInt RL_READLINE_STATE = 
++    new ReadlineConstInt(2, new ReadlineLibrary[] 
++      {ReadlineLibrary.GnuReadline});
++
++
++  /**
++     Constant to access rl_editing_mode using
++     <code>getVar()</code> or <code>setVar()</code>.
++
++     <p>Supporting implementations:
++        <ul>
++	  <li>GNU-Readline</li>
++        </ul>
++     </p>     
++  */
++  
++  public final static ReadlineConstInt RL_EDITING_MODE = 
++    new ReadlineConstInt(3, new ReadlineLibrary[] 
++      {ReadlineLibrary.GnuReadline});
++
++
++  /**
++     Constant to access rl_insert_mode using
++     <code>getVar()</code> or <code>setVar()</code>.
++
++     <p>Supporting implementations:
++        <ul>
++	  <li>GNU-Readline</li>
++	  <li>Getline</li>
++        </ul>
++     </p>     
++  */
++  
++  public final static ReadlineConstInt RL_INSERT_MODE = 
++    new ReadlineConstInt(4, new ReadlineLibrary[] 
++      {ReadlineLibrary.GnuReadline, ReadlineLibrary.Getline});
++
++
++  /**
++     Constant to access rl_point using
++     <code>getVar()</code> or <code>setVar()</code>.
++
++     <p>Supporting implementations:
++        <ul>
++	  <li>GNU-Readline</li>
++	  <li>Editline</li>
++	  <li>Getline</li>
++        </ul>
++     </p>     
++  */
++  
++  public final static ReadlineConstInt RL_POINT = 
++    new ReadlineConstInt(5, new ReadlineLibrary[] 
++      {ReadlineLibrary.GnuReadline,
++       ReadlineLibrary.Editline, ReadlineLibrary.Getline});
++
++
++  /**
++     Constant to access rl_end using
++     <code>getVar()</code> or <code>setVar()</code>.
++
++     <p>Supporting implementations:
++        <ul>
++	  <li>GNU-Readline</li>
++	  <li>Editline</li>
++	  <li>Getline</li>
++        </ul>
++     </p>     
++  */
++  
++  public final static ReadlineConstInt RL_END = 
++    new ReadlineConstInt(6, new ReadlineLibrary[] 
++      {ReadlineLibrary.GnuReadline,
++       ReadlineLibrary.Editline, ReadlineLibrary.Getline});
++
++
++  /**
++     Constant to access rl_mark using
++     <code>getVar()</code> or <code>setVar()</code>.
++
++     <p>Supporting implementations:
++        <ul>
++	  <li>GNU-Readline</li>
++        </ul>
++     </p>     
++  */
++  
++  public final static ReadlineConstInt RL_MARK = 
++    new ReadlineConstInt(7, new ReadlineLibrary[] 
++      {ReadlineLibrary.GnuReadline});
++
++
++  /**
++     Constant to access rl_done using
++     <code>getVar()</code> or <code>setVar()</code>.
++
++     <p>Supporting implementations:
++        <ul>
++	  <li>GNU-Readline</li>
++        </ul>
++     </p>     
++  */
++  
++  public final static ReadlineConstInt RL_DONE = 
++    new ReadlineConstInt(8, new ReadlineLibrary[] 
++      {ReadlineLibrary.GnuReadline});
++
++
++  /**
++     Constant to access rl_pending_input using
++     <code>getVar()</code> or <code>setVar()</code>.
++
++     <p>Supporting implementations:
++        <ul>
++	  <li>GNU-Readline</li>
++        </ul>
++     </p>     
++  */
++  
++  public final static ReadlineConstInt RL_PENDING_INPUT = 
++    new ReadlineConstInt(9, new ReadlineLibrary[] 
++      {ReadlineLibrary.GnuReadline});
++
++
++  /**
++     Constant to access rl_dispatching using
++     <code>getVar()</code> or <code>setVar()</code>.
++
++     <p>Supporting implementations:
++        <ul>
++	  <li>GNU-Readline</li>
++        </ul>
++     </p>     
++  */
++  
++  public final static ReadlineConstInt RL_DISPATCHING = 
++    new ReadlineConstInt(10, new ReadlineLibrary[] 
++      {ReadlineLibrary.GnuReadline});
++
++
++  /**
++     Constant to access rl_explicit_arg using
++     <code>getVar()</code> or <code>setVar()</code>.
++
++     <p>Supporting implementations:
++        <ul>
++	  <li>GNU-Readline</li>
++        </ul>
++     </p>     
++  */
++  
++  public final static ReadlineConstInt RL_EXPLICIT_ARG = 
++    new ReadlineConstInt(11, new ReadlineLibrary[] 
++      {ReadlineLibrary.GnuReadline});
++
++
++  /**
++     Constant to access rl_numeric_arg using
++     <code>getVar()</code> or <code>setVar()</code>.
++
++     <p>Supporting implementations:
++        <ul>
++	  <li>GNU-Readline</li>
++        </ul>
++     </p>     
++  */
++  
++  public final static ReadlineConstInt RL_NUMERIC_ARG = 
++    new ReadlineConstInt(12, new ReadlineLibrary[] 
++      {ReadlineLibrary.GnuReadline});
++
++
++  /**
++     Constant to access rl_erase_empty_line using
++     <code>getVar()</code> or <code>setVar()</code>.
++
++     <p>Supporting implementations:
++        <ul>
++	  <li>GNU-Readline</li>
++        </ul>
++     </p>     
++  */
++  
++  public final static ReadlineConstInt RL_ERASE_EMPTY_LINE = 
++    new ReadlineConstInt(13, new ReadlineLibrary[] 
++      {ReadlineLibrary.GnuReadline});
++
++
++  /**
++     Constant to access rl_already_prompted using
++     <code>getVar()</code> or <code>setVar()</code>.
++
++     <p>Supporting implementations:
++        <ul>
++	  <li>GNU-Readline</li>
++        </ul>
++     </p>     
++  */
++  
++  public final static ReadlineConstInt RL_ALREADY_PROMPTED = 
++    new ReadlineConstInt(14, new ReadlineLibrary[] 
++      {ReadlineLibrary.GnuReadline});
++
++
++  /**
++     Constant to access rl_num_chars_to_read using
++     <code>getVar()</code> or <code>setVar()</code>.
++
++     <p>Supporting implementations:
++        <ul>
++	  <li>GNU-Readline</li>
++        </ul>
++     </p>     
++  */
++  
++  public final static ReadlineConstInt RL_NUM_CHARS_TO_READ = 
++    new ReadlineConstInt(15, new ReadlineLibrary[] 
++      {ReadlineLibrary.GnuReadline});
++
++
++  /**
++     Constant to access rl_catch_signals using
++     <code>getVar()</code> or <code>setVar()</code>.
++
++     <p>Supporting implementations:
++        <ul>
++	  <li>GNU-Readline</li>
++        </ul>
++     </p>     
++  */
++  
++  public final static ReadlineConstInt RL_CATCH_SIGNALS = 
++    new ReadlineConstInt(16, new ReadlineLibrary[] 
++      {ReadlineLibrary.GnuReadline});
++
++
++  /**
++     Constant to access rl_catch_sigwinch using
++     <code>getVar()</code> or <code>setVar()</code>.
++
++     <p>Supporting implementations:
++        <ul>
++	  <li>GNU-Readline</li>
++        </ul>
++     </p>     
++  */
++  
++  public final static ReadlineConstInt RL_CATCH_SIGWINCH = 
++    new ReadlineConstInt(17, new ReadlineLibrary[] 
++      {ReadlineLibrary.GnuReadline});
++
++
++  /**
++     Constant to access rl_filename_completion_desired using
++     <code>getVar()</code> or <code>setVar()</code>.
++
++     <p>Supporting implementations:
++        <ul>
++	  <li>GNU-Readline</li>
++        </ul>
++     </p>     
++  */
++  
++  public final static ReadlineConstInt RL_FILENAME_COMPLETION_DESIRED = 
++    new ReadlineConstInt(18, new ReadlineLibrary[] 
++      {ReadlineLibrary.GnuReadline});
++
++
++  /**
++     Constant to access rl_filename_quoting_desired using
++     <code>getVar()</code> or <code>setVar()</code>.
++
++     <p>Supporting implementations:
++        <ul>
++	  <li>GNU-Readline</li>
++        </ul>
++     </p>     
++  */
++  
++  public final static ReadlineConstInt RL_FILENAME_QUOTING_DESIRED = 
++    new ReadlineConstInt(19, new ReadlineLibrary[] 
++      {ReadlineLibrary.GnuReadline});
++
++
++  /**
++     Constant to access rl_attempted_completion_over using
++     <code>getVar()</code> or <code>setVar()</code>.
++
++     <p>Supporting implementations:
++        <ul>
++	  <li>GNU-Readline</li>
++        </ul>
++     </p>     
++  */
++  
++  public final static ReadlineConstInt RL_ATTEMPTED_COMPLETION_OVER = 
++    new ReadlineConstInt(20, new ReadlineLibrary[] 
++      {ReadlineLibrary.GnuReadline});
++
++
++  /**
++     Constant to access rl_completion_type using
++     <code>getVar()</code> or <code>setVar()</code>.
++
++     <p>Supporting implementations:
++        <ul>
++	  <li>GNU-Readline</li>
++	  <li>Editline</li>
++        </ul>
++     </p>     
++  */
++  
++  public final static ReadlineConstInt RL_COMPLETION_TYPE = 
++    new ReadlineConstInt(21, new ReadlineLibrary[] 
++      {ReadlineLibrary.GnuReadline, ReadlineLibrary.Editline});
++
++
++  /**
++     Constant to access rl_completion_append_character using
++     <code>getVar()</code> or <code>setVar()</code>.
++
++     <p>Supporting implementations:
++        <ul>
++	  <li>GNU-Readline</li>
++	  <li>Editline</li>
++        </ul>
++     </p>     
++  */
++  
++  public final static ReadlineConstInt RL_COMPLETION_APPEND_CHARACTER = 
++    new ReadlineConstInt(22, new ReadlineLibrary[] 
++      {ReadlineLibrary.GnuReadline, ReadlineLibrary.Editline});
++
++
++  /**
++     Constant to access rl_completion_suppress_append using
++     <code>getVar()</code> or <code>setVar()</code>.
++
++     <p>Supporting implementations:
++        <ul>
++	  <li>GNU-Readline</li>
++        </ul>
++     </p>     
++  */
++  
++  public final static ReadlineConstInt RL_COMPLETION_SUPPRESS_APPEND = 
++    new ReadlineConstInt(23, new ReadlineLibrary[] 
++      {ReadlineLibrary.GnuReadline});
++
++
++  /**
++     Constant to access rl_completion_query_items using
++     <code>getVar()</code> or <code>setVar()</code>.
++
++     <p>Supporting implementations:
++        <ul>
++	  <li>GNU-Readline</li>
++	  <li>Editline</li>
++        </ul>
++     </p>     
++  */
++  
++  public final static ReadlineConstInt RL_COMPLETION_QUERY_ITEMS = 
++    new ReadlineConstInt(24, new ReadlineLibrary[] 
++      {ReadlineLibrary.GnuReadline, ReadlineLibrary.Editline});
++
++
++  /**
++     Constant to access rl_completion_mark_symlink_dirs using
++     <code>getVar()</code> or <code>setVar()</code>.
++
++     <p>Supporting implementations:
++        <ul>
++	  <li>GNU-Readline</li>
++        </ul>
++     </p>     
++  */
++  
++  public final static ReadlineConstInt RL_COMPLETION_MARK_SYMLINK_DIRS = 
++    new ReadlineConstInt(25, new ReadlineLibrary[] 
++      {ReadlineLibrary.GnuReadline});
++
++
++  /**
++     Constant to access rl_ignore_completion_duplicates using
++     <code>getVar()</code> or <code>setVar()</code>.
++
++     <p>Supporting implementations:
++        <ul>
++	  <li>GNU-Readline</li>
++        </ul>
++     </p>     
++  */
++  
++  public final static ReadlineConstInt RL_IGNORE_COMPLETION_DUPLICATES = 
++    new ReadlineConstInt(26, new ReadlineLibrary[] 
++      {ReadlineLibrary.GnuReadline});
++
++
++  /**
++     Constant to access rl_inhibit_completion using
++     <code>getVar()</code> or <code>setVar()</code>.
++
++     <p>Supporting implementations:
++        <ul>
++	  <li>GNU-Readline</li>
++	  <li>Editline</li>
++        </ul>
++     </p>     
++  */
++  
++  public final static ReadlineConstInt RL_INHIBIT_COMPLETION = 
++    new ReadlineConstInt(27, new ReadlineLibrary[] 
++      {ReadlineLibrary.GnuReadline, ReadlineLibrary.Editline});
++
++
++  /**
++     Constant to access history_base using
++     <code>getVar()</code> or <code>setVar()</code>.
++
++     <p>Supporting implementations:
++        <ul>
++	  <li>GNU-Readline</li>
++	  <li>Editline</li>
++        </ul>
++     </p>     
++  */
++  
++  public final static ReadlineConstInt HISTORY_BASE = 
++    new ReadlineConstInt(28, new ReadlineLibrary[] 
++      {ReadlineLibrary.GnuReadline, ReadlineLibrary.Editline});
++
++
++  /**
++     Constant to access history_length using
++     <code>getVar()</code> or <code>setVar()</code>.
++
++     <p>Supporting implementations:
++        <ul>
++	  <li>GNU-Readline</li>
++	  <li>Editline</li>
++        </ul>
++     </p>     
++  */
++  
++  public final static ReadlineConstInt HISTORY_LENGTH = 
++    new ReadlineConstInt(29, new ReadlineLibrary[] 
++      {ReadlineLibrary.GnuReadline, ReadlineLibrary.Editline});
++
++
++  /**
++     Constant to access history_max_entries using
++     <code>getVar()</code> or <code>setVar()</code>.
++
++     <p>Supporting implementations:
++        <ul>
++	  <li>GNU-Readline</li>
++        </ul>
++     </p>     
++  */
++  
++  public final static ReadlineConstInt HISTORY_MAX_ENTRIES = 
++    new ReadlineConstInt(30, new ReadlineLibrary[] 
++      {ReadlineLibrary.GnuReadline});
++
++
++  /**
++     Constant to access history_quotes_inhibit_expansion using
++     <code>getVar()</code> or <code>setVar()</code>.
++
++     <p>Supporting implementations:
++        <ul>
++	  <li>GNU-Readline</li>
++        </ul>
++     </p>     
++  */
+   
++  public final static ReadlineConstInt HISTORY_QUOTES_EXPANSION = 
++    new ReadlineConstInt(31, new ReadlineLibrary[] 
++      {ReadlineLibrary.GnuReadline});
++
++
++
++  /* ----------------------------------------------------------------------- */
++
+   /**
+      The currently defined ReadlineCompleter.
+   */
+@@ -113,7 +890,7 @@
+   /**
+      Load an implementing backing library. This method might throw an
+      UnsatisfiedLinkError in case the native libary is not found in the
+-     library path. If you want to have portable program, just catch and 
++     library path. If you want to have a portable program, just catch and 
+      ignore that error. JavaReadline will then just use the pure Java fallback
+      solution.
+ 
+@@ -545,7 +1322,7 @@
+   /////////////////////////////////////////////////////////////////////////////
+ 
+   /**
+-     Query word break characters.
++     Set word break characters.
+ 
+      <p>Supporting implementations:
+         <ul>
+@@ -554,24 +1331,22 @@
+         </ul>
+      </p>
+ 
++     @param wordBreakCharacters A string of word break characters
+   */
+     
+-  public static String getWordBreakCharacters() {
++  public static void 
++    setWordBreakCharacters(String wordBreakCharacters)
++                              throws UnsupportedEncodingException {
+     if (iLib == ReadlineLibrary.GnuReadline || iLib == ReadlineLibrary.Editline)
+-      return getWordBreakCharactersImpl();
++      setWordBreakCharactersImpl(wordBreakCharacters);
+     else if (iThrowException)
+       throw new UnsupportedOperationException();
+-    else
+-      return null;
+   }
+ 
+   /////////////////////////////////////////////////////////////////////////////
+ 
+   /**
+-     Query the current line buffer. This returns the current content of
+-     the internal line buffer. You might need this in a 
+-     {@link ReadlineCompleter} implementation to access the full text
+-     given so far.
++     Query word break characters.
+ 
+      <p>Supporting implementations:
+         <ul>
+@@ -579,22 +1354,25 @@
+ 	  <li>Editline</li>
+         </ul>
+      </p>
++
+   */
+     
+-  public static String getLineBuffer() {
++  public static String getWordBreakCharacters() {
+     if (iLib == ReadlineLibrary.GnuReadline || iLib == ReadlineLibrary.Editline)
+-      return getLineBufferImpl();
++      return getWordBreakCharactersImpl();
+     else if (iThrowException)
+       throw new UnsupportedOperationException();
+     else
+       return null;
+   }
+ 
+-
+   /////////////////////////////////////////////////////////////////////////////
+ 
+   /**
+-     Set word break characters.
++     Query the current line buffer. This returns the current content of
++     the internal line buffer. You might need this in a 
++     {@link ReadlineCompleter} implementation to access the full text
++     given so far.
+ 
+      <p>Supporting implementations:
+         <ul>
+@@ -602,19 +1380,18 @@
+ 	  <li>Editline</li>
+         </ul>
+      </p>
+-
+-     @param wordBreakCharacters A string of word break characters
+   */
+     
+-  public static void 
+-    setWordBreakCharacters(String wordBreakCharacters)
+-                              throws UnsupportedEncodingException {
++  public static String getLineBuffer() {
+     if (iLib == ReadlineLibrary.GnuReadline || iLib == ReadlineLibrary.Editline)
+-      setWordBreakCharactersImpl(wordBreakCharacters);
++      return getLineBufferImpl();
+     else if (iThrowException)
+       throw new UnsupportedOperationException();
++    else
++      return null;
+   }
+ 
++
+   /////////////////////////////////////////////////////////////////////////////
+ 
+   /**
+@@ -665,6 +1442,82 @@
+   }
+ 
+   /////////////////////////////////////////////////////////////////////////////
++
++  /**
++     Set integer readline-variable.
++
++     @param c symbolic constant of readline-variable
++     @param value new value of readline-variable
++     @return old value of readline-variable
++  */
++
++  public static int setVar(ReadlineConstInt c, int value) {
++    if (c.isSupported(iLib))
++      return setVarIntImpl(c.getNumber(),value);
++    else if (iThrowException)
++      throw new UnsupportedOperationException();
++    else
++      return Integer.MIN_VALUE;
++  }
++
++  /////////////////////////////////////////////////////////////////////////////
++
++  /**
++     Query integer readline-variable.
++
++     @param c symbolic constant of readline-variable
++     @return value of variable
++  */
++
++  public static int getVar(ReadlineConstInt c) {
++    if (c.isSupported(iLib))
++      return getVarIntImpl(c.getNumber());
++    else if (iThrowException)
++      throw new UnsupportedOperationException();
++    else
++      return Integer.MIN_VALUE;
++  }
++
++  /////////////////////////////////////////////////////////////////////////////
++
++  /**
++     Set string readline-variable.
++
++     @param c symbolic constant of readline-variable
++     @param value new value of readline-variable
++     @return old value of readline-variable
++  */
++
++  public static String setVar(ReadlineConstString c, String value) throws 
++                                                UnsupportedEncodingException {
++    if (c.isSupported(iLib))
++      return setVarStringImpl(c.getNumber(),value);
++    else if (iThrowException)
++      throw new UnsupportedOperationException();
++    else
++      return null;
++  }
++
++  /////////////////////////////////////////////////////////////////////////////
++
++  /**
++     Query string readline-variable.
++
++     @param c symbolic constant of readline-variable
++     @return value of variable
++  */
++
++  public static String getVar(ReadlineConstString c) throws 
++                                                UnsupportedEncodingException {
++    if (c.isSupported(iLib))
++      return getVarStringImpl(c.getNumber());
++    else if (iThrowException)
++      throw new UnsupportedOperationException();
++    else
++      return null;
++  }
++
++  /////////////////////////////////////////////////////////////////////////////
+   /////////////////////////////////////////////////////////////////////////////
+ 
+   /**
+@@ -838,4 +1691,49 @@
+   private native static void 
+     setWordBreakCharactersImpl(String wordBreakCharacters)
+                               throws UnsupportedEncodingException;
++
++  /////////////////////////////////////////////////////////////////////////////
++
++  /**
++     Native implementation of setVar(ReadlineConstInt,int)
++
++     @see 
++   org.gnu.readline.Readline#setVar(ReadlineConstInt,int)
++  */
++
++  private native static int setVarIntImpl(int number,int value);
++
++  /////////////////////////////////////////////////////////////////////////////
++
++  /**
++     Native implementation of getVar(ReadlineConstInt)
++
++     @see 
++   org.gnu.readline.Readline#getVar(ReadlineConstInt)
++  */
++
++  private native static int getVarIntImpl(int number);
++
++  /////////////////////////////////////////////////////////////////////////////
++
++  /**
++     Native implementation of setVar(ReadlineConstString,String)
++
++     @see 
++   org.gnu.readline.Readline#setVar(ReadlineConstString,String)
++  */
++
++  private native static String setVarStringImpl(int number,String value)
++                              throws UnsupportedEncodingException;
++  /////////////////////////////////////////////////////////////////////////////
++
++  /**
++     Native implementation of getVar(ReadlineConstString)
++
++     @see 
++   org.gnu.readline.Readline#getVar(ReadlineConstString)
++  */
++
++  private native static String getVarStringImpl(int number)
++                              throws UnsupportedEncodingException;
+ }
+diff -uNr libreadline-java-0.8.0/src/org/gnu/readline/ReadlineConstBase.java java-readline/src/org/gnu/readline/ReadlineConstBase.java
+--- libreadline-java-0.8.0/src/org/gnu/readline/ReadlineConstBase.java	1970-01-01 09:00:00.000000000 +0900
++++ java-readline/src/org/gnu/readline/ReadlineConstBase.java	2008-03-14 03:10:35.000000000 +0900
+@@ -0,0 +1,85 @@
++/**************************************************************************
++/* ReadlineConstBase.java -- The base class for constants for Readline
++/*                           variables
++/*
++/* Java Wrapper Copyright (c) 1998-2003 by Bernhard Bablok (mail@bablokb.de)
++/*
++/* This program is free software; you can redistribute it and/or modify
++/* it under the terms of the GNU Library General Public License as published
++/* by  the Free Software Foundation; either version 2 of the License or
++/* (at your option) any later version.
++/*
++/* This program is distributed in the hope that it will be useful, but
++/* WITHOUT ANY WARRANTY; without even the implied warranty of
++/* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++/* GNU Library General Public License for more details.
++/*
++/* You should have received a copy of the GNU Library General Public License
++/* along with this program; see the file COPYING.LIB.  If not, write to
++/* the Free Software Foundation Inc., 59 Temple Place - Suite 330,
++/* Boston, MA  02111-1307 USA
++/**************************************************************************/
++
++package org.gnu.readline;
++
++/**
++   This class is the base class for constants for Readline variables.
++   The constants are used to access internal variables of the
++   underlying implementation.
++
++ @version $Revision: 1.1 $
++ @author  $Author: bablokb $
++*/
++
++class ReadlineConstBase {
++  
++  /**
++     Numeric number of readline-variable. In the native implementation,
++     this number serves as an index into an array of variables. This
++     number can only be set once during initialization.
++  */
++
++  private int iNumber;
++
++  /**
++     Supporting implementations (not every implementation supports all
++     variables).
++  */
++
++  private ReadlineLibrary[] iSupport;
++
++  /**
++     Constructor. The constructor is protected, since the class should not
++     be used outside of the package.
++  */
++
++  protected ReadlineConstBase(int number, ReadlineLibrary[] support) {
++    iNumber = number;
++    iSupport = support;
++  }
++
++  /**
++     Query number.
++
++     @return number of readline-variable.
++  */
++
++  protected int getNumber() {
++    return iNumber;
++  }
++
++  /**
++     Check if this readline-variable is supported.
++     
++     @return true if supported
++  */
++
++  protected boolean isSupported(ReadlineLibrary lib) {
++    for (int i=0; i < iSupport.length; ++i) {
++      if (iSupport[i] == lib)
++	return true;
++    }
++    return false;
++  }
++}
++
+diff -uNr libreadline-java-0.8.0/src/org/gnu/readline/ReadlineConstInt.java java-readline/src/org/gnu/readline/ReadlineConstInt.java
+--- libreadline-java-0.8.0/src/org/gnu/readline/ReadlineConstInt.java	1970-01-01 09:00:00.000000000 +0900
++++ java-readline/src/org/gnu/readline/ReadlineConstInt.java	2008-03-14 03:10:35.000000000 +0900
+@@ -0,0 +1,48 @@
++/**************************************************************************
++/* ReadlineConstInt.java -- The class for constants for integer Readline
++/*                          variables
++/*
++/* Java Wrapper Copyright (c) 1998-2003 by Bernhard Bablok (mail@bablokb.de)
++/*
++/* This program is free software; you can redistribute it and/or modify
++/* it under the terms of the GNU Library General Public License as published
++/* by  the Free Software Foundation; either version 2 of the License or
++/* (at your option) any later version.
++/*
++/* This program is distributed in the hope that it will be useful, but
++/* WITHOUT ANY WARRANTY; without even the implied warranty of
++/* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++/* GNU Library General Public License for more details.
++/*
++/* You should have received a copy of the GNU Library General Public License
++/* along with this program; see the file COPYING.LIB.  If not, write to
++/* the Free Software Foundation Inc., 59 Temple Place - Suite 330,
++/* Boston, MA  02111-1307 USA
++/**************************************************************************/
++
++package org.gnu.readline;
++
++/**
++   This class implements constants for integer Readline variables.
++   The constants are used to access internal variables of the
++   underlying implementation.
++
++   <p> Note that the class does not add additional functionality, it
++   is used only for method-overloading.
++
++ @version $Revision: 1.1 $
++ @author  $Author: bablokb $
++*/
++
++class ReadlineConstInt  extends ReadlineConstBase {
++  
++  /**
++     Constructor. The constructor is protected, since the class should not
++     be used outside of the package.
++  */
++
++  protected ReadlineConstInt(int number, ReadlineLibrary[] support) {
++    super(number,support);
++  }
++}
++
+diff -uNr libreadline-java-0.8.0/src/org/gnu/readline/ReadlineConstString.java java-readline/src/org/gnu/readline/ReadlineConstString.java
+--- libreadline-java-0.8.0/src/org/gnu/readline/ReadlineConstString.java	1970-01-01 09:00:00.000000000 +0900
++++ java-readline/src/org/gnu/readline/ReadlineConstString.java	2008-03-14 03:10:35.000000000 +0900
+@@ -0,0 +1,48 @@
++/**************************************************************************
++/* ReadlineConstString.java -- The class for constants for string Readline
++/*                          variables
++/*
++/* Java Wrapper Copyright (c) 1998-2003 by Bernhard Bablok (mail@bablokb.de)
++/*
++/* This program is free software; you can redistribute it and/or modify
++/* it under the terms of the GNU Library General Public License as published
++/* by  the Free Software Foundation; either version 2 of the License or
++/* (at your option) any later version.
++/*
++/* This program is distributed in the hope that it will be useful, but
++/* WITHOUT ANY WARRANTY; without even the implied warranty of
++/* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++/* GNU Library General Public License for more details.
++/*
++/* You should have received a copy of the GNU Library General Public License
++/* along with this program; see the file COPYING.LIB.  If not, write to
++/* the Free Software Foundation Inc., 59 Temple Place - Suite 330,
++/* Boston, MA  02111-1307 USA
++/**************************************************************************/
++
++package org.gnu.readline;
++
++/**
++   This class implements constants for string Readline variables.
++   The constants are used to access internal variables of the
++   underlying implementation.
++
++   <p> Note that the class does not add additional functionality, it
++   is used only for method-overloading.
++
++ @version $Revision: 1.1 $
++ @author  $Author: bablokb $
++*/
++
++class ReadlineConstString extends ReadlineConstBase {
++  
++  /**
++     Constructor. The constructor is protected, since the class should not
++     be used outside of the package.
++  */
++
++  protected ReadlineConstString(int number, ReadlineLibrary[] support) {
++    super(number,support);
++  }
++}
++
+diff -uNr libreadline-java-0.8.0/src/test/ReadlineTest.java java-readline/src/test/ReadlineTest.java
+--- libreadline-java-0.8.0/src/test/ReadlineTest.java	2003-01-07 19:14:35.000000000 +0900
++++ java-readline/src/test/ReadlineTest.java	2008-03-14 03:10:35.000000000 +0900
+@@ -36,8 +36,8 @@
+  * is read. If a second argument is given, the appropriate library is
+  * loaded.
+  *
+- * @author $Author: Bablokb $
+- * @version $Revision: 1.17 $
++ * @author $Author: bablokb $
++ * @version $Revision: 1.20 $
+  */
+ 
+ public class ReadlineTest {
+@@ -52,16 +52,17 @@
+   */
+ 
+   public static void main(String[] args) {
+-    String line;
++    String line, libName;
+     
+     // Readline.setThrowExceptionOnUnsupportedMethod(true);
+     
+     if (args.length > 1)
+-      Readline.load(ReadlineLibrary.byName(args[1]));
++      libName = args[1];
+     else
+-      Readline.load(ReadlineLibrary.GnuReadline);
++      libName = "GnuReadline";
+ 		    
+-    System.out.println("initializing Readline...");
++    Readline.load(ReadlineLibrary.byName(libName));
++    System.out.println("initializing " + libName);
+     Readline.initReadline("ReadLineTest"); // init, set app name, read inputrc
+     System.out.println("... done");
+ 
+@@ -90,13 +91,34 @@
+ 
+     // Set word break characters
+     try {
+-        Readline.setWordBreakCharacters(" \t;");
+-    }
+-    catch (UnsupportedEncodingException enc) {
+-        System.err.println("Could not set word break characters");
+-        System.exit(0);
++      String breakChars = 
++	Readline.getVar(Readline.RL_COMPLETER_WORD_BREAK_CHARACTERS);
++      System.out.println("word-break-chars: " + breakChars);
++      breakChars = 
++	Readline.setVar(Readline.RL_COMPLETER_WORD_BREAK_CHARACTERS,"abc");
++      System.out.println("word-break-chars: " + breakChars);
++      breakChars = 
++	Readline.getVar(Readline.RL_COMPLETER_WORD_BREAK_CHARACTERS);
++      System.out.println("word-break-chars: " + breakChars);
++      Readline.setWordBreakCharacters(" \t;");
++      breakChars = 
++	Readline.getVar(Readline.RL_COMPLETER_WORD_BREAK_CHARACTERS);
++      System.out.println("word-break-chars: " + breakChars);
++    } catch (UnsupportedEncodingException enc) {
++      System.err.println("Could not set word break characters");
++      System.exit(0);
+     }
+ 
++    // query version
++
++    try {
++      String version = Readline.getVar(Readline.RL_LIBRARY_VERSION);
++      System.out.println("Readline-Version: " + version);
++    } catch (UnsupportedEncodingException enc) {
++      System.err.println("Could not query library version");
++      System.exit(0);
++    }
++    
+     // set test completer
+ 
+     Readline.setCompleter(new TestCompleter());
+diff -uNr libreadline-java-0.8.0/web/index.html java-readline/web/index.html
+--- libreadline-java-0.8.0/web/index.html	1970-01-01 09:00:00.000000000 +0900
++++ java-readline/web/index.html	2008-03-14 03:10:35.000000000 +0900
+@@ -0,0 +1,113 @@
++<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
++
++<!--
++  $Revision: 1.6 $
++  $Author: bablokb $
++-->
++
++<HTML>
++  <HEAD>
++    <TITLE>Java-Readline</TITLE>
++  </HEAD>
++  <BODY bgcolor=#FCC309>
++
++    <H1 align=center>Java-Readline</H1>
++
++    <hr>
++    <H2>Introduction</H2>
++
++    <p>Originally a private project with the focus on learning about
++      the Java Native Interface (JNI), Java-Readline has turned into a
++      collaborative work of many contributers. It is now hosted on
++      Sourceforge. For details about the project, please visit the
++      <a href="http://sourceforge.net/projects/java-readline/">main
++	project page</a>.
++
++    <hr>
++    <H2>Description</H2>
++
++    <p>Java-Readline is a port of GNU Readline for Java. Or, to be
++      more precise, it is a JNI-wrapper to Readline. It is distributed
++      under the LGPL.
++
++    <p><strong>Although Java-Readline is distributed under the LGPL, the
++      underlying Readline library is GPL code. The consequence is,
++      that any program linking with Java-Readline+Readline, will fall
++      under the GPL.</strong>
++
++    <p>There is a Readline replacement called Editline with a more
++      liberal license. Starting with version 0.6, you 
++      have the choice of linking against Editline. This version also
++      features a fallback solution (System.in) for platforms without
++      Readline or Editline support, making your programs portable
++      again.
++
++    <P>The code should compile for every platform supporting the readline,
++      history and termcap libraries. Platforms known to work:
++      <ul>
++        <li>Linux (various x86-distributions)</li>
++        <li>Solaris</li>
++    </ul>
++    Please let me know of any additional platforms you managed to make
++    Java-Readline work on.
++
++    <hr>
++    <H2>Download</H2>
++
++    <p>Various packages are available for download. See the <a
++       href="http://sourceforge.net/project/showfiles.php?group_id=48669">download
++       area</a> of the Java-Readline project. The current version is
++      <strong>0.8.0</strong>.
++
++    <hr>
++    <H2>Mailing Lists</H2>
++
++    <p>You can subscribe to a number of Java-Readline related mailing
++      lists:
++    <ol>
++      <li>Java-readline-devel (development issues)
++      <li>Java-readline-users (Java-Readline usage)
++      <li>Java-readline-announce (announcement of new versions)
++    </ol>
++    To subscribe, go to the  <a
++       href="http://sourceforge.net/mail/?group_id=48669">mailing list
++    page</a> of the Java-Readline project.
++
++    <hr>
++    <H2>Projects using Java-Readline</H2>
++
++    <p>A number of projects use Java-Readline (or can be modified
++      easily to use it):
++      <ul>
++      <li><a href="http://www.jython.org">Jython</a>, a Java-based
++	implementation of Python (see the
++	instructions in the README in the <em>contrib/jpython</em>
++	subdirectory of the source-distribution of Java-Readline)
++      <li><a href="http://henplus.sourceforge.net/">HenPlus</a>,
++	a JDBC-SQL-Shell.
++      <li><a href="http://www.beanshell.org">BeanShell</a>, see the
++	<em>contrib/bsh</em> subdirectory of the source-distribution
++	of Java-Readline
++      <li><a href="http://xnap.sourceforge.net/">XNap</a>,
++	a filesharing program (commandline mode)
++    </ul>
++
++    <p>If your project is missing, just drop me a note.
++
++    <hr>
++    <p>
++    <table width="100%">
++      <tr>
++	  <td align="left">You can find other Java and Linux related
++	    software on <A HREF="http://www.bablokb.de/index.html">my
++	      Homepage</A>.<br>
++	    <address>Bernhard Bablok (mail @ bablokb.de)</address>
++	  </td>
++	  <td align="right"><A href="http://sourceforge.net">
++	      <IMG src="http://sourceforge.net/sflogo.php?group_id=48669&type=5"
++	 width="210" height="62" border="0" alt="SourceForge Logo"></A>
++	  </td> 
++      </tr>
++    </table>
++  </BODY>
++</HTML>

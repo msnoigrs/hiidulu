@@ -1,0 +1,19 @@
+diff -uNr guice-9999.orig/build.xml guice-9999/build.xml
+--- guice-9999.orig/build.xml	2008-11-14 22:52:27.000000000 +0900
++++ guice-9999/build.xml	2008-11-14 22:57:13.000000000 +0900
+@@ -9,6 +9,15 @@
+     <fileset dir="${lib.dir}/build" includes="*.jar"/>
+   </path>
+ 
++  <target name="jar-deps" depends="compile, manifest"
++       description="Build jar.">
++    <mkdir dir="${build.dir}/dist"/>
++    <jar jarfile="${build.dir}/dist/guice-${version}.jar"
++        manifest="${build.dir}/META-INF/MANIFEST.MF">
++      <fileset dir="${build.dir}/classes"/>
++    </jar>
++  </target>
++
+   <target name="jar" depends="compile, manifest"
+        description="Build jar.">
+     <taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask" 

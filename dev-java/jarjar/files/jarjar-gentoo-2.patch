@@ -1,0 +1,36 @@
+--- jarjar-9999.orig/build.xml	2009-10-01 18:27:56.000000000 +0900
++++ jarjar-9999/build.xml	2009-10-01 18:28:48.000000000 +0900
+@@ -16,6 +16,7 @@
+ 
+     <property name="version" value="snapshot"/>
+     <property name="jarfile" value="dist/jarjar-${version}.jar"/>
++    <property name="jarfile.nodep" value="dist/jarjar-nodep-${version}.jar"/>
+     <property name="jarfile.util" value="dist/jarjar-util-${version}.jar"/>
+     <property name="jarfile.mojo" value="dist/jarjar-plugin-${version}.jar"/>
+ 
+@@ -73,7 +74,7 @@
+ 
+     <target name="jar" depends="compile" description="Create Jar">
+         <mkdir dir="dist"/>
+-        <jarjar jarfile="${jarfile}">
++        <jarjar jarfile="${jarfile.nodep}">
+             <fileset dir="build/main"/>
+             <zipfileset src="lib/asm-3.1.jar"/>
+             <zipfileset src="lib/asm-commons-3.1.jar">
+@@ -92,6 +93,16 @@
+         </jarjar>
+     </target>
+ 
++    <target name="jar-nojarjar" depends="compile" description="Create Jar Without running JarJar task on it">
++        <mkdir dir="dist"/>
++        <jar jarfile="${jarfile}" basedir="build/main/">
++            <manifest>
++                <attribute name="Main-Class" value="com.tonicsystems.jarjar.Main"/>
++                <attribute name="Implementation-Version" value="${version}"/>
++            </manifest>
++        </jar>
++    </target>
++
+     <target name="jar-util" depends="compile" description="Create utility Jar">
+         <mkdir dir="dist"/>
+         <jar jarfile="${jarfile.util}">

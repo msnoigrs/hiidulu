@@ -1,0 +1,35 @@
+--- jaxb-ri-1.0.6.orig/build.xml	2010-10-18 23:22:50.000000000 +0900
++++ jaxb-ri-1.0.6/build.xml	2011-05-06 13:59:30.631962924 +0900
+@@ -321,26 +321,26 @@
+         <!-- process samples -->
+         <!-- if wspack.home is set, then process samples as 'JWSDP',
+              otherwise process samples as 'RI' -->
+-        <condition property="in.wspack">
++<!--        <condition property="in.wspack">
+             <isset property="wspack.home"/>
+         </condition>
+         <antcall target="process-sample.inwspack"/>
+-        <antcall target="process-sample.notinwspack"/>
++        <antcall target="process-sample.notinwspack"/>-->
+         
+         <!-- copy sample apps -->
+-        <mkdir dir="${jaxb.dist}/samples"/>
++<!--        <mkdir dir="${jaxb.dist}/samples"/>
+         <copy todir="${jaxb.dist}/samples">
+             <fileset dir="${jaxb.root}/samples/samples-src"
+                      defaultexcludes="yes">
+                 <exclude name="CHANGELOG.txt"/>
+-                <exclude name="**/build.golden.regexp" />
++                <exclude name="**/build.golden.regexp" />-->
+                 <!-- .cvsignore is a control file used for CVS -->
+-                <exclude name="**/.cvsignore" />
++<!--                <exclude name="**/.cvsignore" />
+                 <exclude name="**/sample.meta" />
+                 <exclude name="**/gen-src/**/*" />
+                 <exclude name="**/classes/**/*" />
+             </fileset>
+-        </copy>
++        </copy>-->
+     </target>
+     
+     <!-- this target will be run when the jwsdp build is driving.  It will

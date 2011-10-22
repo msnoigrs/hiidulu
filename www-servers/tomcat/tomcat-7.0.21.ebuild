@@ -20,8 +20,8 @@ LICENSE="Apache-2.0"
 
 IUSE="dbcp"
 
-# eclipse ecj version/slot (upstream uses version 3.7 which we do not have packaged yet)
-ECJV="3.6"
+# eclipse ecj version/slot
+ECJV="3.7"
 
 # servlet-api slot
 SAPIS="3.0"

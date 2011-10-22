@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project default="jar" basedir="." name="jaxen" >
+  <property name="defaulttargetdir" value="target" >
+  </property>
+  <property name="libdir" value="target/lib" >
+  </property>
+  <property name="classesdir" value="target/classes" >
+  </property>
+  <property name="testclassesdir" value="target/test-classes" >
+  </property>
+  <property name="testclassesdir" value="target/test-classes" >
+  </property>
+  <property name="testreportdir" value="target/test-reports" >
+  </property>
+  <property name="distdir" value="dist" >
+  </property>
+  <property name="javadocdir" value="dist/docs/api" >
+  </property>
+  <property name="final.name" value="jaxen-jdom-1.1.2" >
+  </property>
+  <path id="build.classpath" >
+    <fileset dir="${libdir}" >
+      <include name="**/*.jar" >
+      </include>
+    </fileset>
+  </path>
+  <target name="init" description="o Initializes some properties" >
+    <mkdir dir="${libdir}" >
+    </mkdir>
+    <condition property="noget" >
+      <equals arg1="${build.sysclasspath}" arg2="only" >
+      </equals>
+    </condition>
+    
+
+    <available classname="junit.framework.Test" property="Junit.present" ignoresystemclasses="true" >
+    </available>
+  </target>
+  <target depends="init" name="compile" description="o Compile the code" >
+    <mkdir dir="${classesdir}" >
+    </mkdir>
+    <javac debug="true" deprecation="true" optimize="false" destdir="${classesdir}" excludes="**/package.html" >
+      <src >
+        <pathelement location="src/java/main" >
+        </pathelement>
+      </src>
+      <classpath refid="build.classpath" >
+      </classpath>
+    </javac>
+  </target>
+  <target depends="compile,test" name="jar" description="o Create the jar" >
+    <jar excludes="**/package.html" basedir="${classesdir}" jarfile="${defaulttargetdir}/${final.name}.jar" >
+    </jar>
+  </target>
+  <target name="clean" description="o Clean up the generated directories" >
+    <delete dir="${defaulttargetdir}" >
+    </delete>
+    <delete dir="${distdir}" >
+    </delete>
+  </target>
+  <target depends="jar, javadoc" name="dist" description="o Create a distribution" >
+    <mkdir dir="dist" >
+    </mkdir>
+    <copy todir="dist" >
+      <fileset dir="${defaulttargetdir}" includes="*.jar" >
+      </fileset>
+      <fileset dir="${basedir}" includes="LICENSE*" >
+      </fileset>
+    </copy>
+  </target>
+  <target depends="internal-test" if="test.failure" name="test" description="o Run the test cases" >
+    <fail message="There were test failures." >
+    </fail>
+  </target>
+  <target depends="junit-present,compile-tests" name="internal-test" if="Junit.present" >
+    <mkdir dir="${testreportdir}" >
+    </mkdir>
+    <junit fork="true" failureproperty="test.failure" haltonerror="true" dir="./" printSummary="yes" >
+      <sysproperty value="." key="basedir" >
+      </sysproperty>
+      <formatter type="xml" >
+      </formatter>
+      <formatter usefile="false" type="plain" >
+      </formatter>
+      <classpath >
+        <path refid="build.classpath" >
+        </path>
+        <pathelement path="${testclassesdir}" >
+        </pathelement>
+        <pathelement path="${classesdir}" >
+        </pathelement>
+      </classpath>
+      <batchtest todir="${testreportdir}" >
+        <fileset dir="src/java/test" >
+          <include name="**/*Test.java" >
+          </include>
+        </fileset>
+      </batchtest>
+    </junit>
+  </target>
+  <target depends="init" unless="Junit.present" name="junit-present" >
+    <echo >================================= WARNING ================================</echo>
+    <echo >Junit isn't present in your ${ANT_HOME}/lib directory. Tests not executed.</echo>
+    <echo >==========================================================================</echo>
+  </target>
+  <target depends="junit-present,compile" name="compile-tests" if="Junit.present" >
+    <mkdir dir="${testclassesdir}" >
+    </mkdir>
+    <javac debug="true" deprecation="true" optimize="false" destdir="${testclassesdir}" excludes="**/package.html" >
+      <src >
+        <pathelement location="src/java/test" >
+        </pathelement>
+      </src>
+      <classpath >
+        <path refid="build.classpath" >
+        </path>
+        <pathelement path="${classesdir}" >
+        </pathelement>
+      </classpath>
+    </javac>
+  </target>
+  <target depends="init" name="javadoc" description="o Generate javadoc" >
+    <mkdir dir="${javadocdir}" >
+    </mkdir>
+    <tstamp >
+      <format pattern="2001-yyyy" property="year" >
+      </format>
+    </tstamp>
+    <property name="copyright" value="Copyright &amp;copy; 2001-2009 Codehaus. All Rights Reserved." >
+    </property>
+    <property name="title" value="jaxen 1.1.2 API" >
+    </property>
+    <javadoc use="true" author="true" sourcepath="src/java/main" destdir="${javadocdir}" version="true" private="true" packagenames="org.jaxen.*" >
+      <classpath >
+        <path refid="build.classpath" >
+        </path>
+      </classpath>
+    </javadoc>
+  </target>
+</project>

@@ -1,0 +1,29 @@
+--- jaxb-ri-1.0.6.orig/build.xml	2010-10-18 23:22:50.000000000 +0900
++++ jaxb-ri-1.0.6/build.xml	2011-05-06 14:22:50.732459258 +0900
+@@ -182,20 +182,20 @@
+             <replacefilter token="@@JWSDP_ROOTDIR@@" 
+                            value="${jwsdp.root.directory}"/>
+         </replace>
+-        <java classname="com.sun.tools.tocproc.TocProcessor" fork="true">
+-            <classpath>
++<!--        <java classname="com.sun.tools.tocproc.TocProcessor" fork="true">
++            <classpath>-->
+                 <!-- make sure JAXP xalan comes before Apache xalan -->
+-                <fileset dir="${jaxb.libs.redist}" includes="**/*.jar"/>
++<!--                <fileset dir="${jaxb.libs.redist}" includes="**/*.jar"/>
+                 <fileset dir="${jaxb.libs.util}" includes="**/*.jar"/>
+                 <fileset dir="${jaxb.libs.rebundle}" includes="**/*.jar"/>
+             </classpath>
+-            <arg value="${jaxb.dist}/docs"/>
++            <arg value="${jaxb.dist}/docs"/>-->
+             <!-- if you need to attach debugger ... -->
+             <!--jvmarg line="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,address=8000"/-->
+-        </java>
++<!--        </java>
+         <delete> 
+             <fileset dir="${jaxb.dist}/docs" includes="toc.xml"/>
+-        </delete>
++        </delete>-->
+ 
+         <!-- copy redist jars -->
+         <copy todir="${jaxb.dist}/lib">

@@ -1,0 +1,38 @@
+diff -uNr freemarker-2.3.15.orig/src/freemarker/ext/beans/BeansWrapper.java freemarker-2.3.15/src/freemarker/ext/beans/BeansWrapper.java
+--- freemarker-2.3.15.orig/src/freemarker/ext/beans/BeansWrapper.java	2008-12-16 22:58:35.000000000 +0900
++++ freemarker-2.3.15/src/freemarker/ext/beans/BeansWrapper.java	2009-01-28 03:47:39.000000000 +0900
+@@ -156,8 +156,6 @@
+     private static final Object CONSTRUCTORS = new Object();
+     private static final Object ARGTYPES = new Object();
+ 
+-    private static final boolean javaRebelAvailable = isJavaRebelAvailable();
+-    
+     /**
+      * The default instance of BeansWrapper
+      */
+@@ -231,9 +229,6 @@
+      * model instances.
+      */
+     public BeansWrapper() {
+-        if(javaRebelAvailable) {
+-            JavaRebelIntegration.registerWrapper(this);
+-        }
+     }
+     
+     /**
+@@ -1556,15 +1551,4 @@
+             return null;
+         }
+     }
+-
+-    
+-    private static boolean isJavaRebelAvailable() {
+-        try {
+-            JavaRebelIntegration.testAvailability();
+-            return true;
+-        }
+-        catch(NoClassDefFoundError e) {
+-            return false;
+-        }
+-    }
+ }

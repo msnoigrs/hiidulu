@@ -1,0 +1,358 @@
+diff -uNr freemarker-2.3.15.orig/build.xml freemarker-2.3.15/build.xml
+--- freemarker-2.3.15.orig/build.xml	2008-12-16 22:58:37.000000000 +0900
++++ freemarker-2.3.15/build.xml	2009-01-28 04:51:28.000000000 +0900
+@@ -36,8 +36,9 @@
+     <property name="freemarker.tar" value="build/freemarker-${version}.tar" />
+     <property name="freemarker.gzip" value="${freemarker.tar}.gz" />
+ 
+-    <property name="lib.javarebel-sdk" location="lib/javarebel-sdk.jar"/>
++    <property name="lib.javarebel-sdk" location="lib/javarebel-sdk.jar"/>
+     <property name="lib.jdom" location="lib/jdom.jar"/>
++    <property name="lib.jaxen-jdom" location="lib/jaxen-jdom.jar"/>
+     <property name="lib.jaxen" location="lib/jaxen.jar"/>
+     <property name="lib.xalan" location="lib/xalan.jar"/>
+     <property name="lib.saxpath" location="lib/saxpath.jar"/>
+@@ -46,12 +47,14 @@
+     <property name="lib.xerces" location="lib/xerces.jar"/>
+     <property name="lib.junit" location="lib/junit.jar"/>
+     <property name="lib.dom4j" location="lib/dom4j.jar"/>
++    <property name="lib.jaxen-dom4j" location="lib/jaxen-dom4j.jar"/>
+     <property name="lib.struts" location="lib/struts.jar"/>
+     <property name="lib.rhino" location="lib/js.jar"/>
+     <property name="lib.servlet" location="lib/servlet.jar"/>
+     <property name="lib.jsp12" location="lib/jsp-api-1.2.jar"/>
+     <property name="lib.jsp20" location="lib/jsp-api-2.0.jar"/>
+     <property name="lib.jsp21" location="lib/jsp-api-2.1.jar"/>
++    <property name="lib.el" location="lib/el-api.jar"/>
+ 	
+     <property name="lib.jython" location="lib/jython.jar"/>
+     <!-- If not overridden, use default -->
+@@ -61,21 +64,24 @@
+     <path id="compile.nojsp.classpath">
+         <pathelement path="${lib.servlet}"/>
+         <pathelement path="${lib.jdom}"/>
++        <pathelement path="${lib.jaxen-jdom}"/>
+         <pathelement path="${lib.jaxen}"/>
+         <pathelement path="${lib.dom4j}"/>
++        <pathelement path="${lib.jaxen-dom4j}"/>
+         <pathelement path="${lib.saxpath}"/>
+         <pathelement path="${lib.xalan}"/> <!-- Xalan is not included with Sun JRE 1.5! -->
+         <pathelement path="${lib.jython}"/>
+         <pathelement path="${lib.logkit}"/>
+         <pathelement path="${lib.log4j}"/>
+         <pathelement path="${lib.rhino}"/>
+-        <pathelement path="${lib.javarebel-sdk}"/>
++        <pathelement path="${lib.javarebel-sdk}"/>
+         <pathelement path="${java.class.path}"/>
+     </path>
+     
+     <path id="compile.classpath">
+         <path refid="compile.nojsp.classpath"/>
+         <pathelement path="${lib.jsp21}"/>
++        <pathelement path="${lib.el}"/>
+     </path>
+ 
+     <path id="compile.jsp1.classpath">
+@@ -92,6 +98,7 @@
+         <pathelement path="${lib.junit}"/>
+         <pathelement path="${lib.jython}"/>
+         <pathelement path="${lib.jdom}"/>
++        <pathelement path="${lib.jaxen-jdom}"/>
+         <pathelement path="${lib.servlet}"/>
+         <pathelement path="${lib.jsp20}"/>
+     </path>
+@@ -99,7 +106,9 @@
+     <path id="compile.classpath.javadoc">
+         <pathelement path="${lib.xerces}"/>
+         <pathelement path="${lib.jdom}"/>
++        <pathelement path="${lib.jaxen-jdom}"/>
+         <pathelement path="${lib.dom4j}"/>
++        <pathelement path="${lib.jaxen-dom4j}"/>
+         <pathelement path="${lib.rhino}"/>
+         <pathelement path="${lib.jaxen}"/>
+         <pathelement path="${lib.jython}"/>
+@@ -107,6 +116,7 @@
+         <pathelement path="${lib.xalan}"/> <!-- Xalan is not included with Sun JRE 1.5 with the old classname! -->
+         <pathelement path="${lib.servlet}"/>
+         <pathelement path="${lib.jsp21}"/>
++        <pathelement path="${lib.el}"/>
+         <pathelement path="${lib.logkit}"/>
+         <pathelement path="${lib.log4j}"/>
+         <pathelement path="${src.dir}"/>
+@@ -125,8 +135,10 @@
+         <pathelement path="${build.classes.dir}" />
+         <pathelement path="${lib.servlet}"/>
+         <pathelement path="${lib.jdom}"/>
++        <pathelement path="${lib.jaxen-jdom}"/>
+         <pathelement path="${lib.jaxen}"/>
+         <pathelement path="${lib.dom4j}"/>
++        <pathelement path="${lib.jaxen-dom4j}"/>
+         <pathelement path="${lib.saxpath}"/>
+         <pathelement path="${lib.xalan}"/> <!-- Xalan is not included with Sun JRE 1.5! -->
+         <pathelement path="${lib.jython}"/>
+@@ -152,7 +164,7 @@
+         <exclude name="freemarker/ext/dom/JaxenXPathSupport.java"/>
+         <exclude name="freemarker/ext/jdom/NodeListModel.java"/>
+         <exclude name="freemarker/ext/jython/**"/>
+-        <exclude name="freemarker/ext/jruby/**"/>
++        <exclude name="freemarker/ext/jruby/**"/>
+         <exclude name="freemarker/ext/jsp/TaglibFactory.java"/>
+         <exclude name="freemarker/ext/jsp/TaglibFactory.java"/>
+         <exclude name="freemarker/ext/jsp/FreeMarkerPageContext1.java"/>
+@@ -273,7 +285,7 @@
+ 	<get src="${libs.location}/javacc.jar" dest="lib/javacc.jar" usetimestamp="true"/>
+ 	<get src="${libs.location}/freemarker-bootstrap.jar" dest="lib/freemarker-bootstrap.jar" usetimestamp="true"/>
+ 	<get src="${libs.location}/jaxen.jar" dest="lib/jaxen.jar" usetimestamp="true"/>
+-    <get src="${libs.location}/javarebel-sdk.jar" dest="lib/javarebel-sdk.jar" usetimestamp="true"/>
++    <get src="${libs.location}/javarebel-sdk.jar" dest="lib/javarebel-sdk.jar" usetimestamp="true"/>
+ 	<get src="${libs.location}/2.3/jdom.jar" dest="lib/jdom.jar" usetimestamp="true"/>
+ 	<get src="${libs.location}/js.jar" dest="lib/js.jar" usetimestamp="true"/>
+ 	<get src="${libs.location}/junit.jar" dest="lib/junit.jar" usetimestamp="true"/>
+@@ -291,42 +303,14 @@
+     </target>
+ 
+     <target name="init">
+-        <condition property="all.libs.present">
+-            <and>
+-                <available file="lib/README.txt"/>
+-                <available file="lib/ant.jar"/>
+-                <available file="lib/dom4j.jar"/>
+-                <available file="lib/emma.jar"/>
+-                <available file="lib/emma_ant.jar"/>
+-                <available file="lib/javacc.jar"/>
+-                <available file="lib/freemarker-bootstrap.jar"/>
+-                <available file="lib/javarebel-sdk.jar"/>
+-                <available file="lib/jaxen.jar"/>
+-                <available file="lib/jdom.jar"/>
+-                <available file="lib/js.jar"/>
+-                <available file="lib/junit.jar"/>
+-                <available file="lib/jython.jar"/>
+-                <available file="lib/log4j.jar"/>
+-                <available file="lib/logkit.jar"/>
+-                <available file="lib/rt122.jar"/>
+-                <available file="lib/saxpath.jar"/>
+-                <available file="lib/servlet.jar"/>
+-                <available file="lib/struts.jar"/>
+-                <available file="lib/jsp-api-1.2.jar"/>
+-                <available file="lib/jsp-api-2.0.jar"/>
+-                <available file="lib/jsp-api-2.1.jar"/>
+-                <available file="lib/xalan.jar"/>
+-            </and>
+-        </condition>
+-        <antcall target="fetchlibs"/>
+         <available
+-            property="log4j.available"
+-            classname="org.apache.log4j.Logger"
+-            classpathref="compile.classpath"/>
+-        <available
+-            property="logkit.available"
+-            classname="org.apache.log.Logger"
+-            classpathref="compile.classpath"/>
++            file="lib/log4j.jar"
++            type="file"
++            property="log4j.available"/>
++        <available
++            file="lib/logkit.jar"
++            type="file"
++            property="logkit.available"/>
+         <available
+             property="jdk14.available"
+             classname="java.util.logging.Logger"
+@@ -336,33 +320,33 @@
+             classname="java.lang.Enum"
+             classpathref="compile.classpath"/>
+         <available
+-            property="jython.available"
+-            classname="org.python.core.PyObject"
+-            classpathref="compile.classpath"/>
+-        <available
+-            property="jsp21.available"
+-            classname="javax.el.ELResolver"
+-            classpathref="compile.classpath"/>
+-        <available
+-            property="dom4j.available"
+-            classname="org.dom4j.Node"
+-            classpathref="compile.classpath"/>
+-        <available
+-            property="jaxen.available"
+-            classname="org.jaxen.XPath"
+-            classpathref="compile.classpath"/>
+-        <available
+-            property="jdom.available"
+-            classname="org.jdom.Element"
+-            classpathref="compile.classpath"/>
+-        <available
+-            property="rhino.available"
+-            classname="org.mozilla.javascript.Scriptable"
+-            classpathref="compile.classpath"/>
+-        <available
+-            property="xalan.available"
+-            classname="org.apache.xpath.XPathAPI"
+-            classpathref="compile.classpath" />
++            file="lib/jython.jar"
++            type="file"
++            property="jython.available"/>
++        <available
++            file="lib/el-api.jar"
++            type="file"
++            property="jsp21.available"/>
++        <available
++            file="lib/dom4j.jar"
++            type="file"
++            property="dom4j.available"/>
++        <available
++            file="lib/jaxen.jar"
++            type="file"
++            property="jaxen.available"/>
++        <available
++            file="lib/jdom.jar"
++            type="file"
++            property="jdom.available"/>
++        <available
++            file="lib/rhino.jar"
++            type="file"
++            property="rhino.available"/>
++        <available
++            file="lib/xalan.jar"
++            type="file"
++            property="xalan.available"/>
+ 	<uptodate property="parser.gen"
+                 targetfile="src/freemarker/core/FMParser.jj">
+ 	    <srcfiles dir="src/freemarker/core" includes="FMParser.java" />
+@@ -463,7 +447,7 @@
+             <assertions><enable/></assertions>
+  	</java>
+    </target>
+-	
++	
+     <target depends="init, prepare, javacc" name="compile"
+             description="Compile Java source files">
+         <mkdir dir="${build.classes.dir}"/>
+@@ -479,8 +463,6 @@
+         <antcall target="compile-logkit"/>
+         <antcall target="compile-jdk14"/>
+         <antcall target="compile-jdk15"/>
+-        <antcall target="compile-jsp1"/>
+-        <antcall target="compile-jsp2"/>
+         <antcall target="compile-jython"/>
+         <antcall target="compile-dom4j"/>
+         <antcall target="compile-jdom"/>
+@@ -854,17 +836,17 @@
+ 
+             name="all"
+             description="Build everything" />
+-
+-  <!--
+-    Uploads the freemarker.jar that is in the current DISTRIBUTION DIRECTORY
+-    into the place that the central Maven2 repository syncs itself with
+-    periodically. Of course it also uploads the Maven-specific metadata files.
+-
++
++  <!--
++    Uploads the freemarker.jar that is in the current DISTRIBUTION DIRECTORY
++    into the place that the central Maven2 repository syncs itself with
++    periodically. Of course it also uploads the Maven-specific metadata files.
++
+     Use this after "dist" (without interleaving "clean").
+-
+-    Note: maven-ant-tasks-x.x.x.jar must be added to ${ANT_HOME}/lib for
+-          this to work. Get it here: http://maven.apache.org/download.html
+-  -->
++
++    Note: maven-ant-tasks-x.x.x.jar must be added to ${ANT_HOME}/lib for
++          this to work. Get it here: http://maven.apache.org/download.html
++  -->
+   <target name="maven-upload" xmlns:artifact="antlib:org.apache.maven.artifact.ant">
+      <echo file="build/pom.xml"><![CDATA[<?xml version="1.0" encoding="utf-8"?>
+         <project xmlns="http://maven.apache.org/POM/4.0.0"
+@@ -893,51 +875,51 @@
+           <dependencies>
+             <!-- no required dependencies -->
+           </dependencies>
+-        </project>
+-     ]]></echo>
+-     
+-     <jar destfile="build/maven-source-attachment.jar"
+-            basedir="src" excludes="freemarker/testcase/**"
++        </project>
++     ]]></echo>
++     
++     <jar destfile="build/maven-source-attachment.jar"
++            basedir="src" excludes="freemarker/testcase/**"
+      />
+-
++
+      <artifact:install-provider artifactId="wagon-ssh" version="1.0-beta-2"/>
+-
+-     <input
+-          validargs="y,n"
+-          addproperty="mavenUpload.answer"
+-     >
+-You are about uploading
+-${dist.dir.versioned}/lib/freemarker.jar
+-into the Maven central repostiry sync. directory.
+-Be sure that's the final (released) variation there,
+-and that the version number is correct.
+-Proceed? </input>
+-     <condition property="mavenUpload.yes">
+-        <equals arg1="y" arg2="${mavenUpload.answer}"/>
+-     </condition>
+-     <fail unless="mavenUpload.yes" message="Task aborted by user." />
+-
+-     <input
+-          message="Enter your SourceForge.net user name: "
+-          addproperty="mavenUpload.user"
+-    />
+-     <input
+-          message="Enter your SourceForge.net password (WILL BE DISPLAYED AS YOU TYPE IT!): "
+-          addproperty="mavenUpload.password"
+-    />
+-
+-     <artifact:deploy file="${dist.dir.versioned}/lib/freemarker.jar">
+-        <!-- For testing use something like url="file:///my-test-dir". -->
++
++     <input
++          validargs="y,n"
++          addproperty="mavenUpload.answer"
++     >
++You are about uploading
++${dist.dir.versioned}/lib/freemarker.jar
++into the Maven central repostiry sync. directory.
++Be sure that's the final (released) variation there,
++and that the version number is correct.
++Proceed? </input>
++     <condition property="mavenUpload.yes">
++        <equals arg1="y" arg2="${mavenUpload.answer}"/>
++     </condition>
++     <fail unless="mavenUpload.yes" message="Task aborted by user." />
++
++     <input
++          message="Enter your SourceForge.net user name: "
++          addproperty="mavenUpload.user"
++    />
++     <input
++          message="Enter your SourceForge.net password (WILL BE DISPLAYED AS YOU TYPE IT!): "
++          addproperty="mavenUpload.password"
++    />
++
++     <artifact:deploy file="${dist.dir.versioned}/lib/freemarker.jar">
++        <!-- For testing use something like url="file:///my-test-dir". -->
+         <remoteRepository url="sftp://web.sourceforge.net/home/groups/f/fr/freemarker/htdocs/maven2">
+-           <authentication
+-             username="${mavenUpload.user},freemarker"
+-             password="${mavenUpload.password}"
++           <authentication
++             username="${mavenUpload.user},freemarker"
++             password="${mavenUpload.password}"
+           />
+         </remoteRepository>
+-        <pom file="build/pom.xml" />
++        <pom file="build/pom.xml" />
+         <attach file="build/maven-source-attachment.jar" classifier="sources" />
+-     </artifact:deploy>
+-     
++     </artifact:deploy>
++     
+      <echo>**********************************************</echo>
+      <echo>CLEAR THE SCREEN, NOW! Your password is on it!</echo>
+      <echo>**********************************************</echo>

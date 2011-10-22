@@ -1,0 +1,693 @@
+diff -uNr javacc.orig/examples/Obfuscator/Main.java javacc/examples/Obfuscator/Main.java
+--- javacc.orig/examples/Obfuscator/Main.java	2003-06-10 05:46:17.000000000 +0900
++++ javacc/examples/Obfuscator/Main.java	2006-06-03 09:08:26.000000000 +0900
+@@ -97,8 +97,8 @@
+       System.out.println("Could not create file map.log");
+       throw new Error();
+     }
+-    for (Enumeration enum = mappings.keys(); enum.hasMoreElements();) {
+-      String from = (String)enum.nextElement();
++    for (Enumeration xenum = mappings.keys(); xenum.hasMoreElements();) {
++      String from = (String)xenum.nextElement();
+       String to = (String)mappings.get(from);
+       mstr.println(from + " -> " + to + ";");
+     }
+diff -uNr javacc.orig/src/org/javacc/jjdoc/JJDoc.java javacc/src/org/javacc/jjdoc/JJDoc.java
+--- javacc.orig/src/org/javacc/jjdoc/JJDoc.java	2005-01-09 23:15:38.000000000 +0900
++++ javacc/src/org/javacc/jjdoc/JJDoc.java	2006-06-03 08:49:22.000000000 +0900
+@@ -94,8 +94,8 @@
+ 
+   private static void emitTokenProductions(Generator gen, Vector prods) {
+ //     gen.tokensStart();
+-    for (Enumeration enum = prods.elements(); enum.hasMoreElements();) {
+-      TokenProduction tp = (TokenProduction)enum.nextElement();
++    for (Enumeration xenum = prods.elements(); xenum.hasMoreElements();) {
++      TokenProduction tp = (TokenProduction)xenum.nextElement();
+ //       emitTopLevelSpecialTokens(ostr, tp.firstToken);
+ 
+ //       if (tp.isExplicit) {
+@@ -139,8 +139,8 @@
+   
+   private static void emitNormalProductions(Generator gen, Vector prods) {
+     gen.nonterminalsStart();
+-    for (Enumeration enum = prods.elements(); enum.hasMoreElements();) {
+-      NormalProduction np = (NormalProduction)enum.nextElement();
++    for (Enumeration xenum = prods.elements(); xenum.hasMoreElements();) {
++      NormalProduction np = (NormalProduction)xenum.nextElement();
+ 
+       emitTopLevelSpecialTokens(np.firstToken, gen);
+ 
+@@ -204,11 +204,11 @@
+   }
+ 
+   private static void emitExpansionChoice(Choice c, Generator gen) {
+-    for (java.util.Enumeration enum = c.choices.elements();
+-	 enum.hasMoreElements();) {
+-      Expansion e = (Expansion)(enum.nextElement());
++    for (java.util.Enumeration xenum = c.choices.elements();
++	 xenum.hasMoreElements();) {
++      Expansion e = (Expansion)(xenum.nextElement());
+       emitExpansionTree(e, gen);
+-      if (enum.hasMoreElements()) {
++      if (xenum.hasMoreElements()) {
+ 	gen.text(" | ");
+       }
+     }
+@@ -238,9 +238,9 @@
+ 
+   private static void emitExpansionSequence(Sequence s, Generator gen) {
+     boolean firstUnit = true;
+-    for (java.util.Enumeration enum = s.units.elements();
+-	 enum.hasMoreElements();) {
+-      Expansion e = (Expansion)enum.nextElement();
++    for (java.util.Enumeration xenum = s.units.elements();
++	 xenum.hasMoreElements();) {
++      Expansion e = (Expansion)xenum.nextElement();
+ 
+       if (e instanceof Lookahead || e instanceof Action) {
+ 	continue;
+@@ -316,9 +316,9 @@
+ 	gen.text("~");
+       }
+       gen.text("[");
+-      for (java.util.Enumeration enum = cl.descriptors.elements();
+-	   enum.hasMoreElements();) {
+-	Object o = enum.nextElement();
++      for (java.util.Enumeration xenum = cl.descriptors.elements();
++	   xenum.hasMoreElements();) {
++	Object o = xenum.nextElement();
+ 	if (o instanceof SingleCharacter) {
+ 	  gen.text("\"");
+ 	  char s[] = { ((SingleCharacter)o).ch };
+@@ -335,7 +335,7 @@
+ 	} else {
+ 	  System.out.println("Oops: unknown character list element type.");
+ 	}
+-	if (enum.hasMoreElements()) {
++	if (xenum.hasMoreElements()) {
+ 	  gen.text(",");
+ 	}
+       }
+@@ -343,11 +343,11 @@
+ 
+     } else if (re instanceof RChoice) {
+       RChoice c = (RChoice)re;
+-      for (java.util.Enumeration enum = c.choices.elements();
+-	   enum.hasMoreElements();) {
+-	RegularExpression sub = (RegularExpression)(enum.nextElement());
++      for (java.util.Enumeration xenum = c.choices.elements();
++	   xenum.hasMoreElements();) {
++	RegularExpression sub = (RegularExpression)(xenum.nextElement());
+ 	emitRE(sub, gen);
+-	if (enum.hasMoreElements()) {
++	if (xenum.hasMoreElements()) {
+ 	  gen.text(" | ");
+ 	}
+       }
+@@ -367,9 +367,9 @@
+ 
+     } else if (re instanceof RSequence) {
+       RSequence s = (RSequence)re;
+-      for (java.util.Enumeration enum = s.units.elements();
+-	   enum.hasMoreElements();) {
+-	RegularExpression sub = (RegularExpression)(enum.nextElement());
++      for (java.util.Enumeration xenum = s.units.elements();
++	   xenum.hasMoreElements();) {
++	RegularExpression sub = (RegularExpression)(xenum.nextElement());
+ 	boolean needParens = false;
+ 	if (sub instanceof RChoice) {
+ 	  needParens = true;
+@@ -381,7 +381,7 @@
+ 	if (needParens) {
+ 	  gen.text(")");
+ 	}
+- 	if (enum.hasMoreElements()) {
++ 	if (xenum.hasMoreElements()) {
+ 	  gen.text(" ");
+ 	}
+       }
+@@ -415,8 +415,8 @@
+   private static String v2s(Vector v, boolean newLine) {
+     String s = "";
+     boolean firstToken = true;
+-    for (Enumeration enum = v.elements(); enum.hasMoreElements();) {
+-      Token tok = (Token)enum.nextElement();
++    for (Enumeration xenum = v.elements(); xenum.hasMoreElements();) {
++      Token tok = (Token)xenum.nextElement();
+       Token stok = getPrecedingSpecialToken(tok);
+       
+       if (firstToken) {
+diff -uNr javacc.orig/src/org/javacc/parser/ExpansionTreeWalker.java javacc/src/org/javacc/parser/ExpansionTreeWalker.java
+--- javacc.orig/src/org/javacc/parser/ExpansionTreeWalker.java	2003-06-10 05:45:04.000000000 +0900
++++ javacc/src/org/javacc/parser/ExpansionTreeWalker.java	2006-06-03 08:52:45.000000000 +0900
+@@ -37,12 +37,12 @@
+     opObj.action(node);
+     if (opObj.goDeeper(node)) {
+       if (node instanceof Choice) {
+-        for (java.util.Enumeration enum = ((Choice)node).choices.elements(); enum.hasMoreElements();) {
+-          preOrderWalk((Expansion)enum.nextElement(), opObj);
++        for (java.util.Enumeration xenum = ((Choice)node).choices.elements(); xenum.hasMoreElements();) {
++          preOrderWalk((Expansion)xenum.nextElement(), opObj);
+         }
+       } else if (node instanceof Sequence) {
+-        for (java.util.Enumeration enum = ((Sequence)node).units.elements(); enum.hasMoreElements();) {
+-          preOrderWalk((Expansion)enum.nextElement(), opObj);
++        for (java.util.Enumeration xenum = ((Sequence)node).units.elements(); xenum.hasMoreElements();) {
++          preOrderWalk((Expansion)xenum.nextElement(), opObj);
+         }
+       } else if (node instanceof OneOrMore) {
+         preOrderWalk(((OneOrMore)node).expansion, opObj);
+@@ -58,12 +58,12 @@
+       } else if (node instanceof TryBlock) {
+         preOrderWalk(((TryBlock)node).exp, opObj);
+       } else if (node instanceof RChoice) {
+-        for (java.util.Enumeration enum = ((RChoice)node).choices.elements(); enum.hasMoreElements();) {
+-          preOrderWalk((Expansion)enum.nextElement(), opObj);
++        for (java.util.Enumeration xenum = ((RChoice)node).choices.elements(); xenum.hasMoreElements();) {
++          preOrderWalk((Expansion)xenum.nextElement(), opObj);
+         }
+       } else if (node instanceof RSequence) {
+-        for (java.util.Enumeration enum = ((RSequence)node).units.elements(); enum.hasMoreElements();) {
+-          preOrderWalk((Expansion)enum.nextElement(), opObj);
++        for (java.util.Enumeration xenum = ((RSequence)node).units.elements(); xenum.hasMoreElements();) {
++          preOrderWalk((Expansion)xenum.nextElement(), opObj);
+         }
+       } else if (node instanceof ROneOrMore) {
+         preOrderWalk(((ROneOrMore)node).regexpr, opObj);
+@@ -85,12 +85,12 @@
+   static void postOrderWalk(Expansion node, TreeWalkerOp opObj) {
+     if (opObj.goDeeper(node)) {
+       if (node instanceof Choice) {
+-        for (java.util.Enumeration enum = ((Choice)node).choices.elements(); enum.hasMoreElements();) {
+-          postOrderWalk((Expansion)enum.nextElement(), opObj);
++        for (java.util.Enumeration xenum = ((Choice)node).choices.elements(); xenum.hasMoreElements();) {
++          postOrderWalk((Expansion)xenum.nextElement(), opObj);
+         }
+       } else if (node instanceof Sequence) {
+-        for (java.util.Enumeration enum = ((Sequence)node).units.elements(); enum.hasMoreElements();) {
+-          postOrderWalk((Expansion)enum.nextElement(), opObj);
++        for (java.util.Enumeration xenum = ((Sequence)node).units.elements(); xenum.hasMoreElements();) {
++          postOrderWalk((Expansion)xenum.nextElement(), opObj);
+         }
+       } else if (node instanceof OneOrMore) {
+         postOrderWalk(((OneOrMore)node).expansion, opObj);
+@@ -106,12 +106,12 @@
+       } else if (node instanceof TryBlock) {
+         postOrderWalk(((TryBlock)node).exp, opObj);
+       } else if (node instanceof RChoice) {
+-        for (java.util.Enumeration enum = ((RChoice)node).choices.elements(); enum.hasMoreElements();) {
+-          postOrderWalk((Expansion)enum.nextElement(), opObj);
++        for (java.util.Enumeration xenum = ((RChoice)node).choices.elements(); xenum.hasMoreElements();) {
++          postOrderWalk((Expansion)xenum.nextElement(), opObj);
+         }
+       } else if (node instanceof RSequence) {
+-        for (java.util.Enumeration enum = ((RSequence)node).units.elements(); enum.hasMoreElements();) {
+-          postOrderWalk((Expansion)enum.nextElement(), opObj);
++        for (java.util.Enumeration xenum = ((RSequence)node).units.elements(); xenum.hasMoreElements();) {
++          postOrderWalk((Expansion)xenum.nextElement(), opObj);
+         }
+       } else if (node instanceof ROneOrMore) {
+         postOrderWalk(((ROneOrMore)node).regexpr, opObj);
+diff -uNr javacc.orig/src/org/javacc/parser/JavaCC.jj javacc/src/org/javacc/parser/JavaCC.jj
+--- javacc.orig/src/org/javacc/parser/JavaCC.jj	2005-08-15 06:31:45.000000000 +0900
++++ javacc/src/org/javacc/parser/JavaCC.jj	2006-06-03 10:04:41.000000000 +0900
+@@ -1670,7 +1670,7 @@
+ void EnumDeclaration(int modifiers):
+ {}
+ {
+-  "enum" <IDENTIFIER>
++  "xenum" <IDENTIFIER>
+   [ ImplementsList(false) ]
+   EnumBody()
+ }
+diff -uNr javacc.orig/src/org/javacc/parser/OtherFilesGen.java javacc/src/org/javacc/parser/OtherFilesGen.java
+--- javacc.orig/src/org/javacc/parser/OtherFilesGen.java	2005-01-09 23:15:34.000000000 +0900
++++ javacc/src/org/javacc/parser/OtherFilesGen.java	2006-06-03 08:54:18.000000000 +0900
+@@ -86,8 +86,8 @@
+     ostr.println("");
+     RegularExpression re;
+     ostr.println("  int EOF = 0;");
+-    for (java.util.Enumeration enum = ordered_named_tokens.elements(); enum.hasMoreElements();) {
+-      re = (RegularExpression)enum.nextElement();
++    for (java.util.Enumeration xenum = ordered_named_tokens.elements(); xenum.hasMoreElements();) {
++      re = (RegularExpression)xenum.nextElement();
+       ostr.println("  int " + re.label + " = " + re.ordinal + ";");
+     }
+     ostr.println("");
+@@ -100,8 +100,8 @@
+     ostr.println("  String[] tokenImage = {");
+     ostr.println("    \"<EOF>\",");
+ 
+-    for (java.util.Enumeration enum = rexprlist.elements(); enum.hasMoreElements();) {
+-      TokenProduction tp = (TokenProduction)(enum.nextElement());
++    for (java.util.Enumeration xenum = rexprlist.elements(); xenum.hasMoreElements();) {
++      TokenProduction tp = (TokenProduction)(xenum.nextElement());
+       java.util.Vector respecs = tp.respecs;
+       for (java.util.Enumeration enum1 = respecs.elements(); enum1.hasMoreElements();) {
+         RegExprSpec res = (RegExprSpec)(enum1.nextElement());
+diff -uNr javacc.orig/src/org/javacc/parser/ParseEngine.java javacc/src/org/javacc/parser/ParseEngine.java
+--- javacc.orig/src/org/javacc/parser/ParseEngine.java	2005-12-23 04:02:30.000000000 +0900
++++ javacc/src/org/javacc/parser/ParseEngine.java	2006-06-03 08:57:46.000000000 +0900
+@@ -243,8 +243,8 @@
+ 	    indentAmt++;
+ 	  }
+ 	  printTokenSetup((Token)(la.action_tokens.elementAt(0)));
+-	  for (java.util.Enumeration enum = la.action_tokens.elements(); enum.hasMoreElements();) {
+-	    t = (Token)enum.nextElement();
++	  for (java.util.Enumeration xenum = la.action_tokens.elements(); xenum.hasMoreElements();) {
++	    t = (Token)xenum.nextElement();
+ 	    retval += printToken(t);
+ 	  }
+ 	  retval += printTrailingComments(t);
+@@ -357,8 +357,8 @@
+ 	  // the semantic check with the syntactic one.
+ 	  retval += " && (";
+ 	  printTokenSetup((Token)(la.action_tokens.elementAt(0)));
+-	  for (java.util.Enumeration enum = la.action_tokens.elements(); enum.hasMoreElements();) {
+-	    t = (Token)enum.nextElement();
++	  for (java.util.Enumeration xenum = la.action_tokens.elements(); xenum.hasMoreElements();) {
++	    t = (Token)xenum.nextElement();
+ 	    retval += printToken(t);
+ 	  }
+ 	  retval += printTrailingComments(t);
+@@ -449,16 +449,16 @@
+     ostr.print(" " + p.lhs + "(");
+     if (p.parameter_list_tokens.size() != 0) {
+       printTokenSetup((Token)(p.parameter_list_tokens.elementAt(0)));
+-      for (java.util.Enumeration enum = p.parameter_list_tokens.elements(); enum.hasMoreElements();) {
+-        t = (Token)enum.nextElement();
++      for (java.util.Enumeration xenum = p.parameter_list_tokens.elements(); xenum.hasMoreElements();) {
++        t = (Token)xenum.nextElement();
+         printToken(t, ostr);
+       }
+       printTrailingComments(t, ostr);
+     }
+     ostr.print(") throws ParseException");
+-    for (java.util.Enumeration enum = p.throws_list.elements(); enum.hasMoreElements();) {
++    for (java.util.Enumeration xenum = p.throws_list.elements(); xenum.hasMoreElements();) {
+       ostr.print(", ");
+-      java.util.Vector name = (java.util.Vector)enum.nextElement();
++      java.util.Vector name = (java.util.Vector)xenum.nextElement();
+       for (java.util.Enumeration enum1 = name.elements(); enum1.hasMoreElements();) {
+         t = (Token)enum1.nextElement();
+         ostr.print(t.image);
+@@ -474,8 +474,8 @@
+     }
+     if (p.declaration_tokens.size() != 0) {
+       printTokenSetup((Token)(p.declaration_tokens.elementAt(0))); cline--;
+-      for (java.util.Enumeration enum = p.declaration_tokens.elements(); enum.hasMoreElements();) {
+-        t = (Token)enum.nextElement();
++      for (java.util.Enumeration xenum = p.declaration_tokens.elements(); xenum.hasMoreElements();) {
++        t = (Token)xenum.nextElement();
+         printToken(t, ostr);
+       }
+       printTrailingComments(t, ostr);
+@@ -512,8 +512,8 @@
+       retval += "\n";
+       if (e_nrw.lhsTokens.size() != 0) {
+         printTokenSetup((Token)(e_nrw.lhsTokens.elementAt(0)));
+-        for (java.util.Enumeration enum = e_nrw.lhsTokens.elements(); enum.hasMoreElements();) {
+-          t = (Token)enum.nextElement();
++        for (java.util.Enumeration xenum = e_nrw.lhsTokens.elements(); xenum.hasMoreElements();) {
++          t = (Token)xenum.nextElement();
+           retval += printToken(t);
+         }
+         retval += printTrailingComments(t);
+@@ -535,8 +535,8 @@
+       retval += "\n";
+       if (e_nrw.lhsTokens.size() != 0) {
+         printTokenSetup((Token)(e_nrw.lhsTokens.elementAt(0)));
+-        for (java.util.Enumeration enum = e_nrw.lhsTokens.elements(); enum.hasMoreElements();) {
+-          t = (Token)enum.nextElement();
++        for (java.util.Enumeration xenum = e_nrw.lhsTokens.elements(); xenum.hasMoreElements();) {
++          t = (Token)xenum.nextElement();
+           retval += printToken(t);
+         }
+         retval += printTrailingComments(t);
+@@ -545,8 +545,8 @@
+       retval += e_nrw.name + "(";
+       if (e_nrw.argument_tokens.size() != 0) {
+         printTokenSetup((Token)(e_nrw.argument_tokens.elementAt(0)));
+-        for (java.util.Enumeration enum = e_nrw.argument_tokens.elements(); enum.hasMoreElements();) {
+-          t = (Token)enum.nextElement();
++        for (java.util.Enumeration xenum = e_nrw.argument_tokens.elements(); xenum.hasMoreElements();) {
++          t = (Token)xenum.nextElement();
+           retval += printToken(t);
+         }
+         retval += printTrailingComments(t);
+@@ -557,8 +557,8 @@
+       retval += "\u0003\n";
+       if (e_nrw.action_tokens.size() != 0) {
+         printTokenSetup((Token)(e_nrw.action_tokens.elementAt(0))); ccol = 1;
+-        for (java.util.Enumeration enum = e_nrw.action_tokens.elements(); enum.hasMoreElements();) {
+-          t = (Token)enum.nextElement();
++        for (java.util.Enumeration xenum = e_nrw.action_tokens.elements(); xenum.hasMoreElements();) {
++          t = (Token)xenum.nextElement();
+           retval += printToken(t);
+         }
+         retval += printTrailingComments(t);
+@@ -662,8 +662,8 @@
+         v = (java.util.Vector)(e_nrw.types.elementAt(i));
+         if (v.size() != 0) {
+           printTokenSetup((Token)(v.elementAt(0)));
+-          for (java.util.Enumeration enum = v.elements(); enum.hasMoreElements();) {
+-            t = (Token)enum.nextElement();
++          for (java.util.Enumeration xenum = v.elements(); xenum.hasMoreElements();) {
++            t = (Token)xenum.nextElement();
+             retval += printToken(t);
+           }
+           retval += printTrailingComments(t);
+@@ -677,8 +677,8 @@
+         v = (java.util.Vector)(e_nrw.catchblks.elementAt(i));
+         if (v.size() != 0) {
+           printTokenSetup((Token)(v.elementAt(0))); ccol = 1;
+-          for (java.util.Enumeration enum = v.elements(); enum.hasMoreElements();) {
+-            t = (Token)enum.nextElement();
++          for (java.util.Enumeration xenum = v.elements(); xenum.hasMoreElements();) {
++            t = (Token)xenum.nextElement();
+             retval += printToken(t);
+           }
+           retval += printTrailingComments(t);
+@@ -689,8 +689,8 @@
+         retval += " finally {\u0003\n";
+         if (e_nrw.finallyblk.size() != 0) {
+           printTokenSetup((Token)(e_nrw.finallyblk.elementAt(0))); ccol = 1;
+-          for (java.util.Enumeration enum = e_nrw.finallyblk.elements(); enum.hasMoreElements();) {
+-            t = (Token)enum.nextElement();
++          for (java.util.Enumeration xenum = e_nrw.finallyblk.elements(); xenum.hasMoreElements();) {
++            t = (Token)xenum.nextElement();
+             retval += printToken(t);
+           }
+           retval += printTrailingComments(t);
+@@ -904,8 +904,8 @@
+           ostr.println("    lookingAhead = true;");
+           ostr.print("    jj_semLA = ");
+           printTokenSetup((Token)(la.action_tokens.elementAt(0)));
+-          for (java.util.Enumeration enum = la.action_tokens.elements(); enum.hasMoreElements();) {
+-            t = (Token)enum.nextElement();
++          for (java.util.Enumeration xenum = la.action_tokens.elements(); xenum.hasMoreElements();) {
++            t = (Token)xenum.nextElement();
+             printToken(t, ostr);
+           }
+           printTrailingComments(t, ostr);
+@@ -1075,8 +1075,8 @@
+ 
+     ostr = ps;
+ 
+-    for (java.util.Enumeration enum = bnfproductions.elements(); enum.hasMoreElements();) {
+-      p = (NormalProduction)enum.nextElement();
++    for (java.util.Enumeration xenum = bnfproductions.elements(); xenum.hasMoreElements();) {
++      p = (NormalProduction)xenum.nextElement();
+       if (p instanceof JavaCodeProduction) {
+         jp = (JavaCodeProduction)p;
+         t = (Token)(jp.return_type_tokens.elementAt(0));
+@@ -1147,8 +1147,8 @@
+       }
+     }
+ 
+-    for (java.util.Enumeration enum = phase3table.elements(); enum.hasMoreElements();) {
+-      buildPhase3Routine((Phase3Data)(enum.nextElement()), false);
++    for (java.util.Enumeration xenum = phase3table.elements(); xenum.hasMoreElements();) {
++      buildPhase3Routine((Phase3Data)(xenum.nextElement()), false);
+     }
+ 
+   }
+diff -uNr javacc.orig/src/org/javacc/parser/ParseGen.java javacc/src/org/javacc/parser/ParseGen.java
+--- javacc.orig/src/org/javacc/parser/ParseGen.java	2005-12-23 10:19:54.000000000 +0900
++++ javacc/src/org/javacc/parser/ParseGen.java	2006-06-03 09:04:39.000000000 +0900
+@@ -57,8 +57,8 @@
+ 
+       if (cu_to_insertion_point_1.size() != 0) {
+         printTokenSetup((Token)(cu_to_insertion_point_1.elementAt(0))); ccol = 1;
+-        for (Enumeration enum = cu_to_insertion_point_1.elements(); enum.hasMoreElements();) {
+-          t = (Token)enum.nextElement();
++        for (Enumeration xenum = cu_to_insertion_point_1.elements(); xenum.hasMoreElements();) {
++          t = (Token)xenum.nextElement();
+           if (t.kind == IMPLEMENTS) {
+             implementsExists = true;
+           } else if (t.kind == CLASS) {
+@@ -75,8 +75,8 @@
+       ostr.print(cu_name + "Constants ");
+       if (cu_to_insertion_point_2.size() != 0) {
+         printTokenSetup((Token)(cu_to_insertion_point_2.elementAt(0)));
+-        for (Enumeration enum = cu_to_insertion_point_2.elements(); enum.hasMoreElements();) {
+-          t = (Token)enum.nextElement();
++        for (Enumeration xenum = cu_to_insertion_point_2.elements(); xenum.hasMoreElements();) {
++          t = (Token)xenum.nextElement();
+           printToken(t, ostr);
+         }
+       }
+@@ -124,8 +124,8 @@
+ 	for (int i = 0; i < tokenMaskSize; i++) {
+ 	  ostr.println("   private static void jj_la1_" + i + "() {");
+ 	  ostr.print("      jj_la1_" + i + " = new int[] {");
+-	  for (Enumeration enum = maskVals.elements(); enum.hasMoreElements();) {
+-	    int[] tokenMask = (int[])(enum.nextElement());
++	  for (Enumeration xenum = maskVals.elements(); xenum.hasMoreElements();) {
++	    int[] tokenMask = (int[])(xenum.nextElement());
+ 	    ostr.print("0x" + Integer.toHexString(tokenMask[i]) + ",");
+ 	  }
+ 	  ostr.println("};");
+@@ -685,8 +685,8 @@
+ 
+       if (cu_from_insertion_point_2.size() != 0) {
+         printTokenSetup((Token)(cu_from_insertion_point_2.elementAt(0))); ccol = 1;
+-        for (Enumeration enum = cu_from_insertion_point_2.elements(); enum.hasMoreElements();) {
+-          t = (Token)enum.nextElement();
++        for (Enumeration xenum = cu_from_insertion_point_2.elements(); xenum.hasMoreElements();) {
++          t = (Token)xenum.nextElement();
+           printToken(t, ostr);
+         }
+         printTrailingComments(t, ostr);
+diff -uNr javacc.orig/src/org/javacc/parser/Semanticize.java javacc/src/org/javacc/parser/Semanticize.java
+--- javacc.orig/src/org/javacc/parser/Semanticize.java	2005-01-09 23:15:35.000000000 +0900
++++ javacc/src/org/javacc/parser/Semanticize.java	2006-06-03 09:07:37.000000000 +0900
+@@ -55,15 +55,15 @@
+      * them to trivial choices.  This way, their semantic lookahead specification
+      * can be evaluated during other lookahead evaluations.
+      */
+-    for (java.util.Enumeration enum = bnfproductions.elements(); enum.hasMoreElements();) {
+-      ExpansionTreeWalker.postOrderWalk(((NormalProduction)enum.nextElement()).expansion, new LookaheadFixer());
++    for (java.util.Enumeration xenum = bnfproductions.elements(); xenum.hasMoreElements();) {
++      ExpansionTreeWalker.postOrderWalk(((NormalProduction)xenum.nextElement()).expansion, new LookaheadFixer());
+     }
+ 
+     /*
+      * The following loop populates "production_table"
+      */
+-    for (java.util.Enumeration enum = bnfproductions.elements(); enum.hasMoreElements();) {
+-      NormalProduction p = (NormalProduction)enum.nextElement();
++    for (java.util.Enumeration xenum = bnfproductions.elements(); xenum.hasMoreElements();) {
++      NormalProduction p = (NormalProduction)xenum.nextElement();
+       if (production_table.put(p.lhs, p) != null) {
+         JavaCCErrors.semantic_error(p, p.lhs + " occurs on the left hand side of more than one production.");
+       }
+@@ -73,8 +73,8 @@
+      * The following walks the entire parse tree to make sure that all
+      * non-terminals on RHS's are defined on the LHS.
+      */
+-    for (java.util.Enumeration enum = bnfproductions.elements(); enum.hasMoreElements();) {
+-      ExpansionTreeWalker.preOrderWalk(((NormalProduction)enum.nextElement()).expansion, new ProductionDefinedChecker());
++    for (java.util.Enumeration xenum = bnfproductions.elements(); xenum.hasMoreElements();) {
++      ExpansionTreeWalker.preOrderWalk(((NormalProduction)xenum.nextElement()).expansion, new ProductionDefinedChecker());
+     }
+ 
+     /*
+@@ -87,8 +87,8 @@
+      * is set to true.  In this case, <name> occurrences are OK, while
+      * regular expression specs generate a warning.
+      */
+-    for (java.util.Enumeration enum = rexprlist.elements(); enum.hasMoreElements();) {
+-      TokenProduction tp = (TokenProduction)(enum.nextElement());
++    for (java.util.Enumeration xenum = rexprlist.elements(); xenum.hasMoreElements();) {
++      TokenProduction tp = (TokenProduction)(xenum.nextElement());
+       java.util.Vector respecs = tp.respecs;
+       for (java.util.Enumeration enum1 = respecs.elements(); enum1.hasMoreElements();) {
+         RegExprSpec res = (RegExprSpec)(enum1.nextElement());
+@@ -126,8 +126,8 @@
+      * "named_tokens_table" and "ordered_named_tokens".
+      * Duplications are flagged as errors.
+      */
+-    for (java.util.Enumeration enum = rexprlist.elements(); enum.hasMoreElements();) {
+-      TokenProduction tp = (TokenProduction)(enum.nextElement());
++    for (java.util.Enumeration xenum = rexprlist.elements(); xenum.hasMoreElements();) {
++      TokenProduction tp = (TokenProduction)(xenum.nextElement());
+       java.util.Vector respecs = tp.respecs;
+       for (java.util.Enumeration enum1 = respecs.elements(); enum1.hasMoreElements();) {
+         RegExprSpec res = (RegExprSpec)(enum1.nextElement());
+@@ -158,8 +158,8 @@
+      */
+ 
+     tokenCount = 1;
+-    for (java.util.Enumeration enum = rexprlist.elements(); enum.hasMoreElements();) {
+-      TokenProduction tp = (TokenProduction)(enum.nextElement());
++    for (java.util.Enumeration xenum = rexprlist.elements(); xenum.hasMoreElements();) {
++      TokenProduction tp = (TokenProduction)(xenum.nextElement());
+       java.util.Vector respecs = tp.respecs;
+       if (tp.lexStates == null) {
+         tp.lexStates = new String[lexstate_I2S.size()];
+@@ -278,8 +278,8 @@
+ 
+     if (!Options.getUserTokenManager()) {
+       FixRJustNames frjn = new FixRJustNames();
+-      for (java.util.Enumeration enum = rexprlist.elements(); enum.hasMoreElements();) {
+-        TokenProduction tp = (TokenProduction)(enum.nextElement());
++      for (java.util.Enumeration xenum = rexprlist.elements(); xenum.hasMoreElements();) {
++        TokenProduction tp = (TokenProduction)(xenum.nextElement());
+         java.util.Vector respecs = tp.respecs;
+         for (java.util.Enumeration enum1 = respecs.elements(); enum1.hasMoreElements();) {
+           RegExprSpec res = (RegExprSpec)(enum1.nextElement());
+@@ -306,8 +306,8 @@
+      */
+ 
+     if (Options.getUserTokenManager()) {
+-      for (java.util.Enumeration enum = rexprlist.elements(); enum.hasMoreElements();) {
+-        TokenProduction tp = (TokenProduction)(enum.nextElement());
++      for (java.util.Enumeration xenum = rexprlist.elements(); xenum.hasMoreElements();) {
++        TokenProduction tp = (TokenProduction)(xenum.nextElement());
+         java.util.Vector respecs = tp.respecs;
+         for (java.util.Enumeration enum1 = respecs.elements(); enum1.hasMoreElements();) {
+           RegExprSpec res = (RegExprSpec)(enum1.nextElement());
+@@ -339,8 +339,8 @@
+      * file.
+      */
+     if (Options.getUserTokenManager()) {
+-      for (java.util.Enumeration enum = rexprlist.elements(); enum.hasMoreElements();) {
+-        TokenProduction tp = (TokenProduction)(enum.nextElement());
++      for (java.util.Enumeration xenum = rexprlist.elements(); xenum.hasMoreElements();) {
++        TokenProduction tp = (TokenProduction)(xenum.nextElement());
+         java.util.Vector respecs = tp.respecs;
+         for (java.util.Enumeration enum1 = respecs.elements(); enum1.hasMoreElements();) {
+           RegExprSpec res = (RegExprSpec)(enum1.nextElement());
+@@ -361,8 +361,8 @@
+     boolean emptyUpdate = true;
+     while (emptyUpdate) {
+       emptyUpdate = false;
+-      for (java.util.Enumeration enum = bnfproductions.elements(); enum.hasMoreElements();) {
+-        NormalProduction prod = (NormalProduction)enum.nextElement();
++      for (java.util.Enumeration xenum = bnfproductions.elements(); xenum.hasMoreElements();) {
++        NormalProduction prod = (NormalProduction)xenum.nextElement();
+         if (emptyExpansionExists(prod.expansion)) {
+           if (!prod.emptyPossible) {
+             emptyUpdate = prod.emptyPossible = true;
+@@ -375,15 +375,15 @@
+ 
+       // The following code checks that all ZeroOrMore, ZeroOrOne, and OneOrMore nodes
+       // do not contain expansions that can expand to the empty token list.
+-      for (java.util.Enumeration enum = bnfproductions.elements(); enum.hasMoreElements();) {
+-        ExpansionTreeWalker.preOrderWalk(((NormalProduction)enum.nextElement()).expansion, new EmptyChecker());
++      for (java.util.Enumeration xenum = bnfproductions.elements(); xenum.hasMoreElements();) {
++        ExpansionTreeWalker.preOrderWalk(((NormalProduction)xenum.nextElement()).expansion, new EmptyChecker());
+       }
+ 
+       // The following code goes through the productions and adds pointers to other
+       // productions that it can expand to without consuming any tokens.  Once this is
+       // done, a left-recursion check can be performed.
+-      for (java.util.Enumeration enum = bnfproductions.elements(); enum.hasMoreElements();) {
+-        NormalProduction prod = (NormalProduction)enum.nextElement();
++      for (java.util.Enumeration xenum = bnfproductions.elements(); xenum.hasMoreElements();) {
++        NormalProduction prod = (NormalProduction)xenum.nextElement();
+         addLeftMost(prod, prod.expansion);
+       }
+ 
+@@ -391,8 +391,8 @@
+       // actual left recursions.  The way the algorithm is coded, once a node has
+       // been determined to participate in a left recursive loop, it is not tried
+       // in any other loop.
+-      for (java.util.Enumeration enum = bnfproductions.elements(); enum.hasMoreElements();) {
+-        NormalProduction prod = (NormalProduction)enum.nextElement();
++      for (java.util.Enumeration xenum = bnfproductions.elements(); xenum.hasMoreElements();) {
++        NormalProduction prod = (NormalProduction)xenum.nextElement();
+         if (prod.walkStatus == 0) {
+           prodWalk(prod);
+         }
+@@ -403,8 +403,8 @@
+       // so we only need to do the equivalent of the above walk.
+       // This is not done if option USER_TOKEN_MANAGER is set to true.
+       if (!Options.getUserTokenManager()) {
+-        for (java.util.Enumeration enum = rexprlist.elements(); enum.hasMoreElements();) {
+-          TokenProduction tp = (TokenProduction)(enum.nextElement());
++        for (java.util.Enumeration xenum = rexprlist.elements(); xenum.hasMoreElements();) {
++          TokenProduction tp = (TokenProduction)(xenum.nextElement());
+           java.util.Vector respecs = tp.respecs;
+           for (java.util.Enumeration enum1 = respecs.elements(); enum1.hasMoreElements();) {
+             RegExprSpec res = (RegExprSpec)(enum1.nextElement());
+@@ -425,8 +425,8 @@
+        * The following code performs the lookahead ambiguity checking.
+        */
+       if (JavaCCErrors.get_error_count() == 0) {
+-        for (java.util.Enumeration enum = bnfproductions.elements(); enum.hasMoreElements();) {
+-          ExpansionTreeWalker.preOrderWalk(((NormalProduction)enum.nextElement()).expansion, new LookaheadChecker());
++        for (java.util.Enumeration xenum = bnfproductions.elements(); xenum.hasMoreElements();) {
++          ExpansionTreeWalker.preOrderWalk(((NormalProduction)xenum.nextElement()).expansion, new LookaheadChecker());
+         }
+       }
+ 
+@@ -446,8 +446,8 @@
+     if (rexp != null && !rexp.tpContext.ignoreCase) {
+       return false;
+     }
+-    for (java.util.Enumeration enum = table.elements(); enum.hasMoreElements();) {
+-      rexp = (RegularExpression)(enum.nextElement());
++    for (java.util.Enumeration xenum = table.elements(); xenum.hasMoreElements();) {
++      rexp = (RegularExpression)(xenum.nextElement());
+       if (rexp.tpContext.ignoreCase) {
+         other = rexp;
+         return true;
+@@ -471,15 +471,15 @@
+     } else if (exp instanceof Lookahead) {
+       return true;
+     } else if (exp instanceof Choice) {
+-      for (java.util.Enumeration enum = ((Choice)exp).choices.elements(); enum.hasMoreElements();) {
+-        if (emptyExpansionExists((Expansion)enum.nextElement())) {
++      for (java.util.Enumeration xenum = ((Choice)exp).choices.elements(); xenum.hasMoreElements();) {
++        if (emptyExpansionExists((Expansion)xenum.nextElement())) {
+           return true;
+         }
+       }
+       return false;
+     } else if (exp instanceof Sequence) {
+-      for (java.util.Enumeration enum = ((Sequence)exp).units.elements(); enum.hasMoreElements();) {
+-        if (!emptyExpansionExists((Expansion)enum.nextElement())) {
++      for (java.util.Enumeration xenum = ((Sequence)exp).units.elements(); xenum.hasMoreElements();) {
++        if (!emptyExpansionExists((Expansion)xenum.nextElement())) {
+           return false;
+         }
+       }
+@@ -512,12 +512,12 @@
+     } else if (exp instanceof ZeroOrOne) {
+       addLeftMost(prod, ((ZeroOrOne)exp).expansion);
+     } else if (exp instanceof Choice) {
+-      for (java.util.Enumeration enum = ((Choice)exp).choices.elements(); enum.hasMoreElements();) {
+-        addLeftMost(prod, (Expansion)enum.nextElement());
++      for (java.util.Enumeration xenum = ((Choice)exp).choices.elements(); xenum.hasMoreElements();) {
++        addLeftMost(prod, (Expansion)xenum.nextElement());
+       }
+     } else if (exp instanceof Sequence) {
+-      for (java.util.Enumeration enum = ((Sequence)exp).units.elements(); enum.hasMoreElements();) {
+-        Expansion e = (Expansion)enum.nextElement();
++      for (java.util.Enumeration xenum = ((Sequence)exp).units.elements(); xenum.hasMoreElements();) {
++        Expansion e = (Expansion)xenum.nextElement();
+         addLeftMost(prod, e);
+         if (!emptyExpansionExists(e)) {
+           break;
+@@ -595,15 +595,15 @@
+         }
+       }
+     } else if (rexp instanceof RChoice) {
+-      for (java.util.Enumeration enum = ((RChoice)rexp).choices.elements(); enum.hasMoreElements();) {
+-        if (rexpWalk((RegularExpression)enum.nextElement())) {
++      for (java.util.Enumeration xenum = ((RChoice)rexp).choices.elements(); xenum.hasMoreElements();) {
++        if (rexpWalk((RegularExpression)xenum.nextElement())) {
+           return true;
+         }
+       }
+       return false;
+     } else if (rexp instanceof RSequence) {
+-      for (java.util.Enumeration enum = ((RSequence)rexp).units.elements(); enum.hasMoreElements();) {
+-        if (rexpWalk((RegularExpression)enum.nextElement())) {
++      for (java.util.Enumeration xenum = ((RSequence)rexp).units.elements(); xenum.hasMoreElements();) {
++        if (rexpWalk((RegularExpression)xenum.nextElement())) {
+           return true;
+         }
+       }

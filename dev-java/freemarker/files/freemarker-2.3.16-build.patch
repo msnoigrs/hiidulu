@@ -1,0 +1,210 @@
+--- freemarker-2.3.16.orig/build.xml	2009-12-08 17:38:59.000000000 +0900
++++ freemarker-2.3.16/build.xml	2010-01-30 08:57:58.000000000 +0900
+@@ -42,6 +42,7 @@
+ 
+     <property name="lib.javarebel-sdk" location="lib/javarebel-sdk.jar"/>
+     <property name="lib.jdom" location="lib/jdom.jar"/>
++    <property name="lib.jaxen-jdom" location="lib/jaxen-jdom.jar"/>
+     <property name="lib.jaxen" location="lib/jaxen.jar"/>
+     <property name="lib.xalan" location="lib/xalan.jar"/>
+     <property name="lib.saxpath" location="lib/saxpath.jar"/>
+@@ -50,12 +51,14 @@
+     <property name="lib.xerces" location="lib/xerces.jar"/>
+     <property name="lib.junit" location="lib/junit.jar"/>
+     <property name="lib.dom4j" location="lib/dom4j.jar"/>
++    <property name="lib.jaxen-dom4j" location="lib/jaxen-dom4j.jar"/>
+     <property name="lib.struts" location="lib/struts.jar"/>
+     <property name="lib.rhino" location="lib/js.jar"/>
+     <property name="lib.servlet" location="lib/servlet.jar"/>
+     <property name="lib.jsp12" location="lib/jsp-api-1.2.jar"/>
+     <property name="lib.jsp20" location="lib/jsp-api-2.0.jar"/>
+     <property name="lib.jsp21" location="lib/jsp-api-2.1.jar"/>
++    <property name="lib.el" location="lib/el-api.jar"/>
+     
+     <property name="lib.jython" location="lib/jython.jar"/>
+     <!-- If not overridden, use default -->
+@@ -65,8 +68,10 @@
+     <path id="compile.nojsp.classpath">
+         <pathelement path="${lib.servlet}"/>
+         <pathelement path="${lib.jdom}"/>
++        <pathelement path="${lib.jaxen-jdom}"/>
+         <pathelement path="${lib.jaxen}"/>
+         <pathelement path="${lib.dom4j}"/>
++        <pathelement path="${lib.jaxen-dom4j}"/>
+         <pathelement path="${lib.saxpath}"/>
+         <pathelement path="${lib.xalan}"/> <!-- Xalan is not included with Sun JRE 1.5! -->
+         <pathelement path="${lib.jython}"/>
+@@ -80,6 +85,7 @@
+     <path id="compile.classpath">
+         <path refid="compile.nojsp.classpath"/>
+         <pathelement path="${lib.jsp21}"/>
++        <pathelement path="${lib.el}"/>
+     </path>
+ 
+     <path id="compile.jsp1.classpath">
+@@ -96,6 +102,7 @@
+         <pathelement path="${lib.junit}"/>
+         <pathelement path="${lib.jython}"/>
+         <pathelement path="${lib.jdom}"/>
++        <pathelement path="${lib.jaxen-jdom}"/>
+         <pathelement path="${lib.servlet}"/>
+         <pathelement path="${lib.jsp20}"/>
+     </path>
+@@ -103,7 +110,9 @@
+     <path id="compile.classpath.javadoc">
+         <pathelement path="${lib.xerces}"/>
+         <pathelement path="${lib.jdom}"/>
++        <pathelement path="${lib.jaxen-jdom}"/>
+         <pathelement path="${lib.dom4j}"/>
++        <pathelement path="${lib.jaxen-dom4j}"/>
+         <pathelement path="${lib.rhino}"/>
+         <pathelement path="${lib.jaxen}"/>
+         <pathelement path="${lib.jython}"/>
+@@ -111,6 +120,7 @@
+         <pathelement path="${lib.xalan}"/> <!-- Xalan is not included with Sun JRE 1.5 with the old classname! -->
+         <pathelement path="${lib.servlet}"/>
+         <pathelement path="${lib.jsp21}"/>
++        <pathelement path="${lib.el}"/>
+         <pathelement path="${lib.logkit}"/>
+         <pathelement path="${lib.log4j}"/>
+         <pathelement path="${src.dir}"/>
+@@ -129,8 +139,10 @@
+         <pathelement path="${build.classes.dir}" />
+         <pathelement path="${lib.servlet}"/>
+         <pathelement path="${lib.jdom}"/>
++        <pathelement path="${lib.jaxen-jdom}"/>
+         <pathelement path="${lib.jaxen}"/>
+         <pathelement path="${lib.dom4j}"/>
++        <pathelement path="${lib.jaxen-dom4j}"/>
+         <pathelement path="${lib.saxpath}"/>
+         <pathelement path="${lib.xalan}"/> <!-- Xalan is not included with Sun JRE 1.5! -->
+         <pathelement path="${lib.jython}"/>
+@@ -295,42 +307,14 @@
+     </target>
+ 
+     <target name="init">
+-        <condition property="all.libs.present">
+-            <and>
+-                <available file="lib/README.txt"/>
+-                <available file="lib/ant.jar"/>
+-                <available file="lib/dom4j.jar"/>
+-                <available file="lib/emma.jar"/>
+-                <available file="lib/emma_ant.jar"/>
+-                <available file="lib/javacc.jar"/>
+-                <available file="lib/freemarker-bootstrap.jar"/>
+-                <available file="lib/javarebel-sdk.jar"/>
+-                <available file="lib/jaxen.jar"/>
+-                <available file="lib/jdom.jar"/>
+-                <available file="lib/js.jar"/>
+-                <available file="lib/junit.jar"/>
+-                <available file="lib/jython.jar"/>
+-                <available file="lib/log4j.jar"/>
+-                <available file="lib/logkit.jar"/>
+-                <available file="lib/rt122.jar"/>
+-                <available file="lib/saxpath.jar"/>
+-                <available file="lib/servlet.jar"/>
+-                <available file="lib/struts.jar"/>
+-                <available file="lib/jsp-api-1.2.jar"/>
+-                <available file="lib/jsp-api-2.0.jar"/>
+-                <available file="lib/jsp-api-2.1.jar"/>
+-                <available file="lib/xalan.jar"/>
+-            </and>
+-        </condition>
+-        <antcall target="fetchlibs"/>
+         <available
+-            property="log4j.available"
+-            classname="org.apache.log4j.Logger"
+-            classpathref="compile.classpath"/>
+-        <available
+-            property="logkit.available"
+-            classname="org.apache.log.Logger"
+-            classpathref="compile.classpath"/>
++            file="lib/log4j.jar"
++            type="file"
++            property="log4j.available"/>
++        <available
++            file="lib/logkit.jar"
++            type="file"
++            property="logkit.available"/>
+         <available
+             property="jdk14.available"
+             classname="java.util.logging.Logger"
+@@ -340,33 +324,33 @@
+             classname="java.lang.Enum"
+             classpathref="compile.classpath"/>
+         <available
+-            property="jython.available"
+-            classname="org.python.core.PyObject"
+-            classpathref="compile.classpath"/>
+-        <available
+-            property="jsp21.available"
+-            classname="javax.el.ELResolver"
+-            classpathref="compile.classpath"/>
+-        <available
+-            property="dom4j.available"
+-            classname="org.dom4j.Node"
+-            classpathref="compile.classpath"/>
+-        <available
+-            property="jaxen.available"
+-            classname="org.jaxen.XPath"
+-            classpathref="compile.classpath"/>
+-        <available
+-            property="jdom.available"
+-            classname="org.jdom.Element"
+-            classpathref="compile.classpath"/>
+-        <available
+-            property="rhino.available"
+-            classname="org.mozilla.javascript.Scriptable"
+-            classpathref="compile.classpath"/>
+-        <available
+-            property="xalan.available"
+-            classname="org.apache.xpath.XPathAPI"
+-            classpathref="compile.classpath" />
++            file="lib/jython.jar"
++            type="file"
++            property="jython.available"/>
++        <available
++            file="lib/el-api.jar"
++            type="file"
++            property="jsp21.available"/>
++        <available
++            file="lib/dom4j.jar"
++            type="file"
++            property="dom4j.available"/>
++        <available
++            file="lib/jaxen.jar"
++            type="file"
++            property="jaxen.available"/>
++        <available
++            file="lib/jdom.jar"
++            type="file"
++            property="jdom.available"/>
++        <available
++            file="lib/rhino.jar"
++            type="file"
++            property="rhino.available"/>
++        <available
++            file="lib/xalan.jar"
++            type="file"
++            property="xalan.available"/>
+     <uptodate property="parser.gen"
+                 targetfile="src/freemarker/core/FMParser.jj">
+         <srcfiles dir="src/freemarker/core" includes="FMParser.java" />
+@@ -386,8 +370,6 @@
+         <delete file="src/freemarker/core/TokenMgrError.java" />
+         <delete file="/src/freemarker/core/Node.java"/>
+     
+-        <!-- Forces up-to-date check (task.@unless condition is false here): -->
+-        <antcall target="fetchlibs" />
+     </target>
+ 
+     <target depends="" name="prepare" description="Create the target directories">
+@@ -505,8 +487,6 @@
+         <antcall target="compile-logkit"/>
+         <antcall target="compile-jdk14"/>
+         <antcall target="compile-jdk15"/>
+-        <antcall target="compile-jsp1"/>
+-        <antcall target="compile-jsp2"/>
+         <antcall target="compile-jython"/>
+         <antcall target="compile-dom4j"/>
+         <antcall target="compile-jdom"/>

@@ -1,0 +1,48 @@
+diff -uNr work/src/org/objectweb/util/ant/MultipleCopy.java work.org/src/org/objectweb/util/ant/MultipleCopy.java
+--- work/src/org/objectweb/util/ant/MultipleCopy.java	2007-06-04 13:47:03.000000000 +0900
++++ work.org/src/org/objectweb/util/ant/MultipleCopy.java	2006-04-07 09:11:56.000000000 +0900
+@@ -10,7 +10,6 @@
+ import org.apache.tools.ant.taskdefs.Copy;
+ import org.apache.tools.ant.types.FileSet;
+ import org.apache.tools.ant.types.PatternSet;
+-import org.apache.tools.ant.types.ResourceCollection;
+ 
+ import java.io.File;
+ import java.util.StringTokenizer;
+@@ -102,26 +101,8 @@
+ 		}
+ 
+ 		// deal with the filesets
+-		// this patch is taken from ant 1.6.5-1.7.0 diff
+-		/* for historical and performance reasons we have to do
+-		   things in a rather complex way.
+-
+-		   (1) Move is optimized to move directories if a fileset
+-		   has been included completely, therefore FileSets need a
+-		   special treatment.  This is also required to support
+-		   the failOnError semantice (skip filesets with broken
+-		   basedir but handle the remaining collections).
+-
+-		   (2) We carry around a few protected methods that work
+-		   on basedirs and arrays of names.  To optimize stuff, all
+-		   resources with the same basedir get collected in
+-		   separate lists and then each list is handled in one go.
+-		*/
+-		for (int i = 0; i < rcs.size(); i++) {
+-		    ResourceCollection rc = (ResourceCollection) rcs.elementAt(i);
+-		    // Step (1) - beware of the ZipFileSet
+-		    if (rc instanceof FileSet && rc.isFilesystemOnly()) {
+-			FileSet fs = (FileSet) rc;
++		for (int i = 0; i < filesets.size(); i++) {
++			FileSet fs = (FileSet) filesets.elementAt(i);
+ 			DirectoryScanner ds = fs.getDirectoryScanner(getProject());
+ 			File fromDir = fs.getDir(getProject());
+ 
+@@ -129,7 +110,6 @@
+ 			String[] srcDirs = ds.getIncludedDirectories();
+ 
+ 			scan(fromDir, destDir, srcFiles, srcDirs);
+-		    }
+ 		}
+ 
+ 		// do all the copy operations now...

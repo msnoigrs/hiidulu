@@ -1,0 +1,14 @@
+--- java-readline.orig/src/native/Makefile	2007-06-05 01:54:39.000000000 +0900
++++ java-readline/src/native/Makefile	2007-06-05 02:02:35.000000000 +0900
+@@ -43,9 +43,9 @@
+ LD_FLAGS = -shared
+ 
+ INCLUDES          = -I $(JAVAINCLUDE) -I $(JAVANATINC)
+-LIBPATH           = -L/usr/lib/termcap 
++LIBPATH           =
+ 
+-JavaReadline_LIBS = -lreadline -ltermcap -lhistory
++JavaReadline_LIBS = -lreadline -lncurses -lhistory
+ JavaEditline_LIBS = -ledit -ltermcap
+ JavaGetline_LIBS  = 
+ endif

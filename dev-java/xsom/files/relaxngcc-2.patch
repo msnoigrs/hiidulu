@@ -1,0 +1,40 @@
+--- xsom.orig/build.xml	2009-06-27 00:39:16.000000000 +0900
++++ xsom/build.xml	2009-06-27 00:46:29.000000000 +0900
+@@ -41,6 +41,8 @@
+   <!-- official builds should set this property -->
+   <property name="build.id" value="(private build)" />
+   
++  <taskdef name="relaxngcc" classname="relaxngcc.ant.RelaxNGCCTask"/>
++
+   <!--
+     import files to CVS
+     
+@@ -87,23 +89,11 @@
+ 		<delete dir="build/src" />
+ 		<mkdir dir="build/src/com/sun/xml/xsom/impl/parser/state" />
+ 		
+-		<java jar="${relaxngcc-jar}" fork="true">
+-			
+-			<!-- enable debug statements -->
+-			<!--arg value="-d" /-->
+-			<!--arg value="- -print-first-follow"/-->
+-			
+-			<!-- dump automata -->
+-			<!--arg value="- -print-automata"/>
+-			<arg path="build/automata"/-->
+-			
+-			<!-- specify output directory -->
+-			<arg value="--target"/>
+-			<arg path="build/src/com/sun/xml/xsom/impl/parser/state" />
+-			
+-			<!-- source file -->
+-			<arg path="src/xmlschema.rng"/>
+-		</java>
++		<relaxngcc source="src/xmlschema.rng" targetdir="build/src/com/sun/xml/xsom/impl/parser/state">
++			<depends dir="src" includes="*.rng"/>
++			<produces dir="build/src/com/sun/xml/xsom/impl/parser/state" includes="*.java"/>
++			<produces dir="build/src/com/sun/xml/xsom/impl/parser/state" includes="*.class"/>
++		</relaxngcc>
+ 	</target>
+ 
+   <target name="javacc">

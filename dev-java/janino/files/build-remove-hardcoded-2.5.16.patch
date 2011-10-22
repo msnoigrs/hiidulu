@@ -1,0 +1,21 @@
+--- janino-2.5.16.orig/build.xml	2011-03-15 16:05:17.549000037 +0900
++++ janino-2.5.16/build.xml	2011-03-15 16:07:49.943000037 +0900
+@@ -44,9 +44,6 @@
+ 
+ 		<javac
+ 			fork="yes"
+-			executable="${jdk_1_2_2_home}/bin/javac"
+-			source="1.2"
+-			target="1.1"
+ 			srcdir="src" excludes="org/codehaus/janino/AstGeneratorVisitor.java"
+ 			destdir="build/classes"
+ 			debug="true"
+@@ -67,8 +64,6 @@
+ 			destdir="build/javadoc"
+ 			packagenames="${javadoc_packages}"
+ 		>
+-			<link offline="true" href="${jdk_javadoc_remote}" packagelistloc="${jdk_javadoc_local}"/>
+-			<link offline="true" href="${ant_javadoc_remote}" packagelistloc="${ant_javadoc_local}"/>
+ 		</javadoc>
+ 	</target>
+ 

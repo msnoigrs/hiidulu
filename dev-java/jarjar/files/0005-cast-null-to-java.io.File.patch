@@ -1,0 +1,22 @@
+From: Torsten Werner <twerner@debian.org>
+Date: Sun, 28 Feb 2010 12:45:07 +0100
+Subject: [PATCH] cast null to java.io.File
+
+---
+ .../tonicsystems/jarjar/util/AntJarProcessor.java  |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/src/main/com/tonicsystems/jarjar/util/AntJarProcessor.java b/src/main/com/tonicsystems/jarjar/util/AntJarProcessor.java
+index 449fdb6..55d7f5d 100644
+--- a/src/main/com/tonicsystems/jarjar/util/AntJarProcessor.java
++++ b/src/main/com/tonicsystems/jarjar/util/AntJarProcessor.java
+@@ -84,7 +84,7 @@ abstract public class AntJarProcessor extends Jar
+         String dir = file.substring(0, slash);
+         if (dirs.add(dir)) {
+           addParentDirs(dir, zOut);
+-          super.zipDir(null, zOut, dir + "/", ZipFileSet.DEFAULT_DIR_MODE, JAR_MARKER);
++          super.zipDir((java.io.File) null, zOut, dir + "/", ZipFileSet.DEFAULT_DIR_MODE, JAR_MARKER);
+         }
+       }
+     }
+-- 

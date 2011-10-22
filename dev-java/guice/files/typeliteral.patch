@@ -1,0 +1,20 @@
+diff -uNr guice-2.0-src.orig/src/com/google/inject/TypeLiteral.java guice-2.0-src/src/com/google/inject/TypeLiteral.java
+--- guice-2.0-src.orig/src/com/google/inject/TypeLiteral.java	2009-05-19 17:58:32.000000000 +0900
++++ guice-2.0-src/src/com/google/inject/TypeLiteral.java	2009-11-05 23:30:06.000000000 +0900
+@@ -32,6 +32,7 @@
+ import java.lang.reflect.TypeVariable;
+ import java.lang.reflect.WildcardType;
+ import java.util.List;
++import java.io.Serializable;
+ 
+ /**
+  * Represents a generic type {@code T}. Java doesn't yet provide a way to
+@@ -64,7 +65,7 @@
+  * @author crazybob@google.com (Bob Lee)
+  * @author jessewilson@google.com (Jesse Wilson)
+  */
+-public class TypeLiteral<T> {
++public class TypeLiteral<T> implements Serializable {
+ 
+   final Class<? super T> rawType;
+   final Type type;

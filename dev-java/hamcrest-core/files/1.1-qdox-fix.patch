@@ -1,0 +1,60 @@
+--- hamcrest-1.1.orig/hamcrest-generator/src/main/java/org/hamcrest/generator/QDoxFactoryReader.java	2007-05-22 02:40:44.000000000 +0900
++++ hamcrest-1.1/hamcrest-generator/src/main/java/org/hamcrest/generator/QDoxFactoryReader.java	2011-03-16 23:23:36.798000083 +0900
+@@ -52,15 +52,17 @@
+         JavaMethod methodSource = findMethodInSource(factoryMethod);
+         if (methodSource != null) {
+             factoryMethod.setJavaDoc(createJavaDocComment(methodSource));
+-            JavaParameter[] parametersFromSource
++            List<JavaParameter> parametersFromSource
+                     = methodSource.getParameters();
+             List<FactoryMethod.Parameter> parametersFromReflection
+                     = factoryMethod.getParameters();
+ 
+-            if (parametersFromReflection.size() == parametersFromSource.length) {
+-                for (int i = 0; i < parametersFromSource.length; i++) {
++            if (parametersFromReflection.size() == parametersFromSource.size()) {
++                int i = 0;
++                for (JavaParameter parameter : parametersFromSource) {
+                     parametersFromReflection.get(i).setName(
+-                            parametersFromSource[i].getName());
++                            parameter.getName());
++                    i++;
+                 }
+             }
+         }
+@@ -75,18 +77,18 @@
+         // Note, this doesn't always work - it struggles with some kinds of generics.
+         // This seems to cover most cases though.
+         List<FactoryMethod.Parameter> params = factoryMethod.getParameters();
+-        Type[] types = new Type[params.size()];
+-        for (int i = 0; i < types.length; i++) {
++        List<Type> types = new java.util.ArrayList<Type>();
++        for (int i = 0; i < params.size(); i++) {
+             // QDox ignores varargs and generics, so we strip them out to help QDox.
+             String type = params.get(i).getType();
+             type = GENERIC_REGEX.matcher(type).replaceAll("");
+             type = VARARGS_REGEX.matcher(type).replaceAll("");
+-            types[i] = new Type(type);
++            types.add(new Type(type));
+         }
+-        JavaMethod[] methods = classSource.getMethodsBySignature(
++        List<JavaMethod> methods = classSource.getMethodsBySignature(
+                 factoryMethod.getName(), types, false);
+-        if (methods.length == 1) {
+-            return methods[0];
++        if (methods.size() == 1) {
++            return methods.get(0);
+         } else {
+             return null;
+         }
+@@ -97,8 +99,8 @@
+      */
+     private String createJavaDocComment(JavaMethod methodSource) {
+         String comment = methodSource.getComment();
+-        DocletTag[] tags = methodSource.getTags();
+-        if ((comment == null || comment.trim().length() == 0) && tags.length == 0) {
++        List<DocletTag> tags = methodSource.getTags();
++        if ((comment == null || comment.trim().length() == 0) && tags.size() == 0) {
+             return null;
+         }
+         StringBuilder result = new StringBuilder();

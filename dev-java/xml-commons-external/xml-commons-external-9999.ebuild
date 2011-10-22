@@ -7,7 +7,7 @@ JAVA_PKG_IUSE="doc source"
 
 ESVN_REPO_URI="http://svn.apache.org/repos/asf/xml/commons/trunk/java/external"
 
-inherit java-pkg-2 java-ant-2 eutils subversion
+inherit subversion eutils java-pkg-2 java-ant-2
 
 DESCRIPTION="An Apache-hosted set of externally-defined standards interfaces, namely DOM, SAX, and JAXP."
 HOMEPAGE="http://xml.apache.org/commons/"

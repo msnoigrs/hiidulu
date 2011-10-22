@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/proj/java/!svn/ver/7330/java-experimental/dev-java/relaxngcc
+END
+Manifest
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/proj/java/!svn/ver/7330/java-experimental/dev-java/relaxngcc/Manifest
+END
+ChangeLog
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/proj/java/!svn/ver/7330/java-experimental/dev-java/relaxngcc/ChangeLog
+END
+relaxngcc-1.12-r1.ebuild
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/svn/proj/java/!svn/ver/7330/java-experimental/dev-java/relaxngcc/relaxngcc-1.12-r1.ebuild
+END

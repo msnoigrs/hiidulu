@@ -1,0 +1,19 @@
+--- xsdlib-20060319.orig/src/com/sun/msv/datatype/xsd/regex/RegExpFactory.java	2006-03-19 22:11:04.000000000 +0900
++++ xsdlib-20060319/src/com/sun/msv/datatype/xsd/regex/RegExpFactory.java	2009-02-18 23:46:02.000000000 +0900
+@@ -18,8 +18,15 @@
+         for( int i=0; i<classList.length; i++ ) {
+             String name = classList[i];
+ 
++            ClassLoader cl = RegExpFactory.class.getClassLoader();
++            if (cl == null) { // may be bootstrap classloader
++                cl = Thread.currentThread().getContextClassLoader();
++            }
++            if (cl == null) {
++                throw new Error("cannot find ClassLoader.");
++            }
+             try {
+-                return (RegExpFactory)RegExpFactory.class.getClassLoader().loadClass(name).newInstance();
++                return (RegExpFactory)cl.loadClass(name).newInstance();
+             } catch (Throwable e) {
+                 ; // ignore any error and try the next one
+             }

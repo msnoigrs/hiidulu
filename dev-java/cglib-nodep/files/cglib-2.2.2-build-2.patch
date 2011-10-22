@@ -1,0 +1,14 @@
+--- build.xml.orig	2011-10-19 09:56:28.993321212 +0900
++++ build.xml	2011-10-19 10:00:36.836222694 +0900
+@@ -128,6 +128,11 @@
+     <jarjar basedir="${build.home}/classes" jarfile="${dist.home}/${component.name}-nodep-${component.version}.jar" >
+       <zipfileset dir="lib" includes="asm*.txt"/>
+       <zipfileset src="lib/asm-3.3.1.jar" excludes="META-INF"/>
++      <zipfileset src="lib/asm-analysis.jar" excludes="META-INF"/>
++      <zipfileset src="lib/asm-tree.jar" excludes="META-INF"/>
++      <zipfileset src="lib/asm-xml.jar" excludes="META-INF"/>
++      <zipfileset src="lib/asm-commons.jar" excludes="META-INF"/>
++      <zipfileset src="lib/asm-util.jar" excludes="META-INF"/>
+       <rule pattern="org.objectweb.asm.**" result="net.sf.cglib.asm.@1"/>
+       <include name="**/*"/>
+       <exclude name="samples/**"/>

@@ -1,0 +1,38 @@
+--- freemarker-2.3.9999.orig/src/freemarker/ext/beans/BeansWrapper.java	2011-03-25 02:16:19.959961102 +0900
++++ freemarker-2.3.9999/src/freemarker/ext/beans/BeansWrapper.java	2011-03-25 02:49:15.799259712 +0900
+@@ -156,8 +156,6 @@
+     private static final Object CONSTRUCTORS = new Object();
+     private static final Object ARGTYPES = new Object();
+ 
+-    private static final boolean javaRebelAvailable = isJavaRebelAvailable();
+-    
+     /**
+      * The default instance of BeansWrapper
+      */
+@@ -231,9 +229,6 @@
+      * model instances.
+      */
+     public BeansWrapper() {
+-        if(javaRebelAvailable) {
+-            JavaRebelIntegration.registerWrapper(this);
+-        }
+     }
+     
+     /**
+@@ -1646,16 +1641,6 @@
+     }
+ 
+     
+-    private static boolean isJavaRebelAvailable() {
+-        try {
+-            JavaRebelIntegration.testAvailability();
+-            return true;
+-        }
+-        catch(NoClassDefFoundError e) {
+-            return false;
+-        }
+-    }
+-    
+     /**
+      * Used for {@link #finetuneMethodAppearance} as output parameter; see there.
+      */

@@ -1,0 +1,20 @@
+diff -uNr stringtemplate-3.2.orig/build.xml stringtemplate-3.2/build.xml
+--- stringtemplate-3.2.orig/build.xml	2008-06-11 23:13:57.000000000 +0900
++++ stringtemplate-3.2/build.xml	2009-01-26 10:22:04.000000000 +0900
+@@ -189,7 +189,7 @@
+   <!-- =================================================================== -->
+   <target name="javadocs" depends="init,prepare-sources">
+     <mkdir dir="${build.javadocs}"/>
+-    <javadoc packagenames="${packages}"
++    <javadoc
+       sourcepath="${build.src}"
+       destdir="${build.javadocs}"
+       author="true"
+@@ -197,7 +197,6 @@
+       windowtitle="${Name} API"
+       doctitle="${Name} API Documentation"
+       bottom="Copyright &#169; ${copyright}"
+-      additionalparam="${javadocs.additionalparam}"
+       />
+   </target>
+ 

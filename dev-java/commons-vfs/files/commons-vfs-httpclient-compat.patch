@@ -1,0 +1,84 @@
+diff -uNr commons-vfs-1.1_pre553294.orig/core/src/main/java/org/apache/commons/vfs/provider/http/ThreadLocalHttpConnectionManager.java commons-vfs-1.1_pre553294/core/src/main/java/org/apache/commons/vfs/provider/http/ThreadLocalHttpConnectionManager.java
+--- commons-vfs-1.1_pre553294.orig/core/src/main/java/org/apache/commons/vfs/provider/http/ThreadLocalHttpConnectionManager.java	2007-07-09 13:39:17.000000000 +0900
++++ commons-vfs-1.1_pre553294/core/src/main/java/org/apache/commons/vfs/provider/http/ThreadLocalHttpConnectionManager.java	2007-07-09 14:26:09.000000000 +0900
+@@ -3,6 +3,7 @@
+ import org.apache.commons.httpclient.HostConfiguration;
+ import org.apache.commons.httpclient.HttpConnection;
+ import org.apache.commons.httpclient.HttpConnectionManager;
++import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
+ 
+ import java.io.IOException;
+ import java.io.InputStream;
+@@ -24,26 +25,6 @@
+  */
+ public class ThreadLocalHttpConnectionManager implements HttpConnectionManager
+ {
+-    private static class ConnectionParameters
+-    {
+-        private boolean staleCheck;
+-
+-        public boolean isStaleCheckingEnabled()
+-        {
+-            return staleCheck;
+-        }
+-
+-        public void setStaleCheckingEnabled(boolean b)
+-        {
+-            staleCheck = b;
+-        }
+-
+-        public void populateParameters(HttpConnection connection)
+-        {
+-            connection.setStaleCheckingEnabled(staleCheck);
+-        }
+-    }
+-
+     /**
+      * Since the same connection is about to be reused, make sure the
+      * previous request was completely processed, and if not
+@@ -83,7 +64,7 @@
+     /**
+      * Collection of parameters associated with this connection manager.
+      */
+-    private ConnectionParameters params = new ConnectionParameters();
++    private HttpConnectionManagerParams params = new HttpConnectionManagerParams();
+ 
+     /**
+      * release the connection of the current thread
+@@ -178,7 +159,7 @@
+             httpConnection = new HttpConnection(hostConfiguration);
+             setLocalHttpConnection(httpConnection);
+             httpConnection.setHttpConnectionManager(this);
+-            this.params.populateParameters(httpConnection);
++            httpConnection.getParams().setDefaults(this.params);
+         }
+         else
+         {
+@@ -251,4 +232,27 @@
+             getLocalHttpConnection().close();
+         }
+     }
++
++    /***
++     * Returns {@link HttpConnectionManagerParams parameters} associated 
++     * with this connection manager.
++     * 
++     * @since 3.0
++     */
++    public HttpConnectionManagerParams getParams() {
++        return this.params;
++    }
++
++    /***
++     * Assigns {@link HttpConnectionManagerParams parameters} for this 
++     * connection manager.
++     * 
++     * @since 3.0
++     */
++    public void setParams(final HttpConnectionManagerParams params) {
++        if (params == null) {
++            throw new IllegalArgumentException("Parameters may not be null");
++        }
++        this.params = params;
++    }
+ }

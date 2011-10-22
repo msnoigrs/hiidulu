@@ -1,0 +1,19 @@
+--- build.xml	2007-06-03 14:15:03.000000000 +0200
++++ build.xml	2007-05-18 23:14:10.000000000 +0200
+@@ -44,7 +44,6 @@
+ 
+ 		<javac
+ 			fork="yes"
+-			executable="${jdk_1_2_2_home}/bin/javac"
+ 			srcdir="src" excludes="org/codehaus/janino/AstGeneratorVisitor.java"
+ 			destdir="build/classes"
+ 			debug="true"
+@@ -65,8 +64,6 @@
+ 			destdir="build/javadoc"
+ 			packagenames="${javadoc_packages}"
+ 		>
+-			<link offline="true" href="${jdk_javadoc_remote}" packagelistloc="${jdk_javadoc_local}"/>
+-			<link offline="true" href="${ant_javadoc_remote}" packagelistloc="${ant_javadoc_local}"/>
+ 		</javadoc>
+ 	</target>
+ 

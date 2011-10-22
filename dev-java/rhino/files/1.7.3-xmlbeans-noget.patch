@@ -1,0 +1,26 @@
+diff -uNr rhino1_7R3.orig/xmlimplsrc/build.xml rhino1_7R3/xmlimplsrc/build.xml
+--- rhino1_7R3.orig/xmlimplsrc/build.xml	2011-05-09 20:04:38.000000000 +0900
++++ rhino1_7R3/xmlimplsrc/build.xml	2011-09-20 15:00:11.305845207 +0900
+@@ -93,7 +93,7 @@
+     <antcall target="no-old-e4x-compile" />
+   </target>
+ 
+-  <target name="old-e4x-compile" depends="xmlbeans-unzip">
++  <target name="old-e4x-compile">
+     <echo>Compiling XMLBeans E4X implementation using ${xbean.jar} and ${jsr173.jar}</echo>
+     <javac srcdir="deprecatedsrc"
+            destdir="${classes}"
+@@ -134,10 +134,13 @@
+   <property name="xmlbeans.zip" location="${xmlbeans.tmp}/xbean.zip" />
+ 
+   <condition property="xmlbeans-present?">
++<!--
+     <and>
+       <available file="${xbean.jar}" />
+       <available file="${jsr173.jar}" />
+     </and>
++-->
++      <available file="${xbean.jar}" />
+   </condition>
+ 
+   <condition property="xmlbeans-zip-present?">

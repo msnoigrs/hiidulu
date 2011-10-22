@@ -1,0 +1,12 @@
+diff -uNr freemarker-2.3.15.orig/src/freemarker/template/DefaultObjectWrapper.java freemarker-2.3.15/src/freemarker/template/DefaultObjectWrapper.java
+--- freemarker-2.3.15.orig/src/freemarker/template/DefaultObjectWrapper.java	2008-12-16 22:58:37.000000000 +0900
++++ freemarker-2.3.15/src/freemarker/template/DefaultObjectWrapper.java	2009-01-28 03:43:33.000000000 +0900
+@@ -80,7 +80,7 @@
+         } catch (Exception e) {}
+         try {
+             JYTHON_OBJ_CLASS = Class.forName("org.python.core.PyObject");
+-            JYTHON_WRAPPER = freemarker.ext.jython.JythonWrapper.INSTANCE;
++            JYTHON_WRAPPER = null;
+         } catch (Exception e) {}
+     }
+     
