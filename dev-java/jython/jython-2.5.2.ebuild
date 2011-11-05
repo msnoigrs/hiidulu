@@ -17,7 +17,8 @@ PYVER="2.5.5"
 
 #http://jython.svn.sourceforge.net/viewvc/jython/tags/Release_2_5_2/jython
 SRC_URI="http://www.python.org/ftp/python/${PYVER%_*}/Python-${PYVER}.tgz
-	https://github.com/masayuko/hiidulu/raw/master/distfiles/${P}.tar.bz2"
+	http://dev.gentoo.gr.jp/~igarashi/distfiles/${P}.tar.bz2"
+#	https://github.com/masayuko/hiidulu/raw/master/distfiles/${P}.tar.bz2"
 #	mirror://gentoo/${P}.tar.bz2"
 #svn export https://jython.svn.sourceforge.net/svnroot/jython/tags/Release_2_5_2/jython jython-2.5.2
 # tar jcf jython-2.5.2.tar.bz2 jython-2.5.2

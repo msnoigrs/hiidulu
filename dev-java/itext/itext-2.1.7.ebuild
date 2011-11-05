@@ -14,7 +14,8 @@ DISTFILE="${PN/it/iT}-src-${PV}.tar.gz"
 ASIANJAR="iTextAsian.jar"
 ASIANCMAPSJAR="iTextAsianCmaps.jar"
 #mirror://sourceforge/itext/${DISTFILE}
-SRC_URI="https://github.com/masayuko/hiidulu/raw/master/distfiles/${DISTFILE}
+#SRC_URI="https://github.com/masayuko/hiidulu/raw/master/distfiles/${DISTFILE}
+SRC_URI="http://dev.gentoo.gr.jp/~igarashi/distfiles/${DISTFILE}
 	cjk? ( mirror://sourceforge/itext/${ASIANJAR}
 		mirror://sourceforge/itext/${ASIANCMAPSJAR} )"
 
