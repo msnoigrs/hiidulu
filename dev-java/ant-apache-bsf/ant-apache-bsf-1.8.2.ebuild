@@ -13,11 +13,13 @@ IUSE=""
 
 # ant-nodeps contains <script> task which is needed for this
 # although it's not a build dep through import
-DEPEND=">=dev-java/bsf-2.4.0-r1:2.3[python?,javascript?,tcl?]"
+#DEPEND=">=dev-java/bsf-2.4.0-r1:2.3[python?,javascript?,tcl?]"
+DEPEND=">=dev-java/bsf-2.4.0-r1:2.3[javascript?,tcl?]"
 RDEPEND="${DEPEND}
 	~dev-java/ant-nodeps-${PV}"
 
-IUSE="python javascript tcl"
+#IUSE="python javascript tcl"
+IUSE="javascript tcl"
 
 JAVA_PKG_FILTER_COMPILER="jikes"
 
