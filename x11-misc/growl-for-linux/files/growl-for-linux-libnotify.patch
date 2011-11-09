@@ -1,0 +1,12 @@
+diff -uNr growl-for-linux-9999.orig/display/libnotify/notify.c growl-for-linux-9999/display/libnotify/notify.c
+--- growl-for-linux-9999.orig/display/libnotify/notify.c	2011-10-04 11:56:58.746061509 +0900
++++ growl-for-linux-9999/display/libnotify/notify.c	2011-10-04 13:01:29.362672142 +0900
+@@ -56,7 +56,7 @@
+   const NOTIFICATION_INFO* const ni = (const NOTIFICATION_INFO*) data;
+ 
+   gchar* const icon_path = get_icon_path_if_local(ni);
+-  NotifyNotification* const nt = notify_notification_new(ni->title, ni->text, icon_path, NULL);
++  NotifyNotification* const nt = notify_notification_new(ni->title, ni->text, icon_path);
+   g_free(icon_path);
+ 
+   GdkPixbuf* const pixbuf = !ni->local ? pixbuf_from_url(ni->icon, NULL) : NULL;
