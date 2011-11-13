@@ -1,0 +1,10 @@
+--- ./auto-complete-config.el.orig	2011-03-07 06:26:43.821000094 +0900
++++ ./auto-complete-config.el	2011-03-07 06:27:46.699000094 +0900
+@@ -346,6 +346,7 @@
+                    "xx-large")
+     (border-style "none" "hidden" "dotted" "dashed" "solid" "double" "groove"
+                   "ridge" "inset" "outset")
++    (border-width "thin" "medium" "thick" "inherit")
+     (color "aqua" "black" "blue" "fuchsia" "gray" "green" "lime" "maroon" "navy"
+            "olive" "orange" "purple" "red" "silver" "teal" "white" "yellow"
+            "rgb")

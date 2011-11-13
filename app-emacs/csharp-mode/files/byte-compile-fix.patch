@@ -1,0 +1,92 @@
+--- ./csharp-mode.el.orig	2010-05-24 21:53:58.000000000 +0900
++++ ./csharp-mode.el	2011-03-09 02:34:11.121114000 +0900
+@@ -8,6 +8,7 @@
+ ;; Keywords   : c# languages oop mode
+ ;; X-URL      : http://code.google.com/p/csharpmode/
+ ;; Last-saved : <2010-May-24 21:53:58>
++;; Modified by Lennart Borgman
+ 
+ ;;
+ ;; This program is free software; you can redistribute it and/or modify
+@@ -178,7 +179,8 @@
+ 
+ ;;
+ 
+-
++(eval-when-compile (require 'cl))
++(eval-when-compile (require 'compile))
+ (require 'cc-mode)
+ 
+ (message  (concat "Loading " load-file-name))
+@@ -374,7 +376,7 @@
+   "Intelligently insert a pair of curly braces. This fn is most
+     often bound to the open-curly brace, with
+ 
+-        (local-set-key (kbd \"{\") 'csharp-insert-open-brace)
++    (local-set-key (kbd \"{\") 'csharp-insert-open-brace)
+ 
+     The default binding for an open curly brace in cc-modes is often
+     `c-electric-brace' or `skeleton-pair-insert-maybe'.  The former
+@@ -450,7 +452,7 @@
+         (newline)
+         (insert "};")
+         (c-indent-region tpoint (point))
+-        (previous-line)
++        (forward-line -1)
+         (indent-according-to-mode)
+         (end-of-line)
+         (setq tpoint (point)))
+@@ -486,7 +488,7 @@
+         (insert "}")
+         ;;(c-indent-command) ;; not sure of the difference here
+         (c-indent-line-or-region)
+-        (previous-line)
++        (forward-line -1)
+         (end-of-line)
+         (newline-and-indent)
+         ;; point ends up on an empty line, within the braces, properly indented
+@@ -523,6 +525,7 @@
+   "<%@.+?%>"
+   "Regex for matching directive blocks in ASP.NET files (.aspx, .ashx, .ascx)")
+ 
++(eval-and-compile
+ (defconst csharp-enum-decl-re
+   (concat
+    "\\<enum[ \t\n\r\f\v]+"
+@@ -536,6 +539,7 @@
+    "\\)?")
+   "Regex that captures an enum declaration in C#"
+   )
++)
+ 
+ 
+ 
+@@ -1631,7 +1635,7 @@
+   ;;(message "csharp-maybe-insert-codedoc")
+   (let (
+         (cur-point (point))
+-        (char last-command-char)
++        (char last-command-event)
+         (cb0 (char-before (- (point) 0)))
+         (cb1 (char-before (- (point) 1)))
+         is-first-non-whitespace
+@@ -1663,8 +1667,7 @@
+                     (preceding-line-is-empty (or
+                                               (= (line-number-at-pos) 1)
+                                               (save-excursion
+-                                               (previous-line)
+-                                               (beginning-of-line)
++                                               (forward-line -1)
+                                                (looking-at "[ \t]*$\\|[ \t]*{[ \t]*$"))))
+                     (flavor 0) ;; used only for diagnostic purposes
+                     )
+@@ -1814,7 +1817,8 @@
+                           ;; and a blank line in between them where the point should be.
+                           ;; A more intelligent implementation would use a specific
+                           ;; marker string, like @@DOT, to note the desired point.
+-                          (previous-line (/ newline-count 2))
++                          ;;(previous-line (/ newline-count 2))
++                          (forward-line (- (/ newline-count 2)))
+                           (end-of-line)))))))))
+ 
+     (if (not did-auto-insert)
