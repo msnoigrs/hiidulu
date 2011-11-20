@@ -10,7 +10,7 @@ WANT_ANT_TASKS="ant-owanttask"
 inherit java-pkg-2 java-ant-2
 
 DESCRIPTION="Bytecode manipulation framework for Java"
-HOMEPAGE="http://asm.objectweb.org"
+HOMEPAGE="http://asm.ow2.org"
 SRC_URI="http://download.forge.objectweb.org/${PN}/${P}.tar.gz"
 LICENSE="BSD"
 SLOT="2.2"
