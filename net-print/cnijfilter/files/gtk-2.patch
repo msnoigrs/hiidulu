@@ -1,0 +1,57 @@
+diff -uNr cnijfilter-2.70.orig/cngpijmon/configures/configure.in.new cnijfilter-2.70/cngpijmon/configures/configure.in.new
+--- cnijfilter-2.70.orig/cngpijmon/configures/configure.in.new	2007-08-22 12:05:21.000000000 +0900
++++ cnijfilter-2.70/cngpijmon/configures/configure.in.new	2008-01-12 17:13:09.000000000 +0900
+@@ -16,8 +16,13 @@
+ AM_PROG_CC_STDC
+ AC_HEADER_STDC
+ 
+-AM_PATH_GTK(1.2.0, ,
+-            AC_MSG_ERROR(Cannot find GTK: Is gtk-config in path?))
++GTK_REQUIRED=2.10.0
++
++dnl pkg-config dependency checks
++
++PKG_CHECK_MODULES(GTK, gtk+-2.0 >= $GTK_REQUIRED)
++AC_SUBST(GTK_CFLAGS)
++AC_SUBST(GTK_LIBS)
+ 
+ GETTEXT_PACKAGE=cngpijmon${program_suffix}
+ AC_SUBST(GETTEXT_PACKAGE)
+diff -uNr cnijfilter-2.70.orig/lgmon/configures/configure.in.new cnijfilter-2.70/lgmon/configures/configure.in.new
+--- cnijfilter-2.70.orig/lgmon/configures/configure.in.new	2007-08-22 11:42:50.000000000 +0900
++++ cnijfilter-2.70/lgmon/configures/configure.in.new	2008-01-12 17:18:36.000000000 +0900
+@@ -28,8 +28,13 @@
+ AC_HEADER_STDC
+ AC_PROG_RANLIB
+ 
+-AM_PATH_GTK(1.2.0, ,
+-            AC_MSG_ERROR(Cannot find GTK: Is gtk-config in path?))
++GTK_REQUIRED=2.10.0
++
++dnl pkg-config dependency checks
++
++PKG_CHECK_MODULES(GTK, gtk+-2.0 >= $GTK_REQUIRED)
++AC_SUBST(GTK_CFLAGS)
++AC_SUBST(GTK_LIBS)
+ 
+ dnl Set PACKAGE_LOCALE_DIR in config.h.
+ if test "x${prefix}" = "xNONE"; then
+diff -uNr cnijfilter-2.70.orig/printui/configures/configure-new.in cnijfilter-2.70/printui/configures/configure-new.in
+--- cnijfilter-2.70.orig/printui/configures/configure-new.in	2007-08-22 11:47:18.000000000 +0900
++++ cnijfilter-2.70/printui/configures/configure-new.in	2008-01-12 17:16:02.000000000 +0900
+@@ -39,8 +39,13 @@
+ AM_PROG_CC_STDC
+ AC_HEADER_STDC
+ 
+-AM_PATH_GTK(1.2.0, ,
+-            AC_MSG_ERROR(Cannot find GTK: Is gtk-config in path?))
++GTK_REQUIRED=2.10.0
++
++dns pkg-config dependency checks
++
++PKG_CHECK_MODULES(GTK, gtk+-2.0 >= $GTK_REQUIRED)
++AC_SUBST(GTK_CFLAGS)
++AC_SUBST(GTK_LIBS)
+ 
+ GETTEXT_PACKAGE=printui${program_suffix}
+ AC_SUBST(GETTEXT_PACKAGE)
