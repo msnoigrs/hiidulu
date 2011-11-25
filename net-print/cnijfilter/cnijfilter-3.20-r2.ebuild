@@ -87,8 +87,8 @@ pkg_setup() {
 	use amd64 && export ABI=x86
 	use amd64 && append-flags -L/emul/linux/x86/lib -L/emul/linux/x86/usr/lib -L/usr/lib32
 
-	_prefix="/usr/local"
-	_bindir="/usr/local/bin"
+	_prefix="/usr"
+	_bindir="/usr/bin"
 	_libdir="/usr/$(get_libdir)" # either lib or lib32
 	_cupsdir1="/usr/lib/cups"
 	_cupsdir2="/usr/libexec/cups"
@@ -139,12 +139,12 @@ src_prepare() {
 	./autogen.sh --prefix=${_prefix} || die "Error: libs/autoconf.sh failed"
 
 	cd ../pstocanonij || die
-	./autogen.sh --prefix=/usr --enable-progpath=${_bindir} || die "Error: pstocanonij/autoconf.sh failed"
+	./autogen.sh --prefix=${_prefix} --enable-progpath=${_bindir} || die "Error: pstocanonij/autoconf.sh failed"
 
-	if use net; then
+	#if use net; then
 		cd ../backendnet || die
 		./autogen.sh --prefix=${_prefix} --enable-progpath=${_bindir} || die "Error: backendnet/autoconf.sh failed"
-	fi
+	#fi
 
 	if use servicetools; then
 		cd ../cngpij || die
@@ -162,10 +162,10 @@ src_compile() {
 	cd ../pstocanonij || die
 	make || die "Couldn't make pstocanonij"
 
-	if use net; then
+	#if use net; then
 		cd ../backendnet || die
 		make || die "Couldn't make backendnet"
-	fi
+	#fi
 
 	if use servicetools; then
 		cd ../cngpij || die
@@ -180,7 +180,7 @@ src_compile() {
 	for i in `seq 0 ${_max}`; do
 		if use ${_pruse[$i]} || ${_autochoose}; then
 			_pr=${_prname[$i]} _prid=${_prid[$i]}
-			use amd64 && append-ldflags -L../../
+			#use amd64 && append-ldflags -L../../
 			src_compile_pr;
 		fi
 	done
