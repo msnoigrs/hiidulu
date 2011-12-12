@@ -1,0 +1,116 @@
+#!/sbin/runscript
+# Copyright 1999-2011 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+
+depend() {
+	keyword -openvz -vserver -lxc
+	need udev-mount
+	before checkfs fsck
+}
+
+cleanup()
+{
+        # fail more gracely and not leave udevd running
+        start-stop-daemon --stop --exec /lib/udev/udevd
+        exit 1
+}
+
+start_udevmonitor()
+{
+	yesno "${udev_monitor:-no}" || return 0
+
+	udevmonitor_log=/dev/.udev/udevmonitor.log
+	udevmonitor_pid=/dev/.udev/udevmonitor.pid
+
+	einfo "udev: Running udevadm monitor ${udev_monitor_opts} to get a log of all events"
+	start-stop-daemon --start --stdout "${udevmonitor_log}" \
+		--make-pidfile --pidfile "${udevmonitor_pid}" \
+		--background --exec /sbin/udevadm -- monitor ${udev_monitor_opts}
+}
+
+stop_udevmonitor()
+{
+	yesno "${udev_monitor:-no}" || return 0
+
+	if yesno "${udev_monitor_keep_running:-no}"; then
+		ewarn "udev: udevmonitor is still running and writing into ${udevmonitor_log}"
+	else
+		einfo "udev: Stopping udevmonitor: Log is in ${udevmonitor_log}"
+		start-stop-daemon --stop --pidfile "${udevmonitor_pid}" --exec /sbin/udevadm
+	fi
+}
+
+start() {
+	if [ -e /etc/conf.d/udev ]
+	then
+		. /etc/conf.d/udev
+	fi
+
+	local opts="${udev_opts}"
+
+	ebegin "Starting udevd daemon"
+	if yesno "${udev_debug:-no}"; then
+		/lib/udev/udevd --daemon ${opts} --debug 2>/dev/.udev/udev.log
+	else
+		start-stop-daemon --start --exec /lib/udev/udevd -- --daemon
+	fi
+	if [ $? -ne 0 ]
+	then
+		eend 1
+		return 1
+	fi
+
+	start_udevmonitor
+
+	# By default, we want coldplug enabled. "coldplug" means that 
+	# udev will scan the system for already-connected hardware and
+	# generate synthetic/pretend connection events, which will help
+	# to load the correct modules, when, for example, you try to
+	# bring up your eth0 interface and it depends on a module that
+	# is not currently loaded.
+
+	local coldplug="yes"
+
+	# coldplug can be disabled by the "nocoldplug" kernel boot
+	# parameter.
+
+	if get_bootparam "nocoldplug" ; then
+		coldplug="NO"
+		ewarn "Skipping udev coldplug as requested in kernel cmdline"
+	fi
+
+	ebegin "Populating /dev with existing devices through uevents"
+	udevadm control --property=STARTUP=1
+	if yesno "${coldplug}"; then
+		# perform full coldplug:
+		udevadm trigger --action="add"
+	else
+		# do not perform a full coldplug:
+		# Do not run any init-scripts, Bug #206518
+		udevadm control --property=do_not_run_plug_service=1
+		# only create device nodes
+		udevadm trigger --action="add" --attr-match=dev
+		# run persistent-net stuff, bug 191466
+		udevadm trigger --action="add" --subsystem-match=net
+	fi
+	udevadm settle --timeout=${udev_settle_timeout:-60}
+	eend $?
+
+	udevadm control --property=do_not_run_plug_service=
+	udevadm control --property=STARTUP=
+	# should exist on every system, else udev failed
+	if [ ! -e /dev/zero ]; then
+		eerror "Assuming udev failed somewhere, as /dev/zero does not exist."
+		cleanup
+		return 1
+	fi
+
+	stop_udevmonitor
+	return 0
+}
+
+stop() {
+	ebegin "Stopping udevd daemon"
+	start-stop-daemon --stop --exec /lib/udev/udevd
+	eend $?
+}

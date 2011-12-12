@@ -1,0 +1,699 @@
+diff -uNr Mesa-9999.orig/configs/autoconf.in Mesa-9999/configs/autoconf.in
+--- Mesa-9999.orig/configs/autoconf.in	2011-05-01 03:44:41.146300943 +0900
++++ Mesa-9999/configs/autoconf.in	2011-05-01 03:45:15.576870497 +0900
+@@ -26,6 +26,8 @@
+ EXTRA_LIB_PATH = @EXTRA_LIB_PATH@
+ RADEON_CFLAGS = @RADEON_CFLAGS@
+ RADEON_LDFLAGS = @RADEON_LDFLAGS@
++NOUVEAU_CFLAGS = @NOUVEAU_CFLAGS@
++NOUVEAU_LIBS = @NOUVEAU_LIBS@
+ INTEL_LIBS = @INTEL_LIBS@
+ INTEL_CFLAGS = @INTEL_CFLAGS@
+ X11_LIBS = @X11_LIBS@
+diff -uNr Mesa-9999.orig/configs/linux-dri Mesa-9999/configs/linux-dri
+--- Mesa-9999.orig/configs/linux-dri	2011-05-01 03:44:41.150300894 +0900
++++ Mesa-9999/configs/linux-dri	2011-05-01 03:45:15.576870497 +0900
+@@ -63,11 +63,16 @@
+ GALLIUM_TARGET_DIRS = 
+ GALLIUM_STATE_TRACKERS_DIRS = egl
+ 
+-DRI_DIRS = i810 i915 i965 mach64 mga r128 r200 r300 r600 radeon \
++DRI_DIRS = i810 i915 i965 mach64 mga nouveau r128 r200 r300 r600 radeon \
+ 	savage sis tdfx unichrome swrast
+ 
+-INTEL_LIBS = `pkg-config --libs libdrm_intel`
+-INTEL_CFLAGS = `pkg-config --cflags libdrm_intel`
++INTEL_LIBS = $(shell pkg-config --libs libdrm_intel)
++INTEL_CFLAGS = $(shell pkg-config --cflags libdrm_intel)
+ 
+-RADEON_LIBS = `pkg-config --libs libdrm_radeon`
+-RADEON_CFLAGS = `pkg-config --cflags libdrm_radeon`
++NOUVEAU_LIBS = $(shell shell pkg-config libdrm_nouveau --libs)
++NOUVEAU_CFLAGS = $(shell shell pkg-config libdrm_nouveau --cflags)
++
++LIBDRM_RADEON_LIBS = $(shell pkg-config --libs libdrm_radeon)
++LIBDRM_RADEON_CFLAGS = $(shell pkg-config --cflags libdrm_radeon)
++RADEON_CFLAGS = -DHAVE_LIBDRM_RADEON=1 $(LIBDRM_RADEON_CFLAGS)
++RADEON_LDFLAGS = $(LIBDRM_RADEON_LIBS)
+diff -uNr Mesa-9999.orig/configure.ac Mesa-9999/configure.ac
+--- Mesa-9999.orig/configure.ac	2011-05-01 03:44:41.156300818 +0900
++++ Mesa-9999/configure.ac	2011-05-01 03:45:15.578870473 +0900
+@@ -20,6 +20,7 @@
+ dnl Versions for external dependencies
+ LIBDRM_REQUIRED=2.4.24
+ LIBDRM_RADEON_REQUIRED=2.4.24
++LIBDRM_NOUVEAU_REQUIRED=0.6
+ LIBDRM_INTEL_REQUIRED=2.4.24
+ DRI2PROTO_REQUIRED=2.1
+ GLPROTO_REQUIRED=1.4.11
+@@ -998,7 +999,7 @@
+             # the new interface.  i810 are missing because there is no
+             # x86-64 system where they could *ever* be used.
+             if test "x$DRI_DIRS" = "xyes"; then
+-                DRI_DIRS="i915 i965 mach64 mga r128 r200 r300 r600 radeon \
++                DRI_DIRS="i915 i965 mach64 mga nouveau r128 r200 r300 r600 radeon \
+                     savage tdfx unichrome swrast"
+             fi
+             ;;
+@@ -1026,8 +1027,8 @@
+         fi
+ 
+         if test "x$DRI_DIRS" = "xyes"; then
+-            DRI_DIRS="i810 i915 i965 mach64 mga r128 r200 r300 r600 radeon tdfx \
+-                unichrome savage sis swrast"
++            DRI_DIRS="i810 i915 i965 mach64 mga nouveau r128 r200 r300 r600 radeon \
++                tdfx unichrome savage sis swrast"
+         fi
+         ;;
+     gnu*)
+@@ -1055,7 +1056,7 @@
+ 
+     # default drivers
+     if test "x$DRI_DIRS" = "xyes"; then
+-        DRI_DIRS="i810 i915 i965 mach64 mga r128 r200 r300 r600 radeon \
++        DRI_DIRS="i810 i915 i965 mach64 mga nouveau r128 r200 r300 r600 radeon \
+             savage sis tdfx unichrome swrast"
+     fi
+ 
+@@ -1092,6 +1093,14 @@
+ esac
+ 
+ case $DRI_DIRS in
++*nouveau*)
++    PKG_CHECK_MODULES([NOUVEAU], [libdrm_nouveau >= $LIBDRM_NOUVEAU_REQUIRED])
++    ;;
++esac
++AC_SUBST([NOUVEAU_LIBS])
++AC_SUBST([NOUVEAU_CFLAGS])
++
++case $DRI_DIRS in
+ *radeon*|*r200*|*r300*|*r600*)
+     if test "x$HAVE_LIBDRM_RADEON" = xyes; then
+ 	RADEON_CFLAGS="-DHAVE_LIBDRM_RADEON=1 $LIBDRM_RADEON_CFLAGS"
+diff -uNr Mesa-9999.orig/src/gallium/targets/Makefile.dri Mesa-9999/src/gallium/targets/Makefile.dri
+--- Mesa-9999.orig/src/gallium/targets/Makefile.dri	2011-05-01 03:44:41.543295981 +0900
++++ Mesa-9999/src/gallium/targets/Makefile.dri	2011-05-01 03:45:58.290336559 +0900
+@@ -75,7 +75,9 @@
+ default: depend symlinks $(TOP)/$(LIB_DIR)/gallium $(LIBNAME) $(LIBNAME_STAGING)
+ 
+ $(LIBNAME): $(OBJECTS) $(MESA_MODULES) $(PIPE_DRIVERS) Makefile \
+-		$(TOP)/src/mesa/drivers/dri/Makefile.template $(TOP)/src/mesa/drivers/dri/common/dri_test.o
++		$(TOP)/src/mesa/drivers/dri/Makefile.defines \
++		$(TOP)/src/mesa/drivers/dri/Makefile.targets \
++		$(TOP)/src/mesa/drivers/dri/common/dri_test.o
+ 	$(MKLIB) -o $@.tmp -noprefix -linker '$(CXX)' -ldflags '$(LDFLAGS)' \
+ 		$(OBJECTS) $(PIPE_DRIVERS) \
+                 -Wl,--start-group $(MESA_MODULES) -Wl,--end-group \
+diff -uNr Mesa-9999.orig/src/mesa/drivers/dri/Makefile.defines Mesa-9999/src/mesa/drivers/dri/Makefile.defines
+--- Mesa-9999.orig/src/mesa/drivers/dri/Makefile.defines	1970-01-01 09:00:00.000000000 +0900
++++ Mesa-9999/src/mesa/drivers/dri/Makefile.defines	2011-05-01 03:45:15.579870461 +0900
+@@ -0,0 +1,34 @@
++# -*-makefile-*-
++
++COMMON_GALLIUM_SOURCES = \
++	../common/utils.c \
++	../common/vblank.c \
++	../common/dri_util.c \
++	../common/xmlconfig.c
++
++COMMON_SOURCES = $(COMMON_GALLIUM_SOURCES) \
++	../../common/driverfuncs.c \
++	../common/texmem.c \
++	../common/drirenderbuffer.c
++
++INCLUDES = $(SHARED_INCLUDES) $(EXPAT_INCLUDES)
++
++OBJECTS = $(C_SOURCES:.c=.o) \
++	 $(CXX_SOURCES:.cpp=.o) \
++	 $(ASM_SOURCES:.S=.o)
++
++
++### Include directories
++SHARED_INCLUDES = \
++	-I. \
++	-I$(TOP)/src/mesa/drivers/dri/common \
++	-Iserver \
++	-I$(TOP)/include \
++	-I$(TOP)/src/mapi \
++	-I$(TOP)/src/mesa \
++	-I$(TOP)/src/egl/main \
++	-I$(TOP)/src/egl/drivers/dri \
++	$(LIBDRM_CFLAGS)
++
++INCLUDES += $(API_DEFINES)
++CXXFLAGS += $(API_DEFINES)
+diff -uNr Mesa-9999.orig/src/mesa/drivers/dri/Makefile.targets Mesa-9999/src/mesa/drivers/dri/Makefile.targets
+--- Mesa-9999.orig/src/mesa/drivers/dri/Makefile.targets	1970-01-01 09:00:00.000000000 +0900
++++ Mesa-9999/src/mesa/drivers/dri/Makefile.targets	2011-05-01 03:45:15.579870461 +0900
+@@ -0,0 +1,80 @@
++# -*-makefile-*-
++
++##### RULES #####
++
++.c.o:
++	$(CC) -c $(INCLUDES) $(DRI_CFLAGS) $(DRIVER_DEFINES) $< -o $@
++
++.cpp.o:
++	$(CC) -c $(INCLUDES) $(DRI_CXXFLAGS) $(DRIVER_DEFINES) $< -o $@
++
++.S.o:
++	$(CC) -c $(INCLUDES) $(DRI_CFLAGS) $(DRIVER_DEFINES) $< -o $@
++
++
++##### TARGETS #####
++
++default: subdirs lib
++
++
++.PHONY: lib
++lib: symlinks subdirs depend
++	@$(MAKE) $(LIBNAME) $(TOP)/$(LIB_DIR)/$(LIBNAME)
++
++$(LIBNAME): $(OBJECTS) $(EXTRA_MODULES) $(MESA_MODULES) Makefile \
++		$(TOP)/src/mesa/drivers/dri/Makefile.defines \
++		$(TOP)/src/mesa/drivers/dri/Makefile.targets \
++		$(TOP)/src/mesa/drivers/dri/common/dri_test.o
++	$(MKLIB) -o $@.tmp -noprefix -linker '$(CXX)' -ldflags '$(LDFLAGS)' \
++		$(OBJECTS) $(EXTRA_MODULES) $(DRI_LIB_DEPS)
++	$(CXX) $(CFLAGS) -o $@.test $(TOP)/src/mesa/drivers/dri/common/dri_test.o $@.tmp $(DRI_LIB_DEPS)
++	@rm -f $@.test
++	mv -f $@.tmp $@
++
++
++$(TOP)/$(LIB_DIR)/$(LIBNAME): $(LIBNAME)
++	$(INSTALL) $(LIBNAME) $(TOP)/$(LIB_DIR) 
++
++
++# If the Makefile defined SUBDIRS, run make in each
++.PHONY: subdirs
++subdirs:
++	@if test -n "$(SUBDIRS)" ; then \
++		for dir in $(SUBDIRS) ; do \
++			if [ -d $$dir ] ; then \
++				(cd $$dir && $(MAKE)) || exit 1; \
++			fi \
++		done \
++	fi
++
++
++.PHONY: symlinks
++symlinks:
++
++
++depend: $(C_SOURCES) $(CXX_SOURCES) $(ASM_SOURCES) $(SYMLINKS)
++	@ echo "running $(MKDEP)"
++	@ rm -f depend
++	@ touch depend
++	@ $(MKDEP) $(MKDEP_OPTIONS) $(DRIVER_DEFINES) $(INCLUDES) \
++		$(C_SOURCES) $(CXX_SOURCES) \
++		$(ASM_SOURCES) > /dev/null 2>/dev/null
++
++
++# Emacs tags
++tags:
++	etags `find . -name \*.[ch]` `find ../include`
++
++
++# Remove .o and backup files
++clean:
++	-rm -f *.o */*.o *~ *.so *~ server/*.o $(SYMLINKS)
++	-rm -f depend depend.bak
++
++
++install: $(LIBNAME)
++	$(INSTALL) -d $(DESTDIR)$(DRI_DRIVER_INSTALL_DIR)
++	$(MINSTALL) -m 755 $(LIBNAME) $(DESTDIR)$(DRI_DRIVER_INSTALL_DIR)
++
++
++-include depend
+diff -uNr Mesa-9999.orig/src/mesa/drivers/dri/Makefile.template Mesa-9999/src/mesa/drivers/dri/Makefile.template
+--- Mesa-9999.orig/src/mesa/drivers/dri/Makefile.template	2011-05-01 03:44:41.771293130 +0900
++++ Mesa-9999/src/mesa/drivers/dri/Makefile.template	1970-01-01 09:00:00.000000000 +0900
+@@ -1,111 +0,0 @@
+-# -*-makefile-*-
+-
+-COMMON_GALLIUM_SOURCES = \
+-        ../common/utils.c \
+-        ../common/vblank.c \
+-        ../common/dri_util.c \
+-        ../common/xmlconfig.c
+-
+-COMMON_SOURCES = $(COMMON_GALLIUM_SOURCES) \
+-        ../../common/driverfuncs.c \
+-        ../common/texmem.c \
+-        ../common/drirenderbuffer.c
+-
+-INCLUDES = $(SHARED_INCLUDES) $(EXPAT_INCLUDES)
+-
+-OBJECTS = $(C_SOURCES:.c=.o) \
+-	  $(CXX_SOURCES:.cpp=.o) \
+-	  $(ASM_SOURCES:.S=.o) 
+-
+-
+-### Include directories
+-SHARED_INCLUDES = \
+-	-I. \
+-	-I$(TOP)/src/mesa/drivers/dri/common \
+-	-Iserver \
+-	-I$(TOP)/include \
+-	-I$(TOP)/src/mapi \
+-	-I$(TOP)/src/mesa \
+-	-I$(TOP)/src/egl/main \
+-	-I$(TOP)/src/egl/drivers/dri \
+-	$(LIBDRM_CFLAGS)
+-
+-CFLAGS += $(API_DEFINES)
+-CXXFLAGS += $(API_DEFINES)
+-
+-##### RULES #####
+-
+-.c.o:
+-	$(CC) -c $(INCLUDES) $(DRI_CFLAGS) $(DRIVER_DEFINES) $< -o $@
+-
+-.cpp.o:
+-	$(CC) -c $(INCLUDES) $(DRI_CXXFLAGS) $(DRIVER_DEFINES) $< -o $@
+-
+-.S.o:
+-	$(CC) -c $(INCLUDES) $(DRI_CFLAGS) $(DRIVER_DEFINES) $< -o $@
+-
+-
+-##### TARGETS #####
+-
+-default: subdirs lib
+-
+-
+-.PHONY: lib
+-lib: symlinks subdirs depend
+-	@$(MAKE) $(LIBNAME) $(TOP)/$(LIB_DIR)/$(LIBNAME)
+-
+-$(LIBNAME): $(OBJECTS) $(EXTRA_MODULES) $(MESA_MODULES) Makefile \
+-		$(TOP)/src/mesa/drivers/dri/Makefile.template $(TOP)/src/mesa/drivers/dri/common/dri_test.o
+-	$(MKLIB) -o $@.tmp -noprefix -linker '$(CXX)' -ldflags '$(LDFLAGS)' \
+-		$(OBJECTS) $(EXTRA_MODULES) $(DRI_LIB_DEPS)
+-	$(CXX) $(CFLAGS) -o $@.test $(TOP)/src/mesa/drivers/dri/common/dri_test.o $@.tmp $(DRI_LIB_DEPS)
+-	@rm -f $@.test
+-	mv -f $@.tmp $@
+-
+-
+-$(TOP)/$(LIB_DIR)/$(LIBNAME): $(LIBNAME)
+-	$(INSTALL) $(LIBNAME) $(TOP)/$(LIB_DIR) 
+-
+-
+-# If the Makefile defined SUBDIRS, run make in each
+-.PHONY: subdirs
+-subdirs:
+-	@if test -n "$(SUBDIRS)" ; then \
+-		for dir in $(SUBDIRS) ; do \
+-			if [ -d $$dir ] ; then \
+-				(cd $$dir && $(MAKE)) || exit 1; \
+-			fi \
+-		done \
+-	fi
+-
+-
+-.PHONY: symlinks
+-symlinks:
+-
+-
+-depend: $(C_SOURCES) $(CXX_SOURCES) $(ASM_SOURCES) $(SYMLINKS)
+-	@ echo "running $(MKDEP)"
+-	@ rm -f depend
+-	@ touch depend
+-	@ $(MKDEP) $(MKDEP_OPTIONS) $(DRIVER_DEFINES) $(INCLUDES) \
+-		$(C_SOURCES) $(CXX_SOURCES) \
+-		$(ASM_SOURCES) > /dev/null 2>/dev/null
+-
+-
+-# Emacs tags
+-tags:
+-	etags `find . -name \*.[ch]` `find ../include`
+-
+-
+-# Remove .o and backup files
+-clean:
+-	-rm -f *.o */*.o *~ *.so *~ server/*.o $(SYMLINKS)
+-	-rm -f depend depend.bak
+-
+-
+-install: $(LIBNAME)
+-	$(INSTALL) -d $(DESTDIR)$(DRI_DRIVER_INSTALL_DIR)
+-	$(MINSTALL) -m 755 $(LIBNAME) $(DESTDIR)$(DRI_DRIVER_INSTALL_DIR)
+-
+-
+--include depend
+diff -uNr Mesa-9999.orig/src/mesa/drivers/dri/i810/Makefile Mesa-9999/src/mesa/drivers/dri/i810/Makefile
+--- Mesa-9999.orig/src/mesa/drivers/dri/i810/Makefile	2011-05-01 03:44:41.779293031 +0900
++++ Mesa-9999/src/mesa/drivers/dri/i810/Makefile	2011-05-01 03:45:15.591870314 +0900
+@@ -5,6 +5,8 @@
+ 
+ LIBNAME = i810_dri.so
+ 
++include ../Makefile.defines
++
+ DRIVER_SOURCES = \
+ 	i810context.c \
+ 	i810ioctl.c \
+@@ -24,5 +26,4 @@
+ 
+ ASM_SOURCES = 
+ 
+-include ../Makefile.template
+-
++include ../Makefile.targets
+diff -uNr Mesa-9999.orig/src/mesa/drivers/dri/i915/Makefile Mesa-9999/src/mesa/drivers/dri/i915/Makefile
+--- Mesa-9999.orig/src/mesa/drivers/dri/i915/Makefile	2011-05-01 03:44:41.784292966 +0900
++++ Mesa-9999/src/mesa/drivers/dri/i915/Makefile	2011-05-01 03:45:15.591870314 +0900
+@@ -4,6 +4,8 @@
+ 
+ LIBNAME = i915_dri.so
+ 
++include ../Makefile.defines
++
+ DRIVER_SOURCES = \
+ 	i830_context.c \
+ 	i830_state.c \
+@@ -63,7 +65,7 @@
+ INCLUDES += $(INTEL_CFLAGS)
+ DRI_LIB_DEPS += $(INTEL_LIBS)
+ 
+-include ../Makefile.template
++include ../Makefile.targets
+ 
+ intel_decode.o: ../intel/intel_decode.c
+ 
+diff -uNr Mesa-9999.orig/src/mesa/drivers/dri/i965/Makefile Mesa-9999/src/mesa/drivers/dri/i965/Makefile
+--- Mesa-9999.orig/src/mesa/drivers/dri/i965/Makefile	2011-05-01 03:44:41.794292841 +0900
++++ Mesa-9999/src/mesa/drivers/dri/i965/Makefile	2011-05-01 03:45:15.592870301 +0900
+@@ -4,6 +4,8 @@
+ 
+ LIBNAME = i965_dri.so
+ 
++include ../Makefile.defines
++
+ DRIVER_SOURCES = \
+ 	intel_batchbuffer.c \
+ 	intel_blit.c \
+@@ -117,7 +119,7 @@
+ INCLUDES += $(INTEL_CFLAGS)
+ DRI_LIB_DEPS += $(INTEL_LIBS)
+ 
+-include ../Makefile.template
++include ../Makefile.targets
+ 
+ intel_decode.o: ../intel/intel_decode.c
+ intel_tex_layout.o: ../intel/intel_tex_layout.c
+diff -uNr Mesa-9999.orig/src/mesa/drivers/dri/mach64/Makefile Mesa-9999/src/mesa/drivers/dri/mach64/Makefile
+--- Mesa-9999.orig/src/mesa/drivers/dri/mach64/Makefile	2011-05-01 03:44:41.830292393 +0900
++++ Mesa-9999/src/mesa/drivers/dri/mach64/Makefile	2011-05-01 03:45:15.592870301 +0900
+@@ -5,6 +5,8 @@
+ 
+ LIBNAME = mach64_dri.so
+ 
++include ../Makefile.defines
++
+ DRIVER_SOURCES = \
+ 	mach64_context.c \
+ 	mach64_ioctl.c \
+@@ -25,5 +27,5 @@
+ 
+ ASM_SOURCES = 
+ 
+-include ../Makefile.template
++include ../Makefile.targets
+ 
+diff -uNr Mesa-9999.orig/src/mesa/drivers/dri/mga/Makefile Mesa-9999/src/mesa/drivers/dri/mga/Makefile
+--- Mesa-9999.orig/src/mesa/drivers/dri/mga/Makefile	2011-05-01 03:44:41.837292305 +0900
++++ Mesa-9999/src/mesa/drivers/dri/mga/Makefile	2011-05-01 03:45:15.592870301 +0900
+@@ -5,6 +5,8 @@
+ 
+ LIBNAME = mga_dri.so
+ 
++include ../Makefile.defines
++
+ DRIVER_SOURCES = \
+ 	mgadd.c \
+ 	mgaioctl.c \
+@@ -27,5 +29,5 @@
+ 
+ ASM_SOURCES = 
+ 
+-include ../Makefile.template
++include ../Makefile.targets
+ 
+diff -uNr Mesa-9999.orig/src/mesa/drivers/dri/nouveau/Makefile Mesa-9999/src/mesa/drivers/dri/nouveau/Makefile
+--- Mesa-9999.orig/src/mesa/drivers/dri/nouveau/Makefile	2011-05-01 03:44:41.845292204 +0900
++++ Mesa-9999/src/mesa/drivers/dri/nouveau/Makefile	2011-05-01 03:45:15.592870301 +0900
+@@ -3,11 +3,10 @@
+ TOP = ../../../../..
+ include $(TOP)/configs/current
+ 
+-CFLAGS += $(shell pkg-config libdrm libdrm_nouveau --cflags)
+-DRI_LIB_DEPS += $(shell pkg-config libdrm_nouveau --libs)
+-
+ LIBNAME = nouveau_vieux_dri.so
+ 
++include ../Makefile.defines
++
+ DRIVER_SOURCES = \
+ 	nouveau_screen.c \
+ 	nouveau_context.c \
+@@ -51,7 +50,9 @@
+ 
+ ASM_SOURCES =
+ 
++INCLUDES += $(NOUVEAU_CFLAGS)
++DRI_LIB_DEPS += $(NOUVEAU_LIBS)
+ 
+-include ../Makefile.template
++include ../Makefile.targets
+ 
+ symlinks:
+diff -uNr Mesa-9999.orig/src/mesa/drivers/dri/r128/Makefile Mesa-9999/src/mesa/drivers/dri/r128/Makefile
+--- Mesa-9999.orig/src/mesa/drivers/dri/r128/Makefile	2011-05-01 03:44:41.857292054 +0900
++++ Mesa-9999/src/mesa/drivers/dri/r128/Makefile	2011-05-01 03:45:15.593870289 +0900
+@@ -5,6 +5,8 @@
+ 
+ LIBNAME = r128_dri.so
+ 
++include ../Makefile.defines
++
+ DRIVER_SOURCES = \
+ 	r128_context.c \
+ 	r128_lock.c \
+@@ -25,5 +27,5 @@
+ ASM_SOURCES = 
+ 
+ 
+-include ../Makefile.template
++include ../Makefile.targets
+ 
+diff -uNr Mesa-9999.orig/src/mesa/drivers/dri/r200/Makefile Mesa-9999/src/mesa/drivers/dri/r200/Makefile
+--- Mesa-9999.orig/src/mesa/drivers/dri/r200/Makefile	2011-05-01 03:44:41.864291967 +0900
++++ Mesa-9999/src/mesa/drivers/dri/r200/Makefile	2011-05-01 03:45:15.593870289 +0900
+@@ -3,10 +3,10 @@
+ TOP = ../../../../..
+ include $(TOP)/configs/current
+ 
+-CFLAGS += $(RADEON_CFLAGS)
+-
+ LIBNAME = r200_dri.so
+ 
++include ../Makefile.defines
++
+ ifeq ($(RADEON_LDFLAGS),)
+ CS_SOURCES = radeon_cs_space_drm.c radeon_bo.c radeon_cs.c
+ endif
+@@ -55,12 +55,13 @@
+ 
+ DRIVER_DEFINES = -DRADEON_R200
+ 
++INCLUDES += $(RADEON_CFLAGS)
+ DRI_LIB_DEPS += $(RADEON_LDFLAGS)
+ 
+ ##### TARGETS #####
+ 
+ 
+-include ../Makefile.template
++include ../Makefile.targets
+ 
+ #INCLUDES += -I../radeon/server
+ 
+diff -uNr Mesa-9999.orig/src/mesa/drivers/dri/r300/Makefile Mesa-9999/src/mesa/drivers/dri/r300/Makefile
+--- Mesa-9999.orig/src/mesa/drivers/dri/r300/Makefile	2011-05-01 03:44:41.877291804 +0900
++++ Mesa-9999/src/mesa/drivers/dri/r300/Makefile	2011-05-01 03:45:15.594870277 +0900
+@@ -3,10 +3,10 @@
+ TOP = ../../../../..
+ include $(TOP)/configs/current
+ 
+-CFLAGS += $(RADEON_CFLAGS)
+-
+ LIBNAME = r300_dri.so
+ 
++include ../Makefile.defines
++
+ ifeq ($(RADEON_LDFLAGS),)
+ CS_SOURCES = radeon_cs_space_drm.c radeon_bo.c radeon_cs.c
+ endif
+@@ -64,6 +64,7 @@
+ DRIVER_DEFINES = -DRADEON_R300
+ #	-DRADEON_BO_TRACK \
+ 
++INCLUDES += $(RADEON_CFLAGS)
+ DRI_LIB_DEPS += $(RADEON_LDFLAGS)
+ 
+ SUBDIRS = compiler
+@@ -73,5 +74,5 @@
+ 
+ ##### TARGETS #####
+ 
+-include ../Makefile.template
++include ../Makefile.targets
+ 
+diff -uNr Mesa-9999.orig/src/mesa/drivers/dri/r600/Makefile Mesa-9999/src/mesa/drivers/dri/r600/Makefile
+--- Mesa-9999.orig/src/mesa/drivers/dri/r600/Makefile	2011-05-01 03:44:41.902291491 +0900
++++ Mesa-9999/src/mesa/drivers/dri/r600/Makefile	2011-05-01 03:45:15.594870277 +0900
+@@ -3,10 +3,10 @@
+ TOP = ../../../../..
+ include $(TOP)/configs/current
+ 
+-CFLAGS += $(RADEON_CFLAGS)
+-
+ LIBNAME = r600_dri.so
+ 
++include ../Makefile.defines
++
+ ifeq ($(RADEON_LDFLAGS),)
+ CS_SOURCES = radeon_cs_space_drm.c radeon_bo.c radeon_cs.c
+ endif
+@@ -78,9 +78,10 @@
+ DRIVER_DEFINES = -DRADEON_R600
+ #	-DRADEON_BO_TRACK \
+ 
++INCLUDE += $(RADEON_CFLAGS)
+ DRI_LIB_DEPS += $(RADEON_LDFLAGS)
+ 
+ ##### TARGETS #####
+ 
+-include ../Makefile.template
++include ../Makefile.targets
+ 
+diff -uNr Mesa-9999.orig/src/mesa/drivers/dri/radeon/Makefile Mesa-9999/src/mesa/drivers/dri/radeon/Makefile
+--- Mesa-9999.orig/src/mesa/drivers/dri/radeon/Makefile	2011-05-01 03:44:41.924291217 +0900
++++ Mesa-9999/src/mesa/drivers/dri/radeon/Makefile	2011-05-01 03:45:15.594870277 +0900
+@@ -4,7 +4,7 @@
+ TOP = ../../../../..
+ include $(TOP)/configs/current
+ 
+-CFLAGS += $(RADEON_CFLAGS)
++include ../Makefile.defines
+ 
+ LIBNAME = radeon_dri.so
+ 
+@@ -53,9 +53,10 @@
+ 
+ DRIVER_DEFINES = -DRADEON_R100
+ 
++INCLUDES += $(RADEON_CFLAGS)
+ DRI_LIB_DEPS += $(RADEON_LDFLAGS)
+ 
+ X86_SOURCES = 
+ 
+-include ../Makefile.template
++include ../Makefile.targets
+ 
+diff -uNr Mesa-9999.orig/src/mesa/drivers/dri/savage/Makefile Mesa-9999/src/mesa/drivers/dri/savage/Makefile
+--- Mesa-9999.orig/src/mesa/drivers/dri/savage/Makefile	2011-05-01 03:44:41.941291004 +0900
++++ Mesa-9999/src/mesa/drivers/dri/savage/Makefile	2011-05-01 03:45:15.594870277 +0900
+@@ -5,6 +5,8 @@
+ 
+ LIBNAME = savage_dri.so
+ 
++include ../Makefile.defines
++
+ DRIVER_SOURCES = \
+ 	savage_xmesa.c \
+ 	savagedd.c \
+@@ -22,5 +24,5 @@
+ ASM_SOURCES = 
+ 
+ 
+-include ../Makefile.template
++include ../Makefile.targets
+ 
+diff -uNr Mesa-9999.orig/src/mesa/drivers/dri/sis/Makefile Mesa-9999/src/mesa/drivers/dri/sis/Makefile
+--- Mesa-9999.orig/src/mesa/drivers/dri/sis/Makefile	2011-05-01 03:44:41.947290930 +0900
++++ Mesa-9999/src/mesa/drivers/dri/sis/Makefile	2011-05-01 03:45:15.595870265 +0900
+@@ -5,6 +5,8 @@
+ 
+ LIBNAME = sis_dri.so
+ 
++include ../Makefile.defines
++
+ DRIVER_SOURCES = \
+ 	sis6326_state.c \
+ 	sis6326_clear.c \
+@@ -28,5 +30,5 @@
+ 
+ ASM_SOURCES = 
+ 
+-include ../Makefile.template
++include ../Makefile.targets
+ 
+diff -uNr Mesa-9999.orig/src/mesa/drivers/dri/swrast/Makefile Mesa-9999/src/mesa/drivers/dri/swrast/Makefile
+--- Mesa-9999.orig/src/mesa/drivers/dri/swrast/Makefile	2011-05-01 03:44:41.954290842 +0900
++++ Mesa-9999/src/mesa/drivers/dri/swrast/Makefile	2011-05-01 03:45:15.595870265 +0900
+@@ -5,6 +5,8 @@
+ 
+ LIBNAME = swrast_dri.so
+ 
++include ../Makefile.defines
++
+ DRIVER_DEFINES = -D__NOT_HAVE_DRM_H
+ 
+ DRIVER_SOURCES = \
+@@ -22,5 +24,5 @@
+ 	../common/utils.c \
+ 	../common/drisw_util.c
+ 
+-include ../Makefile.template
++include ../Makefile.targets
+ 
+diff -uNr Mesa-9999.orig/src/mesa/drivers/dri/tdfx/Makefile Mesa-9999/src/mesa/drivers/dri/tdfx/Makefile
+--- Mesa-9999.orig/src/mesa/drivers/dri/tdfx/Makefile	2011-05-01 03:44:41.955290830 +0900
++++ Mesa-9999/src/mesa/drivers/dri/tdfx/Makefile	2011-05-01 03:45:15.595870265 +0900
+@@ -5,6 +5,8 @@
+ 
+ LIBNAME = tdfx_dri.so
+ 
++include ../Makefile.defines
++
+ DRIVER_SOURCES = \
+ 	tdfx_context.c \
+ 	tdfx_dd.c \
+@@ -27,6 +29,6 @@
+ 
+ ASM_SOURCES = 
+ 
+-include ../Makefile.template
++include ../Makefile.targets
+ 
+ 
+diff -uNr Mesa-9999.orig/src/mesa/drivers/dri/unichrome/Makefile Mesa-9999/src/mesa/drivers/dri/unichrome/Makefile
+--- Mesa-9999.orig/src/mesa/drivers/dri/unichrome/Makefile	2011-05-01 03:44:41.964290716 +0900
++++ Mesa-9999/src/mesa/drivers/dri/unichrome/Makefile	2011-05-01 03:45:15.595870265 +0900
+@@ -5,6 +5,8 @@
+ 
+ LIBNAME = unichrome_dri.so
+ 
++include ../Makefile.defines
++
+ DRIVER_SOURCES = \
+ 	via_context.c \
+ 	via_fb.c \
+@@ -25,5 +27,5 @@
+ ASM_SOURCES = 
+ 
+ 
+-include ../Makefile.template
++include ../Makefile.targets
+ 

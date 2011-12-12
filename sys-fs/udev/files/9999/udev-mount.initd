@@ -1,0 +1,111 @@
+#!/sbin/runscript
+# Copyright 1999-2008 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+
+description="Mount /dev and let udev create the device-nodes"
+
+depend()
+{
+	keyword -openvz -vserver -lxc
+	provide dev
+	need sysfs
+	before checkfs fsck
+}
+
+start() {
+	#if [ "$(cat /proc/mounts | cut -f2 -d" " | grep "^/dev$")" != "" ]; then
+	if mountinfo -q /dev; then
+		einfo "udev: /dev already mounted, skipping..."
+		return 0
+	fi
+	if [ -e /etc/conf.d/udev ]; then
+		. /etc/conf.d/udev
+	fi
+
+	ebegin "udev: Mounting /dev"
+	if fstabinfo --quiet /dev; then
+	# if defined in /etc/fstab, use those options:
+		mount -n /dev
+	else
+		# we mount devtmpfs if supported
+		local fs=tmpfs
+		grep -qs devtmpfs /proc/filesystems && fs=devtmpfs
+		# otherwise, automatically mount using these options:
+		# Some devices require exec, Bug #92921
+		mount -n -t "$fs" -o "exec,nosuid,mode=0755,size=10M" udev /dev
+	fi
+	eend $?
+
+	touch /dev/.rcsysinit
+
+	# SELINUX STUFF
+	local have_selinux=false
+	if [ -x /sbin/restorecon -a -c /selinux/null ]; then
+		restorecon /dev > /selinux/null
+		have_selinux=true
+	fi
+
+	# DEVICE TARBALL STUFF
+
+	local tarball_file=/lib/udev/state/devices.tar.bz2
+	if yesno "${device_tarball}" && [ -s "${tarball_file}" ]
+	then
+		ebegin "udev: Populating /dev with saved device nodes"
+		tar xpf "${tarball_file}" -C /dev
+		eend $?
+	fi
+
+	# copy over any persistant things
+	if [ -d /lib/udev/devices ]; then
+		cp -RPp /lib/udev/devices/* /dev 2>/dev/null
+	fi
+
+	# seed /dev with some things that we know we need
+
+	# creating /dev/console, /dev/tty and /dev/tty1 to be able to write
+	# to $CONSOLE with/without bootsplash before udevd creates it
+#	[ -c /dev/console ] || mknod -m 600 /dev/console c 5 1
+#	[ -c /dev/tty1 ] || mknod -m 620 /dev/tty1 c 4 1
+#	[ -c /dev/tty ] || mknod -m 666 /dev/tty c 5 0
+
+	# udevd will dup its stdin/stdout/stderr to /dev/null
+	# and we do not want a file which gets buffered in ram
+#	[ -c /dev/null ] || mknod -m 666 /dev/null c 1 3
+	${have_selinux} && restorecon /dev/null
+
+	# so udev can add its start-message to dmesg
+#	[ -c /dev/kmsg ] || mknod -m 660 /dev/kmsg c 1 11
+
+	# Create problematic directories
+	mkdir -p /dev/pts /dev/shm
+	${have_selinux} && restorecon -R /dev >/dev/null
+
+	if [ -e /proc/sys/kernel/hotplug ]; then
+		echo "" >/proc/sys/kernel/hotplug
+	fi
+
+	if [ -e /lib/udev/write_root_link_rule ]
+	then
+		/lib/udev/write_root_link_rule
+	else
+		/lib/udev/write_root_link_rule
+	fi
+
+	# this function disables rules files
+	# by creating new files with the same name
+	# in a temp rules directory with higher priority
+	local d=/dev/.udev/rules.d
+	if yesno "${persistent_net:-yes}"; then
+		ewarn "udev: Persistent network rules enabled in /etc/conf.d/udev"
+	else
+		mkdir -p "$d"
+		echo "# This file disables persistent-net due to /etc/conf.d/udev" > "$d"/75-persistent-net-generator.rules
+	fi
+
+	# load unix domain sockets if built as module, Bug #221253
+	if [ -e /proc/modules ] ; then
+		modprobe -q unix 2>/dev/null
+	fi
+
+	return 0
+}

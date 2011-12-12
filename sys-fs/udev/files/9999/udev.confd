@@ -1,0 +1,47 @@
+# /etc/conf.d/udev: config file for udev
+
+# Coldplug should be enabled for proper hardware detection and
+# module-autoloading. Normally, you will want this enabled. If
+# you need to disable it temporarily, you can either do so
+# below or use the "nocoldplug" kernel boot option.
+
+coldplug="yes"
+
+# Persistent_net will ensure that your network interface names
+# don't change. However, it can be disabled if you are planning
+# to change your hardware. This will prevent your new hardware
+# from showing up as eth1, eth2, etc. Some people prefer it
+# disabled. Recommended enabled unless you prefer otherwise.
+
+persistent_net="yes"
+
+# If you set the device_tarball option to yes, then 
+# prior to system shutdown, the state of /dev will be backed up
+# to an archive and restored when your system boots. This is
+# useful if you need to manually create device nodes and don't
+# want to keep repeating yourself. Disabled by default.
+
+device_tarball="no"
+
+# Timeout in seconds to wait for processing of uevents at boot.
+# There should be no need to change this.
+#udev_settle_timeout="60"
+
+# Add extra command line options to udevd, use with care
+# udevd --help for possible values
+#udev_opts=""
+
+# Run udevd --debug and write output to /dev/.udev/udev.log
+# Should not be kept on as it fills diskspace slowly
+#udev_debug="YES"
+
+# Run udevadmin monitor to get a log of all events
+# in /dev/.udev/udevmonitor.log
+#udev_monitor="YES"
+
+# Keep udevmonitor running after populating /dev.
+#udev_monitor_keep_running="no"
+
+# Set cmdline options for udevmonitor.
+# could be some of --env --kernel --udev
+#udev_monitor_opts="--env"

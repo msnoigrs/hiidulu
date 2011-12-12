@@ -1,0 +1,20 @@
+--- ./test/fake-symbols.c.orig	2011-12-10 18:56:25.791462496 +0900
++++ ./test/fake-symbols.c	2011-12-10 18:57:14.192857366 +0900
+@@ -44,7 +44,7 @@
+ }
+ 
+ _X_EXPORT char *
+-xf86SetStrOption(OPTTYPE optlist, const char *name, char *deflt)
++xf86SetStrOption(OPTTYPE optlist, const char *name, const char *deflt)
+ {
+     return NULL;
+ }
+@@ -60,7 +60,7 @@
+ {
+     return NULL;
+ }
+-_X_EXPORT char *
++_X_EXPORT const char *
+ xf86FindOptionValue(OPTTYPE options, const char *name)
+ {
+     return NULL;

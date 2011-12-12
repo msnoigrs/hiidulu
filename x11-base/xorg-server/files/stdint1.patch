@@ -1,0 +1,37 @@
+--- ./hw/kdrive/linux/keyboard.c.orig	2011-12-10 17:11:16.194343305 +0900
++++ ./hw/kdrive/linux/keyboard.c	2011-12-10 17:23:07.100455754 +0900
+@@ -40,6 +40,7 @@
+ #include <X11/keysym.h>
+ #include <termios.h>
+ #include <sys/ioctl.h>
++#include <stdint.h>
+ 
+ extern int LinuxConsoleFd;
+ 
+@@ -692,7 +693,7 @@
+         return !Success;
+ 
+     fd = LinuxConsoleFd;
+-    ki->driverPrivate = (void *) fd;
++    ki->driverPrivate = (intptr_t) fd;
+ 
+     ioctl (fd, KDGKBMODE, &LinuxKbdTrans);
+     tcgetattr (fd, &LinuxTermios);
+@@ -724,7 +725,7 @@
+     if (!ki)
+         return;
+ 
+-    fd = (int) ki->driverPrivate;
++    fd = (int)(intptr_t) ki->driverPrivate;
+ 
+     KdUnregisterFd(ki, fd, FALSE);
+     ioctl(fd, KDSKBMODE, LinuxKbdTrans);
+@@ -753,7 +754,7 @@
+     if (!ki)
+         return;
+ 
+-    ioctl ((int)ki->driverPrivate, KDSETLED, leds & 7);
++    ioctl ((int)(intptr_t)ki->driverPrivate, KDSETLED, leds & 7);
+ }
+ 
+ KdKeyboardDriver LinuxKeyboardDriver = {
