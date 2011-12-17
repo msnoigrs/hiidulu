@@ -1,0 +1,85 @@
+--- build.xml.orig	2011-11-07 16:15:48.499242704 +0900
++++ build.xml	2011-11-07 16:28:51.590452718 +0900
+@@ -221,6 +221,7 @@
+     <exclude name="org/apache/catalina/launcher/**" />
+     <exclude name="org/apache/catalina/storeconfig/**" />
+     <exclude name="org/apache/naming/factory/webservices/**" />
++    <exclude name="javax/servlet/**" />
+   </patternset>
+ 
+   <patternset id="files.catalina-tribes">
+@@ -304,12 +305,12 @@
+       manifest="${tomcat.manifests}/annotations-api.jar.manifest" />
+ 
+     <!-- Servlet 2.5 Implementation JAR File -->
+-    <jarIt jarfile="${servlet-api.jar}" filesId="files.servlet-api"
+-      manifest="${tomcat.manifests}/servlet-api.jar.manifest" />
++<!--    <jarIt jarfile="${servlet-api.jar}" filesId="files.servlet-api"
++      manifest="${tomcat.manifests}/servlet-api.jar.manifest" />-->
+ 
+     <!-- JSP 2.1 Implementation JAR File -->
+-    <jarIt jarfile="${jsp-api.jar}" filesId="files.jsp-api"
+-      manifest="${tomcat.manifests}/jsp-api.jar.manifest" />
++<!--    <jarIt jarfile="${jsp-api.jar}" filesId="files.jsp-api"
++      manifest="${tomcat.manifests}/jsp-api.jar.manifest" />-->
+ 
+ 
+     <!-- JSP 2.1 EL Implementation JAR File -->
+@@ -378,7 +379,7 @@
+ 
+   </target>
+ 
+-  <target name="build-docs">
++  <target name="build-docs" unless="nobuild.docs">
+ 
+     <copy todir="${tomcat.build}/webapps">
+       <fileset dir="webapps">
+@@ -468,14 +469,14 @@
+   </target>
+ 
+   <target name="deploy" depends="build-only,build-docs,warn.dbcp">
+-
++<!--
+     <copy tofile="${tomcat.build}/bin/tomcat-native.tar.gz"
+             file="${tomcat-native.tar.gz}" />
+     <copy tofile="${tomcat.build}/bin/commons-daemon-native.tar.gz"
+             file="${commons-daemon.native.src.tgz}" />
+ 
+     <copy tofile="${tomcat.build}/bin/commons-daemon.jar" file="${commons-daemon.jar}" />
+-
++-->
+     <!-- Copy scripts -->
+     <copy todir="${tomcat.build}/bin">
+       <fileset dir="bin">
+@@ -534,7 +535,7 @@
+              source="${compile.source}"
+              target="${compile.target}"
+              optimize="${compile.optimize}"
+-             classpath="${tomcat.classes}"
++             classpath="${tomcat.classes}:${jsp-api.jar}"
+              excludes="**/CVS/**,**/.svn/**"
+              encoding="ISO-8859-1">
+     </javac>
+@@ -545,7 +546,7 @@
+              source="${compile.source}"
+              target="${compile.target}"
+              optimize="${compile.optimize}"
+-             classpath="$tomcat.lcasses}"
++             classpath="${tomcat.classes}:${jsp-api.jar}"
+              excludes="**/CVS/**,**/.svn/**"
+              encoding="ISO-8859-1">
+     </javac>
+@@ -627,11 +628,11 @@
+         <exclude name="source.jsp"/>
+       </fileset>
+     </txt2html>
+-
++<!--
+     <copy file="${tomcat-dbcp.jar}" todir="${tomcat.build}/lib"
+       failonerror="false"/>
+     <copy file="${jdt.jar}" todir="${tomcat.build}/lib" />
+-
++-->
+   </target>
+ 
+   <target name="clean-depend"

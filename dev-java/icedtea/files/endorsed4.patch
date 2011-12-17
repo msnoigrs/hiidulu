@@ -1,0 +1,10 @@
+--- configure.ac.orig	2011-12-16 22:24:00.588645913 +0900
++++ configure.ac	2011-12-16 23:06:56.808438734 +0900
+@@ -158,6 +158,7 @@
+   IT_FIND_XALAN2_JAR
+   IT_FIND_XALAN2_SERIALIZER_JAR
+   IT_FIND_XERCES2_JAR
++  IT_FIND_XMLCOMMONSEXTERNAL_JAR
+ fi
+ AC_CONFIG_FILES([javac], [chmod +x javac])
+ AC_CONFIG_FILES([javap], [chmod +x javap])
