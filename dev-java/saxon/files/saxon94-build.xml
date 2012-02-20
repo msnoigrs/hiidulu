@@ -43,9 +43,9 @@
       <compilerarg line="-J-Djava.endorsed.dirs=endorsed" />
 -->
       <exclude name="net/sf/saxon/dotnet/**"/>
-      <exclude name="net/sf/saxon/jdom/**" unless="jdom.present"/>
-      <exclude name="net/sf/saxon/dom4j/**" unless="dom4j.present"/>
-      <exclude name="net/sf/saxon/xom/**" unless="xom.present"/>
+      <exclude name="net/sf/saxon/option/jdom/**" unless="jdom.present"/>
+      <exclude name="net/sf/saxon/option/dom4j/**" unless="dom4j.present"/>
+      <exclude name="net/sf/saxon/option/xom/**" unless="xom.present"/>
     </javac>
   </target>
 
@@ -58,20 +58,42 @@
   </target>
 
   <target name="jar-saxon9" depends="compile,manifest">
+    <copy todir="${build}">
+      <fileset dir="${src}">
+        <include name="**/*.properties"/>
+        <include name="**/*.html"/>
+        <include name="**/*.xml"/>
+        <include name="**/*.xsl"/>
+        <include name="**/*.ent"/>
+        <include name="**/*.dtd"/>
+        <include name="**/*.mod"/>
+        <exclude name="**/package.html"/>
+      </fileset>
+    </copy>
     <jar jarfile="${dist}/${all.jar}">
       <fileset dir="${build}">
-        <include name="net/sf/saxon/**"/>
+        <include name="**/*.properties"/>
+        <include name="**/*.xml"/>
+        <include name="**/*.xsl"/>
+        <include name="**/*.ent"/>
+        <include name="**/*.dtd"/>
+        <include name="**/*.mod"/>
         <include name="META-INF/services/javax.xml.transform.TransformerFactory"/>
+        <include name="META-INF/services/javax.xml.xpath.XPathFactory"/>
+        <include name="net/sf/saxon/**"/>
+<!--
         <exclude name="net/sf/saxon/dom/**"/>
-        <exclude name="net/sf/saxon/jdom/**"/>
-        <exclude name="net/sf/saxon/sql/**"/>
-        <exclude name="net/sf/saxon/xom/**"/>
+        <exclude name="net/sf/saxon/option/jdom/**"/>
+        <exclude name="net/sf/saxon/option/xom/**"/>
         <exclude name="net/sf/saxon/xpath/**"/>
         <exclude name="net/sf/saxon/s9api/**"/>
+        <exclude name="net/sf/saxon/option/sql/**"/>
+-->
       </fileset>
     </jar>
   </target>
 
+<!--
   <target name="jar-saxon9-dom" depends="compile,manifest">
     <jar jarfile="${dist}/${dom.jar}">
       <fileset dir="${build}">
@@ -91,7 +113,7 @@
   <target name="jar-saxon9-sql" depends="compile,manifest">
     <jar jarfile="${dist}/${sql.jar}">
       <fileset dir="${build}">
-        <include name="net/sf/saxon/sql/**"/>
+        <include name="net/sf/saxon/option/sql/**"/>
       </fileset>
     </jar>
   </target>
@@ -99,7 +121,7 @@
   <target name="jar-saxon9-dom4j" depends="compile,manifest" if="dom4j.present">
     <jar jarfile="${dist}/${dom4j.jar}">
       <fileset dir="${build}">
-        <include name="net/sf/saxon/dom4j/**"/>
+        <include name="net/sf/saxon/option/dom4j/**"/>
       </fileset>
     </jar>
   </target>
@@ -107,7 +129,7 @@
   <target name="jar-saxon9-xom" depends="compile,manifest" if="xom.present">
     <jar jarfile="${dist}/${xom.jar}">
       <fileset dir="${build}">
-        <include name="net/sf/saxon/xom/**"/>
+        <include name="net/sf/saxon/option/xom/**"/>
       </fileset>
     </jar>
   </target>
@@ -128,8 +150,9 @@
       </fileset>
     </jar>
   </target>
-
-  <target name="jar" depends="jar-saxon9,jar-saxon9-dom,jar-saxon9-jdom,jar-saxon9-sql,jar-saxon9-xom,jar-saxon9-xpath,jar-saxon9-dom4j,jar-saxon9-s9api"/>
+-->
+<!--  <target name="jar" depends="jar-saxon9,jar-saxon9-dom,jar-saxon9-jdom,jar-saxon9-sql,jar-saxon9-xom,jar-saxon9-xpath,jar-saxon9-dom4j,jar-saxon9-s9api"/>-->
+  <target name="jar" depends="jar-saxon9"/>
 
   <target name="javadoc" depends="compile">
     <javadoc destdir="doc/javadoc" classpathref="lib.classpath">
