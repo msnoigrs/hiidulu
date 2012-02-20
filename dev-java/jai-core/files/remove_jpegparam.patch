@@ -1,0 +1,223 @@
+HACK: This patch only allows compilation of jai-core
+See real proper fix at http://lists.debian.org/debian-java/2011/09/msg00054.html
+Index: jai-core-1.1/src/share/classes/com/sun/media/jai/tilecodec/JPEGTileDecoder.java
+===================================================================
+--- jai-core-1.1.orig/src/share/classes/com/sun/media/jai/tilecodec/JPEGTileDecoder.java	2011-09-12 10:26:41.000000000 +0200
++++ jai-core-1.1/src/share/classes/com/sun/media/jai/tilecodec/JPEGTileDecoder.java	2011-09-12 10:32:15.000000000 +0200
+@@ -30,7 +30,7 @@
+ import com.sun.image.codec.jpeg.JPEGImageDecoder;
+ import com.sun.image.codec.jpeg.JPEGCodec;
+ import com.sun.image.codec.jpeg.JPEGQTable;
+-import sun.awt.image.codec.JPEGParam;
++//import sun.awt.image.codec.JPEGParam;
+ import com.sun.media.jai.util.ImageUtil;
+ /**
+  * A concrete implementation of the <code>TileDecoderImpl</code> class
+@@ -136,23 +136,23 @@
+ 
+ 	// extract the horizontal subsampling rates
+ 	int[] horizontalSubsampling = new int[bandNum];
+-	for (int i = 0; i < bandNum; i++)
+-	    horizontalSubsampling[i] = jdp.getHorizontalSubsampling(i);
++	//for (int i = 0; i < bandNum; i++)
++	//    horizontalSubsampling[i] = jdp.getHorizontalSubsampling(i);
+ 	paramList.setParameter("horizontalSubsampling", horizontalSubsampling);
+ 
+ 	// extract the vertical subsampling rates
+ 	int[] verticalSubsampling = new int[bandNum];
+-	for (int i = 0; i < bandNum; i++)
+-	    verticalSubsampling[i] = jdp.getVerticalSubsampling(i);
++	//for (int i = 0; i < bandNum; i++)
++	//    verticalSubsampling[i] = jdp.getVerticalSubsampling(i);
+ 	paramList.setParameter("verticalSubsampling", verticalSubsampling);
+ 
+ 	// if the quality is not set, extract the quantization tables from
+ 	// the stream; otherwise, define them with the default values.
+ 	if (!paramList.getBooleanParameter("qualitySet"))
+ 	    for (int i = 0; i < 4; i++) {
+-		JPEGQTable table = jdp.getQTable(i);
+-		paramList.setParameter("quantizationTable"+i,
+-		    (table == null) ? null : table.getTable());
++		//JPEGQTable table = jdp.getQTable(i);
++		//paramList.setParameter("quantizationTable"+i,
++		//    (table == null) ? null : table.getTable());
+ 	    }
+ 	else {
+ 	    ParameterListDescriptor pld
+@@ -165,20 +165,20 @@
+ 
+ 	// extract the quantizationTableMapping
+ 	int[] quanTableMapping = new int[bandNum];
+-	for (int i = 0; i < bandNum; i++)
+-	    quanTableMapping[i] = jdp.getQTableComponentMapping(i);
++	//for (int i = 0; i < bandNum; i++)
++	//    quanTableMapping[i] = jdp.getQTableComponentMapping(i);
+ 	paramList.setParameter("quantizationTableMapping", quanTableMapping);
+ 
+ 	// extract the writeTableInfo and writeImageInfo
+-	paramList.setParameter("writeTableInfo", jdp.isTableInfoValid());
+-	paramList.setParameter("writeImageInfo", jdp.isImageInfoValid());
++	//paramList.setParameter("writeTableInfo", jdp.isTableInfoValid());
++	//paramList.setParameter("writeImageInfo", jdp.isImageInfoValid());
+ 
+ 	// extract the restart interval
+-	paramList.setParameter("restartInterval", jdp.getRestartInterval());
++	//paramList.setParameter("restartInterval", jdp.getRestartInterval());
+ 
+ 	// define writeJFIFHeader by examing the APP0_MARKER is set or not
+-	paramList.setParameter("writeJFIFHeader",
+-			       jdp.getMarker(JPEGDecodeParam.APP0_MARKER));
++	//paramList.setParameter("writeJFIFHeader",
++//			       jdp.getMarker(JPEGDecodeParam.APP0_MARKER));
+     }
+ }
+ 
+Index: jai-core-1.1/src/share/classes/com/sun/media/jai/tilecodec/JPEGTileEncoder.java
+===================================================================
+--- jai-core-1.1.orig/src/share/classes/com/sun/media/jai/tilecodec/JPEGTileEncoder.java	2011-09-12 10:27:28.000000000 +0200
++++ jai-core-1.1/src/share/classes/com/sun/media/jai/tilecodec/JPEGTileEncoder.java	2011-09-12 10:35:08.000000000 +0200
+@@ -29,7 +29,7 @@
+ import com.sun.image.codec.jpeg.JPEGImageEncoder ;
+ import com.sun.image.codec.jpeg.JPEGCodec ;
+ import com.sun.image.codec.jpeg.JPEGQTable ;
+-import sun.awt.image.codec.JPEGParam ;
++//import sun.awt.image.codec.JPEGParam ;
+ 
+ /**
+  * A concrete implementation of the <code>TileEncoderImpl</code> class
+@@ -84,8 +84,8 @@
+ 	SampleModel sm = ras.getSampleModel() ;
+ 
+ 	JPEGEncodeParam j2dEP = convertToJ2DJPEGEncodeParam(paramList, sm) ;
+-        ((JPEGParam)j2dEP).setWidth(ras.getWidth()) ; 
+-	((JPEGParam)j2dEP).setHeight(ras.getHeight()) ;
++        //((JPEGParam)j2dEP).setWidth(ras.getWidth()) ; 
++	//((JPEGParam)j2dEP).setHeight(ras.getHeight()) ;
+ 
+ 	JPEGImageEncoder encoder = JPEGCodec.createJPEGEncoder(baos, j2dEP) ;
+ 	encoder.encode(ras) ;
+@@ -112,7 +112,7 @@
+ 
+         int nbands = sm.getNumBands() ;
+ 
+-        JPEGParam j2dJP = createDefaultJ2DJPEGEncodeParam(nbands) ;
++        //JPEGParam j2dJP = createDefaultJ2DJPEGEncodeParam(nbands) ;
+ 
+         int[] hSubSamp
+             = (int[])paramList.getObjectParameter("horizontalSubsampling") ;
+@@ -122,37 +122,38 @@
+             = (int[])paramList.getObjectParameter("quantizationTableMapping") ;
+ 
+         for(int i=0; i<nbands; i++) {
+-            j2dJP.setHorizontalSubsampling(i, hSubSamp[i]) ;
+-            j2dJP.setVerticalSubsampling(i, vSubSamp[i]) ;
++            //j2dJP.setHorizontalSubsampling(i, hSubSamp[i]) ;
++            //j2dJP.setVerticalSubsampling(i, vSubSamp[i]) ;
+ 
+             int[] qTab
+                  = (int[]) paramList.getObjectParameter("quantizationTable"+i) ;
+ 	    if(qTab != null && 
+ 	       qTab.equals(ParameterListDescriptor.NO_PARAMETER_DEFAULT)){ 
+-		j2dJP.setQTableComponentMapping(i, qTabSlot[i]) ;
+-		j2dJP.setQTable(qTabSlot[i], new JPEGQTable(qTab)) ;
++		//j2dJP.setQTableComponentMapping(i, qTabSlot[i]) ;
++		//j2dJP.setQTable(qTabSlot[i], new JPEGQTable(qTab)) ;
+ 	    }
+         }
+ 
+         if(paramList.getBooleanParameter("qualitySet")) {
+             float quality = paramList.getFloatParameter("quality") ;
+-            j2dJP.setQuality(quality, true) ;
++            //j2dJP.setQuality(quality, true) ;
+         }
+ 
+         int rInt = paramList.getIntParameter("restartInterval") ;
+-        j2dJP.setRestartInterval(rInt) ;
++        //j2dJP.setRestartInterval(rInt) ;
+ 
+-        j2dJP.setImageInfoValid(paramList.getBooleanParameter("writeImageInfo")) ;
+-        j2dJP.setTableInfoValid(paramList.getBooleanParameter("writeTableInfo")) ;
++        //j2dJP.setImageInfoValid(paramList.getBooleanParameter("writeImageInfo")) ;
++        //j2dJP.setTableInfoValid(paramList.getBooleanParameter("writeTableInfo")) ;
+ 
+         if(paramList.getBooleanParameter("writeJFIFHeader")) {
+-            j2dJP.setMarkerData(JPEGEncodeParam.APP0_MARKER, null) ;
++            //j2dJP.setMarkerData(JPEGEncodeParam.APP0_MARKER, null) ;
+         }
+ 
+-        return (JPEGEncodeParam)j2dJP ;
++        //return (JPEGEncodeParam)j2dJP ;
++        return null;
+     }
+ 
+-    private JPEGParam createDefaultJ2DJPEGEncodeParam(int nbands){
++/*    private JPEGParam createDefaultJ2DJPEGEncodeParam(int nbands){
+         if(nbands == 1)
+             return new JPEGParam(JPEGEncodeParam.COLOR_ID_GRAY, 1) ;
+         if(nbands == 3)
+@@ -160,5 +161,5 @@
+         if(nbands == 4)
+             return new JPEGParam(JPEGEncodeParam.COLOR_ID_CMYK, 4) ;
+ 	return null ;
+-    }
++    }*/
+ }
+Index: jai-core-1.1/src/share/classes/com/sun/media/jai/codecimpl/JPEGImageEncoder.java
+===================================================================
+--- jai-core-1.1.orig/src/share/classes/com/sun/media/jai/codecimpl/JPEGImageEncoder.java	2011-09-12 10:28:57.000000000 +0200
++++ jai-core-1.1/src/share/classes/com/sun/media/jai/codecimpl/JPEGImageEncoder.java	2011-09-12 10:47:55.000000000 +0200
+@@ -75,10 +75,10 @@
+             // If subsampling factors were set, apply them
+             //
+             val = jaiEP.getHorizontalSubsampling(i);
+-            j2dEP.setHorizontalSubsampling(i, val);
++            //j2dEP.setHorizontalSubsampling(i, val);
+ 
+             val = jaiEP.getVerticalSubsampling(i);
+-            j2dEP.setVerticalSubsampling(i, val);
++            //j2dEP.setVerticalSubsampling(i, val);
+ 
+             //
+             // If new Q factors were supplied, apply them
+@@ -86,8 +86,8 @@
+             if (jaiEP.isQTableSet(i)) {
+                 qTab = jaiEP.getQTable(i);
+                 val = jaiEP.getQTableSlot(i);
+-                j2dEP.setQTableComponentMapping(i, val);
+-                j2dEP.setQTable(val, new JPEGQTable(qTab));
++                //j2dEP.setQTableComponentMapping(i, val);
++                //j2dEP.setQTable(val, new JPEGQTable(qTab));
+             }
+         }
+ 
+@@ -115,8 +115,8 @@
+ 
+         // Write the JFIF (APP0) marker
+         if (jaiEP.getWriteJFIFHeader() == false) {
+-            j2dEP.setMarkerData(
+-              com.sun.image.codec.jpeg.JPEGDecodeParam.APP0_MARKER, null);
++            //j2dEP.setMarkerData(
++            //  com.sun.image.codec.jpeg.JPEGDecodeParam.APP0_MARKER, null);
+         }
+ 
+     }
+@@ -272,15 +272,15 @@
+         encoder = com.sun.image.codec.jpeg.JPEGCodec.createJPEGEncoder(
+                     output, j2dEP);
+ 
+-        try {
++        //try {
+           // Write the image data.
+             encoder.encode(bi);
+-        } catch(IOException e) {
++        /*} catch(IOException e) {
+             String message = JaiI18N.getString("JPEGImageEncoder2");
+             ImagingListenerProxy.errorOccurred(message, new ImagingException(message, e),
+                                    this, false);
+-//            throw new RuntimeException(e.getMessage());
+-        }
++            throw new RuntimeException(e.getMessage());
++        }*/
+ 
+     }
+ 
