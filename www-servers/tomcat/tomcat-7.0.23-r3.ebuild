@@ -15,7 +15,7 @@ MY_P="apache-${P}-src"
 SLOT="7"
 SRC_URI="mirror://apache/${PN}/${PN}-${SLOT}/v${PV}/src/${MY_P}.tar.gz"
 HOMEPAGE="http://tomcat.apache.org/"
-KEYWORDS="~amd64 ~ppc ~ppc64 ~x86 ~x86-fbsd"
+KEYWORDS="amd64 ~ppc ~ppc64 ~x86 ~x86-fbsd"
 LICENSE="Apache-2.0"
 
 IUSE="dbcp"
@@ -147,7 +147,7 @@ src_install() {
 	cp -pR host-manager "${D}"/usr/share/${TOMCAT_NAME}/webapps || die
 	cp -pR manager "${D}"/usr/share/${TOMCAT_NAME}/webapps || die
 	if use doc; then
-		cp -pR docs "${D}"/usr/share/${TOMCAT_NAME}/webapps || die
+		cp -pR "${S}"/output/build/webapps/docs "${D}"/usr/share/${TOMCAT_NAME}/webapps || die
 	fi
 	if use examples; then
 		cd "${S}"/webapps/examples/WEB-INF/lib
@@ -203,7 +203,7 @@ pkg_postinst() {
 		elog
 		elog "Manager Symbolic Links NOT created."
 
-		else
+	else
 		einfo "Installing latest webroot to ${ROOT}/${WEBAPPS_DIR}"
 		cp -pR "${ROOT}"/usr/share/${TOMCAT_NAME}/webapps/* \
 			"${ROOT}""${WEBAPPS_DIR}"
