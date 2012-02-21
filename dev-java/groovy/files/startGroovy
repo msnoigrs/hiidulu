@@ -1,0 +1,155 @@
+# -*- mode:sh -*-
+
+##############################################################################
+##                                                                          ##
+##  Groovy JVM Bootstrap for UN*X                                           ##
+##                                                                          ##
+##############################################################################
+
+##
+## $Revision$
+## $Date$
+##
+
+PROGNAME=$(basename "$0")
+
+SCRIPT_PATH="$0"
+
+# Use the maximum available, or set MAX_FD != -1 to use that value.
+MAX_FD="maximum"
+
+warn() {
+    echo "${PROGNAME}: $*"
+}
+
+die() {
+    warn "$*"
+    exit 1
+}
+
+earlyInit() {
+    return
+}
+
+lateInit() {
+    return
+}
+
+GROOVY_STARTUP="${HOME}/.groovy/startup"
+if [ -r "${GROOVY_STARTUP}" ] ; then
+    . "${GROOVY_STARTUP}"
+fi
+
+earlyInit
+
+if [ "$1" = "-cp" -o "$1" = "-classpath" -o "$1" = "--classpath" ] ; then
+    CP=$2
+    shift 2
+fi
+
+export JAVA_HOME="$(java-config -g JAVA_HOME)"
+if [ -z "${JAVA_HOME}" ] ; then
+    echo 'Error: No JDK found!'
+    echo "Try using java-config script to set your JDK"
+    echo "Remember that you need a JDK not a JRE"
+    exit 1
+fi
+
+#if [ -n "${GROOVY_HOME}" ] ; then
+#    GROOVY_HOME=$(echo ${GROOVY_HOME} | sed -e 's/\/$//')
+#fi
+
+## Attempt to set GROOVY_HOME if it is not already set.
+#if [ -z "${GROOVY_HOME}" -o ! -d "${GROOVY_HOME}" ] ; then
+#    # Resolve links: $0 may be a link to groovy's home.
+#    PRG="$0"
+#    # Need this for relative symlinks.
+#    while [ -h "${PRG}" ] ; do
+#        ls=$(ls -ld "${PRG}")
+#        link=$(expr "${ls}" : '.*-> \(.*\)$')
+#        if expr "${link}" : '/.*' > /dev/null; then
+#            PRG="${link}"
+#        else
+#            PRG=$(dirname "$PRG")"/${link}"
+#        fi
+#    done
+#    SAVED="$(pwd)"
+#    cd "$(dirname \"${PRG}\")/.."
+#    GROOVY_HOME="$(pwd -P)"
+#    cd "${SAVED}"
+#fi
+GROOVY_HOME="@@GROOVY_HOME@@"
+
+# Set the default Groovy config if no specific one is mentioned.
+if [ -z "${GROOVY_CONF}" ] ; then
+    GROOVY_CONF="${GROOVY_HOME}/conf/groovy-starter.conf"
+fi
+STARTER_CLASSPATH="${GROOVY_HOME}/lib/groovy.jar"
+
+# Create the final classpath. Setting a classpath using the -cp or -classpath option means not to use the
+# global classpath. Groovy behaves then the same as the java interpreter
+if [ -n "${CP}" ] ; then
+    CP="${CP}":.
+elif [ -n "${CLASSPATH}" ] ; then
+    CP="${CLASSPATH}":.
+else
+    CP=.
+fi
+
+# Determine the Java command to use to start the JVM.
+
+if [ -z "${JAVACMD}" ] ; then
+    if [ -n "${JAVA_HOME}"  ] ; then
+        JAVACMD="${JAVA_HOME}/bin/java"
+    else
+        JAVACMD=$(which java 2> /dev/null )
+        if [ -z "${JAVACMD}" ] ; then
+            JAVACMD=java
+        fi
+    fi
+fi
+
+if [ ! -x "${JAVACMD}" ] ; then
+    echo "Error: JAVA_HOME is not defined correctly."
+    echo "  We cannot execute ${JAVACMD}"
+    exit 1
+fi
+
+# Increase the maximum file descriptors if we can.
+MAX_FD_LIMIT=$(ulimit -H -n)
+if [ $? -eq 0 ] ; then
+    if [ "${MAX_FD}" = "maximum" -o "${MAX_FD}" = "max" ] ; then
+        MAX_FD="${MAX_FD_LIMIT}"
+    fi
+    ulimit -n ${MAX_FD}
+    if [ $? -ne 0 ] ; then
+        warn "Could not set maximum file descriptor limit: $MAX_FD"
+    fi
+else
+    warn "Could not query businessSystem maximum file descriptor limit: $MAX_FD_LIMIT"
+fi
+
+# For Darwin, use classes.jar for TOOLS_JAR
+TOOLS_JAR="${JAVA_HOME}/lib/tools.jar"
+
+startGroovy() {
+    CLASS=$1
+    shift
+    # Start the JVM
+    exec "${JAVACMD}" ${JAVA_OPTS} \
+        -classpath "${STARTER_CLASSPATH}" \
+        -Dscript.name="${SCRIPT_PATH}" \
+        -Dprogram.name="${PROGNAME}" \
+        -Dgroovy.starter.conf="${GROOVY_CONF}" \
+        -Dgroovy.home="${GROOVY_HOME}" \
+        -Dtools.jar="${TOOLS_JAR}" \
+        ${STARTER_MAIN_CLASS} \
+        --main ${CLASS} \
+        --conf "${GROOVY_CONF}" \
+        --classpath "${CP}" \
+        "$@"
+}
+
+STARTER_MAIN_CLASS=org.codehaus.groovy.tools.GroovyStarter
+
+lateInit
