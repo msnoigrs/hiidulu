@@ -1,0 +1,48 @@
+# Copyright 1999-2012 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+# $Header: $
+
+EAPI="4"
+JAVA_PKG_IUSE="doc source"
+
+inherit java-pkg-2 java-ant-2
+
+DESCRIPTION="Avalon Framework"
+HOMEPAGE="http://avalon.apache.org/"
+#SRC_URI="mirror://apache/excalibur/avalon-framework/source/${PN}-api-${PV}-src.tar.gz
+#	mirror://apache/excalibur/avalon-framedwork/source/${PN}-impl-${PV}-src.tar.gz"
+SRC_URI="http://archive.apache.org/dist/excalibur/framework/source/${PN}-api-${PV}-src.tar.gz
+	http://archive.apache.org/dist/excalibur/framework/source/${PN}-impl-${PV}-src.tar.gz"
+LICENSE="Apache-2.0"
+SLOT="4.2"
+KEYWORDS="amd64 x86"
+IUSE=""
+
+COMMON_DEP="dev-java/avalon-logkit:2.0
+	dev-java/jcl-over-slf4j
+	dev-java/log4j-over-slf4j"
+#	dev-java/commons-logging"
+#	>=dev-java/log4j-1.2.9"
+RDEPEND=">=virtual/jre-1.5
+	${COMMON_DEP}"
+DEPEND=">=virtual/jdk-1.5
+	${COMMON_DEP}"
+
+S="${WORKDIR}"
+
+java_prepare() {
+	mv ${PN}-api-${PV} api
+	mv ${PN}-impl-${PV} impl
+
+	cp "${FILESDIR}/build.xml" ./build.xml || die "ANT update failure!"
+	local libs="avalon-logkit-2.0,jcl-over-slf4j,log4j-over-slf4j"
+	echo "classpath=$(java-pkg_getjars ${libs})" > build.properties
+}
+
+src_install() {
+	java-pkg_dojar ${S}/dist/avalon-framework.jar
+
+#	dodoc NOTICE.TXT || die
+	use doc && java-pkg_dojavadoc target/docs
+	use source && java-pkg_dosrc impl/src/java/*
+}
