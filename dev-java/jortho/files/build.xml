@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="JOrtho" default="jar">
+	<target name="javadoc">
+		<javadoc packagenames="com.inet.jortho.*" 
+			    encoding="UTF8"
+				sourcepath="src"
+				destdir="doc"
+				author="false"
+				version="true"
+				use="true"
+				windowtitle="JOrtho - Java Spell Checker">
+			<bottom><![CDATA[<i>Copyright &#169; 2005 - 2009 i-net software. All Rights Reserved.</i>]]></bottom>
+		</javadoc>
+	</target>
+
+	<target name="build">
+		<antcall target="jar"/>
+		<antcall target="createZip"/>
+	</target>
+
+
+	<target name="jar">
+		<delete dir="temp"/>
+		<mkdir dir="temp"/>
+		<javac srcdir="src" destdir="temp" target="1.5" encoding="UTF8">
+			<include name="com/inet/jortho/**/*.java"/>
+			<exclude name="**/*Test*.java"/>
+		</javac>
+		<jar destfile="temp/jortho.jar">
+			<fileset dir="temp"/>
+			<fileset dir="src" includes="com/inet/jortho/**/*.properties"/>
+		</jar>	
+	</target>
+
+
+	<target name="createZip">
+		<zip destfile="JOrtho.zip">
+			<fileset dir="temp" includes="jortho.jar"/>
+			<fileset dir="." includes="doc/**/*.*"/>
+			<fileset dir="." includes="src/**/*.*" excludes="src/**/*Test*.java"/>
+			<fileset dir="." includes="src/com/inet/jorthotests/**/*.*"/>
+			<fileset dir="." includes="license.txt"/>
+			<zipfileset dir="www" includes="index.html" fullpath="manual.html"/>
+		</zip>
+		<delete dir="temp"/>
+	</target>
+
+
+	<target name="buildsign" depends="javadoc">
+		<antcall target="createJar"/>
+		<ant antfile="buildsign.xml" target="sign_jar" />
+		<antcall target="createZip"/>
+	</target>
+
+
+</project>

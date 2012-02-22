@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="gnu-regexp" default="jar" basedir=".">
+
+  <property name="build.dir" value="build" />
+  <property name="src.dir" value="src" />
+  <property name="jar.name" value="gnu-regexp.jar" />
+
+  <property name="stem" value="gnu/regexp" />
+
+  <path id="compile.classpath">
+    <pathelement location="${build.dir}" />
+  </path>
+
+  <target name="prepare" description="Prepare build directory">
+    <mkdir dir="${build.dir}" />
+  </target>
+
+  <target name="compile" depends="prepare">
+    <javac srcdir="${src.dir}" destdir="${build.dir}"
+           includes="${stem}/*.java,${stem}/util/REApplet.java" >
+      <classpath refid="compile.classpath" />
+    </javac>
+  </target>
+
+  <target name="jar" depends="compile" description="Create jar">
+    <copy todir="${build.dir}">
+      <fileset dir="${src.dir}">
+        <include name="**/*.properties" />
+      </fileset>
+    </copy>
+    <jar jarfile="${jar.name}" index="true">
+      <fileset dir="${build.dir}">
+        <include name="gnu/regexp/*.class" />
+        <include name="gnu/regexp/*.properties" />
+      </fileset>
+    </jar>
+    <jar jarfile="gnu-regexp-applet.jar">
+      <fileset dir="${build.dir}">
+        <include name="gnu/regexp/util/REApplet.class" />
+      </fileset>
+    </jar>
+  </target>
+
+  <target name="javadoc" depends="compile">
+    <javadoc destdir="./doc/api" public="yes">
+      <fileset dir="${src.dir}" />
+    </javadoc>
+  </target>
+</project>

@@ -1,0 +1,420 @@
+diff -uNr gnu.regexp-1.1.4/CONTENTS gnu-regexp/CONTENTS
+--- gnu.regexp-1.1.4/CONTENTS	1970-01-01 09:00:00.000000000 +0900
++++ gnu-regexp/CONTENTS	2002-03-08 12:14:03.000000000 +0900
+@@ -0,0 +1,80 @@
++COPYING.LIB
++COPYING
++README
++TODO
++docs/changes.html
++docs/credits.html
++docs/faq.html
++docs/gnu-regexp-applet.jar
++docs/index.html
++docs/reapplet.html
++docs/syntax.html
++docs/api/allclasses-frame.html
++docs/api/deprecated-list.html
++docs/api/help-doc.html
++docs/api/index-all.html
++docs/api/index.html
++docs/api/overview-frame.html
++docs/api/overview-summary.html
++docs/api/overview-tree.html
++docs/api/package-list
++docs/api/packages.html
++docs/api/serialized-form.html
++docs/api/stylesheet.css
++docs/api/gnu/regexp/RE.html
++docs/api/gnu/regexp/REException.html
++docs/api/gnu/regexp/REFilterInputStream.html
++docs/api/gnu/regexp/REMatch.html
++docs/api/gnu/regexp/REMatchEnumeration.html
++docs/api/gnu/regexp/RESyntax.html
++docs/api/gnu/regexp/UncheckedRE.html
++docs/api/gnu/regexp/package-frame.html
++docs/api/gnu/regexp/package-summary.html
++docs/api/gnu/regexp/package-tree.html
++docs/api/gnu/regexp/util/Egrep.html
++docs/api/gnu/regexp/util/Grep.html
++docs/api/gnu/regexp/util/REApplet.html
++docs/api/gnu/regexp/util/RETest.html
++docs/api/gnu/regexp/util/Tests.html
++docs/api/gnu/regexp/util/package-frame.html
++docs/api/gnu/regexp/util/package-summary.html
++docs/api/gnu/regexp/util/package-tree.html
++docs/api/gnu/regexp/CharIndexed.html
++docs/api/gnu/regexp/REFilterReader.html
++lib/gnu-regexp-1.1.4.jar
++src/Makefile
++src/gnu/regexp/CharIndexed.java
++src/gnu/regexp/CharIndexedCharArray.java
++src/gnu/regexp/CharIndexedInputStream.java
++src/gnu/regexp/CharIndexedString.java
++src/gnu/regexp/CharIndexedStringBuffer.java
++src/gnu/regexp/RE.java
++src/gnu/regexp/REException.java
++src/gnu/regexp/REFilterInputStream.java
++src/gnu/regexp/REMatch.java
++src/gnu/regexp/REMatchEnumeration.java
++src/gnu/regexp/RESyntax.java
++src/gnu/regexp/REToken.java
++src/gnu/regexp/RETokenAny.java
++src/gnu/regexp/RETokenBackRef.java
++src/gnu/regexp/RETokenChar.java
++src/gnu/regexp/RETokenEnd.java
++src/gnu/regexp/RETokenEndSub.java
++src/gnu/regexp/RETokenLookAhead.java
++src/gnu/regexp/RETokenWordBoundary.java
++src/gnu/regexp/RETokenOneOf.java
++src/gnu/regexp/RETokenPOSIX.java
++src/gnu/regexp/RETokenRange.java
++src/gnu/regexp/RETokenRepeated.java
++src/gnu/regexp/RETokenStart.java
++src/gnu/regexp/UncheckedRE.java
++src/gnu/regexp/MessagesBundle.properties
++src/gnu/regexp/MessagesBundle_fr.properties
++src/gnu/regexp/util/Egrep.java
++src/gnu/regexp/util/Grep.java
++src/gnu/regexp/util/GrepUsage.txt
++src/gnu/regexp/util/REApplet.java
++src/gnu/regexp/util/RETest.java
++src/gnu/regexp/util/Tests.java
++src/gnu/regexp/CharIndexedReader.java
++src/gnu/regexp/REFilterReader.java
+diff -uNr gnu.regexp-1.1.4/TODO gnu-regexp/TODO
+--- gnu.regexp-1.1.4/TODO	2001-10-22 06:26:41.000000000 +0900
++++ gnu-regexp/TODO	2002-03-08 12:14:03.000000000 +0900
+@@ -25,7 +25,7 @@
+  Ranges (e.g. [a-z]) should be locale sensitive
+  Should use collation elements, not chars, for things like Spanish "ll"
+  REG_ICASE is not very friendly with Cyrillic and other locales.
+- Messages used for exceptions should be localizable.
++ Messages used for exceptions should be localized for more languages.
+ 
+ Performance:
+ 
+@@ -33,7 +33,7 @@
+ 
+ Miscellaneous/Requests for Enhancements:
+ 
+- "Free software needs free manuals" -- you heard the man...
++ A tutorial for new users of gnu.regexp would be a nice addition.
+ 
+  Some features have been added to Perl between 5.0 and 5.6.  Should the
+ PERL5 syntax support these, or should a new syntax be added?  Which should
+diff -uNr gnu.regexp-1.1.4/docs/changes.html gnu-regexp/docs/changes.html
+--- gnu.regexp-1.1.4/docs/changes.html	2001-10-22 06:26:41.000000000 +0900
++++ gnu-regexp/docs/changes.html	2002-03-08 12:14:03.000000000 +0900
+@@ -5,7 +5,11 @@
+ <BODY BGCOLOR=WHITE TEXT=BLACK>
+ <FONT SIZE="+2"><B><CODE>package gnu.regexp;</CODE></B><HR NOSHADE>
+ Change History</FONT><BR>
+-<FONT SIZE="-1">This page was last updated on 21 October 2001</FONT>
++<FONT SIZE="-1">This page was last updated on 26 February 2002</FONT>
++<P>
++<B>1.1.5 (Not yet released)</B><BR>
++Addition of French language message resource. (R. Braun)<BR>
++
+ <P>
+ <B>1.1.4 (21 October 2001)</B><BR>
+ Patch to Makefile to include language resource files in the applet JAR. (Andrew G. Hammond)<BR>
+@@ -14,6 +18,8 @@
+ Fix to RE constructor for some uses of alternation operator failing due to minimumLength being set incorrectly. (Marcus Abels)<BR>
+ Added UncheckedRE subclass to provide constructors that are declared without exceptions (useful for static initializers). (Wes Biggs)<BR>
+ The getMatchEnumeration() methods that took an integer index offset resulted in REMatch objects with incorrect values for their start and end indices (the correct text was matched, but the values from getStartIndex() and getEndIndex() methods were incorrect).  This has been fixed. (Wes Biggs)<BR>
++ Added dump() implementation to RETokenLookAhead for correctness in RE.toString(). (Wes Biggs)<BR>
++ Fixed issue with lookahead combined with grouping that could cause ArrayIndexOutOfBounds exceptions. (Wes Biggs)<BR>
+ 
+ <P>
+ <B>1.1.3a (18 June 2001)</B><BR>
+diff -uNr gnu.regexp-1.1.4/docs/index.html gnu-regexp/docs/index.html
+--- gnu.regexp-1.1.4/docs/index.html	2001-10-22 06:37:44.000000000 +0900
++++ gnu-regexp/docs/index.html	2002-03-29 08:06:41.000000000 +0900
+@@ -82,21 +82,21 @@
+ <P>
+ <STRONG>Mailing List</STRONG>
+ <BR>
+-To join a mailing list of gnu.regexp users and developers, send an email with the word "subscribe" in the subject to <A HREF="mailto:regexp-request@cacas.org">regexp-request@cacas.org</A>.  You will be automatically subscribed.
++To join a mailing list of gnu.regexp users and developers, visit the <A HREF="http://mail.gnu.org/mailman/listinfo/gnu-regexp-users">list info page</A>.  Subscribers can send to the list at <A HREF="mailto:gnu-regexp-users@gnu.org">gnu-regexp-users@gnu.org</A>.
+ <P>
+-Mailing list <A HREF="http://www.thispc.com/pipermail/regexp/">archives</A> are available.
++Mailing list <A HREF="http://mail.gnu.org/pipermail/gnu-regexp-users/">archives</A> are available.  Older archives are <A HREF="http://www.thispc.com/pipermail/regexp/">here</A>.
+ <P>
+ <STRONG>Contribute</STRONG>
+ <BR>
+ If you would like to help contribute to the ongoing development of the package,
+ or if you have suggestions for future enhancements and functionality,
+-please send email to <a href="mailto:wes@cacas.org">wes@cacas.org</A> or better yet subscribe to the list.
++please visit the <A HREF="http://savannah.gnu.org/projects/gnu-regexp/">project page on gnu.org</A> or subscribe to the mailing list.
+ <P>
+ <STRONG>Some applications built with gnu.regexp</STRONG><BR>
+ <A HREF="http://www.enhydra.org/">Enhydra</A>, an open source application server<BR>
+ <A HREF="http://www.xmlblaster.org/">xmlBlaster</A>, open source message-oriented middleware<BR>
+ <A HREF="http://www.arlut.utexas.edu/gash2">Ganymede</A>, an RMI-based directory management system<BR>
+-<A HREF="http://www.microstate.com/hamilton/">Hamilton</A>, an enterprise application server<BR>
++<!--<A HREF="http://www.microstate.com/hamilton/">Hamilton</A>, an enterprise application server<BR>-->
+ <A HREF="http://jedit.sourceforge.net/">jEdit</A>, a GUI text editor<BR>
+ <A HREF="http://muffin.doit.org/">Muffin</A>, a filtering proxy web server<BR>
+ <A HREF="http://www.jext.org/">Jext</A>, a GUI text editor<BR>
+Binary files gnu.regexp-1.1.4/lib/gnu-regexp-1.1.4.jar and gnu-regexp/lib/gnu-regexp-1.1.4.jar differ
+diff -uNr gnu.regexp-1.1.4/src/gnu/regexp/MessagesBundle.properties gnu-regexp/src/gnu/regexp/MessagesBundle.properties
+--- gnu.regexp-1.1.4/src/gnu/regexp/MessagesBundle.properties	2001-05-07 17:15:26.000000000 +0900
++++ gnu-regexp/src/gnu/regexp/MessagesBundle.properties	2002-03-08 12:14:04.000000000 +0900
+@@ -15,7 +15,7 @@
+ class.no.end=expected end of character class
+ subexpr.no.end=expected end of subexpression
+ interval.order=interval minimum is greater than maximum
+-interval.error=interval is empty or contains illegal chracters
++interval.error=interval is empty or contains illegal characters
+ ends.with.backslash=backslash at end of pattern
+ 
+ # RESyntax message
+diff -uNr gnu.regexp-1.1.4/src/gnu/regexp/MessagesBundle_fr.properties gnu-regexp/src/gnu/regexp/MessagesBundle_fr.properties
+--- gnu.regexp-1.1.4/src/gnu/regexp/MessagesBundle_fr.properties	1970-01-01 09:00:00.000000000 +0900
++++ gnu-regexp/src/gnu/regexp/MessagesBundle_fr.properties	2002-03-08 12:14:04.000000000 +0900
+@@ -0,0 +1,22 @@
++# Localized error messages for gnu.regexp
++
++# Prefix for REException messages
++error.prefix=A l''index {0} dans le modèle d''expression régulière:
++
++# REException (parse error) messages
++repeat.assertion=l'élément répété est de largeur zéro
++repeat.chained=tentative de répétition d'un élément déjà répété
++repeat.no.token=quantifieur (?*+{}) sans élément précédent
++repeat.empty.token=l'élément répété peut être vide
++unmatched.brace=accolade inégalée
++unmatched.bracket=crochet inégalé
++unmatched.paren=parenthèse inégalée
++interval.no.end=fin d'interval attendue
++class.no.end=fin de classe de caractères attendue
++subexpr.no.end=fin de sous-expression attendue
++interval.order=l'interval minimum est supérieur à l'interval maximum
++interval.error=l'interval est vide ou contient des caractères illégaux
++ends.with.backslash=antislash à la fin du modèle
++
++# RESyntax message
++syntax.final=La syntaxe a été déclarée finale et ne peut pas être modifiée
+diff -uNr gnu.regexp-1.1.4/src/gnu/regexp/RE.java gnu-regexp/src/gnu/regexp/RE.java
+--- gnu.regexp-1.1.4/src/gnu/regexp/RE.java	2001-10-22 06:26:42.000000000 +0900
++++ gnu-regexp/src/gnu/regexp/RE.java	2002-03-08 12:14:04.000000000 +0900
+@@ -45,23 +45,28 @@
+  * and an optional syntax specification (see RESyntax; if not specified,
+  * <code>RESyntax.RE_SYNTAX_PERL5</code> is used).
+  * <P>
++ * Once compiled, a regular expression object is reusable as well as
++ * threadsafe: multiple threads can use the RE instance simultaneously
++ * to match against different input text.
++ * <P>
+  * Various methods attempt to match input text against a compiled
+  * regular expression.  These methods are:
+- * <LI><code>isMatch</code>: returns true if the input text in its entirety
+- * matches the regular expression pattern.
+- * <LI><code>getMatch</code>: returns the first match found in the input text,
+- * or null if no match is found.
+- * <LI><code>getAllMatches</code>: returns an array of all non-overlapping 
+- * matches found in the input text.  If no matches are found, the array is
+- * zero-length.
+- * <LI><code>substitute</code>: substitute the first occurence of the pattern
+- * in the input text with a replacement string (which may include
+- * metacharacters $0-$9, see REMatch.substituteInto).
+- * <LI><code>substituteAll</code>: same as above, but repeat for each match
+- * before returning.
+- * <LI><code>getMatchEnumeration</code>: returns an REMatchEnumeration object
+- * that allows iteration over the matches (see REMatchEnumeration for some
+- * reasons why you may want to do this instead of using <code>getAllMatches</code>.
++ * <LI><code>isMatch</code>: returns true if the input text in its
++ * entirety matches the regular expression pattern.
++ * <LI><code>getMatch</code>: returns the first match found in the
++ * input text, or null if no match is found.
++ * <LI><code>getAllMatches</code>: returns an array of all
++ * non-overlapping matches found in the input text.  If no matches are
++ * found, the array is zero-length.
++ * <LI><code>substitute</code>: substitute the first occurence of the
++ * pattern in the input text with a replacement string (which may
++ * include metacharacters $0-$9, see REMatch.substituteInto).
++ * <LI><code>substituteAll</code>: same as above, but repeat for each
++ * match before returning.
++ * <LI><code>getMatchEnumeration</code>: returns an REMatchEnumeration
++ * object that allows iteration over the matches (see
++ * REMatchEnumeration for some reasons why you may want to do this
++ * instead of using <code>getAllMatches</code>.
+  * <P>
+  *
+  * These methods all have similar argument lists.  The input can be a
+@@ -93,12 +98,12 @@
+  * thread-safe manner.
+  *
+  * @author <A HREF="mailto:wes@cacas.org">Wes Biggs</A>
+- * @version 1.1.4-dev, to be released
++ * @version 1.1.5-dev, to be released
+  */
+ 
+ public class RE extends REToken {
+   // This String will be returned by getVersion()
+-  private static final String VERSION = "1.1.4-dev";
++  private static final String VERSION = "1.1.5-dev";
+ 
+   // The localized strings are kept in a separate file
+   private static ResourceBundle messages = PropertyResourceBundle.getBundle("gnu/regexp/MessagesBundle", Locale.getDefault());
+@@ -155,11 +160,11 @@
+    * REMatch m4 = exp.getMatch(s,8,RE.REG_ANCHORINDEX);         <BR>
+    * <P>
+    * // Results:<BR>
+-   * //  m0 = "food"<BR>
+-   * //  m1 = "fool"<BR>
+-   * //  m2 = null<BR>
+-   * //  m3 = null<BR>
+-   * //  m4 = "fool"<BR>
++   * //  m0.toString(): "food"<BR>
++   * //  m1.toString(): "fool"<BR>
++   * //  m2.toString(): null<BR>
++   * //  m3.toString(): null<BR>
++   * //  m4.toString(): "fool"<BR>
+    * </CODE>
+    */
+   public static final int REG_NOTBOL = 16;
+@@ -1028,6 +1033,14 @@
+ 	  }
+       } while (input.move(1));
+       
++      // Special handling at end of input for e.g. "$"
++      if (minimumLength == 0) {
++	  if (match(input, mymatch)) {
++	      mymatch.finish(input);
++	      return mymatch;
++	  }
++      }
++
+       return null;
+   }
+ 
+diff -uNr gnu.regexp-1.1.4/src/gnu/regexp/RESyntax.java gnu-regexp/src/gnu/regexp/RESyntax.java
+--- gnu.regexp-1.1.4/src/gnu/regexp/RESyntax.java	2001-10-22 06:26:42.000000000 +0900
++++ gnu-regexp/src/gnu/regexp/RESyntax.java	2002-03-08 12:14:04.000000000 +0900
+@@ -1,6 +1,6 @@
+ /*
+  *  gnu/regexp/RESyntax.java
+- *  Copyright (C) 1998-2001 Wes Biggs
++ *  Copyright (C) 1998-2002 Wes Biggs
+  *
+  *  This library is free software; you can redistribute it and/or modify
+  *  it under the terms of the GNU Lesser General Public License as published
+@@ -277,7 +277,14 @@
+    * using single line mode (/s modifier).
+    */
+   public static final RESyntax RE_SYNTAX_PERL5_S;
+-  
++
++    /**
++     * Predefined syntax.
++     * Emulates regular expression support in Java 1.4's java.util.regex
++     * package.
++     */
++    public static final RESyntax RE_SYNTAX_JAVA_1_4;
++
+   static {
+       // Define syntaxes
+       
+@@ -396,6 +403,10 @@
+       RE_SYNTAX_PERL5_S = new RESyntax(RE_SYNTAX_PERL5)
+ 	  .set(RE_DOT_NEWLINE)
+ 	  .makeFinal();
++
++      RE_SYNTAX_JAVA_1_4 = new RESyntax(RE_SYNTAX_PERL5)
++	  // XXX
++	  .makeFinal();
+   }
+ 
+   /**
+diff -uNr gnu.regexp-1.1.4/src/gnu/regexp/util/RETest.java gnu-regexp/src/gnu/regexp/util/RETest.java
+--- gnu.regexp-1.1.4/src/gnu/regexp/util/RETest.java	2001-04-12 02:20:22.000000000 +0900
++++ gnu-regexp/src/gnu/regexp/util/RETest.java	2002-03-08 12:14:04.000000000 +0900
+@@ -124,7 +124,6 @@
+ 			     + match.getEndIndex(i));
+ 		
+ 	  // Note how the $n is constructed for substituteInto
+-		
+ 	  System.out.println(match.substituteInto("The subexpression matched this text: '$"+i+"'"));
+ 	}
+       }
+diff -uNr gnu.regexp-1.1.4/src/gnu/regexp/util/Tests.java gnu-regexp/src/gnu/regexp/util/Tests.java
+--- gnu.regexp-1.1.4/src/gnu/regexp/util/Tests.java	2001-06-19 05:34:23.000000000 +0900
++++ gnu-regexp/src/gnu/regexp/util/Tests.java	2002-03-08 12:14:04.000000000 +0900
+@@ -1,6 +1,6 @@
+ /*
+  * gnu/regexp/util/Tests.java -- Simple testsuite for gnu.regexp package
+- * Copyright (C) 1998-2001 Wes Biggs
++ * Copyright (C) 1998-2002 Wes Biggs
+  *
+  * This file is in the public domain.  However, the gnu.regexp library
+  * proper is licensed under the terms of the GNU Lesser General Public
+@@ -16,24 +16,32 @@
+  * This is a very basic testsuite application for gnu.regexp.
+  *
+  * @author <A HREF="mailto:wes@cacas.org">Wes Biggs</A>
+- * @version 1.1.1
++ * @version 1.1.2
+  */
+ public class Tests {
+-  private Tests() { }
++    private Tests() { }
+ 
+     private static void check(RE expr, String input, String expect, int id) {
++	System.out.print("Test #" + id + ": ");
+ 	// Test it using all possible input types
+-	check(expr.getMatch(input),expect,id, "String");
+-	check(expr.getMatch(new StringBuffer(input)),expect,id, "StringBuffer");
+-	check(expr.getMatch(input.toCharArray()),expect,id, "char[]");
+-	check(expr.getMatch(new StringReader(input)),expect,id, "Reader");
+-	check(expr.getMatch(new StringBufferInputStream(input)),expect,id, "InputStream");
++	check(expr.getMatch(input),expect,"String");
++	check(expr.getMatch(new StringBuffer(input)),expect, "StringBuffer");
++	check(expr.getMatch(input.toCharArray()),expect, "char[]");
++	check(expr.getMatch(new StringReader(input)),expect, "Reader");
++	check(expr.getMatch(new StringBufferInputStream(input)),expect, "InputStream");
++	System.out.println();
++    }
++
++    private static void check(REMatch m, String expect, String type) {
++	boolean passed;
++	if (m == null) {
++	    passed = (expect != null);
++	} else {
++	    passed = (m.toString().equals(expect));
++	}
++	System.out.print("[" + type + " ");
++	System.out.print(passed ? "OK]" : " *** FAILED] ");
+     }
+-  private static void check(REMatch m, String expect, int x, String type) {
+-    if ((m == null) || !m.toString().equals(expect)) System.out.print("*** Failed");
+-    else System.out.print("Passed");
+-    System.out.println(" test #"+x + " (" + type + ")");
+-  }
+ 
+   /**
+    * Runs the testsuite.  No command line arguments are necessary. 
+@@ -95,7 +103,8 @@
+ 
+     e = new RE("(ab)(.*?)(d)");
+     REMatch m = e.getMatch("abcd");
+-    check(m,"abcd",18, "String");
++    System.out.print("Test #18: ");
++    check(m,"abcd", "String");
+     System.out.println(((m.toString(2).equals("c")) ? "Pass" : "*** Fail") 
+ 		       + "ed test #19");
+ 
+@@ -136,6 +145,11 @@
+     check(e,("ab"),"a", 34);
+     check(e,("ba"),"a", 35);
+     check(e,("bab"),"a", 36);
+-    
++
++    // End-of-line should match in any case
++    e = new RE("$");
++    check(e,(""), "", 37);
++    check(e,("a"), "", 38);
++    check(e,("abcd"), "", 39);
+   }
+ }      
