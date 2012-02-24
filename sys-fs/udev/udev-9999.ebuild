@@ -2,7 +2,7 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI="1"
+EAPI="4"
 
 EGIT_REPO_URI="git://git.kernel.org/pub/scm/linux/hotplug/udev.git"
 EGIT_BRANCH="master"
@@ -92,10 +92,8 @@ sed_libexec_dir() {
 	sed -e "s#/lib/udev#${udev_libexec_dir}#" -i "$@"
 }
 
-src_unpack() {
-	git-2_src_unpack
-
-	cd "${S}"
+src_prepare() {
+	sed -e "s#/lib/modules/#/$(get_libdir)/modules/#" -i src/udevd.c
 
 	# change rules back to group uucp instead of dialout for now - eventually
 	# fix baselayout -
@@ -105,10 +103,10 @@ src_unpack() {
 	|| die "failed to change group dialout to uucp"
 
 	sed_libexec_dir \
-		rules/rules.d/50-udev-default.rules \
-		rules/rules.d/78-sound-card.rules \
-		extras/rule_generator/write_*_rules \
+		src/extras/rule_generator/write_*_rules \
 		|| die "sed failed"
+#		rules/rules.d/50-udev-default.rules \
+#		rules/rules.d/78-sound-card.rules \
 
 	gtkdocize --copy
 	eautoreconf
@@ -214,7 +212,7 @@ src_install() {
 		"${D}"/etc/init.d/udev* \
 		"${D}"/etc/modprobe.d/*
 
-	sed -i -e 's:/lib/librc.so:/lib64/librc.so:' "${D}/${udev_libexec_dir}"/shell-compat.sh
+	sed -i -e 's:/lib/librc.so:/'"$(get_libdir)"'/librc.so:' "${D}/${udev_libexec_dir}"/shell-compat.sh
 
 	# keep doc in just one directory, Bug #281137
 	rm -rf "${D}/usr/share/doc/${PN}"
