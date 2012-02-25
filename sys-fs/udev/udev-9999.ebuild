@@ -125,7 +125,7 @@ src_compile() {
 		--sbindir=/sbin \
 		--libdir=/usr/$(get_libdir) \
 		--with-rootlibdir=/$(get_libdir) \
-		--libexecdir="${udev_libexec_dir}" \
+		--libexecdir=/$(get_libdir) \
 		--enable-logging \
 		--enable-static \
 		--with-firmware-path=/$(get_libdir)/firmware \
@@ -135,6 +135,7 @@ src_compile() {
 		$(use_with selinux) \
 		$(use_enable introspection) \
 		--with-systemdsystemunitdir=no
+#		--libexecdir="${udev_libexec_dir}" \
 
 	emake || die "compiling udev failed"
 }
