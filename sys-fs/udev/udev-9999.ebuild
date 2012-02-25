@@ -128,12 +128,13 @@ src_compile() {
 		--libexecdir="${udev_libexec_dir}" \
 		--enable-logging \
 		--enable-static \
+		--with-firmware-path=/$(get_libdir)/firmware \
 		--with-pci-ids-path="${EPREFIX}/usr/share/misc/pci.ids" \
 		--with-usb-ids-path="${EPREFIX}/usr/share/misc/usb.ids" \
 		$(use_enable gudev) \
 		$(use_with selinux) \
 		$(use_enable introspection) \
-		--without-systemdsystemunitdir
+		--with-systemdsystemunitdir=no
 
 	emake || die "compiling udev failed"
 }
