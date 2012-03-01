@@ -1,0 +1,20 @@
+--- ./unix/emacs/mozc.el.orig	2011-03-08 03:46:17.291000006 +0900
++++ ./unix/emacs/mozc.el	2011-03-08 03:47:08.778997407 +0900
+@@ -940,14 +940,9 @@
+       (setcdr pre-boundary nil)  ; Drop the rest of list.
+       (cons list post-boundary))))
+ 
+-(defmacro mozc-characterp (object)
+-  "Return non-nil if OBJECT is a character.
+-
+-This macro is equivalent to `characterp' or `char-valid-p' depending on
+-the Emacs version.  `char-valid-p' is obsolete since Emacs 23."
+-  (if (fboundp #'characterp)
+-      `(characterp ,object)
+-    `(char-valid-p ,object)))
++(if (fboundp 'characterp)
++  (defalias 'mozc-characterp 'characterp)
++ (defmacro mozccharacterp (arg) '(char-valid-p ,arg)))
+ 
+ (defsubst mozc-string-match-p (regexp string &optional start)
+   "Same as `string-match' except this function never change the match data.
