@@ -1,0 +1,15 @@
+diff --git a/Makefile b/Makefile
+index be9e7f6..010cee2 100644
+--- a/Makefile
++++ b/Makefile
+@@ -52,8 +52,8 @@ DFLAGS?= -DDEBUG_PPPD -DTRUST_PPPD_TO_DIE
+ # Uncomment the next line for Linux. KERNELSRC is needed for if_pppol2tp.h,
+ # but we use a local copy if we don't find it.
+ #
+-#KERNELSRC=/lib/modules/`uname -r`/build/
+-KERNELSRC?=./linux
++KERNELSRC=/lib/modules/`uname -r`/build/
++#KERNELSRC?=./linux
+ OSFLAGS?= -DLINUX -I$(KERNELSRC)/include/
+ #
+ # Uncomment the following to use the kernel interface under Linux

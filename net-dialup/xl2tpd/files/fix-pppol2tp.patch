@@ -1,0 +1,45 @@
+diff --git a/xl2tpd.c b/xl2tpd.c
+index 1c15666..a844266 100644
+--- a/xl2tpd.c
++++ b/xl2tpd.c
+@@ -382,12 +382,19 @@ int start_pppd (struct call *c, struct ppp_opts *opts)
+                 __FUNCTION__);
+            return -EINVAL;
+        }
++
++       /* Prevent children inheriting our socket */
++       fcntl(fd2, F_SETFD, FD_CLOEXEC);
++
++       /*
+        flags = fcntl(fd2, F_GETFL);
+        if (flags == -1 || fcntl(fd2, F_SETFL, flags | O_NONBLOCK) == -1) {
+            l2tp_log (LOG_WARNING, "%s: Unable to set PPPoL2TP socket nonblock.\n",
+                 __FUNCTION__);
+            return -EINVAL;
+        }
++       */
++       memset(&sax, 0, sizeof(sax));
+        sax.sa_family = AF_PPPOX;
+        sax.sa_protocol = PX_PROTO_OL2TP;
+        sax.pppol2tp.pid = 0;
+@@ -399,10 +406,16 @@ int start_pppd (struct call *c, struct ppp_opts *opts)
+        sax.pppol2tp.s_session = c->ourcid;
+        sax.pppol2tp.d_tunnel  = c->container->tid;
+        sax.pppol2tp.d_session = c->cid;
+-       if (connect(fd2, (struct sockaddr *)&sax, sizeof(sax)) < 0) {
+-           l2tp_log (LOG_WARNING, "%s: Unable to connect PPPoL2TP socket.\n",
+-                __FUNCTION__);
+-           return -EINVAL;
++       for (;;) {
++           if (connect(fd2, (struct sockaddr *)&sax, sizeof(sax)) < 0) {
++               if ((errno == EINTR) || (errno == ERESTART) ||
++		   (errno == EAGAIN) || (errno == EINPROGRESS)) {
++                   continue;
++               }
++               l2tp_log (LOG_WARNING, "%s: Unable to connect PPPoL2TP socket. errno = %d\n",
++			 __FUNCTION__, errno);
++               return -EINVAL;
++           }
+        }
+        stropt[pos++] = strdup ("plugin");
+        stropt[pos++] = strdup ("pppol2tp.so");
