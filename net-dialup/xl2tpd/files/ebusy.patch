@@ -1,0 +1,27 @@
+diff --git a/xl2tpd.c b/xl2tpd.c
+index f8e30e4..e355691 100644
+--- a/xl2tpd.c
++++ b/xl2tpd.c
+@@ -405,11 +405,17 @@ int start_pppd (struct call *c, struct ppp_opts *opts)
+        sax.pppol2tp.s_session = c->ourcid;
+        sax.pppol2tp.d_tunnel  = c->container->tid;
+        sax.pppol2tp.d_session = c->cid;
+-       if (connect(fd2, (struct sockaddr *)&sax, sizeof(sax)) < 0) {
+-           l2tp_log (LOG_WARNING, "%s: Unable to connect PPPoL2TP socket.\n",
+-                __FUNCTION__);
+-           close(fd2);
+-           return -EINVAL;
++       for (;;) {
++           if (connect(fd2, (struct sockaddr *)&sax, sizeof(sax)) < 0) {
++               if ((errno == EINTR) || (errno == ERESTART) ||
++                   (errno == EAGAIN) || (errno == EINPROGRESS)) {
++                   continue;
++               }
++               l2tp_log (LOG_WARNING, "%s: Unable to connect PPPoL2TP socket. errno = %d\n",
++                         __FUNCTION__, errno);
++               if (errno == EBUSY) break;
++               return -EINVAL;
++           }
+        }
+        stropt[pos++] = strdup ("plugin");
+        stropt[pos++] = strdup ("pppol2tp.so");

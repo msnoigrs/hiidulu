@@ -24,7 +24,9 @@ src_prepare() {
 	epatch "${FILESDIR}"/${PN}-1.3.0-LDFLAGS.patch
 	epatch "${FILESDIR}"/add-ctrl-retrans-opt.patch
 	epatch "${FILESDIR}"/avp-workaround.patch
-	epatch "${FILESDIR}"/retry-connect.patch
+	epatch "${FILESDIR}"/make-rundir.patch
+	epatch "${FILESDIR}"/multiple-interface.patch
+	epatch "${FILESDIR}"/ebusy.patch
 	epatch "${FILESDIR}"/kernelsrc.patch
 
 	#epatch "${FILESDIR}"/${PN}-pppol2tp.patch

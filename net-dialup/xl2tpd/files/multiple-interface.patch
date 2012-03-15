@@ -1,0 +1,190 @@
+diff --git a/call.c b/call.c
+index 9d4f27d..48c663e 100644
+--- a/call.c
++++ b/call.c
+@@ -601,7 +601,7 @@ struct call *get_tunnel (int tunnel, unsigned int addr, int port)
+ }
+ 
+ struct call *get_call (int tunnel, int call,  struct in_addr addr, int port,
+-		       IPsecSAref_t refme, IPsecSAref_t refhim)
++                       unsigned int localaddr, IPsecSAref_t refme, IPsecSAref_t refhim)
+ {
+     /*
+      * Figure out which call struct should handle this. 
+@@ -678,11 +678,13 @@ struct call *get_call (int tunnel, int call,  struct in_addr addr, int port,
+         };
+         st->peer.sin_family = AF_INET;
+         st->peer.sin_port = port;
++        st->local.sin_family = AF_INET;
+ 	st->refme  = refme;
+ 	st->refhim = refhim;
+         st->u_fd = -1;
+         st->m_fd = -1;
+         bcopy (&addr, &st->peer.sin_addr, sizeof (addr));
++        bcopy (&localaddr, &st->local.sin_addr, sizeof (localaddr));
+         st->next = tunnels.head;
+         tunnels.head = st;
+         tunnels.count++;
+diff --git a/call.h b/call.h
+index 9d604b9..eeb5f68 100644
+--- a/call.h
++++ b/call.h
+@@ -98,7 +98,7 @@ struct call
+ extern void push_handler (int);
+ extern void toss (struct buffer *);
+ extern struct call *get_call (int tunnel, int call, struct in_addr addr,
+-			      int port,
++			      int port, unsigned int localaddr,
+ 			      IPsecSAref_t refme, IPsecSAref_t refhim);
+ extern struct call *get_tunnel (int, unsigned int, int);
+ extern void destroy_call (struct call *);
+diff --git a/control.c b/control.c
+index 70a8df7..52c7b61 100644
+--- a/control.c
++++ b/control.c
+@@ -661,12 +661,15 @@ int control_finish (struct tunnel *t, struct call *c)
+                      __FUNCTION__);
+                 return -EINVAL;
+             }
++            l2tp_log(LOG_INFO, "%s: tunnel fd = %d, ourtid = %d, tid = %d\n", __FUNCTION__, fd2, t->ourtid, t->tid);
++            /*
+             flags = fcntl(fd2, F_GETFL);
+             if (flags == -1 || fcntl(fd2, F_SETFL, flags | O_NONBLOCK) == -1) {
+                 l2tp_log (LOG_WARNING, "%s: Unable to set PPPoL2TP socket nonblock.\n",
+                      __FUNCTION__);
+                 return -EINVAL;
+             }
++            */
+             sax.sa_family = AF_PPPOX;
+             sax.sa_protocol = PX_PROTO_OL2TP;
+             sax.pppol2tp.pid = 0;
+@@ -688,6 +691,7 @@ int control_finish (struct tunnel *t, struct call *c)
+             getsockname(fd2, (struct sockaddr *)&sax, &sock_len);
+             t->ourtid=sax.pppol2tp.s_tunnel;
+             t->tid=sax.pppol2tp.d_tunnel;
++            l2tp_log(LOG_INFO, "%s: ourtid = %d, tid = %d\n", __FUNCTION__, t->ourtid, t->tid);
+         }
+ #endif
+         if (t->lac)
+diff --git a/l2tp.h b/l2tp.h
+index 14a9da1..7e9fef0 100644
+--- a/l2tp.h
++++ b/l2tp.h
+@@ -147,6 +147,7 @@ struct tunnel
+     unsigned short port;        /* Port on remote end */
+ #else
+     struct sockaddr_in peer;    /* Peer's Address */
++    struct sockaddr_in local;    /* Local's Address */
+ #endif
+     int debug;                  /* Are we debugging or not? */
+     int nego;                   /* Show Negotiation? */
+diff --git a/network.c b/network.c
+index 9117745..7cbadd0 100644
+--- a/network.c
++++ b/network.c
+@@ -82,6 +82,11 @@ int init_network (void)
+ 
+ 	    gconfig.ipsecsaref=0;
+     }
++    arg=1;
++    if (setsockopt(server_socket, IPPROTO_IP, IP_PKTINFO, &arg, sizeof(arg)) != 0) {
++	l2tp_log(LOG_CRIT, "setsockopt recvref[%d]: %s\n", IP_PKTINFO, strerror(errno));
++    }
++
+ #else
+ 	l2tp_log(LOG_INFO, "No attempt being made to use IPsec SAref's since we're not on a Linux machine.\n");
+ 
+@@ -264,8 +269,8 @@ void control_xmit (void *b)
+ 
+ void udp_xmit (struct buffer *buf, struct tunnel *t)
+ {
+-    struct cmsghdr *cmsg;
+-    char cbuf[CMSG_SPACE(sizeof (unsigned int))];
++    struct cmsghdr *cmsg = NULL;
++    char cbuf[CMSG_SPACE(sizeof (unsigned int)) + CMSG_SPACE(sizeof(struct in_pktinfo))];
+     unsigned int *refp;
+     struct msghdr msgh;
+     int err;
+@@ -295,7 +300,29 @@ void udp_xmit (struct buffer *buf, struct tunnel *t)
+ 
+ 	msgh.msg_controllen = cmsg->cmsg_len;
+     }
+-    
++
++    if (t->local.sin_addr.s_addr) {
++        if(gconfig.debug_network) {
++	    l2tp_log(LOG_DEBUG,"sending with setting source address saref=%s\n", inet_ntoa(t->local.sin_addr));
++        }
++
++        struct in_pktinfo* ipi;
++        msgh.msg_controllen = sizeof(cbuf);
++
++        cmsg = (cmsg ? CMSG_NXTHDR(&msgh, cmsg) : CMSG_FIRSTHDR(&msgh));
++        cmsg->cmsg_level = IPPROTO_IP;
++        cmsg->cmsg_type  = IP_PKTINFO;
++        cmsg->cmsg_len   = CMSG_LEN(sizeof(struct in_pktinfo));
++
++        ipi = (struct in_pktinfo*)CMSG_DATA(cmsg);
++        ipi->ipi_ifindex = 0;
++        ipi->ipi_addr.s_addr = 0;
++        bcopy(&t->local.sin_addr, &ipi->ipi_spec_dst, sizeof(ipi->ipi_spec_dst));
++
++        msgh.msg_controllen = CMSG_SPACE(sizeof(struct in_pktinfo));
++    }
++
++
+     iov.iov_base = buf->start;
+     iov.iov_len  = buf->len;
+ 
+@@ -401,6 +428,8 @@ void network_thread ()
+     struct iovec iov;
+     char cbuf[256];
+     unsigned int refme, refhim;
++    struct cmsghdr *cmsg;
++    struct in_pktinfo *inpkt = NULL;
+ 
+     /* This one buffer can be recycled for everything except control packets */
+     buf = new_buf (MAX_RECV_SIZE);
+@@ -514,7 +543,6 @@ void network_thread ()
+ 
+ 	    /* extract IPsec info out */
+ 	    if(gconfig.ipsecsaref) {
+-		    struct cmsghdr *cmsg;
+ 		    /* Process auxiliary received data in msgh */
+ 		    for (cmsg = CMSG_FIRSTHDR(&msgh);
+ 			 cmsg != NULL;
+@@ -530,6 +558,12 @@ void network_thread ()
+ 		    }
+ 	    }
+ 
++            for (cmsg = CMSG_FIRSTHDR(&msgh); cmsg != NULL; cmsg = CMSG_NXTHDR(&msgh,cmsg)) {
++                if (cmsg->cmsg_level == IPPROTO_IP && cmsg->cmsg_type == IP_PKTINFO) {
++                    inpkt = (struct in_pktinfo*)CMSG_DATA(cmsg);
++                }
++            }
++
+ 	    /*
+ 	     * some logic could be added here to verify that we only
+ 	     * get L2TP packets inside of IPsec, or to provide different
+@@ -553,7 +587,7 @@ void network_thread ()
+ 	    }
+ 	    if (!
+ 		(c = get_call (tunnel, call, from.sin_addr,
+-			       from.sin_port, refme, refhim)))
++			       from.sin_port, (inpkt ? inpkt->ipi_spec_dst.s_addr : 0), refme, refhim)))
+ 	    {
+ 		if ((c =
+ 		     get_tunnel (tunnel, from.sin_addr.s_addr,
+diff --git a/xl2tpd.c b/xl2tpd.c
+index eb84b41..f8e30e4 100644
+--- a/xl2tpd.c
++++ b/xl2tpd.c
+@@ -650,7 +650,7 @@ struct tunnel *l2tp_call (char *host, int port, struct lac *lac,
+      * to do IPsec properly here, we need to set a socket policy,
+      * and/or communicate with pluto.
+      */
+-    tmp = get_call (0, 0, addr, port, IPSEC_SAREF_NULL, IPSEC_SAREF_NULL);
++    tmp = get_call (0, 0, addr, port, 0, IPSEC_SAREF_NULL, IPSEC_SAREF_NULL);
+     if (!tmp)
+     {
+         l2tp_log (LOG_WARNING, "%s: Unable to create tunnel to %s.\n", __FUNCTION__,
