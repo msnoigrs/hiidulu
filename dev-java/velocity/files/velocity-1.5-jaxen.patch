@@ -1,0 +1,127 @@
+diff -uNr velocity-1.5.orig/src/java/org/apache/velocity/anakia/AnakiaElement.java velocity-1.5/src/java/org/apache/velocity/anakia/AnakiaElement.java
+--- velocity-1.5.orig/src/java/org/apache/velocity/anakia/AnakiaElement.java	2007-02-23 01:54:34.000000000 +0900
++++ velocity-1.5/src/java/org/apache/velocity/anakia/AnakiaElement.java	2007-06-15 18:46:10.000000000 +0900
+@@ -22,6 +22,7 @@
+ import org.jdom.Element;
+ import org.jdom.Namespace;
+ import org.jdom.output.XMLOutputter;
++import org.jdom.JDOMException;
+ import java.util.List;
+ 
+ /**
+@@ -127,9 +128,9 @@
+      * @return a NodeList representing the nodes that are the result of
+      * application of the XPath to the current element. It can be empty.
+      */
+-    public NodeList selectNodes(String xpathExpression)
++    public NodeList selectNodes(String xpathExpression) throws JDOMException
+     {
+-        return new NodeList(XPathCache.getXPath(xpathExpression).applyTo(this), false);
++        return new NodeList(XPathCache.getXPath(xpathExpression).selectNodes(this), false);
+     }
+ 
+     /**
+diff -uNr velocity-1.5.orig/src/java/org/apache/velocity/anakia/NodeList.java velocity-1.5/src/java/org/apache/velocity/anakia/NodeList.java
+--- velocity-1.5.orig/src/java/org/apache/velocity/anakia/NodeList.java	2007-02-23 01:54:34.000000000 +0900
++++ velocity-1.5/src/java/org/apache/velocity/anakia/NodeList.java	2007-06-15 18:47:03.000000000 +0900
+@@ -38,6 +38,7 @@
+ import org.jdom.ProcessingInstruction;
+ import org.jdom.Text;
+ import org.jdom.output.XMLOutputter;
++import org.jdom.JDOMException;
+ 
+ /**
+  * Provides a class for wrapping a list of JDOM objects primarily for use in template
+@@ -290,9 +291,9 @@
+      * @return a NodeList representing the nodes that are the result of
+      * application of the XPath to the current node list. It can be empty.
+      */
+-    public NodeList selectNodes(String xpathString)
++    public NodeList selectNodes(String xpathString) throws JDOMException
+     {
+-        return new NodeList(XPathCache.getXPath(xpathString).applyTo(nodes), false);
++        return new NodeList(XPathCache.getXPath(xpathString).selectNodes(nodes), false);
+     }
+ 
+ // List methods implemented hereafter
+diff -uNr velocity-1.5.orig/src/java/org/apache/velocity/anakia/XPathCache.java velocity-1.5/src/java/org/apache/velocity/anakia/XPathCache.java
+--- velocity-1.5.orig/src/java/org/apache/velocity/anakia/XPathCache.java	2007-02-23 01:54:34.000000000 +0900
++++ velocity-1.5/src/java/org/apache/velocity/anakia/XPathCache.java	2007-06-15 18:46:10.000000000 +0900
+@@ -19,7 +19,8 @@
+  * under the License.    
+  */
+ 
+-import com.werken.xpath.XPath;
++import org.jdom.xpath.XPath;
++import org.jdom.JDOMException;
+ import java.util.Map;
+ import java.util.WeakHashMap;
+ 
+@@ -47,7 +48,7 @@
+      * @param xpathString the XPath expression to parse
+      * @return the XPath object that represents the parsed XPath expression.
+      */
+-    static XPath getXPath(String xpathString)
++    static XPath getXPath(String xpathString) throws JDOMException
+     {
+         XPath xpath = null;
+         synchronized(XPATH_CACHE)
+@@ -55,7 +56,7 @@
+             xpath = (XPath)XPATH_CACHE.get(xpathString);
+             if(xpath == null)
+             {
+-                xpath = new XPath(xpathString);
++		xpath = XPath.newInstance(xpathString);
+                 XPATH_CACHE.put(xpathString, xpath);
+             }
+         }
+diff -uNr velocity-1.5.orig/src/java/org/apache/velocity/anakia/XPathTool.java velocity-1.5/src/java/org/apache/velocity/anakia/XPathTool.java
+--- velocity-1.5.orig/src/java/org/apache/velocity/anakia/XPathTool.java	2007-02-23 01:54:34.000000000 +0900
++++ velocity-1.5/src/java/org/apache/velocity/anakia/XPathTool.java	2007-06-15 18:46:10.000000000 +0900
+@@ -23,6 +23,7 @@
+ 
+ import org.jdom.Document;
+ import org.jdom.Element;
++import org.jdom.JDOMException;
+ 
+ /**
+  * This class adds an entrypoint into XPath functionality,
+@@ -90,10 +91,10 @@
+      * @return A list of selected nodes
+      */
+     public NodeList applyTo(String xpathSpec,
+-                        Document doc)
++                        Document doc) throws JDOMException
+     {
+         //RuntimeSingleton.info("XPathTool::applyTo(String, Document)");
+-        return new NodeList(XPathCache.getXPath(xpathSpec).applyTo( doc ), false);
++        return new NodeList(XPathCache.getXPath(xpathSpec).selectNodes( doc ), false);
+     }
+ 
+     /**
+@@ -105,10 +106,10 @@
+      * @return A list of selected nodes
+      */
+     public NodeList applyTo(String xpathSpec,
+-                        Element elem)
++                        Element elem) throws JDOMException
+     {
+         //RuntimeSingleton.info("XPathTool::applyTo(String, Element)");
+-        return new NodeList(XPathCache.getXPath(xpathSpec).applyTo( elem ), false);
++        return new NodeList(XPathCache.getXPath(xpathSpec).selectNodes( elem ), false);
+     }
+ 
+     /**
+@@ -120,10 +121,10 @@
+      * @return A list of selected nodes
+      */
+     public NodeList applyTo(String xpathSpec,
+-                        List nodeSet)
++                        List nodeSet) throws JDOMException
+     {
+         //RuntimeSingleton.info("XPathTool::applyTo(String, List)");
+-        return new NodeList(XPathCache.getXPath(xpathSpec).applyTo( nodeSet ), false);
++        return new NodeList(XPathCache.getXPath(xpathSpec).selectNodes( nodeSet ), false);
+     }
+ }
+ 

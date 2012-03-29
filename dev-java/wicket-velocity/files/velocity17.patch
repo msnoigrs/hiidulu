@@ -1,0 +1,14 @@
+diff -uNr apache-wicket-1.4.19.orig/src/wicket-velocity/src/main/java/org/apache/wicket/velocity/markup/html/VelocityPanel.java apache-wicket-1.4.19/src/wicket-velocity/src/main/java/org/apache/wicket/velocity/markup/html/VelocityPanel.java
+--- apache-wicket-1.4.19.orig/src/wicket-velocity/src/main/java/org/apache/wicket/velocity/markup/html/VelocityPanel.java	2011-02-21 11:49:23.000000000 +0900
++++ apache-wicket-1.4.19/src/wicket-velocity/src/main/java/org/apache/wicket/velocity/markup/html/VelocityPanel.java	2012-03-29 05:46:13.284866628 +0900
+@@ -250,10 +250,6 @@
+ 				}
+ 				return evaluatedTemplate;
+ 			}
+-			catch (IOException e)
+-			{
+-				onException(e);
+-			}
+ 			catch (ParseErrorException e)
+ 			{
+ 				onException(e);

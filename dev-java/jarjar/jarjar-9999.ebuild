@@ -45,7 +45,7 @@ java_prepare() {
 	# for ant 1.8*
 	# http://patch-tracker.debian.org/patch/series/dl/jarjar/1.0+dfsg-2/0005-cast-null-to-java.io.File.patch
 	#epatch "${FILESDIR}/0005-cast-null-to-java.io.File.patch"
-	epatch "${FILESDIR}/1.0-ant-1.8-compat.patch"
+	#epatch "${FILESDIR}/1.0-ant-1.8-compat.patch"
 
 	cd "${S}/lib"
 	rm -v *.jar || die
@@ -67,8 +67,8 @@ src_test() {
 }
 
 src_install() {
-	java-pkg_newjar dist/${PN}-snapshot.jar ${PN}.jar
-	java-pkg_newjar dist/${PN}-nodep-snapshot.jar ${PN}-nodep.jar
+	java-pkg_newjar dist/${PN}-1.2.jar ${PN}.jar
+	java-pkg_newjar dist/${PN}-nodep-1.2.jar ${PN}-nodep.jar
 	java-pkg_register-ant-task
 	use doc && java-pkg_dojavadoc dist/javadoc
 	use source && java-pkg_dosrc src/main/*
