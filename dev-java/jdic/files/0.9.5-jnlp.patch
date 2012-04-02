@@ -1,0 +1,12 @@
+diff -uNr jdic-0.9.5-src.orig/jdic/src/share/classes/org/jdesktop/jdic/init/JdicManager.java jdic-0.9.5-src/jdic/src/share/classes/org/jdesktop/jdic/init/JdicManager.java
+--- jdic-0.9.5-src.orig/jdic/src/share/classes/org/jdesktop/jdic/init/JdicManager.java	2008-06-03 21:19:46.000000000 +0900
++++ jdic-0.9.5-src/jdic/src/share/classes/org/jdesktop/jdic/init/JdicManager.java	2009-02-02 07:31:03.000000000 +0900
+@@ -25,7 +25,7 @@
+ import java.net.URLClassLoader;
+ 
+ import org.jdesktop.jdic.browser.internal.WebBrowserUtil;
+-import com.sun.jnlp.JNLPClassLoader;
++import netx.jnlp.runtime.JNLPClassLoader;
+ import java.io.IOException;
+ import java.security.AccessController;
+ import java.security.PrivilegedActionException;

@@ -1,0 +1,42 @@
+diff -uNr jdic-9999.orig//jdic/src/unix/native/jni/WebBrowserUtil.cpp jdic-9999/jdic/src/unix/native/jni/WebBrowserUtil.cpp
+--- jdic-9999.orig//jdic/src/unix/native/jni/WebBrowserUtil.cpp	2011-03-27 19:42:45.667734460 +0900
++++ jdic-9999/jdic/src/unix/native/jni/WebBrowserUtil.cpp	2011-03-27 20:16:19.133562678 +0900
+@@ -62,7 +62,7 @@
+     /*
+      * MOZILLA_FIVE_HOME not set. Search the Mozilla binary path to set it:
+      *   - First check Gconf to find the default browser path; 
+-     *   - If fails, then check the "mozilla" command under $PATH.
++     *   - If fails, then check the "firefox" command under $PATH.
+      *
+      * If the mozilla binary path is found, check if it points to a valid path:
+      *   - If not, return NULL; 
+@@ -91,7 +91,7 @@
+             fprintf(stderr, "The default browser path set in GConf: %s\n", command);
+ #endif
+             // Check if the command is or points to a Mozilla binary path.
+-            char *p = g_strstr_len(command, strlen(command), "mozilla");
++            char *p = g_strstr_len(command, strlen(command), "firefox");
+             if (p) {
+                 // Remove the "%s" string in the command string.
+                 mozpath = g_strdup_printf (command, "");
+@@ -105,17 +105,17 @@
+         }
+     }                                                                                                          
+ 
+-    // Check if the Mozilla path is valid. Or else, check the mozilla
++    // Check if the Mozilla path is valid. Or else, check the firefox
+     // command under $PATH.
+     struct stat stat_p;
+     if ((mozpath == NULL) || (stat (mozpath, &stat_p) != 0)) {
+         char *pathenv = getenv("PATH");
+         char **pathfields = g_strsplit(pathenv, ":", -1);    
+         for (int index = 0; pathfields[index] != NULL; index++) {
+-            mozpath = g_strconcat (pathfields[index], "/mozilla", NULL);
++            mozpath = g_strconcat (pathfields[index], "/firefox", NULL);
+             if (stat (mozpath, &stat_p) == 0) {
+ #ifdef DEBUG
+-                fprintf(stderr, "Found mozilla binary under $PATH: %s\n", mozpath);
++                fprintf(stderr, "Found firefox binary under $PATH: %s\n", mozpath);
+ #endif
+                 break; 
+             } else {

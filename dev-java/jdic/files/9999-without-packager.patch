@@ -1,0 +1,27 @@
+--- jdic-9999.orig/build.xml	2011-03-27 19:29:00.492050576 +0900
++++ jdic-9999/build.xml	2011-03-27 19:47:01.726533288 +0900
+@@ -66,7 +66,7 @@
+     <ant dir="jdic" target="buildall"/>
+     
+     <!-- Build a JDIC Packager distribution -->
+-    <ant dir="packager" target="buildall"/>
++<!--    <ant dir="packager" target="buildall"/>-->
+ 
+     <!-- Copy JDIC API distribution files into the distribution directory -->
+     <copy todir="${dist.dir}">
+@@ -79,6 +79,7 @@
+     <chmod dir="${dist.dir}" perm="+x" includes="*mozembed-*-gtk*" />
+ 
+     <!-- Copy JDIC Packager distribution files -->
++<!--
+     <copy todir="${dist.dir}" failonerror="false">
+       <fileset dir="packager/${dist.dir}" casesensitive="false" >
+         <include name="*.jar"/>
+@@ -86,6 +87,7 @@
+         <include name="jnlp2*"/>
+       </fileset>
+     </copy>
++-->
+ 
+     <!-- Unix Note: the executable permission of jnlp2rpm or jnlp2pkg 
+          files are not retained using Ant Copy, add executable mode.

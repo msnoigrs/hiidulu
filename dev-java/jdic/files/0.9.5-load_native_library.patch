@@ -1,0 +1,60 @@
+diff -uNr jdic-0.9.5-src.orig/jdic/src/share/classes/org/jdesktop/jdic/init/JdicManager.java jdic-0.9.5-src/jdic/src/share/classes/org/jdesktop/jdic/init/JdicManager.java
+--- jdic-0.9.5-src.orig/jdic/src/share/classes/org/jdesktop/jdic/init/JdicManager.java	2008-06-03 21:19:46.000000000 +0900
++++ jdic-0.9.5-src/jdic/src/share/classes/org/jdesktop/jdic/init/JdicManager.java	2009-02-07 13:24:26.000000000 +0900
+@@ -183,19 +183,8 @@
+                 if( null==clNativeExtractor 
+                     && JdicManager.class.getClassLoader() instanceof URLClassLoader)
+                 {
+-                    //running url of current class                                                  
+-                    nativeLibPath =  new File(
+-                            new URL(JdicManager.class
+-                                .getProtectionDomain()
+-                                .getCodeSource()
+-                                .getLocation(),
+-                                ".")
+-                            .openConnection()
+-                            .getPermission()
+-                            .getName()
+-                        ).getCanonicalPath()
+-                        + File.separator + getPlatform() 
+-                        + File.separator + getArchitecture();
++                    // set to java.library.path
++                    nativeLibPath = System.getProperty("java.library.path");
+                 }  
+             }    
+             if(null!=clNativeExtractor){
+@@ -311,7 +300,7 @@
+                 } else {
+                     AccessController.doPrivileged( new PrivilegedExceptionAction() { 
+                         public Object run() throws IOException {
+-                            System.load(nativeLibPath + File.separator 
++                            System.load(nativeLibPath + File.separator + "lib"
+                                     + libName + getPlatformDLLext());
+                             return null;
+                         }
+diff -uNr jdic-0.9.5-src.orig/jdic/src/unix/classes/org/jdesktop/jdic/tray/internal/impl/GnomeSystemTrayService.java jdic-0.9.5-src/jdic/src/unix/classes/org/jdesktop/jdic/tray/internal/impl/GnomeSystemTrayService.java
+--- jdic-0.9.5-src.orig/jdic/src/unix/classes/org/jdesktop/jdic/tray/internal/impl/GnomeSystemTrayService.java	2008-06-03 20:45:58.000000000 +0900
++++ jdic-0.9.5-src/jdic/src/unix/classes/org/jdesktop/jdic/tray/internal/impl/GnomeSystemTrayService.java	2009-02-07 13:25:37.000000000 +0900
+@@ -69,7 +69,7 @@
+         t.sync();
+ 
+         try{
+-            JdicManager.loadLibrary("jdic");
++            JdicManager.loadLibrary("tray");
+         }catch(PrivilegedActionException e){
+             e.printStackTrace();
+         }
+diff -uNr jdic-0.9.5-src.orig/jdic/src/unix/classes/org/jdesktop/jdic/tray/internal/impl/GnomeTrayAppletService.java jdic-0.9.5-src/jdic/src/unix/classes/org/jdesktop/jdic/tray/internal/impl/GnomeTrayAppletService.java
+--- jdic-0.9.5-src.orig/jdic/src/unix/classes/org/jdesktop/jdic/tray/internal/impl/GnomeTrayAppletService.java	2008-06-03 20:45:58.000000000 +0900
++++ jdic-0.9.5-src/jdic/src/unix/classes/org/jdesktop/jdic/tray/internal/impl/GnomeTrayAppletService.java	2009-02-07 13:27:11.000000000 +0900
+@@ -85,7 +85,9 @@
+         // System.out.println("version = " + version);
+         // System.out.flush();
+ 
+-        if ((version.indexOf("1.5") == -1) || (os.equals("SunOS"))) {
++        if (((version.indexOf("1.7") == -1) &&
++             (version.indexOf("1.6") == -1) &&
++             (version.indexOf("1.5") == -1)) || (os.equals("SunOS"))) {
+             // 1.4.2 or older JVM, use MAWT !
+             long w = getWidget(window, 400, 400, 0, 0);
+             // System.out.println("Widget w = " + w);

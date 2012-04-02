@@ -1,0 +1,77 @@
+--- jdic-0.9.5-src.orig/jdic/src/unix/native/mozilla/Makefile	2005-05-19 17:48:22.000000000 +0900
++++ jdic-0.9.5-src/jdic/src/unix/native/mozilla/Makefile	2009-02-08 00:19:42.000000000 +0900
+@@ -47,8 +47,8 @@
+ # For Gecko SDK 1.6 or ealier, enable USING_GECKO_SDK_1_4. Or else, enable 
+ # USING_GECKO_SDK_1_7.
+ #
+-USING_GECKO_SDK_1_4 = 1
+-#USING_GECKO_SDK_1_7 = 1
++#USING_GECKO_SDK_1_4 = 1
++USING_GECKO_SDK_1_7 = 1
+ 
+ # set gtk version
+ #
+@@ -101,12 +101,14 @@
+ PROGRAM = $(MODULE_NAME)$(BIN_SUFFIX)
+ LIBRARY = lib$(MODULE_NAME).so
+ 
+-#CXXFLAGS = -g -fPIC
+-CXXFLAGS = -O2 -fPIC
++CXXFLAGS = -g -fPIC
++#CXXFLAGS = -O2 -fPIC
+ 
+ # link against the version of gtkembedmoz included with a
+ # mozilla distribution
+-LIBS = -L$(MOZILLA_DIST) -lgtkembedmoz
++#LIBS = -L$(MOZILLA_DIST) -lgtkembedmoz
++LIBS = `pkg-config libxul --libs-only-L`
++LIBS += `pkg-config libxul --libs-only-l`
+ 
+ # libembedstring.a from the 1.4.2 gecko sdk requires __ctype_tolower,
+ # but for some reason that isn't available from the version of glibc
+@@ -124,10 +126,14 @@
+ endif
+ 
+ ifdef MOZ_ENABLE_GTK2
+-CPPFLAGS += -DMOZ_WIDGET_GTK2
++CPPFLAGS += -DMOZ_WIDGET_GTK2 -DXPCOM_GLUE_USE_NSPR
+ # XXX need to get these from pkg-config perhaps?
+ LIBS += $(XLDFLAGS) $(XLIBS)
+-LIBS_PROG += -L$(MOZILLA_DIST) -lgtkembedmoz -lxpcom
++#LIBS_PROG += -L$(MOZILLA_DIST) -lgtkembedmoz -lxpcom
++LIBS_PROG += `pkg-config libxul --libs-only-L`
++LIBS_PROG += `pkg-config mozilla-js --libs-only-L`
++LIBS_PROG += `pkg-config libxul --libs-only-l`
++LIBS_PROG += `pkg-config mozilla-js --libs-only-l`
+ endif
+ 
+ CPPFLAGS += \
+@@ -158,15 +164,23 @@
+ 	$(NULL)
+ endif
+ ifdef USING_GECKO_SDK_1_7
++#CPPFLAGS += \
++#        -DUSING_GECKO_SDK_1_7 \
++#	-include $(GECKO_SDK)/include/mozilla-config.h \
++#	-I$(GECKO_SDK)/include \
++#	$(NULL)
+ CPPFLAGS += \
+         -DUSING_GECKO_SDK_1_7 \
+ 	-include $(GECKO_SDK)/include/mozilla-config.h \
+-	-I$(GECKO_SDK)/include \
+-	$(NULL)
+-LIBS += \
+-	-L$(GECKO_SDK)/lib -lxpcomglue_s \
+-	-L$(GECKO_SDK)/bin -lxpcom -lnspr4 -lplds4 -lplc4 \
+ 	$(NULL)
++CPPFLAGS += `pkg-config libxul --cflags`
++CPPFLAGS += `pkg-config mozilla-js --cflags`
++#LIBS += \
++#	-L$(GECKO_SDK)/lib -lxpcomglue_s \
++#	-L$(GECKO_SDK)/bin -lxpcom -lnspr4 -lplds4 -lplc4 \
++#	$(NULL)
++LIBS += `pkg-config libxul-embedding --libs-only-L`
++LIBS += `pkg-config libxul-embedding --libs-only-l`
+ endif
+ 
+ ifeq ($(OS_ARCH), SunOS)

@@ -1,0 +1,50 @@
+--- jdic-0.9.5-src.orig/jdic/src/unix/native/jni/WebBrowserUtil.cpp	2005-06-14 12:20:08.000000000 +0900
++++ jdic-0.9.5-src/jdic/src/unix/native/jni/WebBrowserUtil.cpp	2009-02-07 13:11:55.000000000 +0900
+@@ -51,13 +51,13 @@
+     /*
+      * MOZILLA_FIVE_HOME not set. Search the Mozilla binary path to set it:
+      *   - First check Gconf to find the default browser path; 
+-     *   - If fails, then check the "mozilla" command under $PATH.
++     *   - If fails, then check the "firefox" command under $PATH.
+      *
+-     * If the mozilla binary path is found, check if it points to a valid path:
++     * If the firefox binary path is found, check if it points to a valid path:
+      *   - If not, return NULL; 
+      *   - If yes, check if libxpcom.so is located at the same path:
+-     *     - If yes, set MOZILLA_FIVE_HOME to the mozilla binary path;
+-     *     - If not, scan the mozilla binary file, which should be a Bourne 
++     *     - If yes, set MOZILLA_FIVE_HOME to the firefox binary path;
++     *     - If not, scan the firefox binary file, which should be a Bourne 
+      *       shell script file, for the MOZILLA_FIVE_HOME setting.
+      *
+      *  If MOZILLA_FIVE_HOME is found and set, add it to LD_LIBRARY_PATH.
+@@ -80,7 +80,7 @@
+             fprintf(stderr, "The default browser path set in GConf: %s\n", command);
+ #endif
+             // Check if the command is or points to a Mozilla binary path.
+-            char *p = g_strstr_len(command, strlen(command), "mozilla");
++            char *p = g_strstr_len(command, strlen(command), "firefox");
+             if (p) {
+                 // Remove the "%s" string in the command string.
+                 mozpath = g_strdup_printf (command, "");
+@@ -94,17 +94,17 @@
+         }
+     }                                                                                                          
+ 
+-    // Check if the Mozilla path is valid. Or else, check the mozilla
++    // Check if the Mozilla path is valid. Or else, check the firefox
+     // command under $PATH.
+     struct stat stat_p;
+     if ((mozpath == NULL) || (stat (mozpath, &stat_p) != 0)) {
+         char *pathenv = getenv("PATH");
+         char **pathfields = g_strsplit(pathenv, ":", -1);    
+         for (int index = 0; pathfields[index] != NULL; index++) {
+-            mozpath = g_strconcat (pathfields[index], "/mozilla", NULL);
++            mozpath = g_strconcat (pathfields[index], "/firefox", NULL);
+             if (stat (mozpath, &stat_p) == 0) {
+ #ifdef DEBUG
+-                fprintf(stderr, "Found mozilla binary under $PATH: %s\n", mozpath);
++                fprintf(stderr, "Found firefox binary under $PATH: %s\n", mozpath);
+ #endif
+                 break; 
+             } else {

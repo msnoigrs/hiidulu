@@ -1,0 +1,114 @@
+diff -uNr jdic-0.9.5-src.orig/jdic/build.xml jdic-0.9.5-src/jdic/build.xml
+--- jdic-0.9.5-src.orig/jdic/build.xml	2009-02-08 00:24:27.000000000 +0900
++++ jdic-0.9.5-src/jdic/build.xml	2009-02-08 00:30:25.000000000 +0900
+@@ -62,6 +62,14 @@
+ 
+   <property name="toDebug" value="off"/>
+ 
++  <property name="dist.dir" value="dist/linux" />
++
++  <path id="lib.classpath">
++    <fileset dir="${dist.dir}">
++      <include name="*.jar"/>
++    </fileset>
++  </path>
++
+   <target name="showtargets" description="default target showing all available targets">
+     <echo>The top-level targets are:</echo>
+     <echo> buildall:  Build a JDIC API distribution for the current platform</echo>
+@@ -82,6 +90,7 @@
+ 
+     <!-- Set platform-dependent distribution directory -->
+     <!-- ${file.separator} is "\" on Windows, and "/" on Unix -->
++<!--
+     <condition property="dist.dir" value="dist${file.separator}windows">
+       <os family="windows" />
+     </condition>
+@@ -105,9 +114,11 @@
+     <condition property="dist.dir" value="dist/mac_os_x">
+       <os name="Mac OS X"/>
+     </condition>
+-
++-->
+     <!-- Create the distribution directory -->
++<!--
+     <mkdir dir="${dist.dir}" />
++-->
+ 
+     <echo>++++++++++++++++++++++++++++++++++++++++++++++++++++</echo>
+     <echo>+ JDIC API build version ${version} release ${release}</echo>
+@@ -163,6 +174,7 @@
+     <javadoc packagenames="${pkg.desktop.name}, ${pkg.filetypes.name}, ${pkg.browser.name}, ${pkg.tray.name}"
+              sourcepath="${share.classes.dir}"
+              destdir="${dist.dir}/javadoc"
++             classpathref="lib.classpath"
+              author="false"
+              version="false"
+              use="true"
+@@ -288,7 +300,7 @@
+ 
+     <javac debug="${toDebug}" srcdir="${share.classes.dir}:${unix.classes.dir}"
+            destdir="${dist.dir}"
+-           classpath="${dist.dir}"
++           classpathref="lib.classpath"
+            target="1.4"
+            source="1.4"
+     />
+diff -uNr jdic-0.9.5-src.orig/packager/build.xml jdic-0.9.5-src/packager/build.xml
+--- jdic-0.9.5-src.orig/packager/build.xml	2007-07-16 20:32:52.000000000 +0900
++++ jdic-0.9.5-src/packager/build.xml	2009-02-08 00:36:42.000000000 +0900
+@@ -41,10 +41,16 @@
+   <property name="win32.bootstrapper.dir" value="${src.dir}/win32/bootstrapper" />
+   <property name="win32.files.dir"        value="${src.dir}/win32/files" />
+ 
+-  <!-- <property name="dist.dir" value="dist" /> -->
++  <property name="dist.dir" value="dist/linux" />
+ 
+   <property name="jar.file" value="packager.jar" />
+ 
++  <path id="lib.classpath">
++    <fileset dir="${dist.dir}">
++      <include name="*.jar"/>
++    </fileset>
++  </path>
++
+   <!-- the distribution version and release of this build -->
+   <!-- which is only used in javadoc target -->
+   <property name="version" value="0.9" />
+@@ -68,6 +74,7 @@
+ 
+     <!-- Set platform-dependent distribution directory -->
+     <!-- ${file.separator} is "\" on Windows, and "/" on Unix -->
++<!--
+     <condition property="dist.dir" value="dist${file.separator}windows">
+       <os family="windows" />      
+     </condition> 
+@@ -79,9 +86,9 @@
+     <condition property="dist.dir" value="dist/solaris">
+       <os name="sunos"/>      
+     </condition> 
+-
++-->
+     <!-- Create the distribution directory -->
+-    <mkdir dir="${dist.dir}" />   
++<!--    <mkdir dir="${dist.dir}" />   -->
+ 
+     <echo>++++++++++++++++++++++++++++++++++++++++++++++++++++</echo>
+     <echo>+ JDIC Packager build version ${version} release ${release}</echo>
+@@ -143,6 +150,7 @@
+     <javadoc packagenames="${pkg.packager.name}"
+              sourcepath="${share.classes.dir}"
+              destdir="${dist.dir}/javadoc"
++             classpathref="lib.classpath"
+              author="false"
+              version="false"
+              use="true"
+@@ -234,7 +242,7 @@
+           description="build the classes and jar file." >
+     <javac srcdir="${share.classes.dir}:${unix.classes.dir}"
+            destdir="${dist.dir}"
+-           classpath="${dist.dir}" 
++           classpathref="lib.classpath" 
+     />
+ 
+     <jar destfile="${dist.dir}/${jar.file}" update="false">

@@ -1,8 +1,8 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2012 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI="2"
+EAPI="4"
 JAVA_PKG_IUSE="doc source +xalan +dom log4j +slf4j +commonslogging jython javarebel"
 #JAVA_PKG_IUSE="doc source +xalan +dom +log4j logkit jython rhino javarebel"
 WANT_ANT_TASKS="ant-nodeps"
@@ -32,7 +32,7 @@ COMMON_DEP="
 	log4j? ( dev-java/log4j-over-slf4j )
 	slf4j? ( dev-java/slf4j-api )
 	commonslogging? ( dev-java/jcl-over-slf4j )
-	jython? ( dev-java/jython:0 )"
+	jython? ( dev-java/jython:2.5 )"
 #		dev-java/jdom:1.0
 #		dev-java/jaxen-jdom:1.1 )"
 #	logkit? ( dev-java/avalon-logkit:2.0 )
@@ -78,10 +78,10 @@ java_prepare() {
 		java-pkg_jar-from --into lib jcl-over-slf4j jcl-over-slf4j.jar commons-logging.jar
 	fi
 	if use jython; then
-		java-pkg_jar-from --into lib jython jython.jar
+		java-pkg_jar-from --into lib jython-2.5 jython.jar jython-2.5.jar
 #		:
-	else
-		epatch ${FILESDIR}/2.3.15-jython-nodep.patch
+#	else
+#		epatch ${FILESDIR}/2.3.15-jython-nodep.patch
 	fi
 	if ! use javarebel; then
 		# remove JavaRebel dependency

@@ -1,0 +1,20 @@
+--- build.xml.orig	2012-03-31 09:52:55.758722727 +0900
++++ build.xml	2012-03-31 09:56:24.684110745 +0900
+@@ -374,7 +374,7 @@
+           <ant dir="osgi"               target="clean" />
+         </parallel>
+ 
+-        <antcall target="docs.clean" />
++        <!--<antcall target="docs.clean" />-->
+     </target>
+ 
+ 
+@@ -913,7 +913,7 @@
+         </parallel>
+ 
+         <unzip src="${jaxb.libs.redist}/jaxb-api-doc.zip" dest="${jaxb.dist}/docs/api"/>
+-        <antcall target="docs" />
++        <!--<antcall target="docs" />-->
+ 
+         <antcall target="process-sample.notinwspack"/>
+         <!-- copy samples -->

@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+  @notes: Call using the following: ant -f build.xml -Dproject.name=${project name}
+-->
+
+<project name="Gentoo_Builder" default="jar" basedir=".">
+  <property name="srcdir" value="src"/>
+  <property name="resourcesdir" value="src/main/resources"/>
+  <property name="dist" value="target"/>
+  <property name="builddir" value="${dist}/classes"/>
+  <property name="buildtestdir" value="${dist}/test-classes"/>
+  <property name="testreportsdir" value="${dist}/surefire-reports"/>
+  <property name="javadocdir" value="${dist}/site/apidocs"/>
+  <property name="libdir" value="lib"/>
+
+  <property name="project.name" value="target"/>
+  <property name="jarfile" value="${project.name}.jar"/>
+  <property name="jarfile-t" value="${project.name}-with-transitions.jar"/>
+
+  <property name="debug" value="true"/>
+
+  <property name="description" value="${project.name}"/>
+  <property name="vendor" value="Gentoo"/>
+  <property name="version" value="1.0"/>
+  <property name="activator" value="example.class"/>
+  <property name="import.package" value="a,b,c,d"/>
+  <property name="export.package" value="a,b,c,d"/>
+
+  <path id="lib.classpath">
+    <fileset dir="${libdir}">
+      <include name="**/*.jar"/>
+    </fileset>
+  </path>
+
+  <path id="lib-trans.classpath">
+    <fileset dir="${libdir}">
+      <include name="**/*.jar"/>
+    </fileset>
+    <fileset dir="${dist}">
+      <include name="**/*.jar"/>
+    </fileset>
+  </path>
+
+  <!-- Override any defined properties -->
+  <property file="build.properties"/>
+
+  <target name="init">
+    <tstamp/>
+    <mkdir dir="${libdir}"/>
+    <mkdir dir="${builddir}"/>
+    <mkdir dir="${dist}"/>
+    <mkdir dir="${javadocdir}"/>
+    <available property="available.resources" file="${resourcesdir}" type="dir"/>
+  </target>
+
+  <target name="clean">
+    <delete dir="${builddir}"/>
+    <delete dir="${dist}"/>
+    <delete dir="${javadocdir}"/>
+  </target>
+
+  <target name="process-resources" depends="init" if="available.resources">
+    <copy todir="${builddir}">
+      <fileset dir="src/main/resources"/>
+    </copy>
+  </target>
+
+  <target name="compile" depends="process-resources">
+    <javac debug="${debug}"
+           srcdir="${srcdir}"
+           destdir="${builddir}"
+           classpathref="lib.classpath"/>
+  </target>
+
+  <target name="compile-trans">
+    <mkdir dir="translator-build"/>
+    <javac debug="${debug}"
+           srcdir="translator-src"
+           destdir="translator-build"
+           classpathref="lib-trans.classpath"/>
+  </target>
+
+  <target name="translate" depends="compile-trans">
+    <copy file="src/nu/validator/htmlparser/impl/Tokenizer.java"
+	  tofile="src/nu/validator/htmlparser/impl/Tokenizer-new.java"/>
+    <java classname="nu.validator.htmlparser.generator.ApplyHotSpotWorkaround"
+	  fork="true" classpath="translator-build"
+	  dir="src/nu/validator/htmlparser/impl">
+      <arg value="Tokenizer.java"/>
+      <arg value="Tokenizer-new.java"/>
+    </java>
+    <delete file="src/nu/validator/htmlparser/impl/Tokenizer.java"/>
+    <copy file="src/nu/validator/htmlparser/impl/Tokenizer-new.java"
+	  tofile="src/nu/validator/htmlparser/impl/Tokenizer.java"/>
+    <delete file="src/nu/validator/htmlparser/impl/Tokenizer-new.java"/>
+  </target>
+
+  <target name="jar-normal" depends="compile">
+    <copy todir="${builddir}">
+      <fileset dir="${srcdir}">
+        <include name="**/*.properties"/>
+        <include name="**/*.html"/>
+        <include name="**/*.xml"/>
+        <exclude name="**/package.html"/>
+      </fileset>
+    </copy>
+    <jar jarfile="${dist}/${jarfile}">
+      <!--
+      <manifest>
+        <attribute name="Bundle-Name" value="${project.name}"/>
+        <attribute name="Bundle-Description" value="${description}"/>
+        <attribute name="Bundle-Vendor" value="${vendor}"/>
+        <attribute name="Bundle-Version" value="${version}"/>
+        <attribute name="Bundle-Activator" value="${activator}"/>
+        <attribute name="Import-Package" value="${import.package}"/>
+        <attribute name="Export-Package" value="${export.package}"/>
+      </manifest>
+      -->
+      <fileset dir="${builddir}">
+        <!--
+        <include name="**/*.class"/>
+        <include name="**/*.properties"/>
+        -->
+      </fileset>
+    </jar>
+  </target>
+
+  <target name="jar-transitions" depends="translate">
+    <delete dir="${builddir}"/>
+    <antcall target="compile"/>
+    <copy todir="${builddir}">
+      <fileset dir="${srcdir}">
+        <include name="**/*.properties"/>
+        <include name="**/*.html"/>
+        <include name="**/*.xml"/>
+        <exclude name="**/package.html"/>
+      </fileset>
+    </copy>
+    <jar jarfile="${dist}/${jarfile-t}">
+      <!--
+      <manifest>
+        <attribute name="Bundle-Name" value="${project.name}"/>
+        <attribute name="Bundle-Description" value="${description}"/>
+        <attribute name="Bundle-Vendor" value="${vendor}"/>
+        <attribute name="Bundle-Version" value="${version}"/>
+        <attribute name="Bundle-Activator" value="${activator}"/>
+        <attribute name="Import-Package" value="${import.package}"/>
+        <attribute name="Export-Package" value="${export.package}"/>
+      </manifest>
+      -->
+      <fileset dir="${builddir}">
+        <!--
+        <include name="**/*.class"/>
+        <include name="**/*.properties"/>
+        -->
+      </fileset>
+    </jar>
+  </target>
+
+  <target name="jar" depends="jar-normal,jar-transitions">
+  </target>
+
+  <target name="javadoc">
+    <tstamp>
+      <format pattern="1999-yyyy" property="year"/>
+    </tstamp>
+    <javadoc use="true"
+             private="true"
+             destdir="${javadocdir}"
+             author="true"
+             version="true"
+             windowtitle="${project.name} API"
+             doctitle="${project.name}"
+             sourcepath="${srcdir}"
+             classpathref="lib.classpath"/>
+  </target>
+
+</project>

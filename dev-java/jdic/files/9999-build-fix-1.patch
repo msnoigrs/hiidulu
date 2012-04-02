@@ -1,0 +1,217 @@
+diff -uNr jdic-9999.orig/jdic/build.xml jdic-9999/jdic/build.xml
+--- jdic-9999.orig/jdic/build.xml	2011-03-27 20:22:52.196648655 +0900
++++ jdic-9999/jdic/build.xml	2011-03-27 20:23:39.549056716 +0900
+@@ -308,8 +308,10 @@
+ 
+     <!-- !!! As an additional operation, copy defmailer.properties file 
+          defining the default mailer location to the same location !!! -->
++<!--
+     <copy file="${unix.classes.defmailer.dir}/defmailer.properties" 
+           todir="${dist.dir}" />
++-->
+   </target>
+ 
+   <!-- *** Build BSD native JNI code *** -->
+diff -uNr jdic-9999.orig/jdic/src/share/native/mozilla/nsIHttpProtocolHandler.h jdic-9999/jdic/src/share/native/mozilla/nsIHttpProtocolHandler.h
+--- jdic-9999.orig/jdic/src/share/native/mozilla/nsIHttpProtocolHandler.h	2011-03-27 20:22:52.236648156 +0900
++++ jdic-9999/jdic/src/share/native/mozilla/nsIHttpProtocolHandler.h	2011-03-27 20:23:39.550056704 +0900
+@@ -25,7 +25,7 @@
+ class NS_NO_VTABLE nsIHttpProtocolHandler : public nsIProxiedProtocolHandler {
+  public: 
+ 
+-  NS_DEFINE_STATIC_IID_ACCESSOR(NS_IHTTPPROTOCOLHANDLER_IID)
++  NS_DECLARE_STATIC_IID_ACCESSOR(NS_IHTTPPROTOCOLHANDLER_IID)
+ 
+   /**
+      * Get the HTTP advertised user agent string.
+@@ -126,6 +126,8 @@
+ 
+ };
+ 
++NS_DEFINE_STATIC_IID_ACCESSOR(nsIHttpProtocolHandler, NS_IHTTPPROTOCOLHANDLER_IID)
++
+ /* Use this macro when declaring classes that implement this interface. */
+ #define NS_DECL_NSIHTTPPROTOCOLHANDLER \
+   NS_IMETHOD GetUserAgent(nsACString & aUserAgent); \
+diff -uNr jdic-9999.orig/jdic/src/share/native/mozilla/nsIProfileInternal.h jdic-9999/jdic/src/share/native/mozilla/nsIProfileInternal.h
+--- jdic-9999.orig/jdic/src/share/native/mozilla/nsIProfileInternal.h	2011-03-27 20:22:52.237648143 +0900
++++ jdic-9999/jdic/src/share/native/mozilla/nsIProfileInternal.h	2011-03-27 20:23:39.550056704 +0900
+@@ -34,7 +34,7 @@
+ class NS_NO_VTABLE nsIProfileInternal : public nsIProfile {
+  public: 
+ 
+-  NS_DEFINE_STATIC_IID_ACCESSOR(NS_IPROFILEINTERNAL_IID)
++  NS_DECLARE_STATIC_IID_ACCESSOR(NS_IPROFILEINTERNAL_IID)
+ 
+   /**
+      * Starts up the profile manager
+@@ -168,6 +168,8 @@
+ 
+ };
+ 
++NS_DEFINE_STATIC_IID_ACCESSOR(nsIProfileInternal, NS_IPROFILEINTERNAL_IID)
++
+ /* Use this macro when declaring classes that implement this interface. */
+ #define NS_DECL_NSIPROFILEINTERNAL \
+   NS_IMETHOD StartupWithArgs(nsICmdLineService *cmdLine, PRBool canInteract); \
+diff -uNr jdic-9999.orig/jdic/src/share/native/mozilla/nsIProfileInternalOld.h jdic-9999/jdic/src/share/native/mozilla/nsIProfileInternalOld.h
+--- jdic-9999.orig/jdic/src/share/native/mozilla/nsIProfileInternalOld.h	2011-03-27 20:22:52.237648143 +0900
++++ jdic-9999/jdic/src/share/native/mozilla/nsIProfileInternalOld.h	2011-03-27 20:23:39.550056704 +0900
+@@ -49,7 +49,7 @@
+ class NS_NO_VTABLE nsIProfileInternalOld : public nsIProfile {
+  public: 
+ 
+-  NS_DEFINE_STATIC_IID_ACCESSOR(NS_IPROFILEINTERNAL_IID)
++  NS_DECLARE_STATIC_IID_ACCESSOR(NS_IPROFILEINTERNAL_IID)
+ 
+   /**
+      * Starts up the profile manager
+@@ -180,6 +180,8 @@
+ 
+ };
+ 
++NS_DEFINE_STATIC_IID_ACCESSOR(nsIProfileInternalOld, NS_IPROFILEINTERNAL_IID)
++
+ /* Use this macro when declaring classes that implement this interface. */
+ #define NS_DECL_NSIPROFILEINTERNAL \
+   NS_IMETHOD StartupWithArgs(nsICmdLineService *cmdLine, PRBool canInteract); \
+diff -uNr jdic-9999.orig/jdic/src/share/native/mozilla/nsIProxiedProtocolHandler.h jdic-9999/jdic/src/share/native/mozilla/nsIProxiedProtocolHandler.h
+--- jdic-9999.orig/jdic/src/share/native/mozilla/nsIProxiedProtocolHandler.h	2011-03-27 20:22:52.238648130 +0900
++++ jdic-9999/jdic/src/share/native/mozilla/nsIProxiedProtocolHandler.h	2011-03-27 20:23:39.551056692 +0900
+@@ -31,7 +31,7 @@
+ class NS_NO_VTABLE nsIProxiedProtocolHandler : public nsIProtocolHandler {
+  public: 
+ 
+-  NS_DEFINE_STATIC_IID_ACCESSOR(NS_IPROXIEDPROTOCOLHANDLER_IID)
++  NS_DECLARE_STATIC_IID_ACCESSOR(NS_IPROXIEDPROTOCOLHANDLER_IID)
+ 
+   /** Create a new channel with the given proxyInfo
+      *
+@@ -41,6 +41,8 @@
+ 
+ };
+ 
++NS_DEFINE_STATIC_IID_ACCESSOR(nsIProxiedProtocolHandler, NS_IPROXIEDPROTOCOLHANDLER_IID)
++
+ /* Use this macro when declaring classes that implement this interface. */
+ #define NS_DECL_NSIPROXIEDPROTOCOLHANDLER \
+   NS_IMETHOD NewProxiedChannel(nsIURI *uri, nsIProxyInfo *proxyInfo, nsIChannel **_retval); 
+diff -uNr jdic-9999.orig/jdic/src/unix/classes/org/jdesktop/jdic/tray/internal/impl/GnomeTrayIconService.java jdic-9999/jdic/src/unix/classes/org/jdesktop/jdic/tray/internal/impl/GnomeTrayIconService.java
+--- jdic-9999.orig/jdic/src/unix/classes/org/jdesktop/jdic/tray/internal/impl/GnomeTrayIconService.java	2011-03-27 20:22:52.246648031 +0900
++++ jdic-9999/jdic/src/unix/classes/org/jdesktop/jdic/tray/internal/impl/GnomeTrayIconService.java	2011-03-27 20:23:39.551056692 +0900
+@@ -66,7 +66,8 @@
+         
+         initListeners();
+         
+-        popupMenuParent = new JDialog(frame, "JDIC Tray Icon");
++        //popupMenuParent = new JDialog(frame, "JDIC Tray Icon");
++        popupMenuParent = new JDialog();
+         popupMenuParent.setUndecorated(true);
+     }
+ 
+diff -uNr jdic-9999.orig/jdic/src/unix/native/jni/Makefile jdic-9999/jdic/src/unix/native/jni/Makefile
+--- jdic-9999.orig/jdic/src/unix/native/jni/Makefile	2011-03-27 20:22:52.252647956 +0900
++++ jdic-9999/jdic/src/unix/native/jni/Makefile	2011-03-27 20:23:39.551056692 +0900
+@@ -32,7 +32,7 @@
+   PLATFORM = solaris
+   CXX = CC -norunpath
+   CC = cc  
+-  CXXFLAGS = -c
++  CXXFLAGS = -c -fPIC
+   LDFLAGS = -G -ldl -lrt -lpthread
+   X11LIB=/usr/openwin/lib
+ else 
+@@ -45,7 +45,7 @@
+   ifeq ($(UNAME), FreeBSD)
+     PLATFORM = freebsd
+     CXX = g++
+-    CXXFLAGS = -c -I/usr/local/include -I/usr/X11R6/include
++    CXXFLAGS = -c -fPIC -I/usr/local/include -I/usr/X11R6/include
+     LDFLAGS = -shared -fPIC -L/usr/local/lib -L/usr/X11R6/lib
+   endif
+   CC = gcc
+diff -uNr jdic-9999.orig/jdic/src/unix/native/jni/WebBrowserUtil.cpp jdic-9999/jdic/src/unix/native/jni/WebBrowserUtil.cpp
+--- jdic-9999.orig/jdic/src/unix/native/jni/WebBrowserUtil.cpp	2011-03-27 20:22:52.254647931 +0900
++++ jdic-9999/jdic/src/unix/native/jni/WebBrowserUtil.cpp	2011-03-27 20:23:39.552056680 +0900
+@@ -23,6 +23,7 @@
+ #include <X11/Xlib.h>
+ #include "WebBrowserUtil.h"
+ #include <stdlib.h>
++#include <string.h>
+ #include <limits.h>
+ 
+ #include <sys/stat.h>
+diff -uNr jdic-9999.orig/jdic/src/unix/native/mozilla/MozEmbed.cpp jdic-9999/jdic/src/unix/native/mozilla/MozEmbed.cpp
+--- jdic-9999.orig/jdic/src/unix/native/mozilla/MozEmbed.cpp	2011-03-27 20:22:52.255647918 +0900
++++ jdic-9999/jdic/src/unix/native/mozilla/MozEmbed.cpp	2011-03-27 20:23:39.552056680 +0900
+@@ -43,6 +43,7 @@
+ 
+ // These are included from the Gecko SDK
+ #include "prenv.h"
++#include "prlock.h"
+ #include "prthread.h"
+ #include "nsXPCOM.h"
+ #include "nsEmbedString.h"
+diff -uNr jdic-9999.orig/jdic/src/unix/native/mozilla/nsIDOMKeyEvent.h jdic-9999/jdic/src/unix/native/mozilla/nsIDOMKeyEvent.h
+--- jdic-9999.orig/jdic/src/unix/native/mozilla/nsIDOMKeyEvent.h	2011-03-27 20:22:52.257647893 +0900
++++ jdic-9999/jdic/src/unix/native/mozilla/nsIDOMKeyEvent.h	2011-03-27 20:30:08.182198137 +0900
+@@ -25,7 +25,7 @@
+ class NS_NO_VTABLE nsIDOMKeyEvent : public nsIDOMUIEvent {
+  public: 
+ 
+-  NS_DEFINE_STATIC_IID_ACCESSOR(NS_IDOMKEYEVENT_IID)
++  NS_DECLARE_STATIC_IID_ACCESSOR(NS_IDOMKEYEVENT_IID)
+ 
+   enum { DOM_VK_CANCEL = 3U };
+ 
+@@ -278,6 +278,8 @@
+ 
+ };
+ 
++NS_DEFINE_STATIC_IID_ACCESSOR(nsIDOMKeyEvent, NS_IDOMKEYEVENT_IID)
++
+ /* Use this macro when declaring classes that implement this interface. */
+ #define NS_DECL_NSIDOMKEYEVENT \
+   NS_IMETHOD GetCharCode(PRUint32 *aCharCode); \
+diff -uNr jdic-9999.orig/jdic/src/unix/native/mozilla/nsIStringStream.h jdic-9999/jdic/src/unix/native/mozilla/nsIStringStream.h
+--- jdic-9999.orig/jdic/src/unix/native/mozilla/nsIStringStream.h	2011-03-27 20:22:52.257647893 +0900
++++ jdic-9999/jdic/src/unix/native/mozilla/nsIStringStream.h	2011-03-27 20:23:39.552056680 +0900
+@@ -31,7 +31,7 @@
+ class NS_NO_VTABLE nsIStringInputStream : public nsIInputStream {
+  public: 
+ 
+-  NS_DEFINE_STATIC_IID_ACCESSOR(NS_ISTRINGINPUTSTREAM_IID)
++  NS_DECLARE_STATIC_IID_ACCESSOR(NS_ISTRINGINPUTSTREAM_IID)
+ 
+   /**
+      * SetData - assign data to the input stream (copied on assignment).
+@@ -73,6 +73,8 @@
+ 
+ };
+ 
++NS_DEFINE_STATIC_IID_ACCESSOR(nsIStringInputStream, NS_ISTRINGINPUTSTREAM_IID)
++
+ /* Use this macro when declaring classes that implement this interface. */
+ #define NS_DECL_NSISTRINGINPUTSTREAM \
+   NS_IMETHOD SetData(const char *data, PRInt32 dataLen); \
+diff -uNr jdic-9999.orig/jdic/src/unix/native/mozilla/nsIWebNavigation.h jdic-9999/jdic/src/unix/native/mozilla/nsIWebNavigation.h
+--- jdic-9999.orig/jdic/src/unix/native/mozilla/nsIWebNavigation.h	2011-03-27 20:22:52.258647881 +0900
++++ jdic-9999/jdic/src/unix/native/mozilla/nsIWebNavigation.h	2011-03-27 20:23:39.553056668 +0900
+@@ -35,7 +35,7 @@
+ class NS_NO_VTABLE nsIWebNavigation : public nsISupports {
+  public: 
+ 
+-  NS_DEFINE_STATIC_IID_ACCESSOR(NS_IWEBNAVIGATION_IID)
++  NS_DECLARE_STATIC_IID_ACCESSOR(NS_IWEBNAVIGATION_IID)
+ 
+   /**
+   * Indicates if the object can go back.  If true this indicates that
+@@ -211,6 +211,8 @@
+ 
+ };
+ 
++NS_DEFINE_STATIC_IID_ACCESSOR(nsIWebNavigation, NS_IWEBNAVIGATION_IID)
++
+ /* Use this macro when declaring classes that implement this interface. */
+ #define NS_DECL_NSIWEBNAVIGATION \
+   NS_IMETHOD GetCanGoBack(PRBool *aCanGoBack); \

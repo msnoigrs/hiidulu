@@ -1,0 +1,225 @@
+diff -uNr jdic-9999.orig/jdic/src/unix/native/jni/GnomeBrowserService.cpp jdic-9999/jdic/src/unix/native/jni/GnomeBrowserService.cpp
+--- jdic-9999.orig/jdic/src/unix/native/jni/GnomeBrowserService.cpp	2011-11-05 14:55:51.135728375 +0900
++++ jdic-9999/jdic/src/unix/native/jni/GnomeBrowserService.cpp	2011-11-05 15:06:26.650783342 +0900
+@@ -22,7 +22,7 @@
+ #include "GnomeBrowserService.h"
+ #include <string.h>
+ 
+-#include <libgnome/libgnome.h>
++/*#include <libgnome/libgnome.h>*/
+ #include <gconf/gconf-client.h>
+   
+ #define GCONF_URL_HANDLER_PATH "/desktop/gnome/url-handlers/"
+diff -uNr jdic-9999.orig/jdic/src/unix/native/jni/GnomeLaunchService.cpp jdic-9999/jdic/src/unix/native/jni/GnomeLaunchService.cpp
+--- jdic-9999.orig/jdic/src/unix/native/jni/GnomeLaunchService.cpp	2011-11-05 14:55:51.143728275 +0900
++++ jdic-9999/jdic/src/unix/native/jni/GnomeLaunchService.cpp	2011-11-05 15:19:22.170088018 +0900
+@@ -20,17 +20,17 @@
+ 
+ #include <jni.h>
+ #include "GnomeLaunchService.h"
+-#include <stdio.h>
++/*#include <stdio.h>
+ #include <stdlib.h>
+ 
+ #include <glib.h>
+ #include <libgnome/gnome-url.h>
+-#include <libgnomevfs/gnome-vfs-init.h>
++#include <libgnomevfs/gnome-vfs-init.h>*/
+ 
+ JNIEXPORT jboolean JNICALL
+ Java_org_jdesktop_jdic_desktop_internal_impl_GnomeLaunchService_nativeOpenFile
+   (JNIEnv *env, jobject obj, jstring filePath) {
+-  gnome_vfs_init();
++/*  gnome_vfs_init();
+ 
+   const char* filePathStr = env->GetStringUTFChars(filePath, JNI_FALSE);
+   char* uri = g_strconcat("file://", filePathStr, NULL);
+@@ -40,4 +40,6 @@
+ 
+   env->ReleaseStringUTFChars(filePath, filePathStr);
+   return result;
++*/
++  return JNI_FALSE;
+ }
+diff -uNr jdic-9999.orig/jdic/src/unix/native/jni/GnomeVfsWrapper.cpp jdic-9999/jdic/src/unix/native/jni/GnomeVfsWrapper.cpp
+--- jdic-9999.orig/jdic/src/unix/native/jni/GnomeVfsWrapper.cpp	2011-11-05 14:55:51.165728000 +0900
++++ jdic-9999/jdic/src/unix/native/jni/GnomeVfsWrapper.cpp	2011-11-05 15:32:25.079300306 +0900
+@@ -20,17 +20,17 @@
+  
+ #include <jni.h>
+ #include "GnomeVfsWrapper.h"
+-#include <stdio.h>
++/*#include <stdio.h>*/
+ #include <stdlib.h>
+-
++/*
+ #include <libgnomevfs/gnome-vfs-init.h>
+ #include <libgnomevfs/gnome-vfs-mime.h>
+ #include <libgnomevfs/gnome-vfs-mime-handlers.h>
+-#include <libgnomevfs/gnome-vfs-mime-info.h>
++#include <libgnomevfs/gnome-vfs-mime-info.h>*/
+   
+ JNIEXPORT jstring JNICALL Java_org_jdesktop_jdic_filetypes_internal_GnomeVfsWrapper_gnome_1vfs_1get_1mime_1type
+   (JNIEnv *env, jclass cl, jstring url) {
+-  gnome_vfs_init();
++/*  gnome_vfs_init();
+ 
+   const char* urlStr = env->GetStringUTFChars(url, JNI_FALSE);
+   const char* mimeTypeStr = gnome_vfs_get_mime_type(urlStr);
+@@ -41,13 +41,14 @@
+   } else {
+     jstring mimeType = env->NewStringUTF(mimeTypeStr);
+     return mimeType;
+-  }
++  }*/
++  return NULL;
+ }  
+ 
+ 
+ JNIEXPORT jstring JNICALL Java_org_jdesktop_jdic_filetypes_internal_GnomeVfsWrapper_gnome_1vfs_1mime_1get_1value
+   (JNIEnv *env, jclass cl, jstring mimeType, jstring key) {
+-  gnome_vfs_init();	  
++/*  gnome_vfs_init();	  
+ 
+   const char* mimeTypeStr = env->GetStringUTFChars(mimeType, JNI_FALSE);
+   const char* keyStr = env->GetStringUTFChars(key, JNI_FALSE);
+@@ -60,12 +61,13 @@
+   } else {  
+     jstring keyValue = env->NewStringUTF(keyValueStr); 
+     return keyValue;
+-  }   
++  }*/
++  return NULL;
+ }
+   
+ JNIEXPORT jstring JNICALL Java_org_jdesktop_jdic_filetypes_internal_GnomeVfsWrapper_gnome_1vfs_1mime_1get_1description
+   (JNIEnv *env, jclass cl, jstring mimeType) {
+-  gnome_vfs_init();
++/*  gnome_vfs_init();
+ 
+   const char* mimeTypeStr = env->GetStringUTFChars(mimeType, JNI_FALSE);
+   const char* descStr = gnome_vfs_mime_get_description(mimeTypeStr);
+@@ -76,12 +78,13 @@
+   } else {
+     jstring desc = env->NewStringUTF(descStr);
+     return desc;
+-  }
++  }*/
++  return NULL;
+ }
+ 
+ JNIEXPORT jstring JNICALL Java_org_jdesktop_jdic_filetypes_internal_GnomeVfsWrapper_gnome_1vfs_1mime_1get_1icon
+   (JNIEnv *env, jclass cl, jstring mimeType) {
+-  gnome_vfs_init();
++/*  gnome_vfs_init();
+ 
+   const char* mimeTypeStr = env->GetStringUTFChars(mimeType, JNI_FALSE);
+   const char* iconFileStr = gnome_vfs_mime_get_icon(mimeTypeStr);
+@@ -92,12 +95,13 @@
+   } else {
+     jstring iconFile = env->NewStringUTF(iconFileStr);
+     return iconFile;
+-  }
++  }*/
++  return NULL;
+ }	  
+ 
+ JNIEXPORT jobjectArray JNICALL Java_org_jdesktop_jdic_filetypes_internal_GnomeVfsWrapper_gnome_1vfs_1mime_1get_1key_1list
+   (JNIEnv *env, jclass cl, jstring mimeType) {
+-  gnome_vfs_init();
++/*  gnome_vfs_init();
+ 
+   const char* mimeTypeStr = env->GetStringUTFChars(mimeType, JNI_FALSE);
+   GList* keyList = gnome_vfs_mime_get_key_list(mimeTypeStr);
+@@ -123,12 +127,13 @@
+     }
+   
+     return retArray;
+-  }    
++  }*/
++  return NULL;
+ }
+ 
+ JNIEXPORT jstring JNICALL Java_org_jdesktop_jdic_filetypes_internal_GnomeVfsWrapper_gnome_1vfs_1mime_1get_1default_1application_1command
+   (JNIEnv *env, jclass cl, jstring mimeType) {
+-  gnome_vfs_init();
++/*  gnome_vfs_init();
+ 
+   const char* mimeTypeStr = env->GetStringUTFChars(mimeType, JNI_FALSE);
+   GnomeVFSMimeApplication *mimeApp = gnome_vfs_mime_get_default_application(mimeTypeStr);
+@@ -144,12 +149,13 @@
+       jstring mimeAppCommand = env->NewStringUTF(mimeAppCommandStr);
+       return mimeAppCommand;
+     }
+-  }
++  }*/
++  return NULL;
+ }
+ 
+ JNIEXPORT jobjectArray JNICALL Java_org_jdesktop_jdic_filetypes_internal_GnomeVfsWrapper_gnome_1vfs_1get_1registered_1mime_1types
+   (JNIEnv *env, jclass cl) {
+-  gnome_vfs_init();
++/*  gnome_vfs_init();
+ 
+   GList* mimeTypeList = gnome_vfs_get_registered_mime_types();
+ 
+@@ -174,12 +180,13 @@
+     }
+ 
+    return retArray;
+-  }
++  }*/
++  return NULL;
+ }	 
+ 
+ JNIEXPORT jobjectArray JNICALL Java_org_jdesktop_jdic_filetypes_internal_GnomeVfsWrapper_gnome_1vfs_1mime_1get_1extensions_1list
+     (JNIEnv *env, jclass cl, jstring mimeType) {
+-  gnome_vfs_init();
++/*  gnome_vfs_init();
+   
+   const char* mimeTypeStr = env->GetStringUTFChars(mimeType, JNI_FALSE);
+   GList* extList = gnome_vfs_mime_get_extensions_list(mimeTypeStr);
+@@ -205,7 +212,8 @@
+     }
+ 
+    return retArray;
+-  }  
++  }*/
++  return NULL;
+ }	    
+ 
+ JNIEXPORT jstring JNICALL Java_org_jdesktop_jdic_filetypes_internal_GnomeVfsWrapper_getenv
+diff -uNr jdic-9999.orig/jdic/src/unix/native/jni/Makefile jdic-9999/jdic/src/unix/native/jni/Makefile
+--- jdic-9999.orig/jdic/src/unix/native/jni/Makefile	2011-11-05 14:55:55.532673405 +0900
++++ jdic-9999/jdic/src/unix/native/jni/Makefile	2011-11-05 15:34:23.887814995 +0900
+@@ -66,19 +66,20 @@
+ INCLUDES = -I$(JAVA_HOME)/include \
+            -I$(JAVA_HOME)/include/$(PLATFORM)
+ 
+-EXTRA_INCLUDES = `pkg-config --cflags glib-2.0` \
+-                 `pkg-config --cflags libgnome-2.0` \
+-                 `pkg-config --cflags gnome-vfs-2.0`\
+-                 `pkg-config --cflags gnome-vfs-module-2.0` \
+-                 `pkg-config --cflags bonobo-activation-2.0` \
+-                 `pkg-config --cflags libbonobo-2.0` \
+-                 `pkg-config --cflags ORBit-2.0` \
+-                 `pkg-config --cflags gconf-2.0`
++#EXTRA_INCLUDES = `pkg-config --cflags glib-2.0` \
++#                 `pkg-config --cflags libgnome-2.0` \
++#                 `pkg-config --cflags gnome-vfs-2.0`\
++#                 `pkg-config --cflags gnome-vfs-module-2.0` \
++#                 `pkg-config --cflags bonobo-activation-2.0` \
++#                 `pkg-config --cflags libbonobo-2.0` \
++#                 `pkg-config --cflags ORBit-2.0` \
++#                 `pkg-config --cflags gconf-2.0`
++EXTRA_INCLUDES = `pkg-config --cflags gconf-2.0`
+ 
+ LIBS = -L$(USR_LIB_DIR) \
+        -lz \
+-       -lm \
+-       -lgnome-2 
++       -lm
++#       -lgnome-2 
+ 
+ EXTRA_BROWSER_LIBS = \
+     -L$(JAVA_HOME)/jre/lib/sparc \
