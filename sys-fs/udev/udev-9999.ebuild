@@ -16,15 +16,16 @@ SRC_URI=""
 LICENSE="GPL-2"
 SLOT="0"
 KEYWORDS=""
-IUSE="selinux extras introspection +gudev"
+IUSE="selinux introspection +gudev hwdb"
 
 COMMON_DEPEND="selinux? ( sys-libs/libselinux )
 	sys-apps/acl
 	>=sys-apps/usbutils-0.82
 	virtual/libusb:0
 	sys-apps/pciutils[-zlib]
-	dev-libs/glib:2
+	gudev? ( dev-libs/glib:2 )
 	sys-apps/kmod
+	hwdb? ( sys-apps/hwids )
 	introspection? (
 		>=dev-libs/gobject-introspection-0.6.9
 	)"
@@ -100,11 +101,11 @@ src_prepare() {
 	# fix baselayout -
 
 	sed -e 's/GROUP="dialout"/GROUP="uucp"/' \
-		-i rules/{rules.d,arch,misc}/*.rules \
+		-i rules/*.rules \
 	|| die "failed to change group dialout to uucp"
 
 	sed_libexec_dir \
-		src/extras/rule_generator/write_*_rules \
+		src/rule_generator/write_*_rules \
 		|| die "sed failed"
 #		rules/rules.d/50-udev-default.rules \
 #		rules/rules.d/78-sound-card.rules \
@@ -177,7 +178,7 @@ src_install() {
 	insinto "${udev_libexec_dir}"/rules.d/
 
 	# support older kernels
-	doins misc/30-kernel-compat.rules
+	#doins misc/30-kernel-compat.rules
 
 	# Our rules files
 	doins "${FILESDIR}"/${PVR}/??-*.rules
@@ -218,9 +219,7 @@ src_install() {
 
 	# keep doc in just one directory, Bug #281137
 	rm -rf "${D}/usr/share/doc/${PN}"
-	if use extras; then
-		dodoc src/extras/keymap/README.keymap.txt || die "failed installing docs"
-	fi
+	dodoc src/keymap/README.keymap.txt || die "failed installing docs"
 
 	echo "CONFIG_PROTECT_MASK=\"/etc/udev/rules.d\"" > 20udev
 	doenvd 20udev

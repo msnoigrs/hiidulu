@@ -28,7 +28,7 @@ CDEPEND="
 	>=dev-libs/check-0.9.4
 	media-libs/libsndfile
 	sys-apps/dbus
-	>=sys-fs/udev-146[extras]
+	>=sys-fs/udev-146
 	alsa? (
 		media-libs/alsa-lib
 	)
