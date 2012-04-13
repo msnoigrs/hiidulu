@@ -4,24 +4,18 @@
 
 EAPI="3"
 PYTHON_DEPEND="2"
-
-# subversion eclass fetches gclient, which will then fetch mozc itself
-ESVN_REPO_URI="http://src.chromium.org/svn/trunk/tools/depot_tools"
-EGCLIENT_REPO_URI="http://mozc.googlecode.com/svn/trunk/src"
-UIMMOZC_REPO_URI="http://macuim.googlecode.com/svn/trunk/Mozc"
-
-inherit elisp-common eutils multilib python toolchain-funcs subversion
+inherit elisp-common eutils multilib python toolchain-funcs
 
 MY_P="${P/ibus-}"
 DESCRIPTION="The Mozc engine for IBus Framework"
 HOMEPAGE="http://code.google.com/p/mozc/"
-#SRC_URI="http://mozc.googlecode.com/files/${MY_P}.tar.bz2"
-SRC_URI=""
+SRC_URI="http://mozc.googlecode.com/files/${MY_P}.tar.bz2"
 
 LICENSE="BSD"
 SLOT="0"
 KEYWORDS="~amd64 ~x86"
-IUSE="emacs +ibus scim qt4"
+#IUSE="emacs +ibus scim skk +qt4"
+IUSE="emacs +ibus scim +qt4"
 
 RDEPEND="dev-libs/glib:2
 	dev-libs/protobuf
@@ -39,7 +33,7 @@ DEPEND="${RDEPEND}
 	dev-cpp/gtest
 	dev-util/pkgconfig"
 
-#S="${WORKDIR}/${MY_P}"
+S="${WORKDIR}/${MY_P}"
 
 BUILDTYPE="${BUILDTYPE:-Release}"
 
@@ -51,56 +45,18 @@ pkg_setup() {
 	python_set_active_version 2
 }
 
-src_unpack() {
-	subversion_src_unpack
-	mv "${S}" "${WORKDIR}"/depot_tools
-
-	# Most subversion checks and configurations were already run
-	EGCLIENT="${WORKDIR}"/depot_tools/gclient
-	cd "${ESVN_STORE_DIR}" || die "gclient: can't chdir to ${ESVN_STORE_DIR}"
-
-	if [[ ! -d ${PN} ]]; then
-		mkdir -p "${PN}" || die "gclient: can't mkdir ${PN}."
-	fi
-
-	cd "${PN}" || die "gclient: can't chdir to ${PN}"
-
-	if [[ ! -f .gclient ]]; then
-		einfo "gclient config -->"
-		${EGCLIENT} config ${EGCLIENT_REPO_URI} || die "gclient: error creating config"
-	fi
-
-	sed -i -e '/japanese/ d' src/DEPS
-
-	einfo "gclient sync start -->"
-	einfo "     repository: ${EGCLIENT_REPO_URI}"
-	${EGCLIENT} sync || die "gclient: can't fetch to ${PN} from ${EGCLIENT_REPO_URI}."
-	svn checkout http://japanese-usage-dictionary.googlecode.com/svn/trunk@9 src/third_party/japanese_usage_dicionary --revision 9 --non-interactive --ignore-externals
-
-	einfo "   working copy: ${ESVN_STORE_DIR}/${PN}"
-
-	mkdir -p "${S}"
-	rsync -rlpgo --exclude=".svn/" src/ "${S}" || die "gclient: can't export to ${S}."
-
-	#if use uim ; then
-	#	subversion_fetch ${UIMMOZC_REPO_URI} unix
-	#fi
-}
-
 src_prepare() {
 	sed -i -e "s:/usr/lib/mozc:${EPREFIX}/usr/$(get_libdir)/mozc:" base/util.cc || die
-#	epatch \
-#		"${FILESDIR}/${PN}-0.11.365.102-gentoo.patch" \
-#		"${FILESDIR}/${P}-gcc46.patch"
-	epatch "${FILESDIR}/${PN}-gentoo.patch"
-	epatch "${FILESDIR}/characterp-fix.patch"
-#	epatch "${FILESDIR}/${PN}-1.3.975.102_ibus-1.4.1.patch"
+	epatch \
+		"${FILESDIR}"/${PN}-1.2.809.102-gentoo.patch \
+		"${FILESDIR}"/${P}-ibus-1.4.patch
+
+	epatch "${FILESDIR}"/characterp-fix.patch
 }
 
 src_configure() {
-	local myconf
+	local myconf="--channel_dev=0"
 	#use chewing && myconf="${myconf} --chewing"
-	myconf="--channel_dev=0"
 	if ! use qt4 ; then
 		myconf="${myconf} --noqt"
 		export GYP_DEFINES="use_libzinnia=0"
@@ -115,6 +71,7 @@ src_compile() {
 	use emacs && mytarget="${mytarget} unix/emacs/emacs.gyp:mozc_emacs_helper"
 	use ibus && mytarget="${mytarget} unix/ibus/ibus.gyp:ibus_mozc"
 	use scim && mytarget="${mytarget} unix/scim/scim.gyp:scim_mozc unix/scim/scim.gyp:scim_mozc_setup"
+	#use skk && mytarget="${mytarget} chrome/skk/skk.gyp:skk"
 	if use qt4 ; then
 		export QTDIR="${EPREFIX}/usr"
 		mytarget="${mytarget} gui/gui.gyp:mozc_tool"

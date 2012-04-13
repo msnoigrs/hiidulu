@@ -19,6 +19,10 @@ SLOT="0"
 KEYWORDS="~amd64 ~x86"
 IUSE="linguas_ja"
 
+COMMON_DEP="app-emacs/popup-el"
+DEPEND="${DEPEND} ${COMMON_DEP}"
+RDEPEND="${RDEPEND} ${COMMON_DEP}"
+
 SITEFILE="50${PN}-gentoo.el"
 
 src_prepare() {
@@ -32,7 +36,7 @@ src_install() {
 	insinto "${SITEETC}/${PN}"
 	doins -r dict || die
 
-	dodoc README.txt TODO.txt etc/test.txt || die
+	dodoc etc/test.txt || die
 	cd doc
 	dodoc index.txt manual.txt demo.txt changes.txt *.png || die
 	if use linguas_ja; then

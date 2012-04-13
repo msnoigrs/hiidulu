@@ -1,0 +1,11 @@
+--- udisks-1.93.0.orig/src/udiskslinuxmanager.c 2012-03-05 17:04:03.000000000 +0100
++++ udisks-1.93.0/src/udiskslinuxmanager.c      2012-04-04 00:10:48.134381152 +0200
+@@ -42,6 +42,8 @@
+ #include "udisksdaemonutil.h"
+ #include "udiskscleanup.h"
+ 
++#define LOOP_CTL_GET_FREE 0x4C82
++
+ /**
+  * SECTION:udiskslinuxmanager
+  * @title: UDisksLinuxManager
