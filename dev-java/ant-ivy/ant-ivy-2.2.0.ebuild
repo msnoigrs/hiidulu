@@ -1,4 +1,4 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2012 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -23,11 +23,11 @@ IUSE=""
 COMMON_DEP="
 	dev-java/ant-core
 	dev-java/commons-httpclient:3
-	dev-java/commons-vfs
+	dev-java/commons-vfs:0
 	dev-java/jakarta-oro:2.0
 	dev-java/jsch
-	dev-java/bcprov
-	dev-java/bcpg"
+	dev-java/bcprov:0
+	dev-java/bcpg:0"
 DEPEND="
 	>=virtual/jdk-1.5
 	app-arch/unzip

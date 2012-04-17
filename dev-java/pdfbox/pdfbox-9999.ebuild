@@ -1,4 +1,4 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2012 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -63,7 +63,7 @@ java_prepare() {
 	java-pkg_jar-from icu4j-4.6 icu4j.jar icu4j-3.8.jar
 
 	cd ${S}
-	mkdir download || die
+#	mkdir download || die
 	cp ${DISTDIR}/*.jar download
 
 	rm -rf src/test/java/org

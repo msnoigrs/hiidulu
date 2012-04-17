@@ -37,6 +37,8 @@ RDEPEND=">=virtual/jre-1.5
 
 S="${WORKDIR}/${PN}"
 
+JAVA_ANT_ENCODING="iso-8859-1"
+
 java_prepare() {
 	sed -i -e 's/new RowSpec("fill:20dlu")/RowSpec.decode("fill:20dlu")/' freemind/preferences/layout/OptionPanel.java
 	sed -i -e 's/register(textfield, false, true, true)/register(textfield, false, false, true, true)/' freemind/view/mindmapview/EditNodeTextField.java

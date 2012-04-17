@@ -26,9 +26,9 @@ IUSE="cjk rtf rups"
 
 BCV="1.38"
 
-COMMON_DEPEND=">=dev-java/bcmail-${BCV}
-	>=dev-java/bcprov-${BCV}
-	>=dev-java/bctsp-${BCV}
+COMMON_DEPEND=">=dev-java/bcmail-${BCV}:0
+	>=dev-java/bcprov-${BCV}:0
+	>=dev-java/bctsp-${BCV}:0
 	rups? ( dev-java/dom4j:1 dev-java/pdf-renderer:0 )"
 DEPEND="|| ( =virtual/jdk-1.6* =virtual/jdk-1.5* !doc? ( !rups? ( =virtual/jdk-1.4* ) ) )
 	cjk? ( app-arch/unzip )

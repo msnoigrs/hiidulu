@@ -1,11 +1,12 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2012 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
 EAPI="4"
 JAVA_PKG_IUSE="doc source"
 
-ESVN_REPO_URI="http://svn.apache.org/repos/asf/xml/commons/trunk/java"
+#ESVN_REPO_URI="http://svn.apache.org/repos/asf/xml/commons/trunk/java"
+ESVN_REPO_URI="http://svn.apache.org/repos/asf/xerces/xml-commons/trunk/java"
 
 inherit subversion eutils java-pkg-2 java-ant-2
 

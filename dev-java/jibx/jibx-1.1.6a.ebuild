@@ -28,6 +28,9 @@ DEPEND=">=virtual/jdk-1.5
 	dev-java/ant-core:0
 	${COMMON_DEP}"
 RDEPEND=">=virtual/jre-1.5
+	dev-java/slf4j-api
+	dev-java/logback-core
+	dev-java/logback-classic
 	${COMMON_DEP}"
 
 S="${WORKDIR}/${PN}"

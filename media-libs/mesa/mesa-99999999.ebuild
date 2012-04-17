@@ -270,6 +270,8 @@ src_configure() {
 src_install() {
 	base_src_install
 
+	rm ${ED}/usr/$(get_libdir)/libgtest*
+
 	if use !bindist; then
 		dodoc docs/patents.txt
 	fi

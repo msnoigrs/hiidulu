@@ -21,7 +21,7 @@ SLOT="0"
 KEYWORDS="~amd64 ~x86"
 
 COMMON_DEP="
-	dev-java/commons-net
+	dev-java/commons-net:0
 	dev-java/commons-httpclient:3
 	dev-java/commons-collections
 	dev-java/jsch

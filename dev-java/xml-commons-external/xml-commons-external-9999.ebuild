@@ -1,20 +1,16 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2012 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI="2"
+EAPI="4"
 JAVA_PKG_IUSE="doc source"
 
-ESVN_REPO_URI="http://svn.apache.org/repos/asf/xml/commons/trunk/java/external"
+ESVN_REPO_URI="http://svn.apache.org/repos/asf/xerces/xml-commons/trunk/java/external"
 
 inherit subversion eutils java-pkg-2 java-ant-2
 
 DESCRIPTION="An Apache-hosted set of externally-defined standards interfaces, namely DOM, SAX, and JAXP."
 HOMEPAGE="http://xml.apache.org/commons/"
-#SRC_URI="mirror://apache/xerces/xml-commons/source/${P}-src.tar.gz"
-# upstream source tar.gz is missing build.xml and other stuff, so we get it like this
-# svn export http://svn.apache.org/repos/asf/xml/commons/trunk/java/external/ xml-commons-external-1.4.01
-# tar cjf xml-commons-external-1.4.01.tar.bz2 xml-commons-external-1.4.01
 
 LICENSE="Apache-2.0"
 SLOT="1.4"
@@ -23,13 +19,6 @@ IUSE="doc source"
 
 DEPEND=">=virtual/jdk-1.5"
 RDEPEND=">=virtual/jre-1.5"
-
-#S="${WORKDIR}"
-
-#java_prepare() {
-#	epatch "${FILESDIR}/svn-20110103.patch"
-#	cp ${FILESDIR}/build.xml build.xml
-#}
 
 src_install() {
 	java-pkg_dojar build/xml-apis.jar build/xml-apis-ext.jar

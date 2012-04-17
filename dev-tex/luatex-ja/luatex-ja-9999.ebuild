@@ -1,4 +1,4 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2012 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -25,7 +25,7 @@ src_install() {
 	luatexjadir="/usr/share/texmf-dist/tex/luatexja"
 	dodir ${luatexjadir} || die
 	cp -r src/* ${D}${luatexjadir}
-	dodoc doc/*.{lua,pdf,tex,sty,dtx,ins}
+	dodoc doc/*.{lua,pdf,tex,dtx,ins}
 }
 
 pkg_postinst() {
