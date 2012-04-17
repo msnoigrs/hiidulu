@@ -17,7 +17,7 @@ SLOT="3"
 KEYWORDS="~amd64 ~ppc ~ppc64 ~x86"
 IUSE="gunit"
 
-COMMON_DEPEND=">=dev-java/stringtemplate-3.2
+COMMON_DEPEND=">=dev-java/stringtemplate-3.2:0
 	 >=dev-java/antlr-2.7.7:0[java]
 	 gunit? ( dev-java/junit:4 )"
 

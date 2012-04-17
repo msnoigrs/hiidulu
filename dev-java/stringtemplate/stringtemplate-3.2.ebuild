@@ -1,8 +1,8 @@
-# Copyright 1999-2009 Gentoo Foundation
+# Copyright 1999-2012 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EANT=1
+EAPI="4"
 
 JAVA_PKG_IUSE="doc source"
 WANT_ANT_TASKS="ant-antlr"
@@ -26,10 +26,7 @@ DEPEND=">=virtual/jdk-1.4
 
 #	test? ( dev-java/junit:0 )"
 
-src_unpack() {
-	unpack ${A}
-	cd "${S}"
-
+java_prepare() {
 	# fix <javadoc> call
 	epatch "${FILESDIR}/${P}-javadoc.patch"
 	java-ant_rewrite-classpath
