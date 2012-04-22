@@ -8,7 +8,7 @@ JAVA_PKG_IUSE="doc source"
 #ESVN_REPO_URI="http://svn.apache.org/repos/asf/xml/commons/trunk/java"
 ESVN_REPO_URI="http://svn.apache.org/repos/asf/xerces/xml-commons/trunk/java"
 
-inherit subversion eutils java-pkg-2 java-ant-2
+inherit subversion java-pkg-2 java-ant-2
 
 DESCRIPTION="An XML Entity and URI Resolver"
 HOMEPAGE="http://xml.apache.org/commons/"
@@ -44,7 +44,7 @@ java_prepare() {
 	# see http://patch-tracker.debian.org/package/libxml-commons-resolver1.1-java/1.2-5
 	# needed by netbeans 6.7
 	cd ${WORKDIR}
-	epatch "${FILESDIR}/nb-extra.patch"
+	epatch "${FILESDIR}/nb-extra-9999.patch"
 
 	rm -rf apidocs resolver.jar || die
 }

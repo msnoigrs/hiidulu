@@ -46,6 +46,8 @@ src_unpack() {
 
 	mercurial_fetch https://bitbucket.org/validator/build build ${S}/build
 
+	mercurial_fetch https://dvcs.w3.org/hg/nu-validator-site nu-validator-site ${S}/nu-validator-site
+
 	cd ${S}
 #	unpack ${A}
 	cat validator/entity-map.txt | grep -v schema/ | { while read l; do u=$(echo ${l} | cut -d ' ' -f 1); dd=$(echo ${l} | cut -d ' ' -f 2); [[ ! -d $(dirname local-entities/${dd}) ]] && mkdir -p local-entities/$(dirname ${dd}); wget -O local-entities/${dd} ${u}; done }
@@ -104,8 +106,14 @@ java_prepare() {
 	pageEmitter="validator/src/nu/validator/servlet/PageEmitter.java"
 	formTemplate="validator/xml-src/FormEmitter.xml"
 	formEmitter="validator/src/nu/validator/servlet/FormEmitter.java"
+	w3cPageTemplate="nu-validator-site/w3cPageEmitter.xml"
+	w3cPageEmitter="validator/src/nu/validator/servlet/W3CPageEmitter.java"
+	w3cFormTemplate="nu-validator-site/w3cFormEmitter.xml"
+	w3cFormEmitter="validator/src/nu/validator/servlet/W3CFormEmitter.java"
 	java -classpath lib/io-xml-util.jar nu.validator.tools.SaxCompiler ${pageTemplate} ${pageEmitter}
 	java -classpath lib/io-xml-util.jar nu.validator.tools.SaxCompiler ${formTemplate} ${formEmitter}
+	java -classpath lib/io-xml-util.jar nu.validator.tools.SaxCompiler ${w3cPageTemplate} ${w3cPageEmitter}
+	java -classpath lib/io-xml-util.jar nu.validator.tools.SaxCompiler ${w3cFormTemplate} ${w3cFormEmitter}
 
 	cp "${FILESDIR}/gentoo-build.xml" build.xml
 

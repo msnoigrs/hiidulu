@@ -1,10 +1,10 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2012 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
 EGIT_REPO_URI="git://github.com/yascentur/Ricty.git"
 
-inherit font git
+inherit font git-2
 
 MIG_SFD="53389"
 MIG_V="20111002"
@@ -35,7 +35,7 @@ FONTDIR="/usr/share/fonts/${PN}"
 RESTRICT="strip bincheckes"
 
 src_unpack() {
-	git_src_unpack
+	git-2_src_unpack
 	cd ${S}
 	unpack ${MIG}
 	cp "${DISTDIR}/Inconsolata.otf" .

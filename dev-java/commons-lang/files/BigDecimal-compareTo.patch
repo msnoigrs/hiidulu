@@ -1,0 +1,17 @@
+diff -uNr commons-lang-2.4-src.orig/src/java/org/apache/commons/lang/builder/EqualsBuilder.java commons-lang-2.4-src/src/java/org/apache/commons/lang/builder/EqualsBuilder.java
+--- commons-lang-2.4-src.orig/src/java/org/apache/commons/lang/builder/EqualsBuilder.java	2008-01-13 16:00:22.000000000 +0900
++++ commons-lang-2.4-src/src/java/org/apache/commons/lang/builder/EqualsBuilder.java	2008-07-31 17:04:28.000000000 +0900
+@@ -377,8 +377,11 @@
+         }
+         Class lhsClass = lhs.getClass();
+         if (!lhsClass.isArray()) {
+-            if (lhs instanceof java.math.BigDecimal) {
+-                isEquals = (((java.math.BigDecimal)lhs).compareTo(rhs) == 0);
++            if (lhs instanceof java.math.BigDecimal &&
++		rhs instanceof java.math.BigDecimal) {
++		java.math.BigDecimal tlhs = (java.math.BigDecimal)lhs;
++		java.math.BigDecimal trhs = (java.math.BigDecimal)rhs;
++                isEquals = (tlhs.compareTo(trhs) == 0);
+             } else {
+                 // The simple case, not an array, just test the element
+                 isEquals = lhs.equals(rhs);

@@ -1,0 +1,233 @@
+diff -uNr beansbinding-1.2.1/src/org/jdesktop/beansbinding/BeanProperty.java beansbinding-9999/src/org/jdesktop/beansbinding/BeanProperty.java
+--- beansbinding-1.2.1/src/org/jdesktop/beansbinding/BeanProperty.java	2007-11-02 11:49:20.000000000 +0900
++++ beansbinding-9999/src/org/jdesktop/beansbinding/BeanProperty.java	2009-02-27 12:41:15.000000000 +0900
+@@ -15,12 +15,6 @@
+  *
+  *   - Do testing with applets/security managers.
+  *
+- *   - Introspector/reflection doesn't work for non-public classes. EL handles this
+- *     by trying to find a version of the method in a public superclass/interface.
+- *     Looking at the code for Introspector (also used by EL), I got the idea that
+- *     it already does something like this. Investigate why EL handles this in an
+- *     extra step, and decide what we need to do in this class.
+- *
+  *   - Add option to turn on validation. For now it's hard-coded to be off.
+  */
+ 
+@@ -29,6 +23,7 @@
+ import java.beans.*;
+ import java.lang.reflect.InvocationTargetException;
+ import java.lang.reflect.Method;
++import java.lang.reflect.Modifier;
+ import java.util.*;
+ import org.jdesktop.observablecollections.ObservableMap;
+ import org.jdesktop.observablecollections.ObservableMapListener;
+@@ -732,14 +727,63 @@
+         assert object != null;
+ 
+         try {
+-            // PENDING(shannonh) - not sure about the last flag
+-            return Introspector.getBeanInfo(object.getClass(), Introspector.IGNORE_ALL_BEANINFO);
++            return Introspector.getBeanInfo(object.getClass());
+         } catch (IntrospectionException ie) {
+             throw new PropertyResolutionException("Exception while introspecting " + object.getClass().getName(), ie);
+         }
+     }
+ 
+     /**
++     * Returns a public form of the given method for the given class.
++     * <p>
++     * If a {@code PropertyDescriptor} is obtained for a non-public class that
++     * implements a public interface, the read/write methods will be for the
++     * class, and therefore inaccessible. To correct this, a version of the
++     * same method must be found in a superclass or interface.
++     *
++     * @param cl the class on which to search for the method
++     * @param method the method
++     * @return a public form of the given method for the given class,
++     *         or {@code null} if one can't be found
++     */
++    static private Method getPublicForm(Class cl, Method method) {
++        if (method == null) {
++            return null;
++        }
++
++        if (Modifier.isPublic(cl.getModifiers())) {
++            return method;
++        }
++
++        for (Class c : cl.getInterfaces()) {
++            Method m = null;
++            try {
++                m = c.getMethod(method.getName(), method.getParameterTypes());
++                c = m.getDeclaringClass();
++                if ((m = getPublicForm(c, m)) != null) {
++                    return m;
++                }
++            } catch (NoSuchMethodException ex) {
++            }
++        }
++
++        Class c = cl.getSuperclass();
++        if (c != null) {
++            Method m = null;
++            try {
++                m = c.getMethod(method.getName(), method.getParameterTypes());
++                c = m.getDeclaringClass();
++                if ((m = getPublicForm(c, m)) != null) {
++                    return m;
++                }
++            } catch (NoSuchMethodException ex) {
++            }
++        }
++
++        return null;
++    }
++
++    /**
+      * @throws PropertyResolutionException
+      */
+     private static PropertyDescriptor getPropertyDescriptor(Object object, String string) {
+@@ -801,8 +845,7 @@
+         object = getAdapter(object, string);
+ 
+         PropertyDescriptor pd = getPropertyDescriptor(object, string);
+-        Method readMethod = null;
+-        return pd == null ? null : pd.getReadMethod();
++        return pd == null ? null : getPublicForm(object.getClass(), pd.getReadMethod());
+     }
+ 
+     /**
+@@ -852,7 +895,7 @@
+         object = getAdapter(object, string);
+         
+         PropertyDescriptor pd = getPropertyDescriptor(object, string);
+-        if (pd == null || pd.getWriteMethod() == null) {
++        if (pd == null || getPublicForm(object.getClass(), pd.getWriteMethod()) == null) {
+             log("getType()", "missing write method");
+             throw new UnsupportedOperationException("Unwritable");
+         }
+@@ -870,8 +913,7 @@
+         object = getAdapter(object, string);
+ 
+         PropertyDescriptor pd = getPropertyDescriptor(object, string);
+-        Method writeMethod = null;
+-        return pd == null ? null : pd.getWriteMethod();
++        return pd == null ? null : getPublicForm(object.getClass(), pd.getWriteMethod());
+     }
+ 
+     /**
+@@ -947,7 +989,7 @@
+         EventSetDescriptor ed = getEventSetDescriptor(object);
+         Method addPCMethod = null;
+ 
+-        if (ed == null || (addPCMethod = ed.getAddListenerMethod()) == null) {
++        if (ed == null || (addPCMethod = getPublicForm(object.getClass(), ed.getAddListenerMethod())) == null) {
+             log("addPropertyChangeListener()", "can't add listener");
+             return;
+         }
+@@ -962,7 +1004,7 @@
+         EventSetDescriptor ed = getEventSetDescriptor(object);
+         Method removePCMethod = null;
+ 
+-        if (ed == null || (removePCMethod = ed.getRemoveListenerMethod()) == null) {
++        if (ed == null || (removePCMethod = getPublicForm(object.getClass(), ed.getRemoveListenerMethod())) == null) {
+             log("removePropertyChangeListener()", "can't remove listener from source");
+             return;
+         }
+diff -uNr beansbinding-1.2.1/src/org/jdesktop/beansbinding/Binding.java beansbinding-9999/src/org/jdesktop/beansbinding/Binding.java
+--- beansbinding-1.2.1/src/org/jdesktop/beansbinding/Binding.java	2007-11-02 11:49:20.000000000 +0900
++++ beansbinding-9999/src/org/jdesktop/beansbinding/Binding.java	2009-02-27 12:41:15.000000000 +0900
+@@ -874,13 +874,13 @@
+      * If a converter throws a {@code RuntimeException} other than
+      * {@code ClassCastException}, this method returns a
+      * {@code ValueResult} containing the failure, with failure type
+-     * {@code SyncFailureType.CONVERSION_FAILURE}.
++     * {@code SyncFailureType.CONVERSION_FAILED}.
+      * <p>
+      * As the last step, the {@code Binding's Validator}, if any, is called
+      * upon to validate the final value. If the {@code Validator}
+      * returns {@code non-null} from its {@code validate} method,
+      * a {@code ValueResult} is returned containing the validation
+-     * result, with failure type {@code SyncFailureType.VALIDATION_FAILURE}.
++     * result, with failure type {@code SyncFailureType.VALIDATION_FAILED}.
+      * Otherwise a {@code ValueResult} is returned containing the
+      * final validated value.
+      * <p>
+diff -uNr beansbinding-1.2.1/src/org/jdesktop/beansbinding/ELProperty.java beansbinding-9999/src/org/jdesktop/beansbinding/ELProperty.java
+--- beansbinding-1.2.1/src/org/jdesktop/beansbinding/ELProperty.java	2007-11-02 11:49:20.000000000 +0900
++++ beansbinding-9999/src/org/jdesktop/beansbinding/ELProperty.java	2009-02-27 12:41:15.000000000 +0900
+@@ -708,7 +708,7 @@
+         assert object != null;
+ 
+         try {
+-            return Introspector.getBeanInfo(object.getClass(), Introspector.IGNORE_ALL_BEANINFO);
++            return Introspector.getBeanInfo(object.getClass());
+         } catch (IntrospectionException ie) {
+             throw new PropertyResolutionException("Exception while introspecting " + object.getClass().getName(), ie);
+         }
+diff -uNr beansbinding-1.2.1/src/org/jdesktop/beansbinding/ext/BeanAdapterFactory.java beansbinding-9999/src/org/jdesktop/beansbinding/ext/BeanAdapterFactory.java
+--- beansbinding-1.2.1/src/org/jdesktop/beansbinding/ext/BeanAdapterFactory.java	2007-11-02 11:49:20.000000000 +0900
++++ beansbinding-9999/src/org/jdesktop/beansbinding/ext/BeanAdapterFactory.java	2009-02-27 12:41:15.000000000 +0900
+@@ -135,29 +135,6 @@
+         return null;
+     }
+ 
+-        private List<FeatureDescriptor> getDescriptors(Class<?> type) {
+-            BeanInfo info = null;
+-            try {
+-                info = Introspector.getBeanInfo(type);
+-            } catch (Exception ex) {
+-            }
+-            if (info == null) {
+-                return Collections.emptyList();
+-            }
+-            ArrayList<FeatureDescriptor> list = new ArrayList<FeatureDescriptor>(
+-                    info.getPropertyDescriptors().length);
+-            for (PropertyDescriptor pd: info.getPropertyDescriptors()) {
+-                // PENDING: The following properties come from EL, are they
+-                // needed?
+-                if (pd.getPropertyType() != null) {
+-                    pd.setValue("type", pd.getPropertyType());
+-                }
+-                pd.setValue("resolvableAtDesignTime", Boolean.TRUE);
+-                list.add(pd);
+-            }
+-            return list;
+-        }
+-
+     private static BeanInfo getBeanInfo(Class<?> type) {
+         try {
+             return Introspector.getBeanInfo(type);
+diff -uNr beansbinding-1.2.1/src/org/jdesktop/el/BeanELResolver.java beansbinding-9999/src/org/jdesktop/el/BeanELResolver.java
+--- beansbinding-1.2.1/src/org/jdesktop/el/BeanELResolver.java	2007-11-02 11:49:16.000000000 +0900
++++ beansbinding-9999/src/org/jdesktop/el/BeanELResolver.java	2009-02-27 12:41:15.000000000 +0900
+@@ -489,7 +489,10 @@
+      **/
+ 
+     static private Method getMethod(Class cl, Method method) {
+-
++        if (method == null) {
++            return null;
++        }
++        
+         if (Modifier.isPublic (cl.getModifiers ())) {
+             return method;
+         }
+diff -uNr beansbinding-1.2.1/src/org/jdesktop/el/impl/ValueExpressionImpl.java beansbinding-9999/src/org/jdesktop/el/impl/ValueExpressionImpl.java
+--- beansbinding-1.2.1/src/org/jdesktop/el/impl/ValueExpressionImpl.java	2007-11-02 11:49:16.000000000 +0900
++++ beansbinding-9999/src/org/jdesktop/el/impl/ValueExpressionImpl.java	2009-02-27 12:41:15.000000000 +0900
+@@ -195,8 +195,11 @@
+         if (value == ELContext.UNRESOLVABLE_RESULT) {
+             return new Result(Result.Type.UNRESOLVABLE, null, resolvedProperties);
+         }
+-        
+-        value = ELSupport.coerceToType(value, this.expectedType);
++
++        if (this.expectedType != null) {
++            value = ELSupport.coerceToType(value, this.expectedType);
++        }
++
+         return new Result(Result.Type.VALUE, value, resolvedProperties);
+     }
+     

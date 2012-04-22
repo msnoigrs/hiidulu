@@ -1,13 +1,13 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2012 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI="2"
+EAPI="4"
 inherit java-pkg-2
 
 DESCRIPTION="Apache's Geronimo implementation of J2EE specification (JPA)"
 HOMEPAGE="http://geronimo.apache.org"
-SRC_URI="${P}.tar.bz2"
+SRC_URI="http://dev.gentoo.gr.jp/~igarashi/distfiles/${P}.tar.bz2"
 # svn export https://svn.apache.org/repos/asf/geronimo/specs/tags/geronimo-jpa_3.0_spec-1.1.1 geronimo-spec-jpa-3.0.1.1.1
 # tar jcf geronimo-spec-jpa-3.0.1.1.1.tar.bz2 geronimo-spec-jpa-3.0.1.1.1
 

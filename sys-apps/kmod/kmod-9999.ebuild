@@ -3,7 +3,7 @@
 
 EAPI=4
 
-inherit git autotools
+inherit autotools git-2
 
 EGIT_REPO_URI="git://git.profusion.mobi/${PN}.git"
 

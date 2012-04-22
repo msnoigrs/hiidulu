@@ -1,14 +1,13 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2012 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI="3"
+EAPI="4"
 GCONF_DEBUG="no"
 GNOME2_LA_PUNT="yes"
 
 EGIT_REPO_URI="git://git.gnome.org/libnotify"
 
-#inherit git autotools eutils gnome.org
 inherit gnome2 gnome2-live
 
 DESCRIPTION="Notifications library"

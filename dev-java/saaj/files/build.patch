@@ -1,0 +1,27 @@
+--- saaj-9999.orig//build.xml	2011-03-27 09:07:39.620125611 +0900
++++ saaj-9999/build.xml	2011-03-27 09:14:39.027882293 +0900
+@@ -137,6 +137,8 @@
+   <property name="saaj.jar"                   	value="${lib.home}/saaj-api.jar"/>
+   <property name="FastInfoset.jar"             	value="${lib.home}/FastInfoset.jar"/>
+   <property name="mimepull.jar"             	value="${lib.home}/mimepull.jar"/>
++  <property name="xercesImpl.jar" value="${lib.home}/xercesImpl.jar"/>
++  <property name="xml-apis.jar" value="${lib.home}/endorsed/xml-apis.jar"/>
+ <!-- ************ Compiler Defaults ************************************** -->
+ 
+   <!-- Should Java compilations set the 'debug' compiler option? -->
+@@ -157,6 +159,7 @@
+     <pathelement location="${qname.jar}"/>
+     <pathelement location="${FastInfoset.jar}"/>
+     <pathelement location="${mimepull.jar}"/>
++    <pathelement location="${xercesImpl.jar}"/>
+   </path>
+ 
+   <property name="junit.jar"             value="${lib.home}/junit.jar"/>
+@@ -206,6 +209,7 @@
+        deprecation="${compile.deprecation}"
+           optimize="${compile.optimize}">
+       <classpath refid="compile.classpath"/>
++      <compilerarg line="-endorseddirs lib/endorsed"/>
+     </javac>
+     <!-- Copy default Factories info -->
+     <copy todir="${build.home}/classes/META-INF/services">

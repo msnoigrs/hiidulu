@@ -1,0 +1,162 @@
+# HG changeset patch
+# Parent 1a4b8689d5f6517bf5aa0ae117ad2a49a7ab91ba
+diff -r 1a4b8689d5f6 -r 630e82dd82b3 mod/schematron/mod.xml
+--- a/mod/schematron/mod.xml	Fri Nov 05 15:37:28 2010 +0000
++++ b/mod/schematron/mod.xml	Fri Dec 17 19:10:46 2010 +0900
+@@ -5,6 +5,7 @@
+   <depends lib="xalan"/>
+   <depends lib="saxon"/>
+   <depends lib="saxon9"/>
++  <java5/>
+   <test name="schematron" type="validate" schema="test/schematrontest.nrl"/>
+   <ant rescompile="mod.schematron.compile-res">
+     <target name="mod.schematron.compile-res">
+diff -r 1a4b8689d5f6 -r 630e82dd82b3 mod/schematron/src/main/com/thaiopensource/validate/schematron/OutputHandler.java
+--- a/mod/schematron/src/main/com/thaiopensource/validate/schematron/OutputHandler.java	Fri Nov 05 15:37:28 2010 +0000
++++ b/mod/schematron/src/main/com/thaiopensource/validate/schematron/OutputHandler.java	Fri Dec 17 19:10:46 2010 +0900
+@@ -1,5 +1,6 @@
+ package com.thaiopensource.validate.schematron;
+ 
++import java.util.ResourceBundle;
+ import org.xml.sax.helpers.DefaultHandler;
+ import org.xml.sax.ErrorHandler;
+ import org.xml.sax.SAXParseException;
+@@ -15,6 +16,15 @@
+   private final StringBuffer message = new StringBuffer();
+   private boolean inMessage = false;
+   private final Localizer localizer = new Localizer(OutputHandler.class);
++  private String role = null;
++  private final String bundleName
++    = "com.thaiopensource.validate.schematron.resources.Messages";
++  private ResourceBundle bundle = null;
++  private String getString(String key) {
++    if (bundle == null)
++      bundle = ResourceBundle.getBundle(bundleName);
++    return bundle.getString(key);
++  }
+ 
+   OutputHandler(ErrorHandler eh) {
+     this.eh = eh;
+@@ -48,10 +58,23 @@
+     characters(ch, start, length);
+   }
+ 
++  public enum MessageType {
++    ERROR, FATAL, WARN, WARNING, INFO, INFORMATION;
++    public static MessageType fromRole(String str) {
++      try {
++        return valueOf(str.toUpperCase());
++      }
++      catch (Exception ex) {
++        return ERROR;
++      }
++    }   
++  }
++
+   public void startElement(String uri, String localName,
+                            String qName, Attributes attributes)
+           throws SAXException {
+     if (localName.equals("failed-assertion") || localName.equals("report")) {
++      role = attributes.getValue("", "role");
+       lineNumber = toInteger(attributes.getValue("", "line-number"));
+       columnNumber = toInteger(attributes.getValue("", "column-number"));
+       systemId = attributes.getValue("", "system-id");
+@@ -63,6 +86,8 @@
+     }
+     else if (localName.equals("statement") || localName.equals("diagnostic")) {
+       inMessage = true;
++      if (message.length() == 0)
++        return;
+       if (message.charAt(message.length() - 1) != ' ')
+         message.append(' ');
+     }
+@@ -87,7 +112,29 @@
+       inMessage = false;
+     }
+     else if (localName.equals("failed-assertion") || localName.equals("report")) {
+-      eh.error(new SAXParseException(message.toString(), null, systemId, lineNumber, columnNumber));
++      switch (MessageType.fromRole(role)) {
++        case ERROR:
++          eh.error(new SAXParseException(message.toString(), null, systemId, lineNumber, columnNumber));
++          break;
++        case FATAL:
++          eh.fatalError(new SAXParseException(message.toString(), null, systemId, lineNumber, columnNumber));
++          break;
++        case WARN:
++          eh.warning(new SAXParseException(message.toString(), null, systemId, lineNumber, columnNumber));
++          break;
++        case WARNING:
++          eh.warning(new SAXParseException(message.toString(), null, systemId, lineNumber, columnNumber));
++          break;
++        case INFO:
++          eh.warning(new SAXParseException(getString("info") + message.toString(), null, systemId, lineNumber, columnNumber));
++          break;
++        case INFORMATION:
++          eh.warning(new SAXParseException(getString("info") + message.toString(), null, systemId, lineNumber, columnNumber));
++          break;
++        default:
++          eh.error(new SAXParseException(message.toString(), null, systemId, lineNumber, columnNumber));
++          break;
++      }
+       message.setLength(0);
+     }
+   }
+diff -r 1a4b8689d5f6 -r 630e82dd82b3 mod/schematron/src/main/com/thaiopensource/validate/schematron/resources/Messages.properties
+--- a/mod/schematron/src/main/com/thaiopensource/validate/schematron/resources/Messages.properties	Fri Nov 05 15:37:28 2010 +0000
++++ b/mod/schematron/src/main/com/thaiopensource/validate/schematron/resources/Messages.properties	Fri Dec 17 19:10:46 2010 +0900
+@@ -9,3 +9,4 @@
+ diagnostic_missing=Reference to non-existent diagnostic \u201c{0}\u201d.
+ report=
+ failed_assertion=
++info=info: 
+diff -r 1a4b8689d5f6 -r 630e82dd82b3 mod/util/src/main/com/thaiopensource/xml/sax/ErrorHandlerImpl.java
+--- a/mod/util/src/main/com/thaiopensource/xml/sax/ErrorHandlerImpl.java	Fri Nov 05 15:37:28 2010 +0000
++++ b/mod/util/src/main/com/thaiopensource/xml/sax/ErrorHandlerImpl.java	Fri Dec 17 19:10:46 2010 +0900
+@@ -47,8 +47,13 @@
+   }
+ 
+   public void warning(SAXParseException e) throws SAXParseException {
++    if (e.getMessage().startsWith(getString("info_prefix"))) {
++    print(format("info",
++		 new Object[] { formatMessage(e), formatLocation(e) }));
++    } else {
+     print(format("warning",
+ 		 new Object[] { formatMessage(e), formatLocation(e) }));
++    }
+   }
+ 
+   public void error(SAXParseException e) {
+diff -r 1a4b8689d5f6 -r 630e82dd82b3 mod/util/src/main/com/thaiopensource/xml/sax/resources/Messages.properties
+--- a/mod/util/src/main/com/thaiopensource/xml/sax/resources/Messages.properties	Fri Nov 05 15:37:28 2010 +0000
++++ b/mod/util/src/main/com/thaiopensource/xml/sax/resources/Messages.properties	Fri Dec 17 19:10:46 2010 +0900
+@@ -4,19 +4,25 @@
+ error={1}error: {0}
+ # first argument is message, second is location
+ warning={1}warning: {0}
+-# constructs string used as second argument of fatal, error, warning
++# first argument is message, second is location
++info={1}{0}
++# need to special-case "info: " b/c ErrorHandler
++# has no info() method
++info_prefix=info: 
++
++# constructs string used as second argument of fatal, error, warning, info
+ locator_system_id={0}: \
+ 
+-# constructs string used as second argument of fatal, error, warning
++# constructs string used as second argument of fatal, error, warning, info
+ locator_system_id_line_number={0}:{1,number,#}: \
+ 
+-# constructs string used as second argument of fatal, error, warning
++# constructs string used as second argument of fatal, error, warning, info
+ locator_system_id_line_number_column_number={0}:{1,number,#}:{2,number,#}: \
+ 
+-# constructs string used as second argument of fatal, error, warning
++# constructs string used as second argument of fatal, error, warning, info
+ locator_line_number=(Unknown file):{0,number,#}: \
+ 
+-# constructs string used as second argument of fatal, error, warning
++# constructs string used as second argument of fatal, error, warning, info
+ locator_line_number_column_number=(Unknown file):{0,number,#}: \
+ 
+ # first argument is class name; second argument is detail message
