@@ -1,20 +1,15 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2012 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI="2"
+EAPI="4"
 JAVA_PKG_IUSE="source test"
 
-EGIT_REPO_URI="git://github.com/wmeissner/jnr-constants.git"
-
-WANT_ANT_TASKS="ant-nodeps"
-
-inherit base git-2 java-pkg-2 java-ant-2
+inherit java-pkg-2 java-ant-2
 
 DESCRIPTION="Provides Java values for common platform C constants"
 HOMEPAGE="http://github.com/wmeissner/jnr-constants"
-#SRC_URI="mirror://gentoo/${P}.tar.gz"
-SRC_URI=""
+SRC_URI="mirror://gentoo/constantine-0.7.tar.gz"
 LICENSE="MIT"
 SLOT="0"
 KEYWORDS="amd64 ~ppc x86 ~amd64-linux ~x86-linux ~x86-solaris"
@@ -25,6 +20,8 @@ RDEPEND=">=virtual/jre-1.5"
 DEPEND=">=virtual/jdk-1.5
 	test? ( dev-java/ant-junit4 )"
 
+S="${WORKDIR}/constantine-0.7"
+
 src_compile() {
 	# ecj doesn't like some cast for some reason
 	java-pkg_force-compiler javac
@@ -32,7 +29,7 @@ src_compile() {
 }
 
 src_install() {
-	java-pkg_dojar dist/${PN}.jar
+	java-pkg_dojar dist/constantine.jar
 	use source && java-pkg_dosrc src/*
 }
 

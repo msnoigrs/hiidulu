@@ -17,7 +17,7 @@ IUSE=""
 
 DEPEND=""
 RDEPEND="|| (
-			virtual/jre:1.6
+			>=virtual/jre-1.6
 			dev-java/jaxme
 			dev-java/jaxb
 		)
@@ -25,4 +25,4 @@ RDEPEND="|| (
 		"
 
 JAVA_VIRTUAL_PROVIDES="jaxb-2"
-JAVA_VIRTUAL_VM="virtual/jre:1.6"
+JAVA_VIRTUAL_VM=">=virtual/jre-1.6"

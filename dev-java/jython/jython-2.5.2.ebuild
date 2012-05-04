@@ -1,4 +1,4 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2012 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -32,18 +32,18 @@ IUSE="+readline +ssl +threads +xml"
 #>=dev-java/jdbc-mysql-3.1
 #dev-java/jdbc-postgresql
 #	dev-java/jsr223:0 > java-vritulas
-#	dev-java/jna-posix:0
 #	dev-java/jna:0
+#	dev-java/jna-posix:0
 CDEPEND="dev-java/jakarta-oro:2.0
 	>=dev-java/libreadline-java-0.8.0
-	dev-java/asm:3
+	dev-java/asm:4
 	oracle? ( dev-java/jdbc-oracle-bin:10.2 )
 	java-virtuals/servlet-api:3.0
 	!<=dev-java/freemarker-2.3.10
-	dev-java/constantine:0
+	dev-java/jnr-constants:0
 	dev-java/jline:0
 	dev-java/jffi:0.4
-	dev-java/jnr-posix
+	dev-java/wmeissner-jnr-posix
 	dev-java/antlr:0
 	dev-java/antlr:3
 	dev-java/stringtemplate:0
@@ -58,6 +58,7 @@ DEPEND=">=virtual/jdk-1.6
 	dev-java/jarjar:1
 	dev-java/jaffl
 	${CDEPEND}"
+#	dev-java/constantine:0
 
 pkg_setup() {
 	java-pkg-2_pkg_setup
@@ -65,7 +66,9 @@ pkg_setup() {
 }
 
 java_prepare() {
-	sed -i -e '/jnr-netdb-0.4.jar/ a <pathelement path="${extlibs.dir}/ant.jar"/>' build.xml
+	#sed -i -e '/<pathelement.*jnr-netdb-0.4.jar/ a <pathelement path="${extlibs.dir}/jna-posix.jar"/>' build.xml
+	sed -i -e '/<pathelement.*jnr-netdb-0.4.jar/ a <pathelement path="${extlibs.dir}/ant.jar"/>' build.xml
+	#sed -i -e '/<zipfileset.*jnr-netdb-0.4.jar/ a <zipfileset src="extlibs/jna-posix.jar"/>' build.xml
 #	epatch "${FILESDIR}/${PN}-2.5.1-build.patch"
 	epatch "${FILESDIR}/${PN}-2.5.1-distutils_byte_compilation.patch"
 	epatch "${FILESDIR}/${PN}-2.5.1-distutils_scripts_location.patch"
@@ -86,18 +89,22 @@ java_prepare() {
 	java-pkg_jar-from --into extlibs asm-3 asm.jar asm-3.1.jar
 	java-pkg_jar-from --into extlibs asm-3 asm-commons.jar \
 		asm-commons-3.1.jar
-	java-pkg_jar-from --into extlibs constantine constantine.jar \
+	#java-pkg_jar-from --into extlibs constantine constantine.jar \
+	#	constantine.jar
+	#java-pkg_jar-from --into extlibs wmeissner-jnr-constants constantine.jar \
+	#	constantine.jar
+	java-pkg_jar-from --into extlibs jnr-constants jnr-constants.jar \
 		constantine.jar
 	java-pkg_jar-from --into extlibs jline jline.jar \
 		jline-0.9.95-SNAPSHOT.jar
 #	java-pkg_jar-from --into extlibs jna jna.jar
 #	java-pkg_jar-from --into extlibs jna-posix jna-posix.jar
-	java-pkg_jar-from --into extlibs jnr-posix jnr-posix.jar
+	java-pkg_jar-from --into extlibs wmeissner-jnr-posix jnr-posix.jar
 	java-pkg_jar-from --into extlibs jffi-0.4 jffi.jar
 	java-pkg_jar-from --build-only --into extlibs ant-core ant.jar
 	java-pkg_jar-from --build-only --into extlibs junit junit.jar \
 		junit-3.8.2.jar
-	java-pkg_jar-from --into extlibs xerces-2 xercesImpl.jar
+	java-pkg_jar-from --into extlibs xerces-2 xercesImpl.jar xercesImpl-2.9.1.jar
 	java-pkg_jar-from --into extlibs guava guava.jar guava-r07.jar
 #	java-pkg_jar-from --into extlibs jsr223 script-api.jar \
 #		livetribe-jsr223-2.0.5.jar

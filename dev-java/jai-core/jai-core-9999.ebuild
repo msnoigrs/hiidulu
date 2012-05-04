@@ -6,13 +6,14 @@ EAPI="2"
 JAVA_PKG_IUSE="source"
 WANT_ANT_TASKS="ant-nodeps"
 
-ESVN_REPO_URI="https://svn.java.net/svn/jai-core~svn/trunk"
+EGIT_REPO_URI="git://github.com/mauricio/jai-core.git"
+#ESVN_REPO_URI="https://svn.java.net/svn/jai-core~svn/trunk"
 # 1.3.9
-inherit subversion java-pkg-2 java-ant-2
+#inherit subversion java-pkg-2 java-ant-2
+inherit java-pkg-2 java-ant-2 git-2
 
 DESCRIPTION="The Java Advanced Imaging API Core"
 HOMEPAGE="http://java.net/projects/jai-core/"
-SRC_URI=""
 
 LICENSE="BSD"
 SLOT="0"

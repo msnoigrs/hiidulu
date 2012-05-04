@@ -18,6 +18,7 @@ KEYWORDS="~amd64 ~x86"
 IUSE="linguas_ja"
 
 SITEFILE="50${PN}-gentoo.el"
+ELISP_PATCHES="ajc-java-complete.patch"
 
 src_install() {
 	elisp_src_install

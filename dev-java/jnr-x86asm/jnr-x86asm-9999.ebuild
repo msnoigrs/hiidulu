@@ -1,20 +1,19 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2012 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI="3"
+EAPI="4"
 
 JAVA_PKG_IUSE="doc source"
 WANT_ANT_TASKS="ant-nodeps"
 
-EGIT_REPO_URI="git://github.com/wmeissner/jnr-x86asm.git"
+EGIT_REPO_URI="git://github.com/jnr/jnr-x86asm.git"
 
-inherit git-2 java-pkg-2 java-ant-2
+inherit java-pkg-2 java-ant-2 git-2
 
 DESCRIPTION="A pure-java port of asmjit."
-HOMEPAGE="http://github.com/wmeissner/jnr-x86asm/"
+HOMEPAGE="http://github.com/jnr/jnr-x86asm/"
 #SRC_URI="http://github.com/wmeissner/${PN}/tarball/0.1 -> ${P}.tar.gz"
-SRC_URI=""
 
 LICENSE="LGPL-3"
 SLOT="0"
@@ -24,12 +23,6 @@ IUSE=""
 
 RDEPEND=">=virtual/jre-1.5"
 DEPEND=">=virtual/jdk-1.5"
-
-#src_unpack() {
-#	unpack ${A}
-#	cd "${WORKDIR}" || die
-#	mv w* "${P}" || die
-#}
 
 java_prepare() {
 	cp "${FILESDIR}/gentoo-build.xml" build.xml

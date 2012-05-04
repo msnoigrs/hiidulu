@@ -1,4 +1,4 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2012 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -9,12 +9,12 @@ EAPI="2"
 JAVA_PKG_IUSE="source test"
 WANT_ANT_TASKS="ant-nodeps"
 
-EGIT_REPO_URI="git://github.com/wmeissner/jffi.git"
+EGIT_REPO_URI="git://github.com/jnr/jffi.git"
 
-inherit git-2 java-pkg-2 java-ant-2 toolchain-funcs flag-o-matic versionator
+inherit java-pkg-2 java-ant-2 toolchain-funcs flag-o-matic versionator git-2
 
 DESCRIPTION="An optimized Java interface to libffi"
-HOMEPAGE="http://github.com/wmeissner/jffi"
+HOMEPAGE="http://github.com/jnr/jffi"
 
 #SRC_URI="mirror://gentoo/${P}.tar.gz"
 SRC_URI=""
@@ -51,9 +51,9 @@ java_prepare() {
 	use ppc && arch="ppc"
 
 	# Don't include prebuilt files for other archs.
-	sed -i '/<zipfileset src="archive\//d' custom-build.xml || die
-	sed -i '/libs.CopyLibs.classpath/d' lib/nblibraries.properties || die
-	sed -i '/copylibstask.jar/d' lib/nblibraries.properties || die
+	#sed -i '/<zipfileset src="archive\//d' custom-build.xml || die
+	#sed -i '/libs.CopyLibs.classpath/d' lib/nblibraries.properties || die
+	#sed -i '/copylibstask.jar/d' lib/nblibraries.properties || die
 }
 
 EANT_EXTRA_ARGS="-Duse.system.libffi=1"
@@ -70,7 +70,7 @@ EOF
 
 	java-pkg_dojar dist/${PN}.jar
 #	java-pkg_doso build/jni/lib${PN}-$(get_version_component_range 1-2).so
-	java-pkg_doso build/jni/lib${PN}-1.0.so
+	java-pkg_doso build/jni/lib${PN}-1.2.so
 	use source && java-pkg_dosrc src/*
 }
 
