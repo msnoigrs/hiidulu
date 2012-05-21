@@ -50,7 +50,7 @@ java_prepare() {
 	cd bin/lib || die
 
 	java-pkg_jar-from commons-lang-2.1
-	java-pkg_jar-from tomcat-servlet-api-2.5 servlet-api.jar
+	java-pkg_jar-from tomcat-servlet-api-3.0 servlet-api.jar
 	java-pkg_jar-from jdom-1.0
 	java-pkg_jar-from werken-xpath
 #	java-pkg_jar-from log4j
