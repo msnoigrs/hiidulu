@@ -1,6 +1,6 @@
 # Copyright 1999-2012 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/app-office/libreoffice/libreoffice-3.5.3.2.ebuild,v 1.2 2012/04/26 12:25:32 scarabeus Exp $
+# $Header: /var/cvsroot/gentoo-x86/app-office/libreoffice/libreoffice-3.5.4.2-r1.ebuild,v 1.2 2012/05/29 12:08:14 scarabeus Exp $
 
 EAPI=4
 
@@ -23,7 +23,7 @@ DEV_URI="
 EXT_URI="http://ooo.itc.hu/oxygenoffice/download/libreoffice"
 ADDONS_URI="http://dev-www.libreoffice.org/src/"
 
-BRANDING="${PN}-branding-gentoo-0.4.tar.xz"
+BRANDING="${PN}-branding-gentoo-0.5.tar.xz"
 # PATCHSET="${P}-patchset-01.tar.xz"
 
 [[ ${PV} == *9999* ]] && SCM_ECLASS="git-2"
@@ -32,12 +32,12 @@ unset SCM_ECLASS
 
 DESCRIPTION="LibreOffice, a full office productivity suite."
 HOMEPAGE="http://www.libreoffice.org"
-SRC_URI="branding? ( http://dev.gentooexperimental.org/~scarabeus/${BRANDING} )"
+SRC_URI="branding? ( http://dev.gentoo.org/~dilfridge/distfiles/${BRANDING} )"
 [[ -n ${PATCHSET} ]] && SRC_URI+=" http://dev.gentooexperimental.org/~scarabeus/${PATCHSET}"
 
 # Split modules following git/tarballs
 # Core MUST be first!
-MODULES="core binfilter"
+MODULES="core binfilter help"
 # Only release has the tarballs
 if [[ ${PV} != *9999* ]]; then
 	for i in ${DEV_URI}; do
@@ -70,12 +70,12 @@ unset ADDONS_URI
 unset EXT_URI
 unset ADDONS_SRC
 
-IUSE="binfilter +branding +cups dbus eds gnome +graphite gstreamer +gtk
+IUSE="binfilter binfilterdebug +branding +cups dbus eds gnome +graphite gstreamer +gtk
 jemalloc kde mysql nlpsolver +nsplugin odk opengl pdfimport postgres svg test
 +vba +webdav +xmlsec"
 LICENSE="LGPL-3"
 SLOT="0"
-[[ ${PV} == *9999* ]] || KEYWORDS="~amd64 ~ppc ~x86 ~amd64-linux ~x86-linux"
+[[ ${PV} == *9999* ]] || KEYWORDS="~amd64 ppc ~x86 ~amd64-linux ~x86-linux"
 
 NSS_DEPEND="
 	>=dev-libs/nspr-4.8.8
@@ -96,7 +96,7 @@ COMMON_DEPEND="
 	dev-libs/expat
 	>=dev-libs/glib-2.28
 	>=dev-libs/hyphen-2.7.1
-	>=dev-libs/icu-4.8.1.1
+	>=dev-libs/icu-49
 	>=dev-lang/perl-5.0
 	>=dev-libs/openssl-1.0.0d
 	>=dev-libs/redland-1.0.14[ssl]
@@ -156,8 +156,8 @@ PDEPEND="
 "
 
 # FIXME: cppunit should be moved to test conditional
-#        after everything upstream is under gbuild
-#        as dmake execute tests right away
+#	 after everything upstream is under gbuild
+#	 as dmake execute tests right away
 DEPEND="${COMMON_DEPEND}
 	>=dev-libs/boost-1.46
 	>=dev-libs/libxml2-2.7.8
@@ -167,7 +167,7 @@ DEPEND="${COMMON_DEPEND}
 	>=dev-util/gperf-3
 	dev-util/intltool
 	dev-util/mdds
-	>=dev-util/pkgconfig-0.26
+	virtual/pkgconfig
 	media-libs/sampleicc
 	net-misc/npapi-sdk
 	net-print/cups
@@ -178,6 +178,7 @@ DEPEND="${COMMON_DEPEND}
 	sys-devel/gettext
 	>=sys-devel/make-3.82
 	sys-libs/zlib
+	x11-libs/libXt
 	x11-libs/libXtst
 	x11-proto/randrproto
 	x11-proto/xextproto
@@ -195,8 +196,7 @@ PATCHES=(
 	"${FILESDIR}/${PN}-system-pyuno.patch"
 	"${FILESDIR}/${PN}-3.5-propagate-gb_FULLDEPS.patch"
 	"${FILESDIR}/${PN}-3.5-doublebuild.patch"
-	"${FILESDIR}/poppler_buildfix.patch"
-	"${FILESDIR}/fix_broken_hebrew_wordwrapping.patch"
+	"${FILESDIR}/${PN}-3.5-hebrew-icu49.patch"
 )
 
 REQUIRED_USE="
@@ -228,7 +228,7 @@ pkg_pretend() {
 	if use postgres; then
 		 pgslot=$(postgresql-config show)
 		 if [[ ${pgslot//.} < 90 ]] ; then
-		 	eerror "PostgreSQL slot must be set to 9.0 or higher."
+			eerror "PostgreSQL slot must be set to 9.0 or higher."
 			eerror "    postgresql-config set 9.0"
 			die "PostgreSQL slot is not set to 9.0 or higher."
 		 fi
@@ -303,6 +303,14 @@ src_prepare() {
 	fi
 
 	base_src_prepare
+
+	# please no debug in binfilter, it blows up things insanely
+	if use binfilter && ! use binfilterdebug ; then
+		for name in $(find "${S}/binfilter" -name makefile.mk) ; do
+			sed -i -e '1i\CFLAGS+= -g0' $name || die
+		done
+	fi
+
 	eautoreconf
 	# hack in the autogen.sh
 	touch autogen.lastrun
@@ -324,10 +332,10 @@ src_configure() {
 	[[ -z ${jbs} ]] && jbs="1"
 
 	# sane: just sane.h header that is used for scan in writer, not
-	#       linked or anything else, worthless to depend on
+	#	linked or anything else, worthless to depend on
 	# vigra: just uses templates from there
-	#        it is serious pain in the ass for packaging
-	#        should be replaced by boost::gil if someone interested
+	#	 it is serious pain in the ass for packaging
+	#	 should be replaced by boost::gil if someone interested
 	internal_libs+="
 		--without-system-sane
 		--without-system-vigra
@@ -469,8 +477,24 @@ src_configure() {
 }
 
 src_compile() {
+	# hack for offlinehelp, this needs fixing upstream at some point
+	# it is broken because we send --without-help
+	# https://bugs.freedesktop.org/show_bug.cgi?id=46506
+	(
+		 source "${S}/Env.Host.sh" 2&> /dev/null
+
+		 local path="${SOLARVER}/${INPATH}/res/img"
+		 mkdir -p "${path}" || die
+
+		 echo "perl \"${S}/helpcontent2/helpers/create_ilst.pl\" -dir=default_images/res/helpimg > \"${path}/helpimg.ilst\""
+		 perl "${S}/helpcontent2/helpers/create_ilst.pl" \
+			  -dir=default_images/res/helpimg \
+			  > "${path}/helpimg.ilst"
+		 [[ -s "${path}/helpimg.ilst" ]] || ewarn "The help images list is empty, something is fishy, report a bug."
+	)
+
 	export ANT_TASKS="none"
-	# this is not a proper make script and the jobs are passed during configure
+	# not a proper make script
 	make build || die
 }
 
@@ -500,7 +524,7 @@ src_install() {
 	# It is broken because we send --without-help
 	# https://bugs.freedesktop.org/show_bug.cgi?id=46506
 	insinto /usr/$(get_libdir)/libreoffice/help
-	doins xmlhelp/util/main_transform.xsl
+	doins xmlhelp/util/*.xsl
 }
 
 pkg_preinst() {
@@ -516,6 +540,9 @@ pkg_postinst() {
 
 	use cups || \
 		ewarn 'You will need net-print/cups to be able to print and export to PDF with libreoffice.'
+
+	use java || \
+		ewarn 'If you plan to use lbase aplication you should enable java or you will get various crashes.'
 }
 
 pkg_postrm() {

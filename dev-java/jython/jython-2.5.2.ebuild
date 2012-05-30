@@ -2,11 +2,11 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
+EAPI="4"
+
 JAVA_PKG_IUSE="source doc examples oracle"
 #informix missing.  This is a jdbc driver, similar to oracle use flag
 #functionality.
-
-EAPI="3"
 
 inherit base java-pkg-2 java-ant-2 python
 
