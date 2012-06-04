@@ -302,6 +302,8 @@ src_prepare() {
 		epatch
 	fi
 
+	sed -i -e 's/utfstrlen/utf8_strlen/' lingucomponent/source/languageguessing/simpleguesser.cxx
+
 	base_src_prepare
 
 	# please no debug in binfilter, it blows up things insanely
