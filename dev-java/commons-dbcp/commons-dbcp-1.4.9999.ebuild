@@ -2,9 +2,10 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
+EAPI="2"
+
 ESVN_REPO_URI="http://svn.apache.org/repos/asf/commons/proper/dbcp/branches/DBCP_1_4_x_BRANCH"
 
-EAPI="2"
 JAVA_PKG_IUSE="doc source"
 
 inherit subversion java-pkg-2 java-ant-2

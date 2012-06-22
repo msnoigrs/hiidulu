@@ -69,6 +69,7 @@
         <include name="**/*.properties"/>
         <include name="**/*.html"/>
         <include name="**/*.xml"/>
+        <include name="**/*.js"/>
         <exclude name="**/package.html"/>
       </fileset>
     </copy>

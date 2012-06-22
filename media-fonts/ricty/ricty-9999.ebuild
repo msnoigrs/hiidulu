@@ -2,13 +2,15 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
+EAPI="4"
+
 EGIT_REPO_URI="git://github.com/yascentur/Ricty.git"
 
 inherit font git-2
 
-MIG_SFD="53389"
-MIG_V="20111002"
-MIG="redir.php?m=iij&f=%2Fmix-mplus-ipa%2F${MIG_SFD}%2Fmigu-1m-${MIG_V}.zip"
+MIG_SFD="56156"
+MIG_V="20120411"
+MIG="redir.php?m=iij&f=%2Fmix-mplus-ipa%2F${MIG_SFD}%2Fmigu-1m-${MIG_V}-2.zip"
 
 DESCRIPTION="Japanese TrueType font. for programing"
 HOMEPAGE="http://save.sys.t.u-tokyo.ac.jp/~yusa/fonts/ricty.thml"
@@ -42,5 +44,5 @@ src_unpack() {
 }
 
 src_compile() {
-	sh ricty_generator.sh Inconsolata.otf migu-1m-${MIG_V}/migu-1m-regular.ttf migu-1m-${MIG_V}/migu-1m-bold.ttf
+	sh ricty_generator.sh Inconsolata.otf migu-1m-${MIG_V}-2/migu-1m-regular.ttf migu-1m-${MIG_V}-2/migu-1m-bold.ttf
 }
