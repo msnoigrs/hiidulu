@@ -27,26 +27,26 @@ IUSE=""
 
 COMMON_DEP="dev-java/wicket-core:${SLOT}
 	dev-java/wicket-util:${SLOT}
-	dev-java/wicket-request:${SLOT}
-	dev-java/guava
-	dev-java/slf4j-api"
+	dev-java/slf4j-api
+	dev-java/velocity"
 DEPEND=">=virtual/jdk-1.5
 	java-virtuals/servlet-api:3.0
 	${COMMON_DEP}"
 RDEPEND=">=virtual/jre-1.5
 	${COMMON_DEP}"
 
-S="${WORKDIR}/${MY_P}/wicket-experimental/${PN}"
+S="${WORKDIR}/${MY_P}/${PN}"
 
 java_prepare() {
 	cp "${FILESDIR}/gentoo-build.xml" build.xml
 
+#	epatch "${FILESDIR}"/velocity17.patch
+
 	mkdir lib || die
-	java-pkg_jar-from --into lib wicket-core-${SLOT}
 	java-pkg_jar-from --into lib wicket-util-${SLOT}
-	java-pkg_jar-from --into lib wicket-request-${SLOT}
-	java-pkg_jar-from --into lib guava
+	java-pkg_jar-from --into lib wicket-core-${SLOT}
 	java-pkg_jar-from --into lib slf4j-api
+	java-pkg_jar-from --into lib velocity
 	java-pkg_jar-from --into lib --build-only --virtual servlet-api-3.0 servlet-api.jar
 }
 
