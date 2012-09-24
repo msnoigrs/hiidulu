@@ -46,6 +46,7 @@ src_unpack() {
 
 	pushd "${S}" >/dev/null || die
 	ln -s "${DISTDIR}"/A806D99716C5E9441BFD8B401176FDDEFC673022-bindex-2.2.jar apisupport.harness/external/bindex-2.2.jar || die
+	ln -s "${DISTDIR}"/418FC62C8A6EF5311987B01FE389B1F88EFDDCA2-jemmy-2.3.0.0.jar jemmy/external/jemmy-2.3.0.0.jar || die
 	popd >/dev/null || die
 }
 

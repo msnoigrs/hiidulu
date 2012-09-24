@@ -6,7 +6,7 @@ EAPI="4"
 
 EGIT_REPO_URI="git://git.sr71.net/eyefi-config.git"
 
-inherit eutils toolchain-funcs git
+inherit eutils toolchain-funcs git-2
 
 DESCRIPTION="Eye-Fi Card Configuration Utility"
 HOMEPAGE="http://sr71.net/projects/eyefi/"

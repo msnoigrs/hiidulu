@@ -23,7 +23,7 @@ IUSE=""
 COMMON_DEP="dev-java/validator-nu-html5-datatypes
 	app-text/validator-nu-jing
 	dev-java/relaxng-datatype
-	dev-java/icu4j:4.6"
+	dev-java/icu4j:49"
 RDEPEND=">=virtual/jre-1.5
 	${COMMON_DEP}"
 DEPEND=">=virtual/jdk-1.5
@@ -39,7 +39,7 @@ java_prepare() {
 	java-pkg_jar-from validator-nu-html5-datatypes
 	java-pkg_jar-from validator-nu-jing jing.jar
 	java-pkg_jar-from relaxng-datatype
-	java-pkg_jar-from icu4j-4.6 icu4j.jar
+	java-pkg_jar-from icu4j-49 icu4j.jar
 }
 
 EANT_EXTRA_ARGS="-Dproject.name=non-schema"

@@ -30,7 +30,7 @@ COMMON_DEP="dev-java/validator-nu-util
 	dev-java/commons-fileupload
 	dev-java/relaxng-datatype
 	dev-java/iri
-	dev-java/icu4j:4.6
+	dev-java/icu4j:49
 	dev-java/log4j-over-slf4j"
 RDEPEND=">=virtual/jre-1.5
 	${COMMON_DEP}"
@@ -97,7 +97,7 @@ java_prepare() {
 	java-pkg_jar-from commons-fileupload
 	java-pkg_jar-from relaxng-datatype
 	java-pkg_jar-from iri
-	java-pkg_jar-from icu4j-4.6 icu4j.jar
+	java-pkg_jar-from icu4j-49 icu4j.jar
 	java-pkg_jar-from log4j-over-slf4j
 	java-pkg_jar-from --virtual --build-only servlet-api-3.0 servlet-api.jar
 

@@ -8,7 +8,7 @@ EGIT_REPO_URI=""
 
 JAVA_PKG_IUSE="doc source"
 
-inherit java-pkg-2 java-ant-2 git
+inherit java-pkg-2 java-ant-2 git-2
 
 DESCRIPTION=""
 HOMEPAGE="https://github.com/Atmosphere/atmosphere/wiki"

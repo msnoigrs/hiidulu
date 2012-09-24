@@ -1,8 +1,8 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2012 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI="2"
+EAPI="4"
 
 JAVA_PKG_IUSE="source doc"
 
@@ -14,10 +14,10 @@ HOMEPAGE="http://www.slf4j.org/"
 SRC_URI="http://www.slf4j.org/dist/${MY_P}.tar.gz"
 LICENSE="Apache-2.0"
 SLOT="0"
-KEYWORDS="~x86 ~amd64"
+KEYWORDS="~amd64 ~x86"
 IUSE=""
 
-COMMON_DEP="~dev-java/slf4j-api-${PV}"
+COMMON_DEP="dev-java/slf4j-api"
 DEPEND=">=virtual/jdk-1.5
 	${COMMON_DEP}"
 RDEPEND=">=virtual/jre-1.5

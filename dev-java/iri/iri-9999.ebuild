@@ -19,7 +19,7 @@ LICENSE="BSD-2"
 SLOT="0"
 KEYWORDS="~x86 ~amd64"
 
-COMMON_DEP="dev-java/icu4j:4.6"
+COMMON_DEP="dev-java/icu4j:49"
 
 RDEPEND=">=virtual/jre-1.5
 	${COMMON_DEP}"
@@ -34,7 +34,7 @@ java_prepare() {
 
 	find -depth -name CVS -exec rm -rf {} +
 
-	java-pkg_jar-from --into lib icu4j-4.6 icu4j.jar
+	java-pkg_jar-from --into lib icu4j-49 icu4j.jar
 
 	mkdir bin-build
 	mkdir -p doc/javadoc

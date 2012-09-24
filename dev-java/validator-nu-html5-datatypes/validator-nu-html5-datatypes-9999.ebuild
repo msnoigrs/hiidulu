@@ -23,7 +23,7 @@ IUSE=""
 COMMON_DEP="dev-java/relaxng-datatype
 	dev-java/iri
 	dev-java/rhino:1.6
-	dev-java/icu4j:4.6"
+	dev-java/icu4j:49"
 RDEPEND=">=virtual/jre-1.5
 	${COMMON_DEP}"
 DEPEND=">=virtual/jdk-1.5
@@ -36,7 +36,7 @@ java_prepare() {
 	java-pkg_jar-from relaxng-datatype
 	java-pkg_jar-from iri
 	java-pkg_jar-from rhino-1.6
-	java-pkg_jar-from icu4j-4.6 icu4j.jar
+	java-pkg_jar-from icu4j-49 icu4j.jar
 }
 
 EANT_EXTRA_ARGS="-Dproject.name=html5-datatypes"

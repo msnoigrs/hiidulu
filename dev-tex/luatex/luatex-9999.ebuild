@@ -1,8 +1,8 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2012 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI="2"
+EAPI="4"
 
 EGIT_REPO_URI="git://github.com/pgundlach/LuaTeX.git"
 
@@ -20,7 +20,7 @@ IUSE="doc"
 
 RDEPEND="dev-libs/zziplib
 	>=media-libs/libpng-1.4
-	>=app-text/poppler-0.12.3-r3[xpdf-headers]
+	>=app-text/poppler-0.12.3-r3[xpdf-headers(+)]
 	sys-libs/zlib
 	>=dev-libs/kpathsea-6.0.1_p20110627"
 DEPEND="${RDEPEND}

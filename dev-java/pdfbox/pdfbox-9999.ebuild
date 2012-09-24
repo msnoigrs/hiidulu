@@ -27,8 +27,10 @@ CDEPEND=">=dev-java/tika-core-0.10
 	>=dev-java/bcprov-1.32
 	>=dev-java/bcmail-1.32
 	dev-java/jcl-over-slf4j
-	dev-java/icu4j:4.6"
+	dev-java/icu4j:49"
 RDEPEND=">=virtual/jre-1.6
+	dev-java/logback-core
+	dev-java/logback-classic
 	${CDEPEND}"
 DEPEND=">=virtual/jdk-1.6
 	dev-java/junit:4
@@ -60,7 +62,7 @@ java_prepare() {
 #	java-pkg_jar-from --build-only ant-core ant.jar
 	java-pkg_jar-from --build-only junit junit.jar junit-4.8.1.jar
 	java-pkg_jar-from jcl-over-slf4j jcl-over-slf4j.jar commons-logging-1.1.1.jar
-	java-pkg_jar-from icu4j-4.6 icu4j.jar icu4j-3.8.jar
+	java-pkg_jar-from icu4j-49 icu4j.jar icu4j-3.8.jar
 
 	cd ${S}
 #	mkdir download || die
@@ -78,10 +80,13 @@ my_launcher() {
 }
 
 src_install() {
-	java-pkg_newjar target/${PN}-*-SNAPSHOT.jar
+	java-pkg_newjar target/${PN}-*.jar
 	java-pkg_dojar download/pcfi-2010.08.09.jar
 #	java-pkg_dojar download/additional_cmaps.jar
 #	java-pkg_dojar download/removed_cmaps.jar
+
+	java-pkg_register-optional-dependency logback-core
+	java-pkg_register-optional-dependency logback-classic
 
 	my_launcher pdfconvertcolorspace ConvertColorspace
 	my_launcher pdfdecrypt Decrypt

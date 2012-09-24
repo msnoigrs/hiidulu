@@ -1,8 +1,8 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2012 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI="2"
+EAPI="4"
 
 JAVA_PKG_IUSE="source doc"
 
@@ -14,13 +14,10 @@ HOMEPAGE="http://www.slf4j.org/"
 SRC_URI="http://www.slf4j.org/dist/${MY_P}.tar.gz"
 LICENSE="Apache-2.0"
 SLOT="0"
-KEYWORDS="~amd64 ~x86"
+KEYWORDS="~x86 ~amd64"
 IUSE=""
 
-COMMON_DEP="~dev-java/slf4j-api-${PV}
-	dev-java/javassist:3
-	dev-java/commons-lang:2.1
-	dev-java/cal10n"
+COMMON_DEP="=dev-java/slf4j-api-${PV}*"
 DEPEND=">=virtual/jdk-1.5
 	${COMMON_DEP}"
 RDEPEND=">=virtual/jre-1.5
@@ -34,13 +31,17 @@ java_prepare() {
 	mkdir lib || die
 	cd ${S}/lib
 	java-pkg_jar-from slf4j-api
-	java-pkg_jar-from javassist-3
-	java-pkg_jar-from commons-lang-2.1
-	java-pkg_jar-from cal10n
 }
 
+#JAVA_ANT_REWRITE_CLASSPATH="yes"
 JAVA_ANT_ENCODING="iso-8859-1"
 EANT_EXTRA_ARGS="-Dproject.name=${PN}"
+
+#src_compile() {
+#	EANT_EXTRA_ARGS="-Dproject.name=${PN}
+#		-Dgentoo.classpath=$(java-pkg_getjars slf4j-api)" \
+#	java-pkg-2_src_compile
+#}
 
 src_install() {
 	java-pkg_dojar target/${PN}.jar

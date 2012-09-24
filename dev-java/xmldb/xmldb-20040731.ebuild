@@ -40,6 +40,8 @@ S="${WORKDIR}/${ECVS_MODULE}"
 JAVA_PKG_BSFIX_NAME="build.xml buildCommon.xml"
 
 java_prepare() {
+	sed -i -e 's/ enum/ xenum/g' api/org/xmldb/api/sdk/modules/SetContentHandler.java || die
+
 	find . -name CVS -type d -depth -exec rm -rf {} \;
 
 	#rm -v *.jar || die

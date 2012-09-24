@@ -1,13 +1,13 @@
 # Copyright 1999-2012 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/app-emacs/org-mode/org-mode-7.8.11.ebuild,v 1.1 2012/06/05 22:00:37 ulm Exp $
+# $Header: $
 
 EAPI=4
 NEED_EMACS=22
 
 EGIT_REPO_URI="git://orgmode.org/org-mode.git"
 
-inherit elisp git
+inherit elisp git-2
 
 DESCRIPTION="An Emacs mode for notes and project planning"
 HOMEPAGE="http://www.orgmode.org/"
@@ -19,10 +19,10 @@ KEYWORDS="~amd64 ~ppc ~x86 ~x86-fbsd ~x86-macos"
 IUSE="contrib"
 
 #S="${WORKDIR}/org-${PV}"
-ELISP_PATCHES="${PN}-7.8.03-Makefile.patch"
+#ELISP_PATCHES="${PN}-7.8.03-Makefile.patch"
 # Remove autoload file to make sure that it is regenerated with
 # the right Emacs version.
-ELISP_REMOVE="lisp/org-install.el"
+#ELISP_REMOVE="lisp/org-install.el"
 SITEFILE="50${PN}-gentoo-7.8.03.el"
 
 #src_prepare() {

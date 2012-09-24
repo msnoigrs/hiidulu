@@ -5,7 +5,8 @@
 EAPI=4
 PYTHON_DEPEND="python? 2:2.5"
 
-EGIT_REPO_URI="git://github.com/ibus/ibus.git"
+#EGIT_REPO_URI="git://github.com/ibus/ibus.git"
+EGIT_REPO_URI="git://github.com/fujiwarat/ibus.git"
 
 inherit eutils gnome2-utils multilib python git-2 autotools
 
@@ -16,7 +17,7 @@ HOMEPAGE="http://code.google.com/p/ibus/"
 LICENSE="LGPL-2.1"
 SLOT="0"
 KEYWORDS="amd64 arm ppc ppc64 x86 ~x86-fbsd"
-IUSE="dconf doc +gconf gtk gtk3 +introspection nls +python vala X"
+IUSE="dconf doc +gconf gtk gtk3 +introspection nls +python +vala +X"
 REQUIRED_USE="|| ( gtk gtk3 X )" #342903
 
 RDEPEND=">=dev-libs/glib-2.26
@@ -43,7 +44,7 @@ RDEPEND=">=dev-libs/glib-2.26
 DEPEND="${RDEPEND}
 	>=dev-lang/perl-5.8.1
 	dev-util/intltool
-	dev-util/pkgconfig
+	virtual/pkgconfig
 	doc? ( >=dev-util/gtk-doc-1.9 )
 	nls? ( >=sys-devel/gettext-0.16.1 )"
 RDEPEND="${RDEPEND}
@@ -54,7 +55,7 @@ RDEPEND="${RDEPEND}
 
 RESTRICT="test"
 
-DOCS="AUTHORS ChangeLog NEWS README"
+DOCS="AUTHORS NEWS README"
 
 update_gtk_immodules() {
 	local GTK2_CONFDIR="/etc/gtk-2.0"
@@ -87,11 +88,13 @@ src_prepare() {
 	echo ibus/_config.py >> po/POTFILES.skip
 
 	epatch \
-		"${FILESDIR}"/${PN}-gconf-2.m4.patch \
 		"${FILESDIR}"/${PN}-1.4.0-machine-id-fallback.patch
+#		"${FILESDIR}"/${PN}-gconf-2.m4.patch \
 #		"${FILESDIR}"/${PN}-1.4.1-gir.patch
 
-	use gconf || epatch "${FILESDIR}"/${P}-no-gconf.patch
+#	use gconf || epatch "${FILESDIR}"/${P}-no-gconf.patch
+
+#	sed -i -e '/tools/ d' Makefile.am configure.ac
 
 	echo "AM_GNU_GETTEXT_VERSION(0.16.1)" >> "${S}"/configure.ac
 	autopoint || die "autopoint failed"
@@ -114,10 +117,10 @@ src_configure() {
 		$(use_enable gtk xim) \
 		$(use_enable gtk3) \
 		$(use_enable nls) \
-		$(use_enable python) \
 		$(use_enable vala) \
 		$(use_enable X xim) \
-		PYTHON="${PYTHON}" VALAC="/usr/bin/valac-0.16"
+		PYTHON="${PYTHON}" VALAC="/usr/bin/valac-0.14" VAPIGEN="/usr/bin/vapigen-0.14"
+#		$(use_enable python) \
 }
 
 src_install() {

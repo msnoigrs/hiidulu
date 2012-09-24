@@ -19,15 +19,15 @@ KEYWORDS="~amd64 ~x86"
 
 IUSE=""
 
-COMMON_DEP="dev-java/tika-core"
+#COMMON_DEP="dev-java/tika-core"
 RDEPEND=">=virtual/jre-1.5
 	${COMMON_DEP}"
 DEPEND=">=virtual/jdk-1.5
 	${COMMON_DEP}"
 
 java_prepare() {
-	mkdir lib || die
-	java-pkg_jar-from --into lib tika-core
+	#mkdir lib || die
+	#java-pkg_jar-from --into lib tika-core
 
 	cp "${FILESDIR}/gentoo-build.xml" build.xml
 }

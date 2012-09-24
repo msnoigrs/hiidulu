@@ -1,4 +1,4 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2012 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -22,7 +22,7 @@ MY_PV=${PV//./_}
 #	doc? ( http://download.icu-project.org/files/${PN}/${PV}/${PN}-${MY_PV}-docs.jar )"
 HOMEPAGE="http://www.icu-project.org/"
 LICENSE="icu"
-SLOT="4.6"
+SLOT="49"
 KEYWORDS="~amd64 ~ia64 ~ppc ~ppc64 ~x86 ~x86-fbsd"
 
 RDEPEND=">=virtual/jre-1.6"
