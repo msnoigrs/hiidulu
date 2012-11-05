@@ -22,7 +22,7 @@ IUSE="contrib"
 #ELISP_PATCHES="${PN}-7.8.03-Makefile.patch"
 # Remove autoload file to make sure that it is regenerated with
 # the right Emacs version.
-#ELISP_REMOVE="lisp/org-install.el"
+ELISP_REMOVE="lisp/org-install.el"
 SITEFILE="50${PN}-gentoo-7.8.03.el"
 
 #src_prepare() {
