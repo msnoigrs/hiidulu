@@ -6,7 +6,8 @@ inherit font
 
 DESCRIPTION="kouzan mouhitu fonts"
 HOMEPAGE="http://musashi.or.tv/kouzanmouhitufont.htm"
-SRC_URI="http://anzawa.ps.land.to/bin/KouzanMouhituFontOTF.zip"
+#SRC_URI="http://anzawa.ps.land.to/bin/KouzanMouhituFontOTF.zip"
+SRC_URI="http://opentype.jp/bin/KouzanMouhituFontOTF.zip"
 
 LICENSE="public-domain"
 SLOT="0"

@@ -1,4 +1,4 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2012 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -61,9 +61,9 @@ java_prepare() {
 EANT_BUILD_TARGET="compile"
 
 src_install() {
-	java-osgi_newjar-fromfile "target/${PN}-1.1.1-SNAPSHOT.jar" "${FILESDIR}/${PN}-1.1.1-manifest" "Apache Commons Logging"
-	java-pkg_newjar target/${PN}-api-1.1.1-SNAPSHOT.jar ${PN}-api.jar
-	java-pkg_newjar target/${PN}-adapters-1.1.1-SNAPSHOT.jar ${PN}-adapters.jar
+	java-osgi_newjar-fromfile "target/${PN}-1.1.2-SNAPSHOT.jar" "${FILESDIR}/${PN}-1.1.1-manifest" "Apache Commons Logging"
+	java-pkg_newjar target/${PN}-api-1.1.2-SNAPSHOT.jar ${PN}-api.jar
+	java-pkg_newjar target/${PN}-adapters-1.1.2-SNAPSHOT.jar ${PN}-adapters.jar
 
 	dodoc RELEASE-NOTES.txt || die
 	dohtml PROPOSAL.html STATUS.html || die

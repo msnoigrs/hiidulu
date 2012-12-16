@@ -1,0 +1,17 @@
+diff -uNr mozc-1.6.1187.102.orig/unix/ibus/gen_mozc_xml.py mozc-1.6.1187.102/unix/ibus/gen_mozc_xml.py
+--- mozc-1.6.1187.102.orig/unix/ibus/gen_mozc_xml.py	2012-08-31 14:36:43.000000000 +0900
++++ mozc-1.6.1187.102/unix/ibus/gen_mozc_xml.py	2012-11-13 09:04:42.767442976 +0900
+@@ -72,9 +72,10 @@
+     'Linux': {
+         # DO NOT change the engine name 'mozc-jp'. The names is referenced by
+         # unix/ibus/mozc_engine.cc.
+-        'name': ['mozc-jp'],
+-        'longname': ['%s'],
+-        'layout': ['jp'],
++        'name': ['mozc-jp', 'mozc', 'mozc-dv'],
++        'longname': ['%s (Japanese keyboard layout)', '%s (US keyboard layout)',
++                     '%s (US Dvorak keyboard layout)'],
++        'layout': ['jp', 'us', 'us(dvorak)'],
+     },
+     # On Chrome/Chromium OS, we provide three engines.
+     'ChromeOS': {

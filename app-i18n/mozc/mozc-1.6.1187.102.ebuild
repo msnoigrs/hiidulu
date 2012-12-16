@@ -4,36 +4,34 @@
 
 EAPI="3"
 PYTHON_DEPEND="2"
-inherit elisp-common eutils multilib python toolchain-funcs
+inherit elisp-common eutils multilib multiprocessing python toolchain-funcs
 
-MY_P="${P/ibus-}"
 DESCRIPTION="The Mozc engine for IBus Framework"
 HOMEPAGE="http://code.google.com/p/mozc/"
-SRC_URI="http://mozc.googlecode.com/files/${MY_P}.tar.bz2"
 
-LICENSE="BSD"
+PROTOBUF_VER="2.4.1"
+GMOCK_VER="403"
+MOZC_URL="http://mozc.googlecode.com/files/${P}.tar.bz2"
+PROTOBUF_URL="http://protobuf.googlecode.com/files/protobuf-${PROTOBUF_VER}.tar.bz2"
+SRC_URI="${MOZC_URL} ${PROTOBUF_URL}"
+
+LICENSE="Apache-2.0 BSD Boost-1.0 ipadic public-domain unicode"
 SLOT="0"
 KEYWORDS="~amd64 ~x86"
-#IUSE="emacs +ibus scim skk +qt4"
-IUSE="emacs +ibus scim +qt4"
+IUSE="emacs +ibus +qt4 renderer"
 
 RDEPEND="dev-libs/glib:2
-	dev-libs/protobuf
-	net-misc/curl
-	sys-libs/zlib
+	dev-libs/openssl
+	x11-libs/libxcb
 	emacs? ( virtual/emacs )
-	ibus? ( >=app-i18n/ibus-1.2 )
-	scim? ( app-i18n/scim )
+	ibus? ( >=app-i18n/ibus-1.4.1 )
+	renderer? ( x11-libs/gtk+:2 )
 	qt4? (
 		x11-libs/qt-gui:4
 		app-i18n/zinnia
 	)"
-#	chewing? ( dev-libs/libchewing )
 DEPEND="${RDEPEND}
-	dev-cpp/gtest
-	dev-util/pkgconfig"
-
-S="${WORKDIR}/${MY_P}"
+	virtual/pkgconfig"
 
 BUILDTYPE="${BUILDTYPE:-Release}"
 
@@ -45,40 +43,52 @@ pkg_setup() {
 	python_set_active_version 2
 }
 
-src_prepare() {
-	sed -i -e "s:/usr/lib/mozc:${EPREFIX}/usr/$(get_libdir)/mozc:" base/util.cc || die
-	epatch \
-		"${FILESDIR}"/${PN}-1.2.809.102-gentoo.patch \
-		"${FILESDIR}"/${P}-ibus-1.4.patch
+src_unpack() {
+	unpack $(basename ${MOZC_URL})
 
-	epatch "${FILESDIR}"/characterp-fix.patch
+	cd "${S}"/protobuf
+	unpack $(basename ${PROTOBUF_URL})
+	mv protobuf-${PROTOBUF_VER} files
+}
+
+src_prepare() {
+	epatch "${FILESDIR}/mozc-layout.patch"
 }
 
 src_configure() {
 	local myconf="--channel_dev=0"
-	#use chewing && myconf="${myconf} --chewing"
+	myconf+=" --server_dir=/usr/$(get_libdir)/mozc"
+
 	if ! use qt4 ; then
-		myconf="${myconf} --noqt"
+		myconf+=" --noqt"
 		export GYP_DEFINES="use_libzinnia=0"
 	fi
+
+	if ! use renderer ; then
+		export GYP_DEFINES="${GYP_DEFINES} enable_gtk_renderer=0"
+	fi
+
 	"$(PYTHON)" build_mozc.py gyp ${myconf} || die "gyp failed"
 }
 
 src_compile() {
 	tc-export CC CXX AR AS RANLIB LD
 
+	local my_makeopts=$(makeopts_jobs)
+	# This is for a safety. -j without a number, makeopts_jobs returns 999.
+	local myjobs=-j${my_makeopts/999/1}
+
 	local mytarget="server/server.gyp:mozc_server"
 	use emacs && mytarget="${mytarget} unix/emacs/emacs.gyp:mozc_emacs_helper"
 	use ibus && mytarget="${mytarget} unix/ibus/ibus.gyp:ibus_mozc"
-	use scim && mytarget="${mytarget} unix/scim/scim.gyp:scim_mozc unix/scim/scim.gyp:scim_mozc_setup"
-	#use skk && mytarget="${mytarget} chrome/skk/skk.gyp:skk"
+	use renderer && mytarget="${mytarget} renderer/renderer.gyp:mozc_renderer"
 	if use qt4 ; then
 		export QTDIR="${EPREFIX}/usr"
 		mytarget="${mytarget} gui/gui.gyp:mozc_tool"
 	fi
 
-	"$(PYTHON)" build_mozc.py build_tools -c "${BUILDTYPE}" || die
-	"$(PYTHON)" build_mozc.py build -c "${BUILDTYPE}" ${mytarget} || die
+	"$(PYTHON)" build_mozc.py build_tools -c "${BUILDTYPE}" ${myjobs} || die
+	"$(PYTHON)" build_mozc.py build -c "${BUILDTYPE}" ${mytarget} ${myjobs} || die
 
 	if use emacs ; then
 		elisp-compile unix/emacs/*.el || die
@@ -113,28 +123,17 @@ src_install() {
 
 	fi
 
-	if use scim ; then
-		exeinto "$(pkg-config --variable=moduledir scim)/IMEngine/" || die
-		newexe "out_linux/${BUILDTYPE}/lib.target/libscim_mozc.so" mozc.so || die
-		exeinto "$(pkg-config --variable=moduledir scim)/SetupUI/" || die
-		newexe "out_linux/${BUILDTYPE}/lib.target/libscim_mozc_setup.so" mozc-setup.so || die
-		insinto "$(pkg-config --variable=icondir scim)" || die
-		(
-			cd data/images/unix
-			newins ime_product_icon_opensource-32.png scim-mozc.png || die
-			for f in ui-*
-			do
-				newins ${f} ${f/ui-/scim-mozc-} || die
-			done
-		)
-	fi
-
 	exeinto "/usr/$(get_libdir)/mozc" || die
 	doexe "out_linux/${BUILDTYPE}/mozc_server" || die
 
 	if use qt4 ; then
 		exeinto "/usr/$(get_libdir)/mozc" || die
 		doexe "out_linux/${BUILDTYPE}/mozc_tool" || die
+	fi
+
+	if use renderer ; then
+		exeinto "/usr/$(get_libdir)/mozc" || die
+		doexe "out_linux/${BUILDTYPE}/mozc_renderer" || die
 	fi
 }
 

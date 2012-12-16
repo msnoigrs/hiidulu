@@ -3,78 +3,70 @@
 # $Header: $
 
 EAPI=4
+#WANT_AUTOMAKE="1.10"
 PYTHON_DEPEND="python? 2:2.5"
+VALA_MIN_API_VERSION="0.18"
+VALA_USE_DEPEND="vapigen"
+# Vapigen is needed for the vala binding
+# Valac is needed when building from git for the engine
 
-#EGIT_REPO_URI="git://github.com/ibus/ibus.git"
-EGIT_REPO_URI="git://github.com/fujiwarat/ibus.git"
+EGIT_REPO_URI="git://github.com/ibus/ibus.git"
 
-inherit eutils gnome2-utils multilib python git-2 autotools
+inherit eutils gnome2-utils multilib python vala virtualx git-2 autotools
 
 DESCRIPTION="Intelligent Input Bus for Linux / Unix OS"
 HOMEPAGE="http://code.google.com/p/ibus/"
 #SRC_URI="http://ibus.googlecode.com/files/${P}.tar.gz"
+SRC_URI=""
 
 LICENSE="LGPL-2.1"
 SLOT="0"
-KEYWORDS="amd64 arm ppc ppc64 x86 ~x86-fbsd"
-IUSE="dconf doc +gconf gtk gtk3 +introspection nls +python +vala +X"
-REQUIRED_USE="|| ( gtk gtk3 X )" #342903
+KEYWORDS="~amd64 ~arm ~ppc ~ppc64 ~x86 ~x86-fbsd"
+IUSE="dconf deprecated +gconf gtk +gtk3 +introspection nls +python test +vala +X"
+REQUIRED_USE="|| ( gtk gtk3 X )
+	deprecated? ( python )
+	python? ( || ( deprecated ( gtk3 introspection ) ) )" #342903
 
-RDEPEND=">=dev-libs/glib-2.26
-	dconf? ( >=gnome-base/dconf-0.7.5 )
-	gconf? ( >=gnome-base/gconf-2.12:2 )
-	gnome-base/librsvg
+COMMON_DEPEND=">=dev-libs/glib-2.26:2
+	gnome-base/librsvg:2
 	sys-apps/dbus[X?]
 	app-text/iso-codes
+
+	dconf? ( >=gnome-base/dconf-0.13.4 )
+	gconf? ( >=gnome-base/gconf-2.12:2 )
 	gtk? ( x11-libs/gtk+:2 )
 	gtk3? ( x11-libs/gtk+:3 )
 	X? (
 		x11-libs/libX11
-		x11-libs/gtk+:2
-	)
+		x11-libs/gtk+:2 )
 	introspection? ( >=dev-libs/gobject-introspection-0.6.8 )
-	python? (
-		dev-python/notify-python
-		>=dev-python/dbus-python-0.83
-	)
 	nls? ( virtual/libintl )"
-#	X? ( x11-libs/libX11 )
-#	gtk? ( x11-libs/gtk+:2 x11-libs/gtk+:3 )
-#	vala? ( dev-lang/vala )
-DEPEND="${RDEPEND}
+RDEPEND="${COMMON_DEPEND}
+	python? (
+		dev-python/pyxdg
+		deprecated? (
+			>=dev-python/dbus-python-0.83
+			dev-python/pygobject:2
+			dev-python/pygtk:2 )
+		gtk3? (
+			dev-python/pygobject:3
+			x11-libs/gdk-pixbuf:2[introspection]
+			x11-libs/pango[introspection]
+			x11-libs/gtk+:3[introspection] )
+	)"
+DEPEND="${COMMON_DEPEND}
 	>=dev-lang/perl-5.8.1
+	dev-util/gtk-doc-am
 	dev-util/intltool
 	virtual/pkgconfig
-	doc? ( >=dev-util/gtk-doc-1.9 )
-	nls? ( >=sys-devel/gettext-0.16.1 )"
-RDEPEND="${RDEPEND}
-	python? (
-		dev-python/pygtk
-		dev-python/pyxdg
-	)"
+	nls? ( >=sys-devel/gettext-0.16.1 )
+	vala? ( $(vala_depend) )"
 
+# stress test in bus/ fails
+# IBUS-CRITICAL **: bus_test_client_init: assertion `ibus_bus_is_connected (_bus)' failed
 RESTRICT="test"
 
-DOCS="AUTHORS NEWS README"
-
-update_gtk_immodules() {
-	local GTK2_CONFDIR="/etc/gtk-2.0"
-	# bug #366889
-	if has_version '>=x11-libs/gtk+-2.22.1-r1:2' || has_multilib_profile ; then
-		GTK2_CONFDIR="${GTK2_CONFDIR}/$(get_abi_CHOST)"
-	fi
-	mkdir -p "${EPREFIX}${GTK2_CONFDIR}"
-
-	if [ -x "${EPREFIX}/usr/bin/gtk-query-immodules-2.0" ] ; then
-		"${EPREFIX}/usr/bin/gtk-query-immodules-2.0" > "${EPREFIX}${GTK2_CONFDIR}/gtk.immodules"
-	fi
-}
-
-update_gtk3_immodules() {
-	if [ -x "${EPREFIX}/usr/bin/gtk-query-immodules-3.0" ] ; then
-		"${EPREFIX}/usr/bin/gtk-query-immodules-3.0" --update-cache
-	fi
-}
+DOCS="AUTHORS ChangeLog NEWS README"
 
 pkg_setup() {
 	if use python; then
@@ -84,43 +76,52 @@ pkg_setup() {
 }
 
 src_prepare() {
-	>py-compile #397497
-	echo ibus/_config.py >> po/POTFILES.skip
+	echo "AM_GNU_GETTEXT_VERSION(0.18.1)" >> "${S}"/configure.ac
+#	autopoint || die "autopoint failed"
+#	intltoolize --copy --force || die "intltoolize failed"
+#	gtkdocize --copy || die "gtkdocize failed"
+#	eautoreconf
 
-	epatch \
-		"${FILESDIR}"/${PN}-1.4.0-machine-id-fallback.patch
-#		"${FILESDIR}"/${PN}-gconf-2.m4.patch \
-#		"${FILESDIR}"/${PN}-1.4.1-gir.patch
+	touch ChangeLog
+	ACLOCAL_FLAGS="$ACLOCAL_FLAGS -I m4" \
+	REQUIRED_AUTOMAKE_VERSION=1.10 \
+	CFLAGS="$CFLAGS" . gnome-autogen.sh
 
-#	use gconf || epatch "${FILESDIR}"/${P}-no-gconf.patch
-
-#	sed -i -e '/tools/ d' Makefile.am configure.ac
-
-	echo "AM_GNU_GETTEXT_VERSION(0.16.1)" >> "${S}"/configure.ac
-	autopoint || die "autopoint failed"
-	intltoolize --copy --force || die "intltoolize failed"
-	gtkdocize --copy || die "gtkdocize failed"
-
-	eautoreconf
+	# We run "dconf update" in pkg_postinst/postrm to avoid sandbox violations
+	sed -e 's/dconf update/$(NULL)/' \
+		-i data/dconf/Makefile.{am,in} || die
+	use python && python_clean_py-compile_files
+	use vala && vala_src_prepare
 }
 
 src_configure() {
-	# We cannot call $(PYTHON) if we haven't called python_pkg_setup
-	use python && PYTHON=$(PYTHON) || PYTHON=
+	local python_conf
+	if use python; then
+		# We cannot call $(PYTHON) if we haven't called python_pkg_setup
+		python_conf="PYTHON=$(PYTHON)
+			$(use_enable deprecated python-library)
+			$(use_enable gtk3 setup)"
+	else
+		python_conf="--disable-python-library --disable-setup"
+	fi
 	econf \
 		$(use_enable dconf) \
-		$(use_enable doc gtk-doc) \
-		$(use_enable doc gtk-doc-html) \
 		$(use_enable introspection) \
 		$(use_enable gconf) \
 		$(use_enable gtk gtk2) \
 		$(use_enable gtk xim) \
 		$(use_enable gtk3) \
+		$(use_enable gtk3 ui) \
 		$(use_enable nls) \
+		$(use_enable test tests) \
 		$(use_enable vala) \
 		$(use_enable X xim) \
-		PYTHON="${PYTHON}" VALAC="/usr/bin/valac-0.14" VAPIGEN="/usr/bin/vapigen-0.14"
-#		$(use_enable python) \
+		${python_conf}
+}
+
+src_test() {
+	unset DBUS_SESSION_BUS_ADDRESS
+	Xemake check || die
 }
 
 src_install() {
@@ -140,10 +141,16 @@ pkg_preinst() {
 }
 
 pkg_postinst() {
+	if use dconf; then
+		ebegin "Updating dconf system databases"
+		dconf update
+		eend $?
+	fi
 	use gconf && gnome2_gconf_install
-	use gtk && update_gtk_immodules
-	use gtk3 && update_gtk3_immodules
-	use python && python_mod_optimize /usr/share/${PN}
+	use gtk && gnome2_query_immodules_gtk2
+	use gtk3 && gnome2_query_immodules_gtk3
+	use deprecated && python_mod_optimize ${PN}
+	use python && use gtk3 && python_mod_optimize /usr/share/${PN}
 	gnome2_icon_cache_update
 
 	elog "To use ibus, you should:"
@@ -165,8 +172,14 @@ pkg_postinst() {
 }
 
 pkg_postrm() {
-	use gtk && update_gtk_immodules
-	use gtk3 && update_gtk3_immodules
-	use python && python_mod_cleanup /usr/share/${PN}
+	if use dconf; then
+		ebegin "Updating dconf system databases"
+		dconf update
+		eend $?
+	fi
+	use gtk && gnome2_query_immodules_gtk2
+	use gtk3 && gnome2_query_immodules_gtk3
+	use deprecated && python_mod_cleanup ${PN}
+	use python && use gtk3 && python_mod_cleanup /usr/share/${PN}
 	gnome2_icon_cache_update
 }
