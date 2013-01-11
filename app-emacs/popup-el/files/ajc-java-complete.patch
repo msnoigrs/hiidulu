@@ -1,5 +1,5 @@
---- popup.el.orig	2012-04-29 02:50:25.617716759 +0900
-+++ popup.el	2012-04-29 02:54:48.561429508 +0900
+--- popup.el.orig	2013-01-12 02:46:36.631965662 +0900
++++ popup.el	2013-01-12 02:50:37.882956158 +0900
 @@ -143,7 +143,7 @@
    (loop with tab-width = 4
          for item in list
@@ -9,16 +9,20 @@
          if (stringp summary)
          maximize (+ (string-width summary) 2) into summary-width
          finally return
-@@ -409,10 +409,10 @@
-                                (+ summary-width 2)
-                              0)))
+@@ -411,14 +411,14 @@
+                                 (+ summary-width 2)
+                               0))))
           (string (car (popup-substring-by-width string content-width)))
 -         (string-width (string-width string))
 +         (string-width (string-width (or (get-text-property 0 'view string) string)))
-          (spacing (max (- popup-width string-width summary-width) 0)))
+          (spacing (max (- popup-width string-width summary-width)
+                        (if (> popup-width string-width) 1 0)))
+          (truncated-summary
+           (car (popup-substring-by-width
+                 summary (max (- popup-width string-width spacing) 0)))))
      (concat margin-left
 -            string
 +            (or (get-text-property 0 'view string) string)
              (make-string spacing ? )
-             summary
+             truncated-summary
              symbol

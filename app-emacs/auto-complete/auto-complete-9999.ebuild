@@ -1,16 +1,16 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2013 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
 EAPI=3
 
-EGIT_REPO_URI="git://github.com/m2ym/auto-complete.git"
+EGIT_REPO_URI="git://github.com/auto-complete/auto-complete.git"
 
 inherit elisp eutils git-2
 
 DESCRIPTION="Auto-complete package"
 HOMEPAGE="http://cx4a.org/software/auto-complete/
-	http://github.com/m2ym/auto-complete/"
+	http://github.com/auto-complete/auto-complete/"
 #SRC_URI="http://cx4a.org/pub/${PN}/${P}.tar.bz2"
 SRC_URI=""
 

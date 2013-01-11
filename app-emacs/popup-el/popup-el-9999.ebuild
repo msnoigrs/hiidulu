@@ -1,15 +1,15 @@
-# Copyright 1999-2012 Gentoo Foundation
+# Copyright 1999-2013 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
 EAPI=3
 
-EGIT_REPO_URI="git://github.com/m2ym/popup-el.git"
+EGIT_REPO_URI="git://github.com/auto-complete/popup-el.git"
 
 inherit elisp eutils git-2
 
 DESCRIPTION="Visual Popup Interface Library for Emacs"
-HOMEPAGE="https://github.com/m2ym/popup-el/blob/master/README.markdown"
+HOMEPAGE="https://github.com/auto-complete/popup-el"
 SRC_URI=""
 
 LICENSE="GPL-3 FDL-1.3"
