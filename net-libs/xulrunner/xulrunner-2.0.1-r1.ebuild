@@ -1,6 +1,6 @@
-# Copyright 1999-2012 Gentoo Foundation
+# Copyright 1999-2013 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/net-libs/xulrunner/xulrunner-2.0.1-r1.ebuild,v 1.12 2012/06/03 13:42:44 jlec Exp $
+# $Header: $
 
 EAPI="3"
 WANT_AUTOCONF="2.1"
@@ -26,7 +26,8 @@ IUSE="+crashreporter gconf +ipc system-sqlite +webm"
 
 REL_URI="ftp://ftp.mozilla.org/pub/mozilla.org/firefox/releases"
 # More URIs appended below...
-SRC_URI="http://dev.gentoo.org/~anarchy/mozilla/patchsets/${PATCH}.tar.bz2"
+#SRC_URI="http://dev.gentoo.org/~anarchy/mozilla/patchsets/${PATCH}.tar.bz2"
+SRC_URI="http://dev.gentoo.gr.jp/~igarashi/distfiles/${PATCH}.tar.bz2"
 
 ASM_DEPEND=">=dev-lang/yasm-1.1.0"
 

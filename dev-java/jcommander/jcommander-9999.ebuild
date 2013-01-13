@@ -1,4 +1,4 @@
-# Copyright 1999-2012 Gentoo Foundation
+# Copyright 1999-2013 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -12,12 +12,12 @@ inherit java-pkg-2 java-ant-2 git-2
 DESCRIPTION="parse command line parameters"
 HOMEPAGE="http://jcommander.org/"
 LICENSE="Apache-2.0"
-SLOT="1.20"
+SLOT="0"
 KEYWORDS="~amd64 ~x86"
 IUSE=""
 
-DEPEND=">=virtual/jdk-1.5"
-RDEPEND=">=virtual/jre-1.5"
+DEPEND=">=virtual/jdk-1.6"
+RDEPEND=">=virtual/jre-1.6"
 
 java_prepare() {
 	cp "${FILESDIR}/gentoo-build.xml" build.xml

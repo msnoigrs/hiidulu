@@ -1,13 +1,13 @@
-# Copyright 1999-2012 Gentoo Foundation
+# Copyright 1999-2013 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
 EAPI="4"
-JAVA_PKG_IUSE="doc source"
-inherit cvs java-pkg-2 java-ant-2
 
-ECVS_SERVER="cvs.pgfoundry.org:/cvsroot/jdbc"
-ECVS_MODULE="pgjdbc"
+EGIT_REPO_URI="git://github.com/pgjdbc/pgjdbc.git"
+
+JAVA_PKG_IUSE="doc source"
+inherit java-pkg-2 java-ant-2 git-2
 
 DESCRIPTION="JDBC Driver for PostgreSQL"
 SRC_URI=""
