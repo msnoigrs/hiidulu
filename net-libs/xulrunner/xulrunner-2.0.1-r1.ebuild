@@ -125,6 +125,8 @@ src_prepare() {
 	# gcc-4.7 patch
 	epatch "${FILESDIR}/${P}-gcc47.patch"
 
+	epatch "${FILESDIR}/libffi-config.patch"
+
 	eautoreconf
 
 	cd js/src

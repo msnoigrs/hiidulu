@@ -8,7 +8,8 @@ inherit font
 
 DESCRIPTION="Japanese TrueType font. Yasashisa Gothic"
 HOMEPAGE="http://www.fontna.com/blog/379/"
-SRC_URI="http://www.fontna.com/font/${PV}Yasashisa.zip"
+SRC_URI="http://www.fontna.com/font/${PV}Yasashisa.zip
+		http://www.fontna.com/font/${PV}YasashisaBold.zip"
 
 # M+ FONTS -> mplus-fonts
 # IPAGothic -> IPAfont
@@ -34,4 +35,5 @@ src_unpack() {
 	unpack ${A}
 	rm "${S}"/*.ttf
 	mv "${S}"/*/unix/${PV}YasashisaGothic.ttf "${S}"
+	mv "${S}Bold"/*/Unix/YasashisaBold.ttf "${S}/07YasashisaGothic-bold.ttf"
 }
