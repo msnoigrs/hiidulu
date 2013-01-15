@@ -120,6 +120,8 @@ java_prepare() {
 #		tools/jing-rnc-driver/src/com/thaiopensource/relaxng/jarv/RelaxNgCompactSyntaxVerifierFactory.java
 	cp ${FILESDIR}/RelaxNgCompactSyntaxVerifierFactory.java tools/jing-rnc-driver/src/com/thaiopensource/relaxng/jarv/
 
+	sed -i -e 's/SimpleNameClass(decl.getTargetNamespace(), decl.getName())/SimpleNameClass(decl.getTargetNamespace(), decl.getName(), javax.xml.XMLConstants.DEFAULT_NS_PREFIX)/' \
+		xjc/src/com/sun/tools/xjc/reader/xmlschema/ct/AbstractExtendedComplexTypeBuilder.java
 
 	java-pkg_jar-from --into ${S}/tools/lib/util --build-only ant-core ant.jar
 #	java-pkg_jar-from --into ${S}/tools/lib/util txw2 txwc2.jar

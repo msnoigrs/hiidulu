@@ -1,8 +1,8 @@
-# Copyright 1999-2012 Gentoo Foundation
+# Copyright 1999-2013 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI="2"
+EAPI="4"
 JAVA_PKG_IUSE="doc source test"
 
 WANT_ANT_TASKS="dev-java/ant-ivy:2"
@@ -38,13 +38,20 @@ RDEPEND=">=virtual/jre-1.5
 java_prepare() {
 	find . -iname '*.jar' -exec rm -v {} +
 
+	sed -i -e 's/com.google.inject.internal.Lists/com.google.inject.internal.util.Lists/g' \
+		-e 's/Lists/$Lists/g' src/main/java/org/testng/xml/XmlGroups.java
+	sed -i -e 's/com.google.inject.internal.Maps/com.google.inject.internal.util.Maps/g' \
+		-e 's/Maps/$Maps/g' src/main/java/org/testng/xml/XmlDependencies.java
+	sed -i -e 's/com.google.inject.internal.Maps/com.google.inject.internal.util.Maps/g' \
+		-e 's/Maps/$Maps/g' src/main/java/org/testng/xml/dom/TestNGTagFactory.java
+
 	sed -i -e 's/depends="retrieve-dependencies"//' build.xml
 	mkdir lib
 
 	java-pkg_jar-from --into lib --build-only ant-core ant.jar
 	java-pkg_jar-from --into lib junit-4
 	java-pkg_jar-from --into lib snakeyaml snakeyaml.jar snakeyaml-1.6.jar
-	java-pkg_jar-from --into lib jcommander jcommander.jar jcommander-1.13.jar
+	java-pkg_jar-from --into lib jcommander jcommander.jar jcommander-1.27.jar
 	java-pkg_jar-from --into lib bsh bsh.jar bsh-2.0b4.jar
 	java-pkg_jar-from --into lib guice-3 guice.jar
 

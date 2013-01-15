@@ -1,6 +1,6 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2012 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/eclass/gnome2-utils.eclass,v 1.23 2011/08/22 04:46:31 vapier Exp $
+# $Header: /var/cvsroot/gentoo-x86/eclass/gnome2-utils.eclass,v 1.31 2012/10/27 22:24:10 tetromino Exp $
 
 # @ECLASS: gnome2-utils.eclass
 # @MAINTAINER:
@@ -16,7 +16,7 @@
 #  * scrollkeeper (old Gnome help system) management
 
 case "${EAPI:-0}" in
-	0|1|2|3|4) ;;
+	0|1|2|3|4|5) ;;
 	*) die "EAPI=${EAPI} is not supported" ;;
 esac
 
@@ -62,15 +62,44 @@ esac
 # @DESCRIPTION:
 # List of icons provided by the package
 
+# @ECLASS-VARIABLE: GNOME2_ECLASS_SCROLLS
+# @INTERNAL
+# @DEFAULT_UNSET
+# @DESCRIPTION:
+# List of scrolls (documentation files) provided by the package
+
 # @ECLASS-VARIABLE: GNOME2_ECLASS_GLIB_SCHEMAS
 # @INTERNAL
 # @DEFAULT_UNSET
 # @DESCRIPTION:
 # List of GSettings schemas provided by the package
 
-
 DEPEND=">=sys-apps/sed-4"
 
+
+# @FUNCTION: gnome2_environment_reset
+# @DESCRIPTION:
+# Reset various variables inherited from root's evironment to a reasonable
+# default for ebuilds to help avoid access violations and test failures.
+gnome2_environment_reset() {
+	# Respected by >=glib-2.30.1-r1
+	export G_HOME="${T}"
+
+	# GST_REGISTRY is to work around gst utilities trying to read/write /root
+	export GST_REGISTRY="${T}/registry.xml"
+
+	# XXX: code for resetting XDG_* directories should probably be moved into
+	# a separate function in a non-gnome eclass
+	export XDG_DATA_HOME="${T}/.local/share"
+	export XDG_CONFIG_HOME="${T}/.config"
+	export XDG_CACHE_HOME="${T}/.cache"
+	export XDG_RUNTIME_DIR="${T}/run"
+	mkdir -p "${XDG_DATA_HOME}" "${XDG_CONFIG_HOME}" "${XDG_CACHE_HOME}" \
+		"${XDG_RUNTIME_DIR}"
+	# This directory needs to be owned by the user, and chmod 0700
+	# http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html
+	chmod 0700 "${XDG_RUNTIME_DIR}"
+}
 
 # @FUNCTION: gnome2_gconf_savelist
 # @DESCRIPTION:
@@ -218,6 +247,14 @@ gnome2_icon_cache_update() {
 
 				retval=2
 			fi
+		elif [[ $(ls "${EROOT}${dir}") = "icon-theme.cache" ]]; then
+			# Clear stale cache files after theme uninstallation
+			rm "${EROOT}${dir}/icon-theme.cache"
+		fi
+
+		if [[ -z $(ls "${EROOT}${dir}") ]]; then
+			# Clear empty theme directories after theme uninstallation
+			rmdir "${EROOT}${dir}"
 		fi
 	done
 
@@ -242,10 +279,14 @@ gnome2_omf_fix() {
 		omf_makefiles="${omf_makefiles} ${S}/omf.make"
 	fi
 
+	if [[ -f ${S}/gnome-doc-utils.make ]] ; then
+		omf_makefiles="${omf_makefiles} ${S}/gnome-doc-utils.make"
+	fi
+
 	# testing fixing of all makefiles found
 	# The sort is important to ensure .am is listed before the respective .in for
 	# maintainer mode regeneration not kicking in due to .am being newer than .in
-	for filename in $(find ./ -name "Makefile.in" -o -name "Makefile.am" |sort) ; do
+	for filename in $(find "${S}" -name "Makefile.in" -o -name "Makefile.am" |sort) ; do
 		omf_makefiles="${omf_makefiles} ${filename}"
 	done
 
@@ -255,12 +296,10 @@ gnome2_omf_fix() {
 	local fails=( )
 
 	for omf in ${omf_makefiles} ; do
-		local rv=0
-
 		sed -i -e 's:scrollkeeper-update:true:' "${omf}"
 		retval=$?
 
-		if [[ ! $rv -eq 0 ]] ; then
+		if [[ $retval -ne 0 ]] ; then
 			debug-print "updating of ${omf} failed"
 
 			# Add to the list of failures
@@ -277,16 +316,39 @@ gnome2_omf_fix() {
 	done
 }
 
+# @FUNCTION: gnome2_scrollkeeper_savelist
+# @DESCRIPTION:
+# Find the scrolls that are about to be installed and save their location
+# in the GNOME2_ECLASS_SCROLLS environment variable.
+# This function should be called from pkg_preinst.
+gnome2_scrollkeeper_savelist() {
+	has ${EAPI:-0} 0 1 2 && ! use prefix && ED="${D}"
+	pushd "${ED}" &> /dev/null
+	export GNOME2_ECLASS_SCROLLS=$(find 'usr/share/omf' -type f -name "*.omf" 2> /dev/null)
+	popd &> /dev/null
+}
+
 # @FUNCTION: gnome2_scrollkeeper_update
 # @DESCRIPTION:
 # Updates the global scrollkeeper database.
 # This function should be called from pkg_postinst and pkg_postrm.
 gnome2_scrollkeeper_update() {
 	has ${EAPI:-0} 0 1 2 && ! use prefix && EROOT="${ROOT}"
-	if [[ -x "${EROOT}${SCROLLKEEPER_UPDATE_BIN}" ]]; then
-		einfo "Updating scrollkeeper database ..."
-		"${EROOT}${SCROLLKEEPER_UPDATE_BIN}" -q -p "${EROOT}${SCROLLKEEPER_DIR}"
+	local updater="${EROOT}${SCROLLKEEPER_UPDATE_BIN}"
+
+	if [[ ! -x "${updater}" ]] ; then
+		debug-print "${updater} is not executable"
+		return
 	fi
+
+	if [[ -z "${GNOME2_ECLASS_SCROLLS}" ]]; then
+		debug-print "No scroll cache to update"
+		return
+	fi
+
+	ebegin "Updating scrollkeeper database ..."
+	"${updater}" -q -p "${EROOT}${SCROLLKEEPER_DIR}"
+	eend $?
 }
 
 # @FUNCTION: gnome2_schemas_savelist
@@ -302,10 +364,10 @@ gnome2_schemas_savelist() {
 }
 
 # @FUNCTION: gnome2_schemas_update
-# @USAGE: gnome2_schemas_update [--uninstall]
+# @USAGE: gnome2_schemas_update
 # @DESCRIPTION:
 # Updates GSettings schemas if GNOME2_ECLASS_GLIB_SCHEMAS has some.
-# This function should be called from pkg_postinst and pkg_postrm with --uninstall.
+# This function should be called from pkg_postinst and pkg_postrm.
 gnome2_schemas_update() {
 	has ${EAPI:-0} 0 1 2 && ! use prefix && EROOT="${ROOT}"
 	local updater="${EROOT}${GLIB_COMPILE_SCHEMAS}"
@@ -323,4 +385,82 @@ gnome2_schemas_update() {
 	ebegin "Updating GSettings schemas"
 	${updater} --allow-any-name "$@" "${EROOT%/}/usr/share/glib-2.0/schemas" &>/dev/null
 	eend $?
+}
+
+# @FUNCTION: gnome2_query_immodules_gtk2
+# @USAGE: gnome2_query_immodules_gtk2
+# @DESCRIPTION:
+# Updates gtk2 immodules/gdk-pixbuf loaders listing.
+gnome2_query_immodules_gtk2() {
+	local GTK2_CONFDIR="/etc/gtk-2.0/$(get_abi_CHOST)"
+
+	local query_exec="${EPREFIX}/usr/bin/gtk-query-immodules-2.0"
+	local gtk_conf="${EPREFIX}${GTK2_CONFDIR}/gtk.immodules"
+	local gtk_conf_dir=$(dirname "${gtk_conf}")
+
+	einfo "Generating Gtk2 immodules/gdk-pixbuf loaders listing:"
+	einfo "-> ${gtk_conf}"
+
+	mkdir -p "${gtk_conf_dir}"
+	local tmp_file=$(mktemp -t tmp.XXXXXXXXXXgtk_query_immodules)
+	if [ -z "${tmp_file}" ]; then
+		ewarn "gtk_query_immodules: cannot create temporary file"
+		return 1
+	fi
+
+	if ${query_exec} > "${tmp_file}"; then
+		cat "${tmp_file}" > "${gtk_conf}" || \
+			ewarn "Failed to write to ${gtk_conf}"
+	else
+		ewarn "Cannot update gtk.immodules, file generation failed"
+	fi
+	rm "${tmp_file}"
+}
+
+# @FUNCTION: gnome2_query_immodules_gtk3
+# @USAGE: gnome2_query_immodules_gtk3
+# @DESCRIPTION:
+# Updates gtk3 immodules/gdk-pixbuf loaders listing.
+gnome2_query_immodules_gtk3() {
+	"${EPREFIX}/usr/bin/gtk-query-immodules-3.0" --update-cache
+}
+
+# @FUNCTION: gnome2_disable_deprecation_warning
+# @DESCRIPTION:
+# Disable deprecation warnings commonly found in glib based packages.
+# Should be called from src_prepare.
+gnome2_disable_deprecation_warning() {
+	local retval=0
+	local fails=( )
+	local makefile
+
+	ebegin "Disabling deprecation warnings"
+	# The sort is important to ensure .am is listed before the respective .in for
+	# maintainer mode regeneration not kicking in due to .am being newer than .in
+	while read makefile ; do
+		if ! grep -qE "(DISABLE_DEPRECATED|GSEAL_ENABLE)" "${makefile}"; then
+			continue
+		fi
+
+		LC_ALL=C sed -r -i \
+			-e 's:-D[A-Z_]+_DISABLE_DEPRECATED:$(NULL):g' \
+			-e 's:-DGSEAL_ENABLE:$(NULL):g' \
+			-i "${makefile}"
+
+		if [[ $? -ne 0 ]]; then
+			# Add to the list of failures
+			fails+=( "${makefile}" )
+			retval=2
+		fi
+	done < <(find "${S}" -name "Makefile.in" \
+		-o -name "Makefile.am" -o -name "Makefile.decl" \
+		| sort; echo configure)
+# TODO: sedding configure.ac can trigger maintainer mode; bug #439602
+#		-o -name "configure.ac" -o -name "configure.in" \
+#		| sort; echo configure)
+	eend ${retval}
+
+	for makefile in "${fails[@]}" ; do
+		ewarn "Failed to disable deprecation warnings in ${makefile}"
+	done
 }

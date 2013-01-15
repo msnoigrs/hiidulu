@@ -1,4 +1,4 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2013 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -17,7 +17,7 @@ LICENSE="Apache-2.0"
 SLOT="1"
 KEYWORDS="~x86 ~amd64"
 IUSE="test"
-COMMON_DEP="dev-java/asm:3"
+COMMON_DEP="dev-java/asm:4"
 RDEPEND=">=virtual/jre-1.5
 	${COMMON_DEP}"
 DEPEND=">=virtual/jdk-1.5
@@ -40,7 +40,7 @@ java_prepare() {
 	# with <keep> directive version
 	epatch "${FILESDIR}/jarjar-gentoo-2.patch"
 	# see http://code.google.com/p/jarjar/issues/detail?id=20
-	epatch "${FILESDIR}/KeepProcessor.patch"
+	#epatch "${FILESDIR}/KeepProcessor.patch"
 
 	# for ant 1.8*
 	# http://patch-tracker.debian.org/patch/series/dl/jarjar/1.0+dfsg-2/0005-cast-null-to-java.io.File.patch
@@ -49,8 +49,8 @@ java_prepare() {
 
 	cd "${S}/lib"
 	rm -v *.jar || die
-	java-pkg_jar-from asm-3 asm.jar asm-3.3.1.jar
-	java-pkg_jar-from asm-3 asm-commons.jar asm-commons-3.3.1.jar
+	java-pkg_jar-from asm-4 asm.jar asm-4.0.jar
+	java-pkg_jar-from asm-4 asm-commons.jar asm-commons-4.0.jar
 	java-pkg_jar-from --build-only ant-core ant.jar
 }
 
@@ -67,8 +67,8 @@ src_test() {
 }
 
 src_install() {
-	java-pkg_newjar dist/${PN}-1.2.jar ${PN}.jar
-	java-pkg_newjar dist/${PN}-nodep-1.2.jar ${PN}-nodep.jar
+	java-pkg_newjar dist/${PN}-1.4.jar ${PN}.jar
+	java-pkg_newjar dist/${PN}-nodep-1.4.jar ${PN}-nodep.jar
 	java-pkg_register-ant-task
 	use doc && java-pkg_dojavadoc dist/javadoc
 	use source && java-pkg_dosrc src/main/*

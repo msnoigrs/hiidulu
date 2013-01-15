@@ -5,19 +5,15 @@
 EAPI="4"
 JAVA_PKG_IUSE="source"
 
-ESVN_REPO_URI="https://svn.java.net/svn/istack-commons~svn/trunk/istack-commons"
-
-inherit subversion java-pkg-2 java-ant-2
+inherit java-pkg-2 java-ant-2
 
 DESCRIPTION="istack-commons"
 HOMEPAGE="https://istack-commons.dev.java.net/"
-#SRC_URI="mirror://gentoo/istack-commons-${PV}.tar.bz2"
-SRC_URI=""
+SRC_URI="http://dev.gentoo.gr.jp/~igarashi/distfiles/istack-commons-${PV}.tar.gz"
 
 LICENSE="|| ( CDDL GPL-2 )"
 SLOT="0"
-#KEYWORDS="~amd64 ~ppc ~x86 ~x86-fbsd"
-KEYWORDS=""
+KEYWORDS="~amd64 ~ppc ~x86 ~x86-fbsd"
 IUSE=""
 
 COMMON_DEP="java-virtuals/jaf"
@@ -36,7 +32,7 @@ java_prepare() {
 	java-pkg_jar-from --into runtime/lib --virtual jaf
 
 	cp ${S}/tools/src14/com/sun/istack/tools/ProtectedTask.java \
-		${S}/tools/src/main/java/com/sun/istack/tools
+		${S}/tools/src/com/sun/istack/tools
 	sed -i -e 's/srcdir="src14"/srcdir="src"/' ${S}/tools/build.xml
 	mkdir -p "${S}/tools/lib" || die
 	ln -s $(java-config --tools) "${S}/tools/lib" || die

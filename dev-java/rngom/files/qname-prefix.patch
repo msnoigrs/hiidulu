@@ -1,0 +1,20 @@
+--- rngom-99999999.orig/src/org/kohsuke/rngom/parse/xml/SchemaParser.java	2013-01-14 03:00:51.291124862 +0900
++++ rngom-99999999/src/org/kohsuke/rngom/parse/xml/SchemaParser.java	2013-01-14 03:37:50.880037425 +0900
+@@ -1786,7 +1786,7 @@
+     private ParsedNameClass expandName(String name, String ns, Annotations anno) throws SAXException {
+         int ic = name.indexOf(':');
+         if (ic == -1) {
+-            return nameClassBuilder.makeName(ns, checkNCName(name), null, null, anno);
++            return nameClassBuilder.makeName(ns, checkNCName(name), javax.xml.XMLConstants.DEFAULT_NS_PREFIX, null, anno);
+         }
+         String prefix = checkNCName(name.substring(0, ic));
+         String localName = checkNCName(name.substring(ic + 1));
+@@ -1796,7 +1796,7 @@
+             }
+         }
+         error("undefined_prefix", prefix);
+-        return nameClassBuilder.makeName("", localName, null, null, anno);
++        return nameClassBuilder.makeName("", localName, javax.xml.XMLConstants.DEFAULT_NS_PREFIX, null, anno);
+     }
+ 
+     private String findPrefix(String qName, String uri) {

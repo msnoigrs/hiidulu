@@ -1,4 +1,4 @@
-# Copyright 1999-2012 Gentoo Foundation
+# Copyright 1999-2013 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -32,6 +32,8 @@ RDEPEND=">=virtual/jre-1.5
 
 java_prepare() {
 #	epatch ${FILESDIR}/without-retroweaver.patch
+
+	epatch "${FILESDIR}/qname-prefix.patch"
 
 	cp "${FILESDIR}/gentoo-build.xml" build.xml || die
 

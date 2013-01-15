@@ -3,16 +3,20 @@
 # $Header: $
 
 EAPI="4"
+
+EGIT_REPO_URI="git://github.com/hunterhacker/jdom.git"
+EGIT_BRANCH="jdom-1.x"
+
 JAVA_PKG_IUSE="source"
 
-inherit base java-pkg-2
+inherit base java-pkg-2 git-2
 
-MY_PN="jdom"
-MY_P="${MY_PN}-1.1.3"
+#MY_PN="jdom"
+#MY_P="${MY_PN}-1.1.3"
 
 DESCRIPTION="Jaxen binding for jdom."
 HOMEPAGE="http://www.jdom.org"
-SRC_URI="http://www.jdom.org/dist/source/${MY_P}.tar.gz"
+#SRC_URI="http://www.jdom.org/dist/source/${MY_P}.tar.gz"
 LICENSE="JDOM"
 SLOT="1.0"
 KEYWORDS="amd64 ppc ppc64 x86"
@@ -26,15 +30,17 @@ RDEPEND=">=virtual/jre-1.5
 DEPEND=">=virtual/jdk-1.5
 		${COMMON_DEP}"
 
-S="${WORKDIR}/${MY_PN}"
+#S="${WORKDIR}/${MY_PN}"
 
 java_prepare() {
+	cd core
 	sed -i -e 's/SAXPathException/Exception/g' src/java/org/jdom/xpath/JaxenXPath.java
 }
 
 src_compile() {
-	mkdir -p "${S}/build/org/jdom/xpath" || die "Unable to create dir."
-	ejavac -d "${S}/build/" \
+	cd core
+	mkdir -p "${S}/core/build/org/jdom/xpath" || die "Unable to create dir."
+	ejavac -d "${S}/core/build/" \
 		-classpath $(java-config -p jdom-1.0,jaxen-1.1,jaxen-jdom-1.1) \
 		src/java/org/jdom/xpath/JaxenXPath.java
 
@@ -42,6 +48,7 @@ src_compile() {
 }
 
 src_install() {
+	cd core
 	java-pkg_dojar "${PN}.jar"
 	use source && java-pkg_dosrc src/java/org
 }

@@ -25,6 +25,7 @@ IUSE=""
 #S="${WORKDIR}/${PN}"
 
 java_prepare() {
+	cd core
 	cp "${FILESDIR}"/build-1.1.3.xml build.xml
 
 #	rm -v build/*.jar lib/*.jar || die
@@ -39,13 +40,15 @@ java_prepare() {
 }
 
 src_compile() {
+	cd core
 	# to prevent a newer jdom from going into cp
 	# (EANT_ANT_TASKS doesn't work with none)
 	ANT_TASKS="none" eant jar $(use_doc)
 }
 
 src_install() {
-	java-pkg_newjar build/${P}.jar
+	cd core
+	java-pkg_newjar build/${PN}-1.1.3.jar
 
 	java-pkg_register-dependency "jdom-jaxen-${SLOT}"
 #	java-pkg_register-optional-dependency xerces-2

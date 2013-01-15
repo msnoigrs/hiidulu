@@ -19,7 +19,7 @@ inherit autotools gnome2 gnome2-utils libtool git-2
 # Stolen from git.eclass
 EXPORTED_FUNCTIONS="src_unpack pkg_postinst"
 case "${EAPI:-0}" in
-    2|3|4) EXPORTED_FUNCTIONS="${EXPORTED_FUNCTIONS} src_prepare" ;;
+    2|3|4|5) EXPORTED_FUNCTIONS="${EXPORTED_FUNCTIONS} src_prepare" ;;
     0|1) ;;
     *) die "Unknown EAPI, Bug eclass maintainers." ;;
 esac
@@ -32,6 +32,7 @@ EXPORT_FUNCTIONS ${EXPORTED_FUNCTIONS}
 # gnome-base/gnome-common for GNOME_COMMON_INIT
 DEPEND="${DEPEND}
 	app-text/gnome-doc-utils
+	app-text/yelp-tools
 	dev-util/gtk-doc
 	dev-util/intltool
 	gnome-base/gnome-common
@@ -151,7 +152,8 @@ gnome2-live_src_prepare() {
 	fi
 
 	# Disable pyc compiling. Doesn't harm if DNE
-	ln -sf $(type -P true) py-compile
+	echo > py-compile
+	chmod +x py-compile
 
 	### Keep this in-sync with gnome2.eclass!
 
@@ -184,6 +186,8 @@ gnome2_src_prepare() {
 # @DESCRIPTION:
 # Must be run manually for ebuilds that have a custom pkg_postinst
 gnome2-live_pkg_postinst() {
+	gnome2_pkg_postinst
+
 	ewarn "This is a live ebuild, upstream trunks will mostly be UNstable"
 	ewarn "Do NOT report bugs about this package to Gentoo"
 	ewarn "Report upstream bugs (with patches if possible) instead."

@@ -36,6 +36,8 @@ java_prepare() {
 
 	cp "${FILESDIR}/gentoo-build.xml" build.xml
 
+	mkdir lib
+
 	java-pkg_jar-from --into lib --virtual stax-api
 
 #	find -name '*.class' -print -delete

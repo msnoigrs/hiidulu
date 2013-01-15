@@ -1,4 +1,4 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2012 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -10,17 +10,34 @@
 # Exports portage base functions used by ebuilds written for packages using the
 # GNOME framework. For additional functions, see gnome2-utils.eclass.
 
-inherit fdo-mime libtool gnome.org gnome2-utils
+inherit eutils fdo-mime libtool gnome.org gnome2-utils
 
 case "${EAPI:-0}" in
 	0|1)
 		EXPORT_FUNCTIONS src_unpack src_compile src_install pkg_preinst pkg_postinst pkg_postrm
 		;;
-	2|3|4)
+	2|3|4|5)
 		EXPORT_FUNCTIONS src_unpack src_prepare src_configure src_compile src_install pkg_preinst pkg_postinst pkg_postrm
 		;;
 	*) die "EAPI=${EAPI} is not supported" ;;
 esac
+
+#if [[ "${I_WANT_GNOME_3_3_X}" != "yes" ]]; then
+#	die "
+#
+#The GNOME overlay is switching to GNOME 3.3.x prerelease packages.
+#These are unstable, potentially incompatible with 3.2, and may well
+#break your system in intriguing ways.
+#
+#If you enabled the GNOME overlay to get GNOME 3.2, please disable
+#it now, since GNOME 3.2 is already in portage and unmasked.
+#
+#If you really do want experimental GNOME 3.3.x, please add
+#I_WANT_GNOME_3_3_X=yes
+#to your /etc/make.conf and continue.
+#
+#"
+#fi
 
 # @ECLASS-VARIABLE: G2CONF
 # @DEFAULT-UNSET
@@ -30,9 +47,13 @@ G2CONF=${G2CONF:-""}
 
 # @ECLASS-VARIABLE: GNOME2_LA_PUNT
 # @DESCRIPTION:
-# Should we delete all the .la files?
+# Should we delete ALL the .la files?
 # NOT to be used without due consideration.
-GNOME2_LA_PUNT=${GNOME2_LA_PUNT:-"no"}
+if has ${EAPI:-0} 0 1 2 3 4; then
+	GNOME2_LA_PUNT=${GNOME2_LA_PUNT:-"no"}
+else
+	GNOME2_LA_PUNT=${GNOME2_LA_PUNT:-""}
+fi
 
 # @ECLASS-VARIABLE: ELTCONF
 # @DEFAULT-UNSET
@@ -46,12 +67,6 @@ ELTCONF=${ELTCONF:-""}
 # @DESCRIPTION:
 # Should we use EINSTALL instead of DESTDIR
 USE_EINSTALL=${USE_EINSTALL:-""}
-
-# @ECLASS-VARIABLE: SCROLLKEEPER_UPDATE
-# @DEPRECATED
-# @DESCRIPTION:
-# Whether to run scrollkeeper for this package or not.
-SCROLLKEEPER_UPDATE=${SCROLLKEEPER_UPDATE:-"1"}
 
 # @ECLASS-VARIABLE: DOCS
 # @DEFAULT-UNSET
@@ -90,6 +105,8 @@ gnome2_src_unpack() {
 gnome2_src_prepare() {
 	# Reset various variables inherited via the environment.
 	# Causes test failures, introspection-build failures, and access violations
+	# FIXME: seems to have no effect for exported variables, at least with
+	# portage-2.2.0_alpha74
 	unset DBUS_SESSION_BUS_ADDRESS
 	unset DISPLAY
 	unset GNOME_KEYRING_CONTROL
@@ -97,22 +114,14 @@ gnome2_src_prepare() {
 	unset XAUTHORITY
 	unset XDG_SESSION_COOKIE
 
-	# Reset the XDG_* directories to avoid access violations
-	export XDG_DATA_HOME="${T}/.local/share"
-	export XDG_CONFIG_HOME="${T}/.config"
-	export XDG_CACHE_HOME="${T}/.cache"
-	export XDG_RUNTIME_DIR="${T}/run"
-	mkdir -p "${XDG_DATA_HOME}" "${XDG_CONFIG_HOME}" "${XDG_CACHE_HOME}" \
-			 "${XDG_RUNTIME_DIR}"
-	# This directory needs to be owned by the user, and chmod 0700
-	# http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html
-	chmod 0700 "${XDG_RUNTIME_DIR}"
-
-	# GST_REGISTRY is to work around gst utilities trying to read/write /root
-	export GST_REGISTRY="${T}/registry.xml"
+	# Prevent assorted access violations and test failures
+	gnome2_environment_reset
 
 	# Prevent scrollkeeper access violations
 	gnome2_omf_fix
+
+	# Disable all deprecation warnings
+	gnome2_disable_deprecation_warning
 
 	# Run libtoolize
 	if has ${EAPI:-0} 0 1 2 3; then
@@ -131,24 +140,57 @@ gnome2_src_configure() {
 	# Update the GNOME configuration options
 	if [[ ${GCONF_DEBUG} != 'no' ]] ; then
 		if use debug ; then
-			G2CONF="${G2CONF} --enable-debug=yes"
+			G2CONF="--enable-debug=yes ${G2CONF}"
 		fi
 	fi
 
-	# Prevent a QA warning
-	if has doc ${IUSE} ; then
-		G2CONF="${G2CONF} $(use_enable doc gtk-doc)"
+	# Starting with EAPI=5, we consider packages installing gtk-doc to be
+	# handled by adding DEPEND="dev-util/gtk-doc-am" which provides tools to
+	# relink URLs in documentation to already installed documentation.
+	# This decision also greatly helps with constantly broken doc generation.
+	# Remember to drop 'doc' USE flag from your package if it was only used to
+	# rebuild docs.
+	# Preserve old behavior for older EAPI.
+	if grep -q "enable-gtk-doc" ${ECONF_SOURCE:-.}/configure ; then
+		if has ${EAPI:-0} 0 1 2 3 4 && in_iuse doc ; then
+			G2CONF="$(use_enable doc gtk-doc) ${G2CONF}"
+		else
+			G2CONF="--disable-gtk-doc ${G2CONF}"
+		fi
 	fi
 
 	# Pass --disable-maintainer-mode when needed
-	if grep -q "^[[:space:]]*AM_MAINTAINER_MODE(\[enable\])" configure.*; then
-		G2CONF="${G2CONF} --disable-maintainer-mode"
+	if grep -q "^[[:space:]]*AM_MAINTAINER_MODE(\[enable\])" \
+		${ECONF_SOURCE:-.}/configure.*; then
+		G2CONF="--disable-maintainer-mode ${G2CONF}"
+	fi
+
+	# Pass --disable-scrollkeeper when possible
+	if grep -q "disable-scrollkeeper" ${ECONF_SOURCE:-.}/configure; then
+		G2CONF="--disable-scrollkeeper ${G2CONF}"
+	fi
+
+	# Pass --disable-silent-rules when possible (not needed for eapi5), bug #429308
+	if has ${EAPI:-0} 0 1 2 3 4; then
+		if grep -q "disable-silent-rules" ${ECONF_SOURCE:-.}/configure; then
+			G2CONF="--disable-silent-rules ${G2CONF}"
+		fi
+	fi
+
+	# Pass --disable-schemas-install when possible
+	if grep -q "disable-schemas-install" ${ECONF_SOURCE:-.}/configure; then
+		G2CONF="--disable-schemas-install ${G2CONF}"
+	fi
+
+	# Pass --disable-schemas-compile when possible
+	if grep -q "disable-schemas-compile" ${ECONF_SOURCE:-.}/configure; then
+		G2CONF="--disable-schemas-compile ${G2CONF}"
 	fi
 
 	# Avoid sandbox violations caused by gnome-vfs (bug #128289 and #345659)
 	addwrite "$(unset HOME; echo ~)/.gnome2"
 
-	econf "$@" ${G2CONF}
+	econf ${G2CONF} "$@"
 }
 
 # @FUNCTION: gnome2_src_compile
@@ -183,30 +225,52 @@ gnome2_src_install() {
 
 	unset GCONF_DISABLE_MAKEFILE_SCHEMA_INSTALL
 
-	# Manual document installation
-	if [[ -n "${DOCS}" ]]; then
-		dodoc ${DOCS} || die "dodoc failed"
+	# Handle documentation as 'default' for eapi5 and newer, bug #373131
+	if has ${EAPI:-0} 0 1 2 3 4; then
+		# Manual document installation
+		if [[ -n "${DOCS}" ]]; then
+			dodoc ${DOCS} || die "dodoc failed"
+		fi
+	else
+		if ! declare -p DOCS >/dev/null 2>&1 ; then
+			local d
+			for d in README* ChangeLog AUTHORS NEWS TODO CHANGES THANKS BUGS \
+					FAQ CREDITS CHANGELOG ; do
+				[[ -s "${d}" ]] && dodoc "${d}"
+			done
+		elif declare -p DOCS | grep -q '^declare -a' ; then
+			dodoc "${DOCS[@]}"
+		else
+			dodoc ${DOCS}
+		fi
 	fi
 
 	# Do not keep /var/lib/scrollkeeper because:
 	# 1. The scrollkeeper database is regenerated at pkg_postinst()
 	# 2. ${ED}/var/lib/scrollkeeper contains only indexes for the current pkg
 	#    thus it makes no sense if pkg_postinst ISN'T run for some reason.
-	if [[ -z "$(find "${D}" -name '*.omf')" ]]; then
-		export SCROLLKEEPER_UPDATE="0"
-	fi
 	rm -rf "${ED}${sk_tmp_dir}"
+	rmdir "${ED}/var/lib" 2>/dev/null
+	rmdir "${ED}/var" 2>/dev/null
 
 	# Make sure this one doesn't get in the portage db
 	rm -fr "${ED}/usr/share/applications/mimeinfo.cache"
 
 	# Delete all .la files
-	if [[ "${GNOME2_LA_PUNT}" != "no" ]]; then
-		ebegin "Removing .la files"
-		if ! { has static-libs ${IUSE//+} && use static-libs; }; then
-			find "${D}" -name '*.la' -exec rm -f {} + || die "la file removal failed"
+	if has ${EAPI:-0} 0 1 2 3 4; then
+		if [[ "${GNOME2_LA_PUNT}" != "no" ]]; then
+			ebegin "Removing .la files"
+			if ! use_if_iuse static-libs ; then
+				find "${D}" -name '*.la' -exec rm -f {} + || die "la file removal failed"
+			fi
+			eend
 		fi
-		eend
+	else
+		case "${GNOME2_LA_PUNT}" in
+			yes)    prune_libtool_files --modules;;
+			no)     ;;
+			*)      prune_libtool_files;;
+		esac
 	fi
 }
 
@@ -217,6 +281,7 @@ gnome2_pkg_preinst() {
 	gnome2_gconf_savelist
 	gnome2_icon_savelist
 	gnome2_schemas_savelist
+	gnome2_scrollkeeper_savelist
 }
 
 # @FUNCTION: gnome2_pkg_postinst
@@ -229,10 +294,8 @@ gnome2_pkg_postinst() {
 	fdo-mime_mime_database_update
 	gnome2_icon_cache_update
 	gnome2_schemas_update
+	gnome2_scrollkeeper_update
 
-	if [[ "${SCROLLKEEPER_UPDATE}" = "1" ]]; then
-		gnome2_scrollkeeper_update
-	fi
 	# This should only be in the overlay
 	ewarn "**************************************************************"
 	ewarn "This is the *experimental* Gentoo GNOME Overlay"
@@ -255,9 +318,6 @@ gnome2_pkg_postrm() {
 	fdo-mime_desktop_database_update
 	fdo-mime_mime_database_update
 	gnome2_icon_cache_update
-	gnome2_schemas_update --uninstall
-
-	if [[ "${SCROLLKEEPER_UPDATE}" = "1" ]]; then
-		gnome2_scrollkeeper_update
-	fi
+	gnome2_schemas_update
+	gnome2_scrollkeeper_update
 }
