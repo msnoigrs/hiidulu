@@ -1,4 +1,4 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2013 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -26,11 +26,11 @@ COMMON_DEP="~dev-java/logback-core-${PV}
 	dev-java/antlr:0
 	dev-java/asm:3
 	dev-java/commons-cli:1"
-DEPEND=">=virtual/jdk-1.5
+DEPEND=">=virtual/jdk-1.6
 	dev-java/geronimo-spec-jms
 	java-virtuals/servlet-api:3.0
 	${COMMON_DEP}"
-RDEPEND=">=virtual/jre-1.5
+RDEPEND=">=virtual/jre-1.6
 	${COMMON_DEP}"
 
 S="${WORKDIR}/logback-${PV}/${PN}"

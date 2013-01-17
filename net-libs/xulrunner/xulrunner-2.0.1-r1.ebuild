@@ -2,10 +2,12 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI="3"
+EAPI="5"
 WANT_AUTOCONF="2.1"
 
-inherit flag-o-matic toolchain-funcs eutils mozconfig-3 makeedit multilib autotools python versionator pax-utils prefix
+PYTHON_COMPAT=( python{2_7,3_1,3_2,3_3} )
+
+inherit flag-o-matic toolchain-funcs eutils mozconfig-3 makeedit multilib autotools versionator pax-utils prefix
 
 MAJ_XUL_PV="$(get_version_component_range 1-2)" # from mozilla-* branch name
 MAJ_FF_PV="4.0"
