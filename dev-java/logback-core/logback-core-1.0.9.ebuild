@@ -17,7 +17,8 @@ KEYWORDS="~x86 ~amd64"
 IUSE=""
 
 COMMON_DEP="java-virtuals/javamail
-	dev-java/janino:0"
+	dev-java/janino:2.6
+	dev-java/jansi"
 DEPEND=">=virtual/jdk-1.6
 	java-virtuals/servlet-api:3.0
 	${COMMON_DEP}"
@@ -31,7 +32,8 @@ java_prepare() {
 	mkdir lib || die
 	java-pkg_jar-from --virtual --into lib --build-only --virtual servlet-api-3.0 servlet-api.jar
 	java-pkg_jar-from --virtual --into lib javamail
-	java-pkg_jar-from --into lib janino
+	java-pkg_jar-from --into lib janino-2.6
+	java-pkg_jar-from --into lib jansi
 }
 
 JAVA_ANT_ENCODING="iso8859-1"
