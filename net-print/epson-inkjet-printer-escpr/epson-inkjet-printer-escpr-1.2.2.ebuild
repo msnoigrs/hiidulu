@@ -1,4 +1,4 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2013 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -8,15 +8,18 @@ inherit autotools rpm
 
 SRC_REV="1"   # Revision used by upstream.
 LSB_REV="3.2" # Revision of Linux Standard Base.
+EPSON_URI="http://download.ebz.epson.net/dsc/search/01/search/?OSC=LX"
 
 DESCRIPTION="Epson Inkjet Printer Driver (ESC/P-R); supports various printers."
 HOMEPAGE="http://avasys.jp/eng/linux_driver/download/lsb/epson-inkjet/escpr/"
-SRC_URI="http://linux.avasys.jp/drivers/lsb/epson-inkjet/stable/SRPMS/${P}-${SRC_REV}lsb${LSB_REV}.src.rpm"
+SRC_URI="${P}-${SRC_REV}lsb${LSB_REV}.tar.gz"
 
 LICENSE="GPL-2"
 SLOT="0"
 KEYWORDS="~amd64 ~x86"
 IUSE=""
+
+RESTRICT="fetch"
 
 # XXX: These are the supported languages, but there is no way to enable/disable
 #      them in the package via configure or remove the unrequired languages
@@ -30,8 +33,12 @@ RDEPEND="net-print/cups"
 DEPEND="${REPEND}
 	app-arch/gzip"
 
-src_unpack() {
-	rpm_src_unpack
+#src_unpack() {
+#	rpm_src_unpack
+#}
+
+pkg_nofetch() {
+	check_tarballs_available "${EPSON_URI}" "${distfiles[@]}"
 }
 
 src_prepare() {
@@ -44,6 +51,11 @@ src_prepare() {
 	eautoreconf
 }
 
+src_configure() {
+	econf \
+		--with-cupsppddir="/usr/share/cups/model"
+}
+
 src_compile() {
 	emake -j1
 }
@@ -52,8 +64,7 @@ src_install() {
 	emake DESTDIR="${D}" install
 
 	# Compress the PPD files:
-	#for ppd in "${D}"/usr/share/cups/model/"${PN}"/*.ppd; do
-	for ppd in "${D}"/usr/share/cups/model/*.ppd; do
+	for ppd in "${D}"/usr/share/cups/model/"${PN}"/*.ppd; do
 		gzip "${ppd}" || die
 	done
 

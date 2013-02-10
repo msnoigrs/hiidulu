@@ -1,4 +1,4 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2013 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -8,9 +8,10 @@ inherit autotools
 
 MY_PN="Epson-LPM5500-filter"
 MY_P="${MY_PN}-${PV}"
+EPSON_URI="http://download.ebz.epson.net/dsc/search/01/search/?OSC=LX"
 
 DESCRIPTION="Epson LPM5500/LPM5600 filter"
-HOMEPAGE="http://avasys.jp/"
+HOMEPAGE="http://global.epson.com/"
 SRC_URI="${MY_P}.tar.gz"
 
 LICENSE="EAPL MIT"
@@ -30,7 +31,7 @@ S="${WORKDIR}/${MY_P}"
 
 pkg_nofetch() {
 	einfo "Please download ${MY_PN}.tar.gz from:"
-	einfo "http://www.avasys.jp/lx-bin2/linux/mfp/DL2.do"
+	einfo "${EPSON_URI}"
 	einfo "and move it to ${DISTDIR}"
 }
 
