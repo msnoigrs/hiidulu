@@ -38,7 +38,9 @@ DEPEND="${REPEND}
 #}
 
 pkg_nofetch() {
-	check_tarballs_available "${EPSON_URI}" "${distfiles[@]}"
+        einfo "Please download ${MY_PN}.tar.gz from:"
+        einfo "${EPSON_URI}"
+        einfo "and move it to ${DISTDIR}"
 }
 
 src_prepare() {
