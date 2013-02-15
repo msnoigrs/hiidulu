@@ -1,8 +1,8 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2013 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI="2"
+EAPI="4"
 JAVA_PKG_IUSE="doc source"
 
 ESVN_REPO_URI="http://svn.apache.org/repos/asf/pdfbox/trunk/fontbox"
@@ -19,15 +19,15 @@ KEYWORDS="~amd64 ~x86"
 
 IUSE=""
 
-#COMMON_DEP="dev-java/tika-core"
-RDEPEND=">=virtual/jre-1.5
+COMMON_DEP="dev-java/jcl-over-slf4j"
+RDEPEND=">=virtual/jre-1.6
 	${COMMON_DEP}"
-DEPEND=">=virtual/jdk-1.5
+DEPEND=">=virtual/jdk-1.6
 	${COMMON_DEP}"
 
 java_prepare() {
-	#mkdir lib || die
-	#java-pkg_jar-from --into lib tika-core
+	mkdir lib || die
+	java-pkg_jar-from --into lib jcl-over-slf4j
 
 	cp "${FILESDIR}/gentoo-build.xml" build.xml
 }

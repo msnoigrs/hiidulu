@@ -1,8 +1,8 @@
-# Copyright 1999-2012 Gentoo Foundation
+# Copyright 1999-2013 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI=2
+EAPI=4
 
 EGIT_REPO_URI="git://git.sourceforge.jp/gitroot/luatex-ja/luatexja.git"
 
@@ -25,7 +25,7 @@ src_install() {
 	luatexjadir="/usr/share/texmf-dist/tex/luatexja"
 	dodir ${luatexjadir} || die
 	cp -r src/* ${D}${luatexjadir}
-	dodoc doc/*.{lua,pdf,tex,dtx,ins}
+	dodoc doc/*.{lua,pdf,dtx,ins}
 }
 
 pkg_postinst() {

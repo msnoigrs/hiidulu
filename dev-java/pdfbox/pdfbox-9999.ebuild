@@ -1,8 +1,8 @@
-# Copyright 1999-2012 Gentoo Foundation
+# Copyright 1999-2013 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI="2"
+EAPI="4"
 JAVA_PKG_IUSE="doc source"
 WANT_ANT_TASKS="ant-nodeps"
 
@@ -24,10 +24,10 @@ IUSE=""
 CDEPEND=">=dev-java/tika-core-0.10
 	dev-java/fontbox
 	dev-java/jempbox
-	>=dev-java/bcprov-1.32
-	>=dev-java/bcmail-1.32
+	dev-java/bcprov:0
+	dev-java/bcmail:0
 	dev-java/jcl-over-slf4j
-	dev-java/icu4j:49"
+	dev-java/icu4j:0"
 RDEPEND=">=virtual/jre-1.6
 	dev-java/logback-core
 	dev-java/logback-classic
