@@ -1,0 +1,12 @@
+[Unit]
+Description=Tomcat Service
+After=syslog.target network.target
+
+[Service]
+Type=forking
+PIDFile=/run/tomcat-@SLOT@.pid
+ExecStart=/usr/share/tomcat-@SLOT@/bin/tomcat.sh start
+ExecStop=/usr/share/tomcat-@SLOT@/bin/tomcat.sh stop
+
+[Install]
+WantedBy=multi-user.target

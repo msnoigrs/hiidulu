@@ -1,0 +1,10 @@
+[Unit]
+Description=Tomcat Socket
+
+[Socket]
+ListenStream=8080
+ListenStream=127.0.0.1:8009
+Accept=yes
+
+[Install]
+WantedBy=sockets.target

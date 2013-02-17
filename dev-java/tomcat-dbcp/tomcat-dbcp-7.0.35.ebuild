@@ -1,11 +1,11 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2012 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header:  $
 
 EAPI="2"
 ESVN_REPO_URI="dummy"
 #ESVN_REPO_URI="http://svn.apache.org/repos/asf/commons/proper/dbcp/trunk"
-COMMONS_POOL_VER="1.5.5"
+COMMONS_POOL_VER="1.6"
 
 inherit java-pkg-2 java-ant-2 subversion
 
@@ -34,7 +34,7 @@ S_POOL="${S}/commons-pool-${COMMONS_POOL_VER}-src"
 src_unpack() {
 	S="${S_DBCP}" \
 	ESVN_PROJECT="commons-dbcp" \
-	ESVN_REPO_URI="http://svn.apache.org/repos/asf/commons/proper/dbcp/trunk" \
+	ESVN_REPO_URI="http://svn.apache.org/repos/asf/commons/proper/dbcp/branches/DBCP_1_4_x_BRANCH"
 	subversion_src_unpack
 
 #	S="${S_POOL}" \

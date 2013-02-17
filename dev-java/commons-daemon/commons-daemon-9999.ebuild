@@ -1,13 +1,13 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2013 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI="2"
+EAPI=4
 ESVN_REPO_URI="http://svn.apache.org/repos/asf/commons/proper/daemon/trunk"
 WANT_AUTOCONF=2.5
 JAVA_PKG_IUSE="doc examples source"
 
-inherit subversion java-pkg-2 java-ant-2 eutils autotools
+inherit subversion java-pkg-2 java-ant-2 autotools
 
 DESCRIPTION="Tools to allow java programs to run as unix daemons"
 HOMEPAGE="http://commons.apache.org/daemon/"
@@ -19,8 +19,11 @@ KEYWORDS=""
 #KEYWORDS="amd64 ~ppc ~ppc64 x86 ~x86-fbsd"
 IUSE="doc examples source"
 
-DEPEND=">=virtual/jdk-1.5"
-RDEPEND=">=virtual/jre-1.5"
+COMMON_DEP="net-libs/libpcap"
+DEPEND=">=virtual/jdk-1.6
+	${COMMON_DEP}"
+RDEPEND=">=virtual/jre-1.6
+	${COMMON_DEP}"
 
 java_prepare() {
 	# Submitted upstream to http://bugs.gentoo.org/show_bug.cgi?id=132563
@@ -50,7 +53,8 @@ src_compile() {
 
 	# compile java stuff
 	cd "${S}"
-	eant jar $(use_doc)
+#	eant jar $(use_doc)
+	java-pkg-2_src_compile
 }
 
 src_install() {
