@@ -1,4 +1,4 @@
-# Copyright 1999-2012 Gentoo Foundation
+# Copyright 1999-2013 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -53,7 +53,7 @@ src_install() {
 		#elisp-install ${PN} contrib/lisp/*org*.el contrib/lisp/*org*.elc || die
 		elisp-install ${PN} contrib/lisp/*org*.el || die
 		insinto /usr/share/doc/${PF}/contrib
-		doins -r contrib/README contrib/babel contrib/scripts
+		doins -r contrib/README contrib/scripts
 		find "${ED}/usr/share/doc/${PF}/contrib" -type f -name '.*' \
 			-exec rm -f '{}' '+'
 		# add the contrib subdirectory to load-path
