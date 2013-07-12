@@ -1,4 +1,4 @@
-# Copyright 1999-2012 Gentoo Foundation
+# Copyright 1999-2013 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 EAPI="2"
@@ -28,9 +28,23 @@ DEPEND=">=virtual/jdk-1.5
 RDEPEND=">=virtual/jre-1.5
 	${COMMON_DEP}"
 
-#java_prepare() {
+java_prepare() {
+	rm src/share/classes/com/sun/media/jai/codec/ImageCodec.java
+	rm src/share/classes/com/sun/media/jai/codecimpl/JPEGImageDecoder.java
+	rm src/share/classes/com/sun/media/jai/codecimpl/JPEGImageEncoder.java
+	rm src/share/classes/com/sun/media/jai/codecimpl/JPEGCodec.java
+	rm src/share/classes/com/sun/media/jai/codecimpl/TIFFImage.java
+	rm src/share/classes/com/sun/media/jai/codecimpl/TIFFImageEncoder.java
+	rm src/share/classes/com/sun/media/jai/codecimpl/TIFFImageDecoder.java
+	rm src/share/classes/com/sun/media/jai/codecimpl/FPXImageDecoder.java
+	rm src/share/classes/com/sun/media/jai/codecimpl/fpx/FPXImage.java
+	rm src/share/classes/com/sun/media/jai/opimage/IIPResolutionOpImage.java
+	rm src/share/classes/com/sun/media/jai/tilecodec/JPEGTileDecoder.java
+	rm src/share/classes/com/sun/media/jai/tilecodec/JPEGTileEncoder.java
+	rm src/share/classes/com/sun/media/jai/tilecodec/JPEGTileDecoderFactory.java
+	rm src/share/classes/com/sun/media/jai/tilecodec/JPEGTileEncoderFactory.java
 #	epatch "${FILESDIR}/remove_jpegparam.patch"
-#}
+}
 
 src_compile() {
 	local myarch="$(tc-arch)"

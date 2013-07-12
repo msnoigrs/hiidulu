@@ -1,4 +1,4 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2013 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -10,7 +10,7 @@ inherit java-pkg-2
 DESCRIPTION="A parser generator for C++, C#, Java, and Python"
 HOMEPAGE="http://www.antlr.org/"
 # You need to generate v3 grammars so that boostrapping works
-SRC_URI="http://www.antlr.org/download/${P}.tar.gz
+SRC_URI="http://www.antlr3.org/download/${P}.tar.gz
 	mirror://gentoo/${P}-generated.tar.bz2"
 LICENSE="BSD"
 SLOT="3"

@@ -1,8 +1,8 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2013 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI="2"
+EAPI="5"
 WANT_ANT_TASKS="dev-java/jarjar:1"
 JAVA_PKG_IUSE="doc source"
 
@@ -20,7 +20,7 @@ IUSE="servletapi spring struts2"
 
 COMMON_DEP="dev-java/aopalliance:1
 	dev-java/geronimo-spec-jpa
-	dev-java/atinject
+	dev-java/javax-inject
 	dev-java/asm:3
 	dev-java/cglib:2.2
 	servletapi? ( dev-java/tomcat-servlet-api:3.0 )"
@@ -76,7 +76,7 @@ java_prepare() {
 
 	cd ${S}/lib
 	java-pkg_jar-from aopalliance-1 aopalliance.jar
-	java-pkg_jar-from atinject javax.inject.jar
+	java-pkg_jar-from javax-inject javax.inject.jar
 
 	cd ${S}/lib/build
 	java-pkg_jar-from --build-only cglib-2.2 cglib.jar cglib-2.2.1-snapshot.jar

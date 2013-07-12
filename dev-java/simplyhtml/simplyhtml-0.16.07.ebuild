@@ -11,7 +11,7 @@ MY_PV="$(replace_all_version_separators _)"
 
 DESCRIPTION="Text processing application based on HTML and CSS files."
 HOMEPAGE="http://${PN}.sourceforge.net"
-SRC_URI="mirror://sourceforge/${PN}/stable/shtml%200.13.1/${MY_PN}_src_${MY_PV}.tar.gz"
+SRC_URI="mirror://sourceforge/${PN}/stable/${MY_PN}_src_${MY_PV}.tar.gz"
 LICENSE="GPL-2"
 SLOT="0"
 KEYWORDS="amd64 ppc x86 ~amd64-linux ~x86-linux ~ppc-macos ~x86-macos ~x64-solaris"

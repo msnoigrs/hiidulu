@@ -21,7 +21,8 @@ SLOT="0"
 # doesn't work with java.awt.headless
 RESTRICT="test"
 KEYWORDS="amd64 ppc ppc64 x86"
-IUSE="hyphenation jai"
+#IUSE="hyphenation jai"
+IUSE="hyphenation"
 
 COMMON_DEPEND="
 	dev-java/avalon-framework:4.2
@@ -33,8 +34,8 @@ COMMON_DEPEND="
 	dev-java/xalan:0
 	dev-java/slf4j-api
 	dev-java/logback-core
-	dev-java/logback-classic
-	jai? ( dev-java/jai-core )"
+	dev-java/logback-classic"
+#	jai? ( dev-java/jai-core )"
 
 RDEPEND=">=virtual/jre-1.5
 	${COMMON_DEPEND}"
@@ -70,7 +71,7 @@ java_prepare() {
 	java-pkg_jar-from logback-core
 	java-pkg_jar-from logback-classic
 
-	use jai && java-pkg_jar-from jai-core
+#	use jai && java-pkg_jar-from jai-core
 #	use jimi && java-pkg_jar-from sun-jimi
 }
 

@@ -1,0 +1,27 @@
+--- freemind/plugins/collaboration/database/DatabaseBasics.java.orig	2013-07-12 12:29:15.331829561 +0900
++++ freemind/plugins/collaboration/database/DatabaseBasics.java	2013-07-12 12:30:09.522827427 +0900
+@@ -43,7 +43,7 @@
+ import javax.swing.WindowConstants;
+ 
+ import com.jgoodies.forms.builder.DefaultFormBuilder;
+-import com.jgoodies.forms.factories.ButtonBarFactory;
++import com.jgoodies.forms.builder.ButtonBarBuilder;
+ import com.jgoodies.forms.layout.FormLayout;
+ 
+ import freemind.common.NumberProperty;
+@@ -216,7 +216,7 @@
+ 			});
+ 			getRootPane().setDefaultButton(mOkButton);
+ 			getContentPane().add(
+-					ButtonBarFactory.buildOKCancelBar(cancelButton, mOkButton),
++					new ButtonBarBuilder().addGlue().addButton(cancelButton, mOkButton).build(),
+ 					BorderLayout.SOUTH);
+ 			setTitle("Enter Password Dialog");
+ 			setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+@@ -310,4 +310,4 @@
+ 		return mUpdateThread.getHost();
+ 	}
+ 
+-}
+\ No newline at end of file
++}

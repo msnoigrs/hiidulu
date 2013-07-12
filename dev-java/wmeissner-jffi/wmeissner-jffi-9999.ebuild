@@ -1,4 +1,4 @@
-# Copyright 1999-2012 Gentoo Foundation
+# Copyright 1999-2013 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -51,9 +51,12 @@ java_prepare() {
 	use ppc && arch="ppc"
 
 	# Don't include prebuilt files for other archs.
-	sed -i '/<zipfileset src="archive\//d' custom-build.xml || die
-	sed -i '/libs.CopyLibs.classpath/d' lib/nblibraries.properties || die
-	sed -i '/copylibstask.jar/d' lib/nblibraries.properties || die
+	sed -i -e '/<zipfileset src="archive\//d' custom-build.xml || die
+	sed -i -e '/libs.CopyLibs.classpath/d' lib/nblibraries.properties || die
+	sed -i -e '/copylibstask.jar/d' lib/nblibraries.properties || die
+
+	sed -i -e 's/-mimpure-text//g' jni/GNUmakefile
+	sed -i -e 's/-mimpure-text//g' libtest/GNUmakefile
 }
 
 EANT_EXTRA_ARGS="-Duse.system.libffi=1"

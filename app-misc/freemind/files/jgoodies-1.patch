@@ -1,0 +1,22 @@
+--- freemind/accessories/plugins/dialogs/ManagePatternsPopupDialog.java.orig	2013-07-12 12:30:36.547826362 +0900
++++ freemind/accessories/plugins/dialogs/ManagePatternsPopupDialog.java	2013-07-12 12:31:50.403823453 +0900
+@@ -58,7 +58,7 @@
+ import javax.swing.event.ListSelectionEvent;
+ import javax.swing.event.ListSelectionListener;
+ 
+-import com.jgoodies.forms.factories.ButtonBarFactory;
++import com.jgoodies.forms.builder.ButtonBarBuilder;
+ 
+ import freemind.common.TextTranslator;
+ import freemind.common.XmlBindingTools;
+@@ -463,8 +463,8 @@
+ 			jContentPane.add(mSplitPane, new GridBagConstraints(0, 0, 2, 1,
+ 					1.0, 8.0, GridBagConstraints.WEST, GridBagConstraints.BOTH,
+ 					new Insets(0, 0, 0, 0), 0, 0));
+-			jContentPane.add(ButtonBarFactory.buildOKCancelBar(
+-					getJCancelButton(), getJOKButton()),
++			jContentPane.add(new ButtonBarBuilder().addGlue().addButton(
++					getJCancelButton(), getJOKButton()).build(),
+ 					new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0,
+ 							GridBagConstraints.EAST, GridBagConstraints.NONE,
+ 							new Insets(0, 0, 0, 0), 0, 0));

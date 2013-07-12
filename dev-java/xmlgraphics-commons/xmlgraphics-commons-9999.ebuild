@@ -1,4 +1,4 @@
-# Copyright 1999-2012 Gentoo Foundation
+# Copyright 1999-2013 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -56,7 +56,7 @@ src_test() {
 }
 
 src_install(){
-	java-pkg_newjar build/${PN}*svn.jar
+	java-pkg_newjar build/${PN}-svn-trunk.jar
 	use source && java-pkg_dosrc src/java/org
 	use doc && java-pkg_dojavadoc build/javadocs
 }

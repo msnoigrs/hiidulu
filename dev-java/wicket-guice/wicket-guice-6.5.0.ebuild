@@ -23,7 +23,7 @@ IUSE=""
 COMMON_DEP="dev-java/wicket-core:${SLOT}
 	dev-java/wicket-util:${SLOT}
 	dev-java/wicket-ioc:${SLOT}
-	dev-java/atinject
+	dev-java/javax-inject
 	dev-java/guice:3"
 DEPEND=">=virtual/jdk-1.6
 	java-virtuals/servlet-api:3.0
@@ -41,7 +41,7 @@ java_prepare() {
 	java-pkg_jar-from --into lib wicket-util-${SLOT}
 	java-pkg_jar-from --into lib wicket-ioc-${SLOT}
 	java-pkg_jar-from --into lib guice-3 guice.jar
-	java-pkg_jar-from --into lib atinject
+	java-pkg_jar-from --into lib javax-inject
 	java-pkg_jar-from --into lib --build-only --virtual servlet-api-3.0 servlet-api.jar
 }
 
