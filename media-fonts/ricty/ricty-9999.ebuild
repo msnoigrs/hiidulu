@@ -8,8 +8,8 @@ EGIT_REPO_URI="git://github.com/yascentur/Ricty.git"
 
 inherit font git-2
 
-MIG_SFD="57240"
-MIG_V="20121030"
+MIG_SFD="59022"
+MIG_V="20130617"
 MIG="redir.php?m=iij&f=%2Fmix-mplus-ipa%2F${MIG_SFD}%2Fmigu-1m-${MIG_V}.zip"
 
 DESCRIPTION="Japanese TrueType font. for programing"

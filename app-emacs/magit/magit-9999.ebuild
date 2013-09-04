@@ -1,4 +1,4 @@
-# Copyright 1999-2012 Gentoo Foundation
+# Copyright 1999-2013 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -17,15 +17,18 @@ SLOT="0"
 KEYWORDS="~amd64 ~x86"
 IUSE=""
 
+DEPEND="app-emacs/git-modes"
+RDEPEND="${RDEPEND}"
+
 SITEFILE="50magit-gentoo.el"
 
 src_compile() {
-	default
-	elisp-compile rebase-mode.el
+	elisp_src_compile
+	emake docs
 }
 
 src_install() {
-	elisp-install ${PN} magit{,-bisect,-stgit,-svn,-topgit,-key-mode}.{el,elc} rebase-mode.{el,elc} || die
+	elisp-install ${PN} magit{,-bisect,-blame,-cherry,-compat,-flow,-key-mode,-stgit,-svn,-topgit,-wip}.{el,elc} || die
 	elisp-site-file-install "${FILESDIR}/${SITEFILE}" || die
 	doinfo magit.info
 	dodoc README.md

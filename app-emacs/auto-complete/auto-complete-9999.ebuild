@@ -36,10 +36,10 @@ src_install() {
 	insinto "${SITEETC}/${PN}"
 	doins -r dict || die
 
-	dodoc etc/test.txt || die
-	cd doc
-	dodoc index.txt manual.txt demo.txt changes.txt *.png || die
-	if use linguas_ja; then
-		dodoc index.ja.txt manual.ja.txt changes.ja.txt || die
-	fi
+	#dodoc etc/test.txt || die
+	#cd doc
+	#dodoc index.txt manual.txt demo.txt changes.txt *.png || die
+	#if use linguas_ja; then
+	#	dodoc index.ja.txt manual.ja.txt changes.ja.txt || die
+	#fi
 }

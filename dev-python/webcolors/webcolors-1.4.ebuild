@@ -3,8 +3,9 @@
 # $Header: $
 
 EAPI=5
-PYTHON_COMPAT=( python{2.7,3_1,3_2,3_3} )
-inherit distutils
+PYTHON_COMPAT=( python{2_7,3_1,3_2,3_3} )
+
+inherit distutils-r1
 
 DESCRIPTION="a library for working with color names for HTML and CSS"
 HOMEPAGE="http://docs.b-list.org/webcolors/1.4/"
