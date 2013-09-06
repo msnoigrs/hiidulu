@@ -1,4 +1,4 @@
-# Copyright 1999-2012 Gentoo Foundation
+# Copyright 1999-2013 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -21,7 +21,7 @@ KEYWORDS="x86 amd64"
 IUSE=""
 
 COMMON_DEP="dev-java/jsr166y"
-DEPEND=">=virtual/jdk-1.6
+DEPEND="virtual/jdk:1.7
 	${COMMON_DEP}"
 RDEPEND=">=virtual/jre-1.6
 	${COMMON_DEP}"
@@ -32,14 +32,21 @@ EANT_BUILD_TARGET="extra166yjar"
 EANT_DOC_TARGET="extra166ydocs"
 
 src_prepare() {
-	find . -depth -name 'CVS' -exec rm -rf {} :
+	find . -depth -name 'CVS' -exec rm -rf {} \;
 
-	mkdir -p build/jsr166ylib
-	java-pkg_jar-from --into build/jsr166ylib jsr166y
+	sed -i -e 's/\(configure-compiler\), jsr166yjar/\1/' build.xml
+
+	mkdir -p build/jsr166y
+	java-pkg_jar-from --into build/jsr166y jsr166y
+}
+
+src_compile() {
+	EANT_EXTRA_ARGS="-Djdk7.home=$(java-config -O)"	\
+		java-pkg-2_src_compile
 }
 
 src_install() {
-	java-pkg_dojar build/extra166ylib/${PN}.jar
+	java-pkg_dojar build/extra166y/${PN}.jar
 
 	use doc && java-pkg_dojavadoc build/extra166yjavadocs
 	use source && java-pkg_dosrc src/extra166y
