@@ -43,7 +43,7 @@ EANT_EXTRA_ARGS="-Djavaee.jar=activation.jar -Dspec.dir=doc/spec"
 src_install() {
 	java-pkg_dojar target/release/mail.jar
 
-	dodoc doc/release/{CHANGES,COMPAT,NOTES,README,SSLNOTES,distributionREADME}.txt || die
+	dodoc doc/release/{CHANGES,COMPAT,NOTES,README,SSLNOTES}.txt || die
 	dohtml -r doc/release/{*.html,images} || die
 
 	use doc && java-pkg_dojavadoc target/release/docs/javadocs
