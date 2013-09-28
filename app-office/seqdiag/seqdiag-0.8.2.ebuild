@@ -7,7 +7,7 @@ PYTHON_COMPAT=( python{2_6,2_7,3_3} )
 
 inherit distutils-r1
 
-DESCRIPTION="Simple block diagram generator"
+DESCRIPTION="Sequence diagram generator"
 HOMEPAGE="http://blockdiag.com/"
 SRC_URI="http://pypi.python.org/packages/source/${PN:0:1}/${PN}/${P}.tar.gz"
 
@@ -19,13 +19,10 @@ IUSE=""
 DEPEND="virtual/python-imaging
 	dev-python/webcolors
 	dev-python/funcparserlib
-	dev-python/setuptools"
+	dev-python/setuptools
+	app-office/blockdiag"
 RDEPEND="${DEPEND}"
 
 src_prepare() {
-#	epatch "${FILESDIR}"/edge.patch
-#	epatch "${FILESDIR}"/py3.patch
-#	epatch "${FILESDIR}"/2py3.patch
-	epatch "${FILESDIR}"/blockdiag-py3.patch
-#	epatch "${FILESDIR}"/blockdiag-debug.patch
+	epatch "${FILESDIR}"/seqdiag-py3.patch
 }

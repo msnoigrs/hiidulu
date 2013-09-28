@@ -1,0 +1,2228 @@
+diff -r 1b120326b282 bootstrap.py
+--- a/bootstrap.py	Wed Nov 21 22:20:43 2012 +0900
++++ b/bootstrap.py	Thu Sep 19 20:27:59 2013 +0900
+@@ -18,75 +18,14 @@
+ use the -c option to specify an alternate configuration file.
+ """
+ 
+-import os, shutil, sys, tempfile, urllib, urllib2, subprocess
++import os
++import shutil
++import sys
++import tempfile
++
+ from optparse import OptionParser
+ 
+-if sys.platform == 'win32':
+-    def quote(c):
+-        if ' ' in c:
+-            return '"%s"' % c  # work around spawn lamosity on windows
+-        else:
+-            return c
+-else:
+-    quote = str
+-
+-# See zc.buildout.easy_install._has_broken_dash_S for motivation and comments.
+-stdout, stderr = subprocess.Popen(
+-    [sys.executable, '-Sc',
+-     'try:\n'
+-     '    import ConfigParser\n'
+-     'except ImportError:\n'
+-     '    print 1\n'
+-     'else:\n'
+-     '    print 0\n'],
+-    stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+-has_broken_dash_S = bool(int(stdout.strip()))
+-
+-# In order to be more robust in the face of system Pythons, we want to
+-# run without site-packages loaded.  This is somewhat tricky, in
+-# particular because Python 2.6's distutils imports site, so starting
+-# with the -S flag is not sufficient.  However, we'll start with that:
+-if not has_broken_dash_S and 'site' in sys.modules:
+-    # We will restart with python -S.
+-    args = sys.argv[:]
+-    args[0:0] = [sys.executable, '-S']
+-    args = map(quote, args)
+-    os.execv(sys.executable, args)
+-# Now we are running with -S.  We'll get the clean sys.path, import site
+-# because distutils will do it later, and then reset the path and clean
+-# out any namespace packages from site-packages that might have been
+-# loaded by .pth files.
+-clean_path = sys.path[:]
+-import site  # imported because of its side effects
+-sys.path[:] = clean_path
+-for k, v in sys.modules.items():
+-    if k in ('setuptools', 'pkg_resources') or (
+-        hasattr(v, '__path__') and
+-        len(v.__path__) == 1 and
+-        not os.path.exists(os.path.join(v.__path__[0], '__init__.py'))):
+-        # This is a namespace package.  Remove it.
+-        sys.modules.pop(k)
+-
+-is_jython = sys.platform.startswith('java')
+-
+-setuptools_source = 'http://peak.telecommunity.com/dist/ez_setup.py'
+-distribute_source = 'http://python-distribute.org/distribute_setup.py'
+-
+-
+-# parsing arguments
+-def normalize_to_url(option, opt_str, value, parser):
+-    if value:
+-        if '://' not in value:  # It doesn't smell like a URL.
+-            value = 'file://%s' % (
+-                urllib.pathname2url(
+-                    os.path.abspath(os.path.expanduser(value))),)
+-        if opt_str == '--download-base' and not value.endswith('/'):
+-            # Download base needs a trailing slash to make the world happy.
+-            value += '/'
+-    else:
+-        value = None
+-    name = opt_str[2:].replace('-', '_')
+-    setattr(parser.values, name, value)
++tmpeggs = tempfile.mkdtemp()
+ 
+ usage = '''\
+ [DESIRED PYTHON FOR BUILDOUT] bootstrap.py [options]
+@@ -96,31 +35,13 @@
+ Simply run this script in a directory containing a buildout.cfg, using the
+ Python that you want bin/buildout to use.
+ 
+-Note that by using --setup-source and --download-base to point to
+-local resources, you can keep this script from going over the network.
++Note that by using --find-links to point to local resources, you can keep 
++this script from going over the network.
+ '''
+ 
+ parser = OptionParser(usage=usage)
+-parser.add_option("-v", "--version", dest="version",
+-                          help="use a specific zc.buildout version")
+-parser.add_option("-d", "--distribute",
+-                   action="store_true", dest="use_distribute", default=False,
+-                   help="Use Distribute rather than Setuptools.")
+-parser.add_option("--setup-source", action="callback", dest="setup_source",
+-                  callback=normalize_to_url, nargs=1, type="string",
+-                  help=("Specify a URL or file location for the setup file. "
+-                        "If you use Setuptools, this will default to " +
+-                        setuptools_source + "; if you use Distribute, this "
+-                        "will default to " + distribute_source + "."))
+-parser.add_option("--download-base", action="callback", dest="download_base",
+-                  callback=normalize_to_url, nargs=1, type="string",
+-                  help=("Specify a URL or directory for downloading "
+-                        "zc.buildout and either Setuptools or Distribute. "
+-                        "Defaults to PyPI."))
+-parser.add_option("--eggs",
+-                  help=("Specify a directory for storing eggs.  Defaults to "
+-                        "a temporary directory that is deleted when the "
+-                        "bootstrap script completes."))
++parser.add_option("-v", "--version", help="use a specific zc.buildout version")
++
+ parser.add_option("-t", "--accept-buildout-test-releases",
+                   dest='accept_buildout_test_releases',
+                   action="store_true", default=False,
+@@ -130,50 +51,38 @@
+                         "extensions for you.  If you use this flag, "
+                         "bootstrap and buildout will get the newest releases "
+                         "even if they are alphas or betas."))
+-parser.add_option("-c", None, action="store", dest="config_file",
+-                   help=("Specify the path to the buildout configuration "
+-                         "file to be used."))
++parser.add_option("-c", "--config-file",
++                  help=("Specify the path to the buildout configuration "
++                        "file to be used."))
++parser.add_option("-f", "--find-links",
++                  help=("Specify a URL to search for buildout releases"))
+ 
+-options, orig_args = parser.parse_args()
+ 
+-args = []
++options, args = parser.parse_args()
+ 
+-# if -c was provided, we push it back into args for buildout's main function
+-if options.config_file is not None:
+-    args += ['-c', options.config_file]
++######################################################################
++# load/install setuptools
+ 
+-if options.eggs:
+-    eggs_dir = os.path.abspath(os.path.expanduser(options.eggs))
+-else:
+-    eggs_dir = tempfile.mkdtemp()
+-
+-if options.setup_source is None:
+-    if options.use_distribute:
+-        options.setup_source = distribute_source
+-    else:
+-        options.setup_source = setuptools_source
+-
+-if options.accept_buildout_test_releases:
+-    args.append('buildout:accept-buildout-test-releases=true')
+-
++to_reload = False
+ try:
+     import pkg_resources
+-    import setuptools  # A flag.  Sometimes pkg_resources is installed alone.
+-    if not hasattr(pkg_resources, '_distribute'):
+-        raise ImportError
++    import setuptools
+ except ImportError:
+-    ez_code = urllib2.urlopen(
+-        options.setup_source).read().replace('\r\n', '\n')
+     ez = {}
+-    exec ez_code in ez
+-    setup_args = dict(to_dir=eggs_dir, download_delay=0)
+-    if options.download_base:
+-        setup_args['download_base'] = options.download_base
+-    if options.use_distribute:
+-        setup_args['no_fake'] = True
++
++    try:
++        from urllib.request import urlopen
++    except ImportError:
++        from urllib2 import urlopen
++
++    # XXX use a more permanent ez_setup.py URL when available.
++    exec(urlopen('https://bitbucket.org/pypa/setuptools/raw/0.7.2/ez_setup.py'
++                ).read(), ez)
++    setup_args = dict(to_dir=tmpeggs, download_delay=0)
+     ez['use_setuptools'](**setup_args)
+-    if 'pkg_resources' in sys.modules:
+-        reload(sys.modules['pkg_resources'])
++
++    if to_reload:
++        reload(pkg_resources)
+     import pkg_resources
+     # This does not (always?) update the default working set.  We will
+     # do it.
+@@ -181,31 +90,26 @@
+         if path not in pkg_resources.working_set.entries:
+             pkg_resources.working_set.add_entry(path)
+ 
+-cmd = [quote(sys.executable),
+-       '-c',
+-       quote('from setuptools.command.easy_install import main; main()'),
+-       '-mqNxd',
+-       quote(eggs_dir)]
++######################################################################
++# Install buildout
+ 
+-if not has_broken_dash_S:
+-    cmd.insert(1, '-S')
++ws = pkg_resources.working_set
+ 
+-find_links = options.download_base
+-if not find_links:
+-    find_links = os.environ.get('bootstrap-testing-find-links')
++cmd = [sys.executable, '-c',
++       'from setuptools.command.easy_install import main; main()',
++       '-mZqNxd', tmpeggs]
++
++find_links = os.environ.get(
++    'bootstrap-testing-find-links',
++    options.find_links or
++    ('http://downloads.buildout.org/'
++     if options.accept_buildout_test_releases else None)
++    )
+ if find_links:
+-    cmd.extend(['-f', quote(find_links)])
++    cmd.extend(['-f', find_links])
+ 
+-if options.use_distribute:
+-    setup_requirement = 'distribute'
+-else:
+-    setup_requirement = 'setuptools'
+-ws = pkg_resources.working_set
+-setup_requirement_path = ws.find(
+-    pkg_resources.Requirement.parse(setup_requirement)).location
+-env = dict(
+-    os.environ,
+-    PYTHONPATH=setup_requirement_path)
++setuptools_path = ws.find(
++    pkg_resources.Requirement.parse('setuptools')).location
+ 
+ requirement = 'zc.buildout'
+ version = options.version
+@@ -220,7 +124,7 @@
+                 return False
+         return True
+     index = setuptools.package_index.PackageIndex(
+-        search_path=[setup_requirement_path])
++        search_path=[setuptools_path])
+     if find_links:
+         index.add_find_links((find_links,))
+     req = pkg_resources.Requirement.parse(requirement)
+@@ -242,25 +146,25 @@
+     requirement = '=='.join((requirement, version))
+ cmd.append(requirement)
+ 
+-if is_jython:
+-    import subprocess
+-    exitcode = subprocess.Popen(cmd, env=env).wait()
+-else:  # Windows prefers this, apparently; otherwise we would prefer subprocess
+-    exitcode = os.spawnle(*([os.P_WAIT, sys.executable] + cmd + [env]))
+-if exitcode != 0:
+-    sys.stdout.flush()
+-    sys.stderr.flush()
+-    print ("An error occurred when trying to install zc.buildout. "
+-           "Look above this message for any errors that "
+-           "were output by easy_install.")
+-    sys.exit(exitcode)
++import subprocess
++if subprocess.call(cmd, env=dict(os.environ, PYTHONPATH=setuptools_path)) != 0:
++    raise Exception(
++        "Failed to execute command:\n%s",
++        repr(cmd)[1:-1])
+ 
+-ws.add_entry(eggs_dir)
++######################################################################
++# Import and run buildout
++
++ws.add_entry(tmpeggs)
+ ws.require(requirement)
+ import zc.buildout.buildout
+-if orig_args:
+-    # run buildout with commands passed to bootstrap.py, then actually bootstrap
+-    zc.buildout.buildout.main(args + orig_args)
+-zc.buildout.buildout.main(args + ['bootstrap'])
+-if not options.eggs:  # clean up temporary egg directory
+-    shutil.rmtree(eggs_dir)
++
++if not [a for a in args if '=' not in a]:
++    args.append('bootstrap')
++
++# if -c was provided, we push it back into args for buildout' main function
++if options.config_file is not None:
++    args[0:0] = ['-c', options.config_file]
++
++zc.buildout.buildout.main(args)
++shutil.rmtree(tmpeggs)
+diff -r 1b120326b282 setup.py
+--- a/setup.py	Wed Nov 21 22:20:43 2012 +0900
++++ b/setup.py	Thu Sep 19 20:27:59 2013 +0900
+@@ -7,14 +7,6 @@
+ import blockdiag
+ 
+ 
+-def is_installed(name):
+-    try:
+-        pkg_resources.get_distribution(name)
+-        return True
+-    except:
+-        return False
+-
+-
+ long_description = \
+         open(os.path.join("src","README.txt")).read() + \
+         open(os.path.join("src","TODO.txt")).read()
+@@ -31,28 +23,17 @@
+ 
+ requires = ['setuptools',
+             'funcparserlib',
+-            'webcolors']
+-deplinks = []
+-
+-# For readthedocs.org
+-# http://read-the-docs.readthedocs.org/en/latest/faq.html#how-do-i-change-behavior-for-read-the-docs
+-# Find imaging libraries
+-
+-if 'READTHEDOCS' in os.environ:
+-    requires.append('Pillow')
+-elif is_installed('PIL'):
+-    requires.append('PIL')
+-elif is_installed('Pillow'):
+-    requires.append('Pillow')
+-elif sys.platform == 'win32':
+-    requires.append('Pillow')
+-else:
+-    requires.append('PIL')
++            'webcolors',
++            'Pillow',]
++test_requires = [
++             'Nose',
++             'pep8>=1.3',]
+ 
+ 
+ # only for Python2.6
+ if sys.version_info > (2, 6) and sys.version_info < (2, 7):
+     requires.append('OrderedDict')
++    test_requires.append('unittest2')
+ 
+ 
+ setup(
+@@ -74,11 +55,7 @@
+      include_package_data=True,
+      install_requires=requires,
+      extras_require=dict(
+-         test=[
+-             'Nose',
+-             'pep8>=1.3',
+-             'unittest2',
+-         ],
++         test=test_requires,
+          pdf=[
+              'reportlab',
+          ],
+@@ -86,9 +63,8 @@
+              'docutils',
+          ],
+      ),
+-     dependency_links=deplinks,
+      test_suite='nose.collector',
+-     tests_require=['Nose','pep8'],
++     tests_require=test_requires,
+      entry_points="""
+         [console_scripts]
+         blockdiag = blockdiag.command:main
+diff -r 1b120326b282 src/README.txt
+--- a/src/README.txt	Wed Nov 21 22:20:43 2012 +0900
++++ b/src/README.txt	Thu Sep 19 20:27:59 2013 +0900
+@@ -102,6 +102,7 @@
+ * Python 2.4 or later (not support 3.x)
+ * Python Imaging Library 1.1.5 or later.
+ * funcparserlib 0.3.4 or later.
++* webcolors 1.3 or later.
+ * setuptools or distribute.
+ 
+ 
+diff -r 1b120326b282 src/blockdiag/builder.py
+--- a/src/blockdiag/builder.py	Wed Nov 21 22:20:43 2012 +0900
++++ b/src/blockdiag/builder.py	Thu Sep 19 20:27:59 2013 +0900
+@@ -16,6 +16,7 @@
+ from blockdiag import parser
+ from blockdiag.elements import Diagram, DiagramNode, NodeGroup, DiagramEdge
+ from blockdiag.utils import unquote, XY
++from functools import cmp_to_key
+ 
+ 
+ class DiagramTreeBuilder:
+@@ -201,7 +202,7 @@
+             else:
+                 related.append(uniq_node)
+ 
+-        related.sort(lambda x, y: cmp(x.order, y.order))
++        related.sort(key=lambda x: x.order)
+         return related
+ 
+     def get_parent_nodes(self, node):
+@@ -250,9 +251,7 @@
+                         if not parent in circular:
+                             parents.append(parent)
+ 
+-                parents.sort(lambda x, y: cmp(x.order, y.order))
+-
+-                for parent in parents:
++                for parent in sorted(parents, key=lambda x: x.order):
+                     children = self.get_child_nodes(parent)
+                     if node1 in children and node2 in children:
+                         if circular.index(node1) > circular.index(node2):
+@@ -364,11 +363,17 @@
+                 x.node1 = x.node1.group
+                 y.node1 = y.node1.group
+ 
+-            return cmp(x.node1.order, y.node1.order)
++            # cmp x.node1.order and y.node1.order
++            if x.node1.order < y.node1.order:
++                return -1
++            elif x.node1.order == y.node1.order:
++                return 0
++            else:
++                return 1
+ 
+         edges = (DiagramEdge.find(parent, node1) +
+                  DiagramEdge.find(parent, node2))
+-        edges.sort(compare)
++        edges.sort(key=cmp_to_key(compare))
+         if len(edges) == 0:
+             return 0
+         elif edges[0].node2 == node2:
+@@ -390,9 +395,17 @@
+         node.xy = XY(node.xy.x, height)
+         self.mark_xy(node.xy, node.colwidth, node.colheight)
+ 
++        def cmp(x, y):
++            if x.xy.x < y.xy.y:
++                return -1
++            elif x.xy.x == y.xy.y:
++                return 0
++            else:
++                return 1
++
+         count = 0
+         children = self.get_child_nodes(node)
+-        children.sort(lambda x, y: cmp(x.xy.x, y.xy.y))
++        children.sort(key=cmp_to_key(cmp))
+ 
+         grandchild = 0
+         for child in children:
+@@ -710,9 +723,9 @@
+ 
+             # pick up nodes to base diagram
+             nodes1 = [e.node1 for e in DiagramEdge.find(None, group)]
+-            nodes1.sort(lambda x, y: cmp(x.order, y.order))
++            nodes1.sort(key=lambda x: x.order)
+             nodes2 = [e.node2 for e in DiagramEdge.find(group, None)]
+-            nodes2.sort(lambda x, y: cmp(x.order, y.order))
++            nodes2.sort(key=lambda x: x.order)
+ 
+             nodes = nodes1 + [group] + nodes2
+             for i, n in enumerate(nodes):
+diff -r 1b120326b282 src/blockdiag/drawer.py
+--- a/src/blockdiag/drawer.py	Wed Nov 21 22:20:43 2012 +0900
++++ b/src/blockdiag/drawer.py	Thu Sep 19 20:27:59 2013 +0900
+@@ -13,9 +13,9 @@
+ #  See the License for the specific language governing permissions and
+ #  limitations under the License.
+ 
++from collections import defaultdict
+ from blockdiag import imagedraw, noderenderer
+ from blockdiag.metrics import AutoScaler, DiagramMetrics
+-from blockdiag.utils.collections import defaultdict
+ 
+ 
+ class DiagramDraw(object):
+diff -r 1b120326b282 src/blockdiag/imagedraw/base.py
+--- a/src/blockdiag/imagedraw/base.py	Wed Nov 21 22:20:43 2012 +0900
++++ b/src/blockdiag/imagedraw/base.py	Thu Sep 19 20:27:59 2013 +0900
+@@ -13,9 +13,9 @@
+ #  See the License for the specific language governing permissions and
+ #  limitations under the License.
+ 
++from functools import partial
+ from blockdiag.imagedraw import textfolder
+ from blockdiag.utils import Box
+-from blockdiag.utils.functools import partial
+ 
+ 
+ class ImageDraw(object):
+@@ -72,8 +72,5 @@
+     def image(self, box, url):
+         pass
+ 
+-    def loadImage(self, filename, box):  # TODO: obsoleted
+-        return self.image(box, filename)
+-
+     def save(self, filename, size, _format):
+         pass
+diff -r 1b120326b282 src/blockdiag/imagedraw/filters/linejump.py
+--- a/src/blockdiag/imagedraw/filters/linejump.py	Wed Nov 21 22:20:43 2012 +0900
++++ b/src/blockdiag/imagedraw/filters/linejump.py	Thu Sep 19 20:27:59 2013 +0900
+@@ -13,10 +13,11 @@
+ #  See the License for the specific language governing permissions and
+ #  limitations under the License.
+ 
+-from blockdiag.utils import functools, Box, XY
++import functools
++from blockdiag.utils import Box, XY
+ 
+ 
+-class LazyReciever(object):
++class LazyReceiver(object):
+     def __init__(self, target):
+         self.target = target
+         self.calls = []
+@@ -31,9 +32,9 @@
+         def _(*args, **kwargs):
+             if name in self.target.self_generative_methods:
+                 ret = method(self.target, *args, **kwargs)
+-                reciever = LazyReciever(ret)
+-                self.nested.append(reciever)
+-                return reciever
++                receiver = LazyReceiver(ret)
++                self.nested.append(receiver)
++                return receiver
+             else:
+                 self.calls.append((method, args, kwargs))
+                 return self
+@@ -59,7 +60,7 @@
+             method(self.target, *args, **kwargs)
+ 
+ 
+-class LineJumpDrawFilter(LazyReciever):
++class LineJumpDrawFilter(LazyReceiver):
+     def __init__(self, target, jump_radius):
+         super(LineJumpDrawFilter, self).__init__(target)
+         self.ytree = []
+diff -r 1b120326b282 src/blockdiag/imagedraw/pdf.py
+--- a/src/blockdiag/imagedraw/pdf.py	Wed Nov 21 22:20:43 2012 +0900
++++ b/src/blockdiag/imagedraw/pdf.py	Thu Sep 19 20:27:59 2013 +0900
+@@ -16,6 +16,7 @@
+ import re
+ import sys
+ import math
++from functools import partial
+ from reportlab.pdfgen import canvas
+ from reportlab.pdfbase import pdfmetrics
+ from reportlab.pdfbase.ttfonts import TTFont
+@@ -23,7 +24,6 @@
+ from blockdiag.imagedraw.utils import cached
+ from blockdiag.utils import urlutil, Box, Size
+ from blockdiag.utils.fontmap import parse_fontpath
+-from blockdiag.utils.functools import partial
+ 
+ 
+ class PDFImageDraw(base.ImageDraw):
+@@ -34,6 +34,8 @@
+         self.canvas = None
+         self.fonts = {}
+ 
++        self.set_canvas_size(Size(1, 1))  # This line make textsize() workable
++
+     def set_canvas_size(self, size):
+         self.canvas = canvas.Canvas(self.filename, pagesize=size)
+         self.size = size
+@@ -128,6 +130,7 @@
+ 
+     @cached
+     def textlinesize(self, string, font):
++        self.set_font(font)
+         width = self.canvas.stringWidth(string, font.path, font.size)
+         return Size(int(math.ceil(width)), font.size)
+ 
+diff -r 1b120326b282 src/blockdiag/imagedraw/png.py
+--- a/src/blockdiag/imagedraw/png.py	Wed Nov 21 22:20:43 2012 +0900
++++ b/src/blockdiag/imagedraw/png.py	Thu Sep 19 20:27:59 2013 +0900
+@@ -13,15 +13,23 @@
+ #  See the License for the specific language governing permissions and
+ #  limitations under the License.
+ 
++from __future__ import division
++import sys
++if sys.version_info[0] == 2:
++    range = xrange
+ import re
+ import math
+-from itertools import izip, tee
++from itertools import tee
++try:
++    from future_builtins import zip
++except ImportError:
++    pass
++from functools import partial, wraps
+ from blockdiag.imagedraw import base
+ from blockdiag.imagedraw.utils import cached, ellipse
+ from blockdiag.imagedraw.utils.ellipse import dots as ellipse_dots
+ from blockdiag.utils import urlutil, Box, Size, XY
+ from blockdiag.utils.fontmap import parse_fontpath, FontMap
+-from blockdiag.utils.functools import partial, wraps
+ from blockdiag.utils.myitertools import istep, stepslice
+ 
+ try:
+@@ -40,15 +48,15 @@
+     iterable = iter(xylist)
+     for pt in iterable:
+         if isinstance(pt, int):
+-            yield (pt, iterable.next())
++            yield (pt, next(iterable))
+         else:
+             yield pt
+ 
+ 
+ def line_segments(xylist):
+     p1, p2 = tee(point_pairs(xylist))
+-    p2.next()
+-    return izip(p1, p2)
++    next(p2)
++    return zip(p1, p2)
+ 
+ 
+ def dashize_line(line, length):
+@@ -57,7 +65,7 @@
+         if pt1[1] > pt2[1]:
+             pt2, pt1 = line
+ 
+-        r = stepslice(xrange(pt1[1], pt2[1]), length)
++        r = stepslice(range(pt1[1], pt2[1]), length)
+         for y1, y2 in istep(n for n in r):
+             yield [(pt1[0], y1), (pt1[0], y2)]
+ 
+@@ -65,7 +73,7 @@
+         if pt1[0] > pt2[0]:
+             pt2, pt1 = line
+ 
+-        r = stepslice(xrange(pt1[0], pt2[0]), length)
++        r = stepslice(range(pt1[0], pt2[0]), length)
+         for x1, x2 in istep(n for n in r):
+             yield [(x1, pt1[1]), (x2, pt1[1])]
+     else:  # diagonal
+@@ -356,10 +364,13 @@
+ 
+     def image(self, box, url):
+         if urlutil.isurl(url):
+-            import cStringIO
++            try:
++                from io import StringIO
++            except ImportError:
++                from cStringIO import StringIO
+             import urllib
+             try:
+-                url = cStringIO.StringIO(urllib.urlopen(url).read())
++                url = StringIO(urllib.urlopen(url).read())
+             except:
+                 import sys
+                 msg = "WARNING: Could not retrieve: %s\n" % url
+@@ -375,12 +386,12 @@
+         # centering image.
+         w, h = image.size
+         if box.width > w:
+-            x = box[0] + (box.width - w) / 2
++            x = box[0] + (box.width - w) // 2
+         else:
+             x = box[0]
+ 
+         if box.height > h:
+-            y = box[1] + (box.height - h) / 2
++            y = box[1] + (box.height - h) // 2
+         else:
+             y = box[1]
+ 
+@@ -401,8 +412,11 @@
+             self._image.save(self.filename, _format)
+             image = None
+         else:
+-            import cStringIO
+-            tmp = cStringIO.StringIO()
++            try:
++                from io import StringIO
++            except ImportError:
++                from cStringIO import StringIO
++            tmp = StringIO()
+             self._image.save(tmp, _format)
+             image = tmp.getvalue()
+ 
+diff -r 1b120326b282 src/blockdiag/imagedraw/simplesvg.py
+--- a/src/blockdiag/imagedraw/simplesvg.py	Wed Nov 21 22:20:43 2012 +0900
++++ b/src/blockdiag/imagedraw/simplesvg.py	Thu Sep 19 20:27:59 2013 +0900
+@@ -14,11 +14,20 @@
+ #  limitations under the License.
+ 
+ import re
+-import cStringIO
++try:
++    from io import StringIO
++except ImportError:
++    from cStringIO import StringIO
++
++import sys
++if sys.version_info[0] == 2:
++    string_types = (str, unicode)
++else:
++    string_types = (str,)
+ 
+ 
+ def _escape(s):
+-    if not isinstance(s, (str, unicode)):
++    if not isinstance(s, string_types):
+         s = str(s)
+     return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+ 
+@@ -53,28 +62,26 @@
+         clsname = self.__class__.__name__
+         indent = '  ' * level
+ 
+-        io.write('%s<%s' % (indent, clsname))
++        io.write(u'%s<%s' % (indent, clsname))
+         for key in sorted(self.attributes):
+             value = self.attributes[key]
+             if value is not None:
+-                io.write(' %s=%s' % (_escape(key), _quote(value)))
++                io.write(u' %s=%s' % (_escape(key), _quote(value)))
+ 
+         if self.elements == []:
+             if self.text is not None:
+-                text = _escape(self.text).encode('utf-8')
+-                io.write(">%s</%s>\n" % (text, clsname))
++                io.write(u">%s</%s>\n" % (_escape(self.text), clsname))
+             else:
+-                io.write(" />\n")
++                io.write(u" />\n")
+         elif self.elements:
+             if self.text is not None:
+-                text = _escape(self.text).encode('utf-8')
+-                io.write(">%s\n" % (text,))
++                io.write(u">%s\n" % (_escape(self.text),))
+             else:
+-                io.write(">\n")
++                io.write(u">\n")
+ 
+             for e in self.elements:
+                 e.to_xml(io, level + 1)
+-            io.write('%s</%s>\n' % (indent, clsname))
++            io.write(u'%s</%s>\n' % (indent, clsname))
+ 
+ 
+ class element(base):
+@@ -100,13 +107,13 @@
+         self.add_attribute('xmlns', 'http://www.w3.org/2000/svg')
+ 
+     def to_xml(self):
+-        io = cStringIO.StringIO()
++        io = StringIO()
+ 
+         if not self.nodoctype:
+             url = "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd"
+-            io.write("<?xml version='1.0' encoding='UTF-8'?>\n")
+-            io.write('<!DOCTYPE svg PUBLIC '
+-                     '"-//W3C//DTD SVG 1.0//EN" "%s">\n' % url)
++            io.write(u"<?xml version='1.0' encoding='UTF-8'?>\n")
++            io.write(u'<!DOCTYPE svg PUBLIC '
++                     u'"-//W3C//DTD SVG 1.0//EN" "%s">\n' % url)
+ 
+         super(svg, self).to_xml(io)
+ 
+diff -r 1b120326b282 src/blockdiag/imagedraw/svg.py
+--- a/src/blockdiag/imagedraw/svg.py	Wed Nov 21 22:20:43 2012 +0900
++++ b/src/blockdiag/imagedraw/svg.py	Thu Sep 19 20:27:59 2013 +0900
+@@ -19,8 +19,7 @@
+ from blockdiag.imagedraw.simplesvg import *
+ from blockdiag.imagedraw.utils import cached
+ from blockdiag.imagedraw.utils.ellipse import endpoints as ellipse_endpoints
+-from blockdiag.utils import urlutil, Box, XY
+-from blockdiag.utils.functools import partial
++from blockdiag.utils import urlutil, Box, XY, is_PIL_available
+ 
+ feGaussianBlur = svgclass('feGaussianBlur')
+ 
+@@ -107,7 +106,7 @@
+ 
+     @cached
+     def textlinesize(self, string, font, **kwargs):
+-        if kwargs.get('ignore_pil', self.ignore_pil):
++        if kwargs.get('ignore_pil', self.ignore_pil) or not is_PIL_available():
+             from blockdiag.imagedraw.utils import textsize
+             return textsize(string, font)
+         else:
+@@ -293,7 +292,7 @@
+         image = self.svg.to_xml()
+ 
+         if self.filename:
+-            open(self.filename, 'w').write(image)
++            open(self.filename, 'wb').write(image.encode('utf-8'))
+ 
+         return image
+ 
+diff -r 1b120326b282 src/blockdiag/imagedraw/textfolder.py
+--- a/src/blockdiag/imagedraw/textfolder.py	Wed Nov 21 22:20:43 2012 +0900
++++ b/src/blockdiag/imagedraw/textfolder.py	Thu Sep 19 20:27:59 2013 +0900
+@@ -16,6 +16,12 @@
+ import re
+ from blockdiag.utils import Box, Size, XY
+ 
++import sys
++if sys.version_info[0] == 2:
++    string_types = (str, unicode)
++else:
++    string_types = (str,)
++
+ 
+ def splitlabel(string):
+     """Split text to lines as generator.
+@@ -84,7 +90,7 @@
+         self._result = self._lines()
+ 
+     def textsize(self, text, scaled=False):
+-        if isinstance(text, (str, unicode)):
++        if isinstance(text, string_types):
+             size = [self.drawer.textlinesize(c, self.font) for c in text]
+             width = max(s.width for s in size)
+             height = (sum(s.height for s in size) +
+@@ -206,7 +212,7 @@
+         self._result = self._lines()
+ 
+     def textsize(self, text, scaled=False):
+-        if isinstance(text, (str, unicode)):
++        if isinstance(text, string_types):
+             textsize = self.drawer.textlinesize(text, self.font)
+         else:
+             if text:
+diff -r 1b120326b282 src/blockdiag/metrics.py
+--- a/src/blockdiag/metrics.py	Wed Nov 21 22:20:43 2012 +0900
++++ b/src/blockdiag/metrics.py	Thu Sep 19 20:27:59 2013 +0900
+@@ -13,12 +13,13 @@
+ #  See the License for the specific language governing permissions and
+ #  limitations under the License.
+ 
++from __future__ import division
+ import copy
++from collections import defaultdict
+ from blockdiag import noderenderer
+ from blockdiag.elements import DiagramNode
+ from blockdiag.utils import Box, Size, XY
+ from blockdiag.utils.fontmap import FontInfo, FontMap
+-from blockdiag.utils.collections import defaultdict
+ 
+ cellsize = 8
+ 
+@@ -234,6 +235,10 @@
+ 
+ class SubMetrics(object):
+     def __getattr__(self, name):
++        # avoid recursion-error on Python 2.6
++        if 'metrics' not in self.__dict__:
++            raise AttributeError()
++
+         return getattr(self.metrics, name)
+ 
+ 
+@@ -289,12 +294,12 @@
+ 
+         if use_padding:
+             width = node.width or self.metrics.node_width
+-            xdiff = (self.node_width[x] - width) / 2
++            xdiff = (self.node_width[x] - width) // 2
+             if xdiff < 0:
+                 xdiff = 0
+ 
+             height = node.height or self.metrics.node_height
+-            ydiff = (self.node_height[y] - height) / 2
++            ydiff = (self.node_height[y] - height) // 2
+             if ydiff < 0:
+                 ydiff = 0
+         else:
+@@ -319,12 +324,12 @@
+ 
+         if use_padding:
+             width = node.width or self.metrics.node_width
+-            xdiff = (self.node_width[x] - width) / 2
++            xdiff = (self.node_width[x] - width) // 2
+             if xdiff < 0:
+                 xdiff = 0
+ 
+             height = node.height or self.metrics.node_height
+-            ydiff = (self.node_height[y] - height) / 2
++            ydiff = (self.node_height[y] - height) // 2
+             if ydiff < 0:
+                 ydiff = 0
+         else:
+@@ -369,10 +374,10 @@
+ 
+     @property
+     def marginbox(self):
+-        return Box(self._box.x1 - self.span_width / 8,
+-                   self._box.y1 - self.span_height / 4,
+-                   self._box.x2 + self.span_width / 8,
+-                   self._box.y2 + self.span_height / 4)
++        return Box(self._box.x1 - self.span_width // 8,
++                   self._box.y1 - self.span_height // 4,
++                   self._box.x2 + self.span_width // 8,
++                   self._box.y2 + self.span_height // 4)
+ 
+     @property
+     def corebox(self):
+@@ -383,7 +388,7 @@
+ 
+     @property
+     def grouplabelbox(self):
+-        return Box(self._box.x1, self._box.y1 - self.span_height / 2,
++        return Box(self._box.x1, self._box.y1 - self.span_height // 2,
+                    self._box.x2, self._box.y1)
+ 
+ 
+@@ -421,30 +426,30 @@
+         if direct == 'up':
+             xy = node.bottom
+             head.append(XY(xy.x, xy.y + 1))
+-            head.append(XY(xy.x - cell / 2, xy.y + cell))
++            head.append(XY(xy.x - cell // 2, xy.y + cell))
+             head.append(XY(xy.x, xy.y + cell * 2))
+-            head.append(XY(xy.x + cell / 2, xy.y + cell))
++            head.append(XY(xy.x + cell // 2, xy.y + cell))
+             head.append(XY(xy.x, xy.y + 1))
+         elif direct == 'down':
+             xy = node.top
+             head.append(XY(xy.x, xy.y - 1))
+-            head.append(XY(xy.x - cell / 2, xy.y - cell))
++            head.append(XY(xy.x - cell // 2, xy.y - cell))
+             head.append(XY(xy.x, xy.y - cell * 2))
+-            head.append(XY(xy.x + cell / 2, xy.y - cell))
++            head.append(XY(xy.x + cell // 2, xy.y - cell))
+             head.append(XY(xy.x, xy.y - 1))
+         elif direct == 'right':
+             xy = node.left
+             head.append(XY(xy.x - 1, xy.y))
+-            head.append(XY(xy.x - cell, xy.y - cell / 2))
++            head.append(XY(xy.x - cell, xy.y - cell // 2))
+             head.append(XY(xy.x - cell * 2, xy.y))
+-            head.append(XY(xy.x - cell, xy.y + cell / 2))
++            head.append(XY(xy.x - cell, xy.y + cell // 2))
+             head.append(XY(xy.x - 1, xy.y))
+         elif direct == 'left':
+             xy = node.right
+             head.append(XY(xy.x + 1, xy.y))
+-            head.append(XY(xy.x + cell, xy.y - cell / 2))
++            head.append(XY(xy.x + cell, xy.y - cell // 2))
+             head.append(XY(xy.x + cell * 2, xy.y))
+-            head.append(XY(xy.x + cell, xy.y + cell / 2))
++            head.append(XY(xy.x + cell, xy.y + cell // 2))
+             head.append(XY(xy.x + 1, xy.y))
+         elif direct == 'rup':
+             xy = node.bottom
+@@ -587,12 +592,12 @@
+             shaft.moveTo(node1.right)
+ 
+             if self.edge.skipped:
+-                shaft.lineTo(cell1.right.x + span.x / 2, cell1.right.y)
+-                shaft.lineTo(cell1.right.x + span.x / 2,
+-                             cell1.bottomright.y + span.y / 2)
+-                shaft.lineTo(cell2.left.x - span.x / 4,
+-                             cell2.bottomright.y + span.y / 2)
+-                shaft.lineTo(cell2.left.x - span.x / 4, cell2.left.y)
++                shaft.lineTo(cell1.right.x + span.x // 2, cell1.right.y)
++                shaft.lineTo(cell1.right.x + span.x // 2,
++                             cell1.bottomright.y + span.y // 2)
++                shaft.lineTo(cell2.left.x - span.x // 4,
++                             cell2.bottomright.y + span.y // 2)
++                shaft.lineTo(cell2.left.x - span.x // 4, cell2.left.y)
+ 
+             shaft.lineTo(node2.left)
+ 
+@@ -600,40 +605,40 @@
+             shaft.moveTo(node1.right)
+ 
+             if self.edge.skipped:
+-                shaft.lineTo(cell1.right.x + span.x / 2, cell1.right.y)
+-                shaft.lineTo(cell1.right.x + span.x / 2,
+-                             cell2.bottomleft.y + span.y / 2)
+-                shaft.lineTo(cell2.left.x - span.x / 4,
+-                             cell2.bottomleft.y + span.y / 2)
+-                shaft.lineTo(cell2.left.x - span.x / 4, cell2.left.y)
++                shaft.lineTo(cell1.right.x + span.x // 2, cell1.right.y)
++                shaft.lineTo(cell1.right.x + span.x // 2,
++                             cell2.bottomleft.y + span.y // 2)
++                shaft.lineTo(cell2.left.x - span.x // 4,
++                             cell2.bottomleft.y + span.y // 2)
++                shaft.lineTo(cell2.left.x - span.x // 4, cell2.left.y)
+             else:
+-                shaft.lineTo(cell2.left.x - span.x / 4, cell1.right.y)
+-                shaft.lineTo(cell2.left.x - span.x / 4, cell2.left.y)
++                shaft.lineTo(cell2.left.x - span.x // 4, cell1.right.y)
++                shaft.lineTo(cell2.left.x - span.x // 4, cell2.left.y)
+ 
+             shaft.lineTo(node2.left)
+ 
+         elif _dir == 'right-down':
+             shaft.moveTo(node1.right)
+-            shaft.lineTo(cell1.right.x + span.x / 2, cell1.right.y)
++            shaft.lineTo(cell1.right.x + span.x // 2, cell1.right.y)
+ 
+             if self.edge.skipped:
+-                shaft.lineTo(cell1.right.x + span.x / 2,
+-                             cell2.topleft.y - span.y / 2)
+-                shaft.lineTo(cell2.left.x - span.x / 4,
+-                             cell2.topleft.y - span.y / 2)
+-                shaft.lineTo(cell2.left.x - span.x / 4, cell2.left.y)
++                shaft.lineTo(cell1.right.x + span.x // 2,
++                             cell2.topleft.y - span.y // 2)
++                shaft.lineTo(cell2.left.x - span.x // 4,
++                             cell2.topleft.y - span.y // 2)
++                shaft.lineTo(cell2.left.x - span.x // 4, cell2.left.y)
+             else:
+-                shaft.lineTo(cell1.right.x + span.x / 2, cell2.left.y)
++                shaft.lineTo(cell1.right.x + span.x // 2, cell2.left.y)
+ 
+             shaft.lineTo(node2.left)
+ 
+         elif _dir == 'up':
+             if self.edge.skipped:
+                 shaft.moveTo(node1.right)
+-                shaft.lineTo(cell1.right.x + span.x / 4, cell1.right.y)
+-                shaft.lineTo(cell1.right.x + span.x / 4,
+-                             cell2.bottom.y + span.y / 2)
+-                shaft.lineTo(cell2.bottom.x, cell2.bottom.y + span.y / 2)
++                shaft.lineTo(cell1.right.x + span.x // 4, cell1.right.y)
++                shaft.lineTo(cell1.right.x + span.x // 4,
++                             cell2.bottom.y + span.y // 2)
++                shaft.lineTo(cell2.bottom.x, cell2.bottom.y + span.y // 2)
+             else:
+                 shaft.moveTo(node1.top)
+ 
+@@ -641,36 +646,36 @@
+ 
+         elif _dir in ('left-up', 'left', 'same'):
+             shaft.moveTo(node1.right)
+-            shaft.lineTo(cell1.right.x + span.x / 4, cell1.right.y)
+-            shaft.lineTo(cell1.right.x + span.x / 4,
+-                         cell2.top.y - span.y / 2 + span.y / 8)
++            shaft.lineTo(cell1.right.x + span.x // 4, cell1.right.y)
++            shaft.lineTo(cell1.right.x + span.x // 4,
++                         cell2.top.y - span.y // 2 + span.y // 8)
+             shaft.lineTo(cell2.top.x,
+-                         cell2.top.y - span.y / 2 + span.y / 8)
++                         cell2.top.y - span.y // 2 + span.y // 8)
+             shaft.lineTo(node2.top)
+ 
+         elif _dir == 'left-down':
+             if self.edge.skipped:
+                 shaft.moveTo(node1.right)
+-                shaft.lineTo(cell1.right.x + span.x / 2, cell1.right.y)
+-                shaft.lineTo(cell1.right.x + span.x / 2,
+-                             cell2.top.y - span.y / 2)
+-                shaft.lineTo(cell2.top.x, cell2.top.y - span.y / 2)
++                shaft.lineTo(cell1.right.x + span.x // 2, cell1.right.y)
++                shaft.lineTo(cell1.right.x + span.x // 2,
++                             cell2.top.y - span.y // 2)
++                shaft.lineTo(cell2.top.x, cell2.top.y - span.y // 2)
+             else:
+                 shaft.moveTo(node1.bottom)
+                 shaft.lineTo(cell1.bottom.x,
+-                             cell2.top.y - span.y / 2)
+-                shaft.lineTo(cell2.top.x, cell2.top.y - span.y / 2)
++                             cell2.top.y - span.y // 2)
++                shaft.lineTo(cell2.top.x, cell2.top.y - span.y // 2)
+ 
+             shaft.lineTo(node2.top)
+ 
+         elif _dir == 'down':
+             if self.edge.skipped:
+                 shaft.moveTo(node1.right)
+-                shaft.lineTo(cell1.right.x + span.x / 2, cell1.right.y)
+-                shaft.lineTo(cell1.right.x + span.x / 2,
+-                             cell2.top.y - span.y / 2 + span.y / 8)
++                shaft.lineTo(cell1.right.x + span.x // 2, cell1.right.y)
++                shaft.lineTo(cell1.right.x + span.x // 2,
++                             cell2.top.y - span.y // 2 + span.y // 8)
+                 shaft.lineTo(cell2.top.x,
+-                             cell2.top.y - span.y / 2 + span.y / 8)
++                             cell2.top.y - span.y // 2 + span.y // 8)
+             else:
+                 shaft.moveTo(node1.bottom)
+ 
+@@ -692,40 +697,40 @@
+                 box = Box(node1.bottomright.x + span.x,
+                           node1.bottomright.y,
+                           node2.bottomleft.x - span.x,
+-                          node2.bottomleft.y + span.y / 2)
++                          node2.bottomleft.y + span.y // 2)
+             else:
+-                box = Box(node1.topright.x, node1.topright.y - span.y / 8,
+-                          node2.left.x, node2.left.y - span.y / 8)
++                box = Box(node1.topright.x, node1.topright.y - span.y // 8,
++                          node2.left.x, node2.left.y - span.y // 8)
+ 
+         elif _dir == 'right-up':
+-            box = Box(node2.left.x - span.x, node1.top.y - node.y / 2,
++            box = Box(node2.left.x - span.x, node1.top.y - node.y // 2,
+                       node2.bottomleft.x, node1.top.y)
+ 
+         elif _dir == 'right-down':
+-            box = Box(node1.right.x, node2.topleft.y - span.y / 8,
+-                      node1.right.x + span.x, node2.left.y - span.y / 8)
++            box = Box(node1.right.x, node2.topleft.y - span.y // 8,
++                      node1.right.x + span.x, node2.left.y - span.y // 8)
+ 
+         elif _dir in ('up', 'left-up', 'left', 'same'):
+             if self.edge.node2.xy.y < self.edge.node1.xy.y:
+-                box = Box(node1.topright.x - span.x / 2 + span.x / 4,
+-                          node1.topright.y - span.y / 2,
+-                          node1.topright.x + span.x / 2 + span.x / 4,
++                box = Box(node1.topright.x - span.x // 2 + span.x // 4,
++                          node1.topright.y - span.y // 2,
++                          node1.topright.x + span.x // 2 + span.x // 4,
+                           node1.topright.y)
+             else:
+-                box = Box(node1.top.x + span.x / 4,
++                box = Box(node1.top.x + span.x // 4,
+                           node1.top.y - span.y,
+-                          node1.topright.x + span.x / 4,
+-                          node1.topright.y - span.y / 2)
++                          node1.topright.x + span.x // 4,
++                          node1.topright.y - span.y // 2)
+ 
+         elif _dir in ('left-down', 'down'):
+-            box = Box(node2.top.x + span.x / 4,
++            box = Box(node2.top.x + span.x // 4,
+                       node2.top.y - span.y,
+-                      node2.topright.x + span.x / 4,
+-                      node2.topright.y - span.y / 2)
++                      node2.topright.x + span.x // 4,
++                      node2.topright.y - span.y // 2)
+ 
+         # shrink box
+-        box = Box(box[0] + span.x / 8, box[1],
+-                  box[2] - span.x / 8, box[3])
++        box = Box(box[0] + span.x // 8, box[1],
++                  box[2] - span.x // 8, box[3])
+ 
+         return box
+ 
+@@ -793,64 +798,64 @@
+                 shaft.lineTo(node2.left)
+             else:
+                 shaft.moveTo(node1.bottom)
+-                shaft.lineTo(cell1.bottom.x, cell1.bottom.y + span.y / 2)
+-                shaft.lineTo(cell2.right.x + span.x / 4,
+-                             cell1.bottom.y + span.y / 2)
+-                shaft.lineTo(cell2.right.x + span.x / 4,
+-                             cell2.top.y - span.y / 2 + span.y / 8)
++                shaft.lineTo(cell1.bottom.x, cell1.bottom.y + span.y // 2)
++                shaft.lineTo(cell2.right.x + span.x // 4,
++                             cell1.bottom.y + span.y // 2)
++                shaft.lineTo(cell2.right.x + span.x // 4,
++                             cell2.top.y - span.y // 2 + span.y // 8)
+                 shaft.lineTo(cell2.top.x,
+-                             cell2.top.y - span.y / 2 + span.y / 8)
++                             cell2.top.y - span.y // 2 + span.y // 8)
+                 shaft.lineTo(node2.top)
+ 
+         elif _dir == 'right-down':
+             shaft.moveTo(node1.bottom)
+-            shaft.lineTo(cell1.bottom.x, cell1.bottom.y + span.y / 2)
++            shaft.lineTo(cell1.bottom.x, cell1.bottom.y + span.y // 2)
+ 
+             if self.edge.skipped:
+-                shaft.lineTo(cell2.left.x - span.x / 2,
+-                             cell1.bottom.y + span.y / 2)
+-                shaft.lineTo(cell2.topleft.x - span.x / 2,
+-                             cell2.topleft.y - span.y / 2)
+-                shaft.lineTo(cell2.top.x, cell2.top.y - span.y / 2)
++                shaft.lineTo(cell2.left.x - span.x // 2,
++                             cell1.bottom.y + span.y // 2)
++                shaft.lineTo(cell2.topleft.x - span.x // 2,
++                             cell2.topleft.y - span.y // 2)
++                shaft.lineTo(cell2.top.x, cell2.top.y - span.y // 2)
+             else:
+-                shaft.lineTo(cell2.top.x, cell1.bottom.y + span.y / 2)
++                shaft.lineTo(cell2.top.x, cell1.bottom.y + span.y // 2)
+ 
+             shaft.lineTo(node2.top)
+ 
+         elif _dir in ('left-up', 'left', 'same'):
+             shaft.moveTo(node1.right)
+-            shaft.lineTo(cell1.right.x + span.x / 4, cell1.right.y)
+-            shaft.lineTo(cell1.right.x + span.x / 4,
+-                         cell2.top.y - span.y / 2 + span.y / 8)
++            shaft.lineTo(cell1.right.x + span.x // 4, cell1.right.y)
++            shaft.lineTo(cell1.right.x + span.x // 4,
++                         cell2.top.y - span.y // 2 + span.y // 8)
+             shaft.lineTo(cell2.top.x,
+-                         cell2.top.y - span.y / 2 + span.y / 8)
++                         cell2.top.y - span.y // 2 + span.y // 8)
+             shaft.lineTo(node2.top)
+ 
+         elif _dir == 'left-down':
+             shaft.moveTo(node1.bottom)
+ 
+             if self.edge.skipped:
+-                shaft.lineTo(cell1.bottom.x, cell1.bottom.y + span.y / 2)
+-                shaft.lineTo(cell2.right.x + span.x / 2,
+-                             cell1.bottom.y + span.y / 2)
+-                shaft.lineTo(cell2.right.x + span.x / 2,
+-                             cell2.top.y - span.y / 2)
++                shaft.lineTo(cell1.bottom.x, cell1.bottom.y + span.y // 2)
++                shaft.lineTo(cell2.right.x + span.x // 2,
++                             cell1.bottom.y + span.y // 2)
++                shaft.lineTo(cell2.right.x + span.x // 2,
++                             cell2.top.y - span.y // 2)
+             else:
+-                shaft.lineTo(cell1.bottom.x, cell2.top.y - span.y / 2)
++                shaft.lineTo(cell1.bottom.x, cell2.top.y - span.y // 2)
+ 
+-            shaft.lineTo(cell2.top.x, cell2.top.y - span.y / 2)
++            shaft.lineTo(cell2.top.x, cell2.top.y - span.y // 2)
+             shaft.lineTo(node2.top)
+ 
+         elif _dir == 'down':
+             shaft.moveTo(node1.bottom)
+ 
+             if self.edge.skipped:
+-                shaft.lineTo(cell1.bottom.x, cell1.bottom.y + span.y / 2)
+-                shaft.lineTo(cell1.right.x + span.x / 2,
+-                             cell1.bottom.y + span.y / 2)
+-                shaft.lineTo(cell2.right.x + span.x / 2,
+-                             cell2.top.y - span.y / 2)
+-                shaft.lineTo(cell2.top.x, cell2.top.y - span.y / 2)
++                shaft.lineTo(cell1.bottom.x, cell1.bottom.y + span.y // 2)
++                shaft.lineTo(cell1.right.x + span.x // 2,
++                             cell1.bottom.y + span.y // 2)
++                shaft.lineTo(cell2.right.x + span.x // 2,
++                             cell2.top.y - span.y // 2)
++                shaft.lineTo(cell2.top.x, cell2.top.y - span.y // 2)
+ 
+             shaft.lineTo(node2.top)
+ 
+@@ -869,44 +874,44 @@
+                 box = Box(node1.bottomright.x + span.x,
+                           node1.bottomright.y,
+                           node2.bottomleft.x - span.x,
+-                          node2.bottomleft.y + span.y / 2)
++                          node2.bottomleft.y + span.y // 2)
+             else:
+-                box = Box(node1.topright.x, node1.topright.y - span.y / 8,
+-                          node2.left.x, node2.left.y - span.y / 8)
++                box = Box(node1.topright.x, node1.topright.y - span.y // 8,
++                          node2.left.x, node2.left.y - span.y // 8)
+ 
+         elif _dir == 'right-up':
+             box = Box(node2.left.x - span.x, node2.left.y,
+                       node2.bottomleft.x, node2.bottomleft.y)
+ 
+         elif _dir == 'right-down':
+-            box = Box(node2.topleft.x, node2.topleft.y - span.y / 2,
++            box = Box(node2.topleft.x, node2.topleft.y - span.y // 2,
+                       node2.top.x, node2.top.y)
+ 
+         elif _dir in ('up', 'left-up', 'left', 'same'):
+             if self.edge.node2.xy.y < self.edge.node1.xy.y:
+-                box = Box(node1.topright.x - span.x / 2 + span.x / 4,
+-                          node1.topright.y - span.y / 2,
+-                          node1.topright.x + span.x / 2 + span.x / 4,
++                box = Box(node1.topright.x - span.x // 2 + span.x // 4,
++                          node1.topright.y - span.y // 2,
++                          node1.topright.x + span.x // 2 + span.x // 4,
+                           node1.topright.y)
+             else:
+-                box = Box(node1.top.x + span.x / 4,
++                box = Box(node1.top.x + span.x // 4,
+                           node1.top.y - span.y,
+-                          node1.topright.x + span.x / 4,
+-                          node1.topright.y - span.y / 2)
++                          node1.topright.x + span.x // 4,
++                          node1.topright.y - span.y // 2)
+ 
+         elif _dir == 'down':
+-            box = Box(node2.top.x + span.x / 4,
+-                      node2.top.y - span.y / 2,
+-                      node2.topright.x + span.x / 4,
++            box = Box(node2.top.x + span.x // 4,
++                      node2.top.y - span.y // 2,
++                      node2.topright.x + span.x // 4,
+                       node2.topright.y)
+ 
+         elif _dir == 'left-down':
+             box = Box(node1.bottomleft.x, node1.bottomleft.y,
+-                      node1.bottom.x, node1.bottom.y + span.y / 2)
++                      node1.bottom.x, node1.bottom.y + span.y // 2)
+ 
+         # shrink box
+-        box = Box(box[0] + span.x / 8, box[1],
+-                  box[2] - span.x / 8, box[3])
++        box = Box(box[0] + span.x // 8, box[1],
++                  box[2] - span.x // 8, box[3])
+ 
+         return box
+ 
+@@ -950,10 +955,10 @@
+             shaft.moveTo(node1.bottom)
+ 
+             if self.edge.skipped:
+-                shaft.lineTo(cell1.bottom.x, cell1.bottom.y + span.y / 2)
+-                shaft.lineTo(cell2.left.x - span.x / 4,
+-                             cell1.bottom.y + span.y / 2)
+-                shaft.lineTo(cell2.left.x - span.x / 4, cell2.left.y)
++                shaft.lineTo(cell1.bottom.x, cell1.bottom.y + span.y // 2)
++                shaft.lineTo(cell2.left.x - span.x // 4,
++                             cell1.bottom.y + span.y // 2)
++                shaft.lineTo(cell2.left.x - span.x // 4, cell2.left.y)
+             else:
+                 shaft.lineTo(cell1.bottom.x, cell2.left.y)
+ 
+@@ -974,9 +979,9 @@
+             if self.edge.skipped:
+                 box = Box(cell1.bottom.x, cell1.bottom.y,
+                           cell1.bottomright.x,
+-                          cell1.bottomright.y + span.y / 2)
++                          cell1.bottomright.y + span.y // 2)
+             else:
+-                box = Box(cell1.bottom.x, cell2.left.y - span.y / 2,
++                box = Box(cell1.bottom.x, cell2.left.y - span.y // 2,
+                           cell1.bottom.x, cell2.left.y)
+         else:
+             box = super(FlowchartLandscapeEdgeMetrics, self).labelbox
+@@ -1023,10 +1028,11 @@
+             shaft.moveTo(node1.right)
+ 
+             if self.edge.skipped:
+-                shaft.lineTo(cell1.right.x + span.x * 3 / 4, cell1.right.y)
+-                shaft.lineTo(cell1.right.x + span.x * 3 / 4,
+-                             cell2.topleft.y - span.y / 2)
+-                shaft.lineTo(cell2.top.x, cell2.top.y - span.y / 2)
++                shaft.lineTo(cell1.right.x + span.x * 3 // 4,
++                             cell1.right.y)
++                shaft.lineTo(cell1.right.x + span.x * 3 // 4,
++                             cell2.topleft.y - span.y // 2)
++                shaft.lineTo(cell2.top.x, cell2.top.y - span.y // 2)
+             else:
+                 shaft.lineTo(cell2.top.x, cell1.right.y)
+ 
+@@ -1044,15 +1050,15 @@
+         cell2 = self.cell(self.edge.node2, use_padding=False)
+ 
+         if _dir == 'down':
+-            box = Box(cell2.topleft.x, cell2.top.y - span.y / 2,
++            box = Box(cell2.topleft.x, cell2.top.y - span.y // 2,
+                       cell2.top.x, cell2.top.y)
+         elif _dir == 'right':
+             if self.edge.skipped:
+                 box = Box(cell1.bottom.x, cell1.bottom.y,
+                           cell1.bottomright.x,
+-                          cell1.bottomright.y + span.y / 2)
++                          cell1.bottomright.y + span.y // 2)
+             else:
+-                box = Box(cell1.bottom.x, cell2.left.y - span.y / 2,
++                box = Box(cell1.bottom.x, cell2.left.y - span.y // 2,
+                           cell1.bottom.x, cell2.left.y)
+         else:
+             box = super(FlowchartPortraitEdgeMetrics, self).labelbox
+diff -r 1b120326b282 src/blockdiag/noderenderer/cloud.py
+--- a/src/blockdiag/noderenderer/cloud.py	Wed Nov 21 22:20:43 2012 +0900
++++ b/src/blockdiag/noderenderer/cloud.py	Thu Sep 19 20:27:59 2013 +0900
+@@ -121,7 +121,7 @@
+                 drawer.path(path, fill=fill, outline=fill)
+         elif self.node.background:
+             drawer.path(path, fill=self.node.color, outline=self.node.color)
+-            drawer.loadImage(self.node.background, self.textbox)
++            drawer.image(self.textbox, self.node.background)
+             drawer.path(path, fill="none", outline=self.node.linecolor,
+                         style=self.node.style)
+         else:
+diff -r 1b120326b282 src/blockdiag/noderenderer/flowchart/terminator.py
+--- a/src/blockdiag/noderenderer/flowchart/terminator.py	Wed Nov 21 22:20:43 2012 +0900
++++ b/src/blockdiag/noderenderer/flowchart/terminator.py	Thu Sep 19 20:27:59 2013 +0900
+@@ -106,7 +106,7 @@
+                 drawer.path(path, fill=fill, outline=fill)
+         elif self.node.background:
+             drawer.path(path, fill=self.node.color, outline=self.node.color)
+-            drawer.loadImage(self.node.background, self.textbox)
++            drawer.image(self.textbox, self.node.background)
+             drawer.path(path, fill="none",
+                         outline=self.node.linecolor, style=self.node.style)
+         else:
+diff -r 1b120326b282 src/blockdiag/noderenderer/roundedbox.py
+--- a/src/blockdiag/noderenderer/roundedbox.py	Wed Nov 21 22:20:43 2012 +0900
++++ b/src/blockdiag/noderenderer/roundedbox.py	Thu Sep 19 20:27:59 2013 +0900
+@@ -120,7 +120,7 @@
+                 drawer.path(path, fill=fill, outline=fill)
+         elif self.node.background:
+             drawer.path(path, fill=self.node.color, outline=self.node.color)
+-            drawer.loadImage(self.node.background, self.textbox)
++            drawer.image(self.textbox, self.node.background)
+             drawer.path(path, fill="none",
+                         outline=self.node.linecolor, style=self.node.style)
+         else:
+diff -r 1b120326b282 src/blockdiag/parser.py
+--- a/src/blockdiag/parser.py	Wed Nov 21 22:20:43 2012 +0900
++++ b/src/blockdiag/parser.py	Thu Sep 19 20:27:59 2013 +0900
+@@ -35,13 +35,13 @@
+   [1]: http://www.graphviz.org/doc/info/lang.html
+ '''
+ 
+-import codecs
++import io
+ from re import MULTILINE, DOTALL
++from collections import namedtuple
+ from funcparserlib.lexer import make_tokenizer, Token, LexerError
+ from funcparserlib.parser import (some, a, maybe, many, finished, skip,
+                                   forward_decl)
+ 
+-from blockdiag.utils.collections import namedtuple
+ 
+ ENCODING = 'utf-8'
+ 
+@@ -61,14 +61,14 @@
+ 
+ 
+ def tokenize(string):
+-    'str -> Sequence(Token)'
++    """str -> Sequence(Token)"""
+     specs = [
+         ('Comment', (r'/\*(.|[\r\n])*?\*/', MULTILINE)),
+         ('Comment', (r'(//|#).*',)),
+         ('NL',      (r'[\r\n]+',)),
+         ('Space',   (r'[ \t\r\n]+',)),
+-        ('Name',    (ur'[A-Za-z_0-9\u0080-\uffff]'
+-                     ur'[A-Za-z_\-.0-9\u0080-\uffff]*',)),
++        ('Name',    (u'[A-Za-z_0-9\u0080-\uffff]'
++                     u'[A-Za-z_\\-.0-9\u0080-\uffff]*',)),
+         ('Op',      (r'[{};,=\[\]]|(<->)|(<-)|(--)|(->)|(>-<)|(-<)|(>-)',)),
+         ('Number',  (r'-?(\.[0-9]+)|([0-9]+(\.[0-9]*)?)',)),
+         ('String',  (r'(?P<quote>"|\').*?(?<!\\)(?P=quote)', DOTALL)),
+@@ -79,7 +79,7 @@
+ 
+ 
+ def parse(seq):
+-    'Sequence(Token) -> object'
++    """Sequence(Token) -> object"""
+     unarg = lambda f: lambda args: f(*args)
+     tokval = lambda x: x.value
+     flatten = lambda list: sum(list, [])
+@@ -194,11 +194,8 @@
+         else:
+             return 2
+ 
+-    def compare(a, b):
+-        return cmp(weight(a), weight(b))
+-
+     if hasattr(tree, 'stmts'):
+-        tree.stmts.sort(compare)
++        tree.stmts.sort(key=lambda x: weight(x))
+         for stmt in tree.stmts:
+             sort_tree(stmt)
+ 
+@@ -209,13 +206,13 @@
+     try:
+         tree = parse(tokenize(string))
+         return sort_tree(tree)
+-    except LexerError, e:
++    except LexerError as e:
+         message = "Got unexpected token at line %d column %d" % e.place
+         raise ParseException(message)
+-    except Exception, e:
++    except Exception as e:
+         raise ParseException(str(e))
+ 
+ 
+ def parse_file(path):
+-    code = codecs.open(path, 'r', 'utf-8').read()
++    code = io.open(path, 'r', encoding='utf-8-sig').read()
+     return parse_string(code)
+diff -r 1b120326b282 src/blockdiag/tests/test_boot_params.py
+--- a/src/blockdiag/tests/test_boot_params.py	Wed Nov 21 22:20:43 2012 +0900
++++ b/src/blockdiag/tests/test_boot_params.py	Thu Sep 19 20:27:59 2013 +0900
+@@ -1,9 +1,13 @@
+ # -*- coding: utf-8 -*-
+ 
++import sys
++if sys.version_info < (2, 7):
++    import unittest2 as unittest
++else:
++    import unittest
++
+ import os
+-import sys
+ import tempfile
+-import unittest2
+ from blockdiag.tests.utils import argv_wrapper, assertRaises, with_pdf
+ 
+ import blockdiag
+@@ -11,7 +15,7 @@
+ from blockdiag.utils.bootstrap import detectfont
+ 
+ 
+-class TestBootParams(unittest2.TestCase):
++class TestBootParams(unittest.TestCase):
+     def setUp(self):
+         self.parser = BlockdiagOptions(blockdiag)
+ 
+diff -r 1b120326b282 src/blockdiag/tests/test_builder_node.py
+--- a/src/blockdiag/tests/test_builder_node.py	Wed Nov 21 22:20:43 2012 +0900
++++ b/src/blockdiag/tests/test_builder_node.py	Thu Sep 19 20:27:59 2013 +0900
+@@ -1,9 +1,8 @@
+ # -*- coding: utf-8 -*-
+ 
++from collections import defaultdict
+ from blockdiag.tests.utils import __build_diagram, __validate_node_attributes
+ 
+-from blockdiag.utils.collections import defaultdict
+-
+ 
+ def test_single_node_diagram():
+     diagram = __build_diagram('single_node.diag')
+diff -r 1b120326b282 src/blockdiag/tests/test_builder_separate.py
+--- a/src/blockdiag/tests/test_builder_separate.py	Wed Nov 21 22:20:43 2012 +0900
++++ b/src/blockdiag/tests/test_builder_separate.py	Thu Sep 19 20:27:59 2013 +0900
+@@ -1,5 +1,6 @@
+ # -*- coding: utf-8 -*-
+ 
++from __future__ import print_function
+ from blockdiag.builder import SeparateDiagramBuilder
+ from blockdiag.elements import DiagramNode
+ from blockdiag.parser import parse_string
+@@ -26,7 +27,7 @@
+     for i, diagram in enumerate(diagram):
+         for node in diagram.traverse_nodes():
+             if isinstance(node, DiagramNode):
+-                print node, assert_pos[i][node.id]
++                print(node, assert_pos[i][node.id])
+                 assert node.xy == assert_pos[i][node.id]
+ 
+ 
+@@ -43,5 +44,5 @@
+     for i, diagram in enumerate(diagram):
+         for node in diagram.traverse_nodes():
+             if isinstance(node, DiagramNode):
+-                print node, assert_pos[i][node.id]
++                print(node, assert_pos[i][node.id])
+                 assert node.xy == assert_pos[i][node.id]
+diff -r 1b120326b282 src/blockdiag/tests/test_imagedraw_textfolder.py
+--- a/src/blockdiag/tests/test_imagedraw_textfolder.py	Wed Nov 21 22:20:43 2012 +0900
++++ b/src/blockdiag/tests/test_imagedraw_textfolder.py	Thu Sep 19 20:27:59 2013 +0900
+@@ -1,6 +1,11 @@
+ # -*- coding: utf-8 -*-
+ 
+-import unittest2
++import sys
++if sys.version_info < (2, 7):
++    import unittest2 as unittest
++else:
++    import unittest
++
+ from blockdiag.imagedraw.textfolder import splitlabel
+ from blockdiag.imagedraw.textfolder import splittext
+ from blockdiag.imagedraw.textfolder import truncate_text
+@@ -17,7 +22,7 @@
+         return Size(CHAR_WIDTH * length, CHAR_HEIGHT)
+ 
+ 
+-class TestTextFolder(unittest2.TestCase):
++class TestTextFolder(unittest.TestCase):
+     def test_splitlabel(self):
+         # single line text
+         text = "abc"
+diff -r 1b120326b282 src/blockdiag/tests/test_parser.py
+--- a/src/blockdiag/tests/test_parser.py	Wed Nov 21 22:20:43 2012 +0900
++++ b/src/blockdiag/tests/test_parser.py	Thu Sep 19 20:27:59 2013 +0900
+@@ -1,5 +1,6 @@
+ # -*- coding: utf-8 -*-
+ 
++from __future__ import print_function
+ from blockdiag.parser import parse_string, ParseException
+ from blockdiag.parser import Graph, SubGraph, Statements, Node, Edge
+ from nose.tools import raises
+@@ -78,7 +79,7 @@
+            """
+     tree = parse_string(code)
+     assert isinstance(tree, Graph)
+-    print tree.stmts
++    print(tree.stmts)
+     assert len(tree.stmts) == 1
+     assert isinstance(tree.stmts[0], Edge)
+ 
+@@ -90,7 +91,7 @@
+            """
+     tree = parse_string(code)
+     assert isinstance(tree, Graph)
+-    print tree.stmts
++    print(tree.stmts)
+     assert len(tree.stmts) == 2
+     assert isinstance(tree.stmts[0], Edge)
+     assert isinstance(tree.stmts[1], Edge)
+diff -r 1b120326b282 src/blockdiag/tests/test_pep8.py
+--- a/src/blockdiag/tests/test_pep8.py	Wed Nov 21 22:20:43 2012 +0900
++++ b/src/blockdiag/tests/test_pep8.py	Thu Sep 19 20:27:59 2013 +0900
+@@ -1,5 +1,6 @@
+ # -*- coding: utf-8 -*-
+ 
++from __future__ import print_function
+ import os
+ import sys
+ import pep8
+@@ -48,5 +49,5 @@
+     errors = report.get_count('E')
+     warnings = report.get_count('W')
+     message = 'pep8: %d errors / %d warnings' % (errors, warnings)
+-    print message
++    print(message)
+     assert report.total_errors == 0, message
+diff -r 1b120326b282 src/blockdiag/tests/test_rst_directives.py
+--- a/src/blockdiag/tests/test_rst_directives.py	Wed Nov 21 22:20:43 2012 +0900
++++ b/src/blockdiag/tests/test_rst_directives.py	Thu Sep 19 20:27:59 2013 +0900
+@@ -1,8 +1,14 @@
+ # -*- coding: utf-8 -*-
+ 
++import sys
++if sys.version_info < (2, 7):
++    import unittest2 as unittest
++else:
++    import unittest
++
+ import os
++import io
+ import tempfile
+-import unittest2
+ from blockdiag.tests.utils import stderr_wrapper, assertRaises
+ 
+ from docutils import nodes
+@@ -35,7 +41,7 @@
+     return _
+ 
+ 
+-class TestRstDirectives(unittest2.TestCase):
++class TestRstDirectives(unittest.TestCase):
+     def tearDown(self):
+         if 'blockdiag' in docutils._directives:
+             del docutils._directives['blockdiag']
+@@ -107,7 +113,7 @@
+ 
+         self.assertEqual(1, len(doctree))
+         self.assertEqual(directives.blockdiag, type(doctree[0]))
+-        self.assertEqual(open(filename).read(), doctree[0]['code'])
++        self.assertEqual(io.open(filename).read(), doctree[0]['code'])
+         self.assertEqual(None, doctree[0]['alt'])
+         self.assertEqual({}, doctree[0]['options'])
+ 
+diff -r 1b120326b282 src/blockdiag/tests/test_utils_fontmap.py
+--- a/src/blockdiag/tests/test_utils_fontmap.py	Wed Nov 21 22:20:43 2012 +0900
++++ b/src/blockdiag/tests/test_utils_fontmap.py	Thu Sep 19 20:27:59 2013 +0900
+@@ -1,20 +1,27 @@
+ # -*- coding: utf-8 -*-
+ 
++import sys
++if sys.version_info < (2, 7):
++    import unittest2 as unittest
++else:
++    import unittest
++
+ import os
+-import sys
+ import tempfile
+-import unittest2
+ from blockdiag.tests.utils import stderr_wrapper, assertRaises
+ 
+-from cStringIO import StringIO
+-from blockdiag.utils.collections import namedtuple
++try:
++    from io import StringIO
++except ImportError:
++    from cStringIO import StringIO
++from collections import namedtuple
+ from blockdiag.utils.fontmap import FontInfo, FontMap
+ 
+ 
+ FontElement = namedtuple('FontElement', 'fontfamily fontsize')
+ 
+ 
+-class TestUtilsFontmap(unittest2.TestCase):
++class TestUtilsFontmap(unittest.TestCase):
+     def setUp(self):
+         fontpath1 = __file__
+         fontpath2 = os.path.join(os.path.dirname(__file__), 'utils.py')
+@@ -122,7 +129,7 @@
+ 
+     @stderr_wrapper
+     def test_fontmap_empty_config(self):
+-        config = StringIO("")
++        config = StringIO(u"")
+         fmap = FontMap(config)
+ 
+         font1 = fmap.find()
+@@ -161,7 +168,7 @@
+         self.assertEqual(11, font1.size)
+ 
+     def test_fontmap_normal_config(self):
+-        _config = "[fontmap]\nsansserif: %s\nsansserif-bold: %s\n" % \
++        _config = u"[fontmap]\nsansserif: %s\nsansserif-bold: %s\n" % \
+                   (self.fontpath[0], self.fontpath[1])
+         config = StringIO(_config)
+         fmap = FontMap(config)
+@@ -203,7 +210,7 @@
+         self.assertEqual(font1.size, font6.size)
+ 
+     def test_fontmap_duplicated_fontentry1(self):
+-        _config = "[fontmap]\nsansserif: %s\nsansserif: %s\n" % \
++        _config = u"[fontmap]\nsansserif: %s\nsansserif: %s\n" % \
+                   (self.fontpath[0], self.fontpath[1])
+         config = StringIO(_config)
+         fmap = FontMap(config)
+@@ -216,7 +223,7 @@
+     def test_fontmap_duplicated_fontentry2(self):
+         # this testcase is only for python2.6 or later
+         if sys.version_info > (2, 6):
+-            _config = "[fontmap]\nsansserif: %s\nsansserif-normal: %s\n" % \
++            _config = u"[fontmap]\nsansserif: %s\nsansserif-normal: %s\n" % \
+                       (self.fontpath[0], self.fontpath[1])
+             config = StringIO(_config)
+             fmap = FontMap(config)
+@@ -228,7 +235,7 @@
+ 
+     @stderr_wrapper
+     def test_fontmap_with_nodefault_fontentry(self):
+-        _config = "[fontmap]\nserif: %s\n" % self.fontpath[0]
++        _config = u"[fontmap]\nserif: %s\n" % self.fontpath[0]
+         config = StringIO(_config)
+         fmap = FontMap(config)
+ 
+@@ -251,7 +258,7 @@
+ 
+     @stderr_wrapper
+     def test_fontmap_with_nonexistence_fontpath(self):
+-        _config = "[fontmap]\nserif: unknown_file\n"
++        _config = u"[fontmap]\nserif: unknown_file\n"
+         config = StringIO(_config)
+         fmap = FontMap(config)
+ 
+@@ -261,7 +268,7 @@
+         self.assertEqual(11, font1.size)
+ 
+     def test_fontmap_switch_defaultfamily(self):
+-        _config = "[fontmap]\nserif-bold: %s\n" % self.fontpath[0]
++        _config = u"[fontmap]\nserif-bold: %s\n" % self.fontpath[0]
+         config = StringIO(_config)
+         fmap = FontMap(config)
+ 
+@@ -289,8 +296,8 @@
+         self.assertEqual(20, font4.size)
+ 
+     def test_fontmap_using_fontalias(self):
+-        _config = ("[fontmap]\nserif-bold: %s\n" +
+-                   "[fontalias]\ntest = serif-bold\n") % self.fontpath[0]
++        _config = (u"[fontmap]\nserif-bold: %s\n" +
++                   u"[fontalias]\ntest = serif-bold\n") % self.fontpath[0]
+         config = StringIO(_config)
+         fmap = FontMap(config)
+ 
+@@ -303,7 +310,7 @@
+     def test_fontmap_by_file(self):
+         tmp = tempfile.mkstemp()
+ 
+-        _config = "[fontmap]\nsansserif: %s\nsansserif-bold: %s\n" % \
++        _config = u"[fontmap]\nsansserif: %s\nsansserif-bold: %s\n" % \
+                   (self.fontpath[0], self.fontpath[1])
+ 
+         fp = os.fdopen(tmp[0], 'wt')
+@@ -322,13 +329,13 @@
+     def test_fontmap_including_bom_by_file(self):
+         tmp = tempfile.mkstemp()
+ 
+-        _config = ("\xEF\xBB\xBF[fontmap]\nsansserif: %s\n"
+-                   "sansserif-bold: %s\n") % \
++        _config = (u"[fontmap]\nsansserif: %s\n"
++                   u"sansserif-bold: %s\n") % \
+                   (self.fontpath[0], self.fontpath[1])
+ 
+         try:
+-            fp = os.fdopen(tmp[0], 'wt')
+-            fp.write(_config)
++            fp = os.fdopen(tmp[0], 'wb')
++            fp.write(_config.encode('utf-8-sig'))
+             fp.close()
+             fmap = FontMap(tmp[1])
+ 
+diff -r 1b120326b282 src/blockdiag/tests/utils.py
+--- a/src/blockdiag/tests/utils.py	Wed Nov 21 22:20:43 2012 +0900
++++ b/src/blockdiag/tests/utils.py	Thu Sep 19 20:27:59 2013 +0900
+@@ -1,4 +1,5 @@
+ # -*- coding: utf-8 -*-
++from __future__ import print_function
+ import re
+ import sys
+ from StringIO import StringIO
+@@ -60,12 +61,12 @@
+             stderr = sys.stderr
+             sys.stderr = StringIO()
+ 
+-            print args, kwargs
++            print(args, kwargs)
+             func(*args, **kwargs)
+         finally:
+             if sys.stderr.getvalue():
+-                print "---[ stderr ] ---"
+-                print sys.stderr.getvalue()
++                print("---[ stderr ] ---")
++                print(sys.stderr.getvalue())
+ 
+             sys.stderr = stderr
+ 
+@@ -106,13 +107,13 @@
+ 
+     for name, values in kwargs.items():
+         if re.match('edge_', name):
+-            print "[%s]" % name
++            print("[%s]" % name)
+             name = re.sub('edge_', '', name)
+             for (id1, id2), value in values.items():
+                 found = False
+                 for edge in diagram.edges:
+                     if edge.node1.id == id1 and edge.node2.id == id2:
+-                        print edge
++                        print(edge)
+                         eq_(value, getattr(edge, name))
+                         found = True
+ 
+@@ -120,8 +121,8 @@
+                     raise RuntimeError('edge (%s -> %s) is not found' %
+                                        (id1, id2))
+         else:
+-            print "[node.%s]" % name
++            print("[node.%s]" % name)
+             for node in (n for n in diagram.nodes if n.drawable):
+-                print node
++                print(node)
+                 value = getattr(node, name)
+                 eq_(values[node.id], value)
+diff -r 1b120326b282 src/blockdiag/utils/__init__.py
+--- a/src/blockdiag/utils/__init__.py	Wed Nov 21 22:20:43 2012 +0900
++++ b/src/blockdiag/utils/__init__.py	Thu Sep 19 20:27:59 2013 +0900
+@@ -13,9 +13,11 @@
+ #  See the License for the specific language governing permissions and
+ #  limitations under the License.
+ 
++from __future__ import division
+ import re
++import sys
+ import math
+-from blockdiag.utils.collections import namedtuple
++from collections import namedtuple
+ 
+ 
+ Size = namedtuple('Size', 'width height')
+@@ -28,7 +30,13 @@
+         return super(XY, cls).__new__(cls, (x, y))
+ 
+     def __getattr__(self, name):
+-        return self[self.mapper[name]]
++        try:
++            return self[self.mapper[name]]
++        except KeyError:
++            raise AttributeError(name)
++
++    def __setattr__(self, name, value):
++        raise TypeError("'XY' object does not support item assignment")
+ 
+     def shift(self, x=0, y=0):
+         return self.__class__(self.x + x, self.y + y)
+@@ -41,7 +49,10 @@
+         super(Box, self).__init__((x1, y1, x2, y2))
+ 
+     def __getattr__(self, name):
+-        return self[self.mapper[name]]
++        try:
++            return self[self.mapper[name]]
++        except KeyError:
++            raise AttributeError(name)
+ 
+     def __repr__(self):
+         _format = "<%s (%s, %s) %dx%d at 0x%08x>"
+@@ -92,7 +103,7 @@
+ 
+     @property
+     def top(self):
+-        return XY(self.x1 + self.width / 2, self.y1)
++        return XY(self.x1 + self.width // 2, self.y1)
+ 
+     @property
+     def topright(self):
+@@ -104,7 +115,7 @@
+ 
+     @property
+     def bottom(self):
+-        return XY(self.x1 + self.width / 2, self.y2)
++        return XY(self.x1 + self.width // 2, self.y2)
+ 
+     @property
+     def bottomright(self):
+@@ -112,15 +123,23 @@
+ 
+     @property
+     def left(self):
+-        return XY(self.x1, self.y1 + self.height / 2)
++        return XY(self.x1, self.y1 + self.height // 2)
+ 
+     @property
+     def right(self):
+-        return XY(self.x2, self.y1 + self.height / 2)
++        return XY(self.x2, self.y1 + self.height // 2)
+ 
+     @property
+     def center(self):
+-        return XY(self.x1 + self.width / 2, self.y1 + self.height / 2)
++        return XY(self.x1 + self.width // 2, self.y1 + self.height // 2)
++
++
++def any(seq):
++    for element in seq:
++        if element:
++            return True
++
++    return False
+ 
+ 
+ def unquote(string):
+@@ -144,3 +163,15 @@
+             return string
+     else:
+         return string
++
++
++def is_PIL_available():
++    try:
++        try:
++            from PIL import _imagingft
++        except ImportError:
++            import _imagingft
++
++        return True
++    except ImportError:
++        return False
+diff -r 1b120326b282 src/blockdiag/utils/bootstrap.py
+--- a/src/blockdiag/utils/bootstrap.py	Wed Nov 21 22:20:43 2012 +0900
++++ b/src/blockdiag/utils/bootstrap.py	Thu Sep 19 20:27:59 2013 +0900
+@@ -16,6 +16,7 @@
+ import os
+ import re
+ import sys
++import codecs
+ from optparse import OptionParser
+ from blockdiag import imagedraw
+ from blockdiag.utils.config import ConfigParser
+@@ -33,14 +34,14 @@
+ 
+             parsed = self.parse_diagram()
+             return self.build_diagram(parsed)
+-        except SystemExit, e:
++        except SystemExit as e:
+             return e
+-        except UnicodeEncodeError, e:
++        except UnicodeEncodeError as e:
+             msg = "ERROR: UnicodeEncodeError caught " + \
+                   "(check your font settings)\n"
+             sys.stderr.write(msg)
+             return -1
+-        except Exception, e:
++        except Exception as e:
+             if self.options and self.options.debug:
+                 import traceback
+                 traceback.print_exc()
+@@ -72,12 +73,12 @@
+                 raise RuntimeError(msg)
+ 
+     def parse_diagram(self):
+-        import codecs
+         if self.options.input == '-':
+-            stream = codecs.getreader('utf-8')(sys.stdin)
++            stream = codecs.getreader('utf-8-sig')(sys.stdin)
+             self.code = stream.read()
+         else:
+-            self.code = codecs.open(self.options.input, 'r', 'utf-8').read()
++            fp = codecs.open(self.options.input, 'r', 'utf-8-sig')
++            self.code = fp.read()
+ 
+         return self.module.parser.parse_string(self.code)
+ 
+@@ -253,6 +254,7 @@
+         'AppleGothic.ttf',
+         'msgothic.ttf',
+         'msgoth04.ttf',
++        'msgothic.ttc',
+     ]
+ 
+     fontpath = None
+diff -r 1b120326b282 src/blockdiag/utils/config.py
+--- a/src/blockdiag/utils/config.py	Wed Nov 21 22:20:43 2012 +0900
++++ b/src/blockdiag/utils/config.py	Thu Sep 19 20:27:59 2013 +0900
+@@ -15,7 +15,10 @@
+ 
+ import sys
+ import codecs
+-from ConfigParser import SafeConfigParser
++try:
++    from configparser import SafeConfigParser
++except ImportError:
++    from ConfigParser import SafeConfigParser
+ 
+ 
+ class ConfigParser(SafeConfigParser):
+@@ -30,10 +33,6 @@
+             SafeConfigParser.__init__(self)
+ 
+     def read(self, path):
+-        if sys.version_info > (2, 5):
+-            fd = codecs.open(path, 'r', 'utf-8-sig')
+-        else:
+-            fd = codecs.open(path, 'r', 'utf-8')
+-
++        fd = codecs.open(path, 'r', 'utf-8-sig')
+         self.readfp(fd)
+         fd.close()
+diff -r 1b120326b282 src/blockdiag/utils/fontmap.py
+--- a/src/blockdiag/utils/fontmap.py	Wed Nov 21 22:20:43 2012 +0900
++++ b/src/blockdiag/utils/fontmap.py	Thu Sep 19 20:27:59 2013 +0900
+@@ -17,8 +17,8 @@
+ import os
+ import sys
+ import copy
++from collections import namedtuple
+ from blockdiag.utils.config import ConfigParser
+-from blockdiag.utils.collections import namedtuple
+ 
+ 
+ def parse_fontpath(path):
+diff -r 1b120326b282 src/blockdiag/utils/images.py
+--- a/src/blockdiag/utils/images.py	Wed Nov 21 22:20:43 2012 +0900
++++ b/src/blockdiag/utils/images.py	Thu Sep 19 20:27:59 2013 +0900
+@@ -61,10 +61,13 @@
+     if filename not in _image_size_cache:
+         uri = filename
+         if urlutil.isurl(filename):
+-            import cStringIO
++            try:
++                from io import StringIO
++            except ImportError:
++                from cStringIO import StringIO
+             import urllib
+             try:
+-                uri = cStringIO.StringIO(urllib.urlopen(filename).read())
++                uri = StringIO(urllib.urlopen(filename).read())
+             except:
+                 return None
+ 
+diff -r 1b120326b282 src/blockdiag/utils/myitertools.py
+--- a/src/blockdiag/utils/myitertools.py	Wed Nov 21 22:20:43 2012 +0900
++++ b/src/blockdiag/utils/myitertools.py	Thu Sep 19 20:27:59 2013 +0900
+@@ -13,13 +13,16 @@
+ #  See the License for the specific language governing permissions and
+ #  limitations under the License.
+ 
++import sys
++if sys.version_info[0] == 2:
++    range = xrange
+ from itertools import cycle
+ 
+ 
+ def istep(seq, step=2):
+     iterable = iter(seq)
+     while True:
+-        yield [iterable.next() for _ in range(step)]
++        yield [next(iterable) for _ in range(step)]
+ 
+ 
+ def stepslice(iterable, steps):
+@@ -28,19 +31,19 @@
+ 
+     while True:
+         # skip (1)
+-        n = step.next()
++        n = next(step)
+         if n == 0:
+             pass
+         elif n == 1:
+-            o = iterable.next()
++            o = next(iterable)
+             yield o
+             yield o
+         else:
+-            yield iterable.next()
+-            for _ in xrange(n - 2):
+-                iterable.next()
+-            yield iterable.next()
++            yield next(iterable)
++            for _ in range(n - 2):
++                next(iterable)
++            yield next(iterable)
+ 
+         # skip (2)
+-        for _ in xrange(step.next()):
+-            iterable.next()
++        for _ in range(next(step)):
++            next(iterable)
+diff -r 1b120326b282 src/blockdiag/utils/namedtuple.py
+--- a/src/blockdiag/utils/namedtuple.py	Wed Nov 21 22:20:43 2012 +0900
++++ /dev/null	Thu Jan 01 00:00:00 1970 +0000
+@@ -1,18 +0,0 @@
+-# -*- coding: utf-8 -*-
+-#  Copyright 2011 Takeshi KOMIYA
+-#
+-#  Licensed under the Apache License, Version 2.0 (the "License");
+-#  you may not use this file except in compliance with the License.
+-#  You may obtain a copy of the License at
+-#
+-#      http://www.apache.org/licenses/LICENSE-2.0
+-#
+-#  Unless required by applicable law or agreed to in writing, software
+-#  distributed under the License is distributed on an "AS IS" BASIS,
+-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-#  See the License for the specific language governing permissions and
+-#  limitations under the License.
+-
+-
+-from blockdiag.utils.collections import namedtuple
+-namedtuple
+diff -r 1b120326b282 src/blockdiag/utils/rst/directives.py
+--- a/src/blockdiag/utils/rst/directives.py	Wed Nov 21 22:20:43 2012 +0900
++++ b/src/blockdiag/utils/rst/directives.py	Thu Sep 19 20:27:59 2013 +0900
+@@ -14,16 +14,18 @@
+ #  limitations under the License.
+ 
+ import os
+-import codecs
++import io
++from collections import namedtuple
+ from docutils import nodes
+ from docutils.parsers import rst
+ from docutils.statemachine import ViewList
+ from blockdiag import parser
+ from blockdiag.builder import ScreenNodeBuilder
+ from blockdiag.drawer import DiagramDraw
++from blockdiag.utils import any
+ from blockdiag.utils.bootstrap import detectfont
+-from blockdiag.utils.collections import namedtuple
+ from blockdiag.utils.rst.nodes import blockdiag
++from functools import cmp_to_key
+ 
+ 
+ directive_options_default = dict(format='PNG',
+@@ -58,7 +60,13 @@
+     except (TypeError, ValueError):
+         n2 = 65535
+ 
+-    return cmp(n1, n2)
++    # cmp n1 and n2
++    if n1 < n2:
++        return -1
++    elif n1 == n2:
++        return 0
++    else:
++        return 1
+ 
+ 
+ class BlockdiagDirectiveBase(rst.Directive):
+@@ -87,7 +95,7 @@
+ 
+             try:
+                 filename = self.source_filename(self.arguments[0])
+-                fp = codecs.open(filename, 'r', 'utf-8')
++                fp = io.open(filename, 'r', encoding='utf-8-sig')
+                 try:
+                     dotcode = fp.read()
+                 finally:
+@@ -136,7 +144,7 @@
+ 
+         try:
+             diagram = self.node2diagram(node)
+-        except Exception, e:
++        except Exception as e:
+             raise self.warning(e.message)
+ 
+         if 'desctable' in node['options']:
+@@ -185,7 +193,7 @@
+                     new_size = (options['maxwidth'], int(size[1] * ratio))
+                     content = drawer.save(new_size)
+ 
+-                return nodes.raw('', content.decode('utf-8'), format='html')
++                return nodes.raw('', content, format='html')
+ 
+         size = drawer.pagesize()
+         if 'maxwidth' in options and options['maxwidth'] < size[0]:
+@@ -261,7 +269,7 @@
+         headers = [klass.attrname[n] for n in klass.desctable]
+ 
+         descriptions = [n.to_desctable() for n in nodes if n.drawable]
+-        descriptions.sort(cmp_node_number)
++        descriptions.sort(key=cmp_to_key(cmp_node_number))
+ 
+         for i in reversed(range(len(headers))):
+             if any(desc[i] for desc in descriptions):
+diff -r 1b120326b282 src/blockdiag/utils/urlutil.py
+--- a/src/blockdiag/utils/urlutil.py	Wed Nov 21 22:20:43 2012 +0900
++++ b/src/blockdiag/utils/urlutil.py	Thu Sep 19 20:27:59 2013 +0900
+@@ -1,6 +1,9 @@
+ # -*- coding: utf-8 -*-
+ 
+-import urlparse
++try:
++    import urlparse
++except ImportError:
++    import urllib.parse as urlparse
+ 
+ 
+ def isurl(url):
+diff -r 1b120326b282 src/blockdiag_sphinxhelper.py
+--- a/src/blockdiag_sphinxhelper.py	Wed Nov 21 22:20:43 2012 +0900
++++ b/src/blockdiag_sphinxhelper.py	Thu Sep 19 20:27:59 2013 +0900
+@@ -27,8 +27,8 @@
+ from blockdiag.utils.rst import directives
+ 
+ # FIXME: obsoleted interface (keep for compatibility)
++import collections
+ from blockdiag import command, parser, builder, drawer
+-from blockdiag.utils import collections
+ from blockdiag.utils.fontmap import FontMap
+ from blockdiag.utils.rst.directives import blockdiag, BlockdiagDirective
+ 

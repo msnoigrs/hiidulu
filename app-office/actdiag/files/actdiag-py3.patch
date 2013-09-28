@@ -1,0 +1,261 @@
+diff -r 8474758fb0b9 src/actdiag/builder.py
+--- a/src/actdiag/builder.py	Mon Feb 11 12:46:41 2013 +0900
++++ b/src/actdiag/builder.py	Fri Sep 20 09:20:00 2013 +0900
+@@ -13,9 +13,11 @@
+ #  See the License for the specific language governing permissions and
+ #  limitations under the License.
+ 
++from __future__ import print_function
+ from actdiag import parser
+ from actdiag.elements import (Diagram, DiagramNode, DiagramEdge, NodeGroup)
+ from blockdiag.utils import unquote, XY
++from functools import cmp_to_key
+ 
+ 
+ class DiagramTreeBuilder(object):
+@@ -32,7 +34,7 @@
+             if node.lane is None:
+                 edges = DiagramEdge.find(None, node)
+                 parents = [e.node1 for e in edges if e.node1.lane]
+-                parents.sort(lambda x, y: cmp(x.order, y.order))
++                parents.sort(key=lambda x: x.order)
+ 
+                 if parents:
+                     node.lane = parents[0].lane
+@@ -49,7 +51,7 @@
+ 
+     def belong_to(self, node, lane):
+         if lane and node.lane and node.lane != lane:
+-            print node, node.lane, lane
++            print(node, node.lane, lane)
+             msg = "DiagramNode could not belong to two lanes"
+             raise RuntimeError(msg)
+ 
+@@ -186,7 +188,7 @@
+             else:
+                 related.append(uniq_node)
+ 
+-        related.sort(lambda x, y: cmp(x.order, y.order))
++        related.sort(key=lambda x: x.order)
+         return related
+ 
+     def get_parent_nodes(self, node):
+@@ -226,7 +228,7 @@
+                         if not parent in circular:
+                             parents.append(parent)
+ 
+-                parents.sort(lambda x, y: cmp(x.order, y.order))
++                parents.sort(key=lambda x: x.order)
+ 
+                 for parent in parents:
+                     children = self.get_child_nodes(parent)
+@@ -308,9 +310,17 @@
+         node.xy = xy
+         self.mark_xy(node)
+ 
++        def cmp(x, y):
++            if x.xy.x < y.xy.y:
++                return -1
++            elif x.xy.x == y.xy.y:
++                return 0
++            else:
++                return 1
++
+         count = 0
+         children = self.get_child_nodes(node)
+-        children.sort(lambda x, y: cmp(x.xy.x, y.xy.y))
++        children.sort(key=cmp_to_key(cmp))
+         for child in children:
+             if child.id in self.heightRefs:
+                 pass
+diff -r 8474758fb0b9 src/actdiag/drawer.py
+--- a/src/actdiag/drawer.py	Mon Feb 11 12:46:41 2013 +0900
++++ b/src/actdiag/drawer.py	Fri Sep 20 09:20:00 2013 +0900
+@@ -15,6 +15,11 @@
+ 
+ import blockdiag.drawer
+ from actdiag.metrics import DiagramMetrics
++import sys
++if sys.version_info[0] == 2:
++    unicode_type = unicode
++else:
++    unicode_type = str
+ 
+ 
+ class DiagramDraw(blockdiag.drawer.DiagramDraw):
+@@ -28,7 +33,7 @@
+         for i, lane in enumerate(self.diagram.lanes):
+             if lane.label:
+                 label = lane.label
+-            elif isinstance(lane.id, unicode):
++            elif isinstance(lane.id, unicode_type):
+                 label = lane.id
+             else:
+                 label = u'Lane %d' % (i + 1)
+diff -r 8474758fb0b9 src/actdiag/metrics.py
+--- a/src/actdiag/metrics.py	Mon Feb 11 12:46:41 2013 +0900
++++ b/src/actdiag/metrics.py	Fri Sep 20 09:20:00 2013 +0900
+@@ -13,6 +13,7 @@
+ #  See the License for the specific language governing permissions and
+ #  limitations under the License.
+ 
++from __future__ import division
+ import blockdiag.metrics
+ from blockdiag.utils import Box, XY
+ from blockdiag.utils.collections import namedtuple
+@@ -51,14 +52,14 @@
+         dummy.colheight = self.colheight
+         cell = self.cell(dummy, use_padding=False)
+ 
+-        headerbox = Box(cell.topleft.x - self.span_width / 2,
++        headerbox = Box(cell.topleft.x - self.span_width // 2,
+                         (cell.topleft.y - self.node_height -
+                          self.span_height - 2),
+-                        cell.topright.x + self.span_width / 2,
+-                        cell.topright.y - self.span_height / 2)
++                        cell.topright.x + self.span_width // 2,
++                        cell.topright.y - self.span_height // 2)
+ 
+         outline = Box(headerbox[0], headerbox[1], headerbox[2],
+-                      cell.bottom.y + self.span_height / 2)
++                      cell.bottom.y + self.span_height // 2)
+ 
+         separators = [(XY(headerbox[0], headerbox[3]),
+                        XY(headerbox[2], headerbox[3]))]
+@@ -67,7 +68,7 @@
+             x = lane.xy.x + lane.colwidth + 1
+ 
+             m = self.cell(lane, use_padding=False)
+-            span_width = self.spreadsheet.span_width[x] / 2
++            span_width = self.spreadsheet.span_width[x] // 2
+             x1 = m.right.x + span_width
+ 
+             xy = (XY(x1, outline[1]), XY(x1, outline[3]))
+@@ -87,7 +88,7 @@
+     def lane_headerbox(self, lane):
+         headerbox = self.frame([]).headerbox
+         m = self.cell(lane)
+-        x1 = m.left.x - self.spreadsheet.span_width[lane.xy.x] / 2
+-        x2 = m.right.x + self.spreadsheet.span_width[lane.xy.x + 1] / 2
++        x1 = m.left.x - self.spreadsheet.span_width[lane.xy.x] // 2
++        x2 = m.right.x + self.spreadsheet.span_width[lane.xy.x + 1] // 2
+ 
+         return Box(x1, headerbox[1], x2, headerbox[3])
+diff -r 8474758fb0b9 src/actdiag/parser.py
+--- a/src/actdiag/parser.py	Mon Feb 11 12:46:41 2013 +0900
++++ b/src/actdiag/parser.py	Fri Sep 20 09:20:00 2013 +0900
+@@ -35,7 +35,7 @@
+   [1]: http://www.graphviz.org/doc/info/lang.html
+ '''
+ 
+-import codecs
++import io
+ from re import MULTILINE, DOTALL
+ from funcparserlib.lexer import make_tokenizer, Token, LexerError
+ from funcparserlib.parser import (some, a, maybe, many, finished, skip)
+@@ -58,14 +58,14 @@
+ 
+ 
+ def tokenize(string):
+-    'str -> Sequence(Token)'
++    """str -> Sequence(Token)"""
+     specs = [
+         ('Comment', (r'/\*(.|[\r\n])*?\*/', MULTILINE)),
+         ('Comment', (r'(//|#).*',)),
+         ('NL',      (r'[\r\n]+',)),
+         ('Space',   (r'[ \t\r\n]+',)),
+-        ('Name',    (ur'[A-Za-z_0-9\u0080-\uffff]'
+-                     ur'[A-Za-z_\-.0-9\u0080-\uffff]*',)),
++        ('Name',    (u'[A-Za-z_0-9\u0080-\uffff]'
++                     u'[A-Za-z_\\-.0-9\u0080-\uffff]*',)),
+         ('Op',      (r'[{};,=\[\]]|(<->)|(<-)|(--)|(->)',)),
+         ('Number',  (r'-?(\.[0-9]+)|([0-9]+(\.[0-9]*)?)',)),
+         ('String',  (r'(?P<quote>"|\').*?(?<!\\)(?P=quote)', DOTALL)),
+@@ -76,7 +76,7 @@
+ 
+ 
+ def parse(seq):
+-    'Sequence(Token) -> object'
++    """Sequence(Token) -> object"""
+     unarg = lambda f: lambda args: f(*args)
+     tokval = lambda x: x.value
+     flatten = lambda list: sum(list, [])
+@@ -170,11 +170,8 @@
+         else:
+             return 2
+ 
+-    def compare(node1, node2):
+-        return cmp(weight(node1), weight(node2))
+-
+     if hasattr(tree, 'stmts'):
+-        tree.stmts.sort(compare)
++        tree.stmts.sort(key=lambda x: weight(x))
+         for stmt in tree.stmts:
+             sort_tree(stmt)
+ 
+@@ -185,13 +182,13 @@
+     try:
+         tree = parse(tokenize(string))
+         return sort_tree(tree)
+-    except LexerError, e:
++    except LexerError as e:
+         message = "Got unexpected token at line %d column %d" % e.place
+         raise ParseException(message)
+-    except Exception, e:
++    except Exception as e:
+         raise ParseException(str(e))
+ 
+ 
+ def parse_file(path):
+-    input = codecs.open(path, 'r', 'utf-8').read()
++    input = io.open(path, 'r', encoding='utf-8-sig').read()
+     return parse_string(input)
+diff -r 8474758fb0b9 src/actdiag/tests/test_pep8.py
+--- a/src/actdiag/tests/test_pep8.py	Mon Feb 11 12:46:41 2013 +0900
++++ b/src/actdiag/tests/test_pep8.py	Fri Sep 20 09:20:00 2013 +0900
+@@ -1,5 +1,6 @@
+ # -*- coding: utf-8 -*-
+ 
++from __future__ import print_function
+ import os
+ import sys
+ import pep8
+@@ -48,5 +49,5 @@
+     errors = report.get_count('E')
+     warnings = report.get_count('W')
+     message = 'pep8: %d errors / %d warnings' % (errors, warnings)
+-    print message
++    print(message)
+     assert report.total_errors == 0, message
+diff -r 8474758fb0b9 src/actdiag/tests/test_rst_directives.py
+--- a/src/actdiag/tests/test_rst_directives.py	Mon Feb 11 12:46:41 2013 +0900
++++ b/src/actdiag/tests/test_rst_directives.py	Fri Sep 20 09:20:00 2013 +0900
+@@ -1,6 +1,7 @@
+ # -*- coding: utf-8 -*-
+ 
+ import os
++import io
+ import tempfile
+ import unittest2
+ from blockdiag.tests.utils import stderr_wrapper, assertRaises
+@@ -106,7 +107,7 @@
+ 
+         self.assertEqual(1, len(doctree))
+         self.assertEqual(directives.actdiag, type(doctree[0]))
+-        self.assertEqual(open(filename).read(), doctree[0]['code'])
++        self.assertEqual(io.open(filename).read(), doctree[0]['code'])
+         self.assertEqual(None, doctree[0]['alt'])
+         self.assertEqual({}, doctree[0]['options'])
+ 
+diff -r 8474758fb0b9 src/actdiag/utils/rst/directives.py
+--- a/src/actdiag/utils/rst/directives.py	Mon Feb 11 12:46:41 2013 +0900
++++ b/src/actdiag/utils/rst/directives.py	Fri Sep 20 09:20:00 2013 +0900
+@@ -76,7 +76,7 @@
+                     new_size = (options['maxwidth'], int(size[1] * ratio))
+                     content = drawer.save(new_size)
+ 
+-                return nodes.raw('', content.decode('utf-8'), format='html')
++                return nodes.raw('', content, format='html')
+ 
+         size = drawer.pagesize()
+         if 'maxwidth' in options and options['maxwidth'] < size[0]:
