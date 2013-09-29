@@ -55,7 +55,7 @@ JAVA_ANT_ENCODING="iso-8859-1"
 EANT_EXTRA_ARGS="-Dproject.name=${PN}"
 
 src_install() {
-	java-pkg_dojar ${PN}.jar
+	java-pkg_dojar target/${PN}.jar
 
 	use doc && java-pkg_dojavadoc target/site/apidocs
 	use source && java-pkg_dosrc src/main/java/*

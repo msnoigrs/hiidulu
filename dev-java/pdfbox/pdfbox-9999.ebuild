@@ -26,6 +26,7 @@ CDEPEND=">=dev-java/tika-core-0.10
 	dev-java/jempbox
 	dev-java/bcprov:0
 	dev-java/bcmail:0
+	dev-java/bcpkix:0
 	dev-java/jcl-over-slf4j
 	dev-java/icu4j:0"
 RDEPEND=">=virtual/jre-1.6
@@ -57,6 +58,7 @@ java_prepare() {
 	java-pkg_jar-from jempbox jempbox.jar
 	java-pkg_jar-from bcprov bcprov.jar bcprov-jdk15-1.44.jar
 	java-pkg_jar-from bcmail bcmail.jar bcmail-jdk15-1.44.jar
+	java-pkg_jar-from bcmail bcpkix.jar bcpkix-jdk15-1.48.jar
 #	java-pkg_jar-from lucene-2.4 lucene-core.jar lucene-core-2.4.1.jar
 #	java-pkg_jar-from lucene-2.4 lucene-demos.jar lucene-dmoes-2.4.1.jar
 #	java-pkg_jar-from --build-only ant-core ant.jar
