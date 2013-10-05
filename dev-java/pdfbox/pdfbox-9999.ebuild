@@ -21,8 +21,8 @@ KEYWORDS="~amd64 ~ppc ~x86"
 IUSE=""
 
 #	dev-java/lucene:2.4
-CDEPEND=">=dev-java/tika-core-0.10
-	dev-java/fontbox
+#>=dev-java/tika-core-0.10
+CDEPEND="dev-java/fontbox
 	dev-java/jempbox
 	dev-java/bcprov:0
 	dev-java/bcmail:0
@@ -53,12 +53,12 @@ java_prepare() {
 
 	mkdir external || die
 	cd external
-	java-pkg_jar-from tika-core tika-core.jar tika-core-0.10.jar
+#	java-pkg_jar-from tika-core tika-core.jar tika-core-0.10.jar
 	java-pkg_jar-from fontbox fontbox.jar
 	java-pkg_jar-from jempbox jempbox.jar
-	java-pkg_jar-from bcprov bcprov.jar bcprov-jdk15-1.44.jar
-	java-pkg_jar-from bcmail bcmail.jar bcmail-jdk15-1.44.jar
-	java-pkg_jar-from bcmail bcpkix.jar bcpkix-jdk15-1.48.jar
+	java-pkg_jar-from bcprov bcprov.jar bcprov-jdk15-1.48.jar
+	java-pkg_jar-from bcmail bcmail.jar bcmail-jdk15-1.48.jar
+	java-pkg_jar-from bcpkix bcpkix.jar bcpkix-jdk15-1.48.jar
 #	java-pkg_jar-from lucene-2.4 lucene-core.jar lucene-core-2.4.1.jar
 #	java-pkg_jar-from lucene-2.4 lucene-demos.jar lucene-dmoes-2.4.1.jar
 #	java-pkg_jar-from --build-only ant-core ant.jar
