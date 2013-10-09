@@ -34,7 +34,7 @@ RDEPEND="${DEPEND}
 	dev-python/requests
 	dev-python/unidecode
 	=dev-python/yapsy-1.10.2
-	=dev-python/pytz-2013b
+	=dev-python/pytz-2013d
 	dev-python/python-dateutil
 	dev-python/micawber
 	dev-python/Pyphen
