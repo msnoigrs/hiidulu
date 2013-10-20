@@ -4,25 +4,23 @@
 
 EAPI="5"
 
-JAVA_PKG_IUSE="doc examples source test"
+JAVA_PKG_IUSE="doc examples source"
 
 inherit eutils java-pkg-2 java-ant-2
 
 DESCRIPTION="Java Compiler Compiler - The Java Parser Generator"
 HOMEPAGE="https://javacc.java.net/"
-SRC_URI="http://java.net/projects/${PN}/downloads/download/${P}src.tar.gz"
+# svn export https://svn.java.net/svn/javacc~svn/branches/version_60 javacc
+SRC_URI="http://dev.gentoo.gr.jp/~igarashi/distfiles/${P}.tar.gz"
 
 LICENSE="BSD"
 SLOT="0"
 KEYWORDS="~amd64 ~ppc ~x86 ~x86-fbsd ~x86-freebsd ~amd64-linux ~x86-linux ~ppc-macos ~x64-macos"
 
-COMMON_DEP="
-	dev-java/junit:0"
-RDEPEND="${COMMON_DEP}
-	>=virtual/jre-1.6"
-DEPEND="${COMMON_DEP}
-	>=virtual/jdk-1.6
-	test? (	dev-java/ant-junit:0 )"
+RDEPEND=">=virtual/jre-1.6"
+DEPEND=">=virtual/jdk-1.6"
+
+RESTRICT="test"
 
 S="${WORKDIR}/${PN}"
 
@@ -44,7 +42,7 @@ java_prepare() {
 
 #JAVA_ANT_REWRITE_CLASSPATH="yes"
 #JAVA_ANT_CLASSPATH_TAGS+=" javadoc"
-EANT_GENTOO_CLASSPATH="junit"
+#EANT_GENTOO_CLASSPATH="junit"
 
 src_compile() {
 	eant generated-files
@@ -53,10 +51,6 @@ src_compile() {
 	eant realclean
 
 	eant -Dbootstrap.javacc.mainclass="org.javacc.parser.Main" -Dbootstrap.jjtree.mainclass="org.javacc.jjtree.Main" jar $(use_doc)
-}
-
-src_test() {
-	java-pkg-2_src_test
 }
 
 src_install() {

@@ -1,8 +1,8 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2013 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI="2"
+EAPI="5"
 JAVA_PKG_IUSE="doc source"
 JAVA_ANT_ENCODING="utf-8"
 
@@ -22,21 +22,18 @@ SRC_URI="http://dev.gentoo.gr.jp/~igarashi/distfiles/${DISTFILE}
 LICENSE="|| ( MPL-1.1 LGPL-2 )"
 SLOT="0"
 KEYWORDS="amd64 ~ppc64 x86"
-IUSE="cjk rtf rups"
+#IUSE="cjk rtf rups"
+IUSE="cjk rtf"
 
 BCV="1.38"
 
-COMMON_DEPEND=">=dev-java/bcmail-${BCV}:0
-	>=dev-java/bcprov-${BCV}:0
-	>=dev-java/bctsp-${BCV}:0
-	rups? ( dev-java/dom4j:1 dev-java/pdf-renderer:0 )"
-DEPEND="|| ( =virtual/jdk-1.6* =virtual/jdk-1.5* !doc? ( !rups? ( =virtual/jdk-1.4* ) ) )
+COMMON_DEPEND="dev-java/bcmail
+	dev-java/bcprov
+	dev-java/bcpkix"
+DEPEND=">=virtual/jdk-1.6
 	cjk? ( app-arch/unzip )
 	 ${COMMON_DEPEND}"
-RDEPEND="!doc? ( !rups? ( >=virtual/jre-1.4 ) )
-	doc? ( !rups? ( >=virtual/jre-1.5 ) )
-	!doc? ( rups? ( >=virtual/jre-1.5 ) )
-	doc? ( rups? ( >=virtual/jre-1.5 ) )
+RDEPEND=">=virtual/jre-1.6
 	${COMMON_DEPEND}"
 
 S="${WORKDIR}/src"
@@ -54,6 +51,17 @@ src_unpack() {
 java_prepare() {
 	epatch "${FILESDIR}"/itext-2.1.5-pdftk.patch
 
+	find -name '*.java' -exec sed -i -e 's/DERObject$/ASN1Primitive/g' {} \;
+	find -name '*.java' -exec sed -i -e 's/DERObject /ASN1Primitive /g' {} \;
+	find -name '*.java' -exec sed -i -e 's/DERObject;/ASN1Primitive;/g' {} \;
+	find -name '*.java' -exec sed -i -e 's/(DERObject)/(ASN1Primitive)/g' {} \;
+	find -name '*.java' -exec sed -i -e 's/(DERString)/(ASN1String)/g' {} \;
+	find -name '*.java' -exec sed -i -e 's/DERString;/ASN1String;/g' {} \;
+	find -name '*.java' -exec sed -i -e 's/ASN1Encodable;/ASN1Object;/g' {} \;
+	find -name '*.java' -exec sed -i -e 's/ASN1Encodable.DER/org.bouncycastle.asn1.ASN1Encoding.DER/g' {} \;
+	find -name '*.java' -exec sed -i -e 's/getDERObject/toASN1Primitive/g' {} \;
+	sed -i -e 's/EnvelopedData(null, derset, encryptedcontentinfo, null)/EnvelopedData(null, derset, encryptedcontentinfo, (org.bouncycastle.asn1.ASN1Set)null)/' core/com/lowagie/text/pdf/PdfPublicKeySecurityHandler.java
+
 	sed -i -e 's/jdk14/jdk16/' ant/.ant.properties
 
 	sed -i -e 's|<link href="http://java.sun.com/j2se/1.4/docs/api/" />||' \
@@ -66,31 +74,32 @@ java_prepare() {
 	cd "${WORKDIR}/lib" || die "Could not cd ${WORKDIR}/lib"
 	java-pkg_jar-from bcmail bcmail.jar "bcmail-jdk16-${BCV/./}.jar"
 	java-pkg_jar-from bcprov bcprov.jar "bcprov-jdk16-${BCV/./}.jar"
-	java-pkg_jar-from bctsp bctsp.jar "bctsp-jdk16-${BCV/./}.jar"
-	if use rups; then
-		java-pkg_jar-from dom4j-1 dom4j.jar "dom4j-1.6.1.jar"
-		EANT_GENTOO_CLASSPATH="pdf-renderer"
-	fi
+	java-pkg_jar-from bcpkix bcpkix.jar "bctsp-jdk16-${BCV/./}.jar"
+	#if use rups; then
+	#	java-pkg_jar-from dom4j-1 dom4j.jar "dom4j-1.6.1.jar"
+	#	EANT_GENTOO_CLASSPATH="pdf-renderer"
+	#fi
 }
 
 JAVA_ANT_REWRITE_CLASSPATH="true"
 
 src_compile() {
 	java-pkg-2_src_compile \
-		$(use rtf && echo "jar.rtf") \
-		$(use rups && echo "jar.rups")
+		$(use rtf && echo "jar.rtf")
+		#$(use rups && echo "jar.rups")
 }
 
 src_install() {
 	cd "${WORKDIR}"
 	java-pkg_dojar lib/iText.jar
 	use rtf && java-pkg_dojar lib/iText-rtf.jar
-	use rups && java-pkg_dojar lib/iText-rups.jar
+	#use rups && java-pkg_dojar lib/iText-rups.jar
 	if use cjk; then
 		java-pkg_dojar "${ASIANJAR}"
 		java-pkg_dojar "${ASIANCMAPSJAR}"
 	fi
 
-	use source && java-pkg_dosrc src/core/com src/rups/com
+	#use source && java-pkg_dosrc src/core/com src/rups/com
+	use source && java-pkg_dosrc src/core/com
 	use doc && java-pkg_dojavadoc build/docs
 }

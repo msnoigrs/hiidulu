@@ -16,42 +16,24 @@ HOMEPAGE="http://jdbc.postgresql.org/"
 LICENSE="POSTGRESQL"
 SLOT="0"
 KEYWORDS="amd64 ppc ~ppc64 x86"
-IUSE="java5 java6 test"
+IUSE=""
 
-DEPEND=">=dev-java/java-config-2.0.31
-	java6? ( =virtual/jdk-1.6* )
-	java5? ( =virtual/jdk-1.5* )
-	!java5? ( !java6? ( =virtual/jdk-1.4* ) )
+DEPEND="
+	>=virtual/jdk-1.6
 	doc? (
 		dev-libs/libxslt
 		app-text/docbook-xsl-stylesheets
 	)
-	!test? ( >=dev-java/ant-core-1.6 )
 	test? (
-		=dev-java/junit-3.8*
-		>=dev-java/ant-1.6
 		dev-java/ant-junit
-		virtual/postgresql-server
+		dev-db/postgresql-server
 	)"
-RDEPEND="java6? ( >=virtual/jre-1.6 )
-	java5? ( >=virtual/jre-1.5 )
-	!java5? ( !java6? ( >=virtual/jre-1.4 ) )"
+RDEPEND=">=virtual/jre-1.6"
 
 S="${WORKDIR}/pgjdbc"
 
-pkg_setup() {
-	if use java5 && use java6 ; then
-		eerror "You cannot use both 'java5' and 'java6' USE flags at the same time"
-		exit 1
-	fi
+RESTRICT="test"
 
-	java-pkg-2_pkg_setup
-}
-
-#src_unpack() {
-#	cvs_src_unpack
-
-#	cd "${S}"
 java_prepare() {
 	java-ant_rewrite-classpath
 }

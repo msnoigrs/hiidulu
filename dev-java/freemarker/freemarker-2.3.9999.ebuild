@@ -1,15 +1,15 @@
-# Copyright 1999-2012 Gentoo Foundation
+# Copyright 1999-2013 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI="4"
-JAVA_PKG_IUSE="doc source +xalan +dom log4j +slf4j +commonslogging jython javarebel"
+EAPI="5"
+JAVA_PKG_IUSE="doc source +xalan +dom +slf4j +commonslogging javarebel"
 #JAVA_PKG_IUSE="doc source +xalan +dom +log4j logkit jython rhino javarebel"
-WANT_ANT_TASKS="ant-nodeps"
+#WANT_ANT_TASKS="ant-nodeps"
 
-ESVN_REPO_URI="https://freemarker.svn.sourceforge.net/svnroot/freemarker/branches/2.3/freemarker"
+EGIT_REPO_URI="git://github.com/freemarker/freemarker.git"
 
-inherit eutils subversion java-pkg-2 java-ant-2
+inherit eutils java-pkg-2 java-ant-2 git-2
 
 DESCRIPTION=" FreeMarker is a template engine; a generic tool to generate text output based on templates."
 HOMEPAGE="http://freemarker.sourceforge.net/"
@@ -29,12 +29,12 @@ COMMON_DEP="
 	dom? ( dev-java/dom4j:1
 		dev-java/jaxen:1.1
 		dev-java/jaxen-dom4j:1.1 )
-	log4j? ( dev-java/log4j-over-slf4j )
 	slf4j? ( dev-java/slf4j-api )
-	commonslogging? ( dev-java/jcl-over-slf4j )
-	jython? ( dev-java/jython:2.5 )"
+	commonslogging? ( dev-java/jcl-over-slf4j )"
+#	jython? ( dev-java/jython:2.5 )
+#	log4j? ( dev-java/log4j-over-slf4j )
 #		dev-java/jdom:1.0
-#		dev-java/jaxen-jdom:1.1 )"
+#		dev-java/jaxen-jdom:1.1
 #	logkit? ( dev-java/avalon-logkit:2.0 )
 DEPEND=">=virtual/jdk-1.5
 	dev-java/javacc
@@ -47,7 +47,7 @@ JAVA_ANT_ENCODING="iso-8859-1"
 #JAVA_PKG_BSFIX="off"
 
 java_prepare() {
-	epatch ${FILESDIR}/${P}-build.patch
+	cp "${FILESDIR}/build-noivy.xml" build.xml || die
 
 	find -name '*.jar' -exec rm -v {} \;
 
@@ -68,26 +68,38 @@ java_prepare() {
 		java-pkg_jar-from --into lib jaxen-dom4j-1.1 jaxen-dom4j.jar
 #		java-pkg_jar-from --into lib jaxen-jdom-1.1 jaxen-jdom.jar
 	fi
-	if use log4j; then
-		java-pkg_jar-from --into lib log4j-over-slf4j log4j-over-slf4j.jar log4j.jar
-	fi
+#	if use log4j; then
+#		java-pkg_jar-from --into lib log4j-over-slf4j log4j-over-slf4j.jar log4j.jar
+#	fi
 	if use slf4j; then
 		java-pkg_jar-from --into lib slf4j-api slf4j-api.jar
 	fi
 	if use commonslogging; then
 		java-pkg_jar-from --into lib jcl-over-slf4j jcl-over-slf4j.jar commons-logging.jar
 	fi
-	if use jython; then
-		java-pkg_jar-from --into lib jython-2.5 jython.jar jython-2.5.jar
+#	if use jython; then
+#		java-pkg_jar-from --into lib jython-2.5 jython.jar jython-2.5.jar
 #		:
 #	else
 #		epatch ${FILESDIR}/2.3.15-jython-nodep.patch
-	fi
+#	fi
 	if ! use javarebel; then
 		# remove JavaRebel dependency
-		rm -v src/freemarker/ext/beans/JavaRebelIntegration.java || die
-		epatch ${FILESDIR}/${P}-JavaRebel-nodep.patch
+		rm -v src/main/java/freemarker/ext/beans/JavaRebelIntegration.java || die
+		epatch ${FILESDIR}/${PN}-2.3.20-JavaRebel-nodep.patch
 	fi
+
+	rm -v src/main/java/freemarker/log/AvalonLoggerFactory.java
+	rm -v src/main/java/freemarker/log/Log4JLoggerFactory.java
+	rm -rv src/main/java/freemarker/ext/rhino
+	rm -rv src/main/java/freemarker/ext/jdom
+	rm -v src/main/java/freemarker/ext/xml/Internal_JdomNavigator.java
+	rm -v src/main/java/freemarker/ext/jsp/FreeMarkerJspFactory2.java
+	rm -v src/main/java/freemarker/ext/jsp/Internal_FreeMarkerPageContext1.java
+	rm -v src/main/java/freemarker/ext/jsp/Internal_FreeMarkerPageContext2.java
+	rm -rv src/main/java/freemarker/ext/jython
+	rm -v src/main/java/freemarker/ext/ant/UnlinkedJythonOperationsImpl.java
+	rm -v src/main/java/freemarker/template/utility/JythonRuntime.java
 }
 
 EANT_BUILD_TARGET="clean jar"
