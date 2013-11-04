@@ -51,7 +51,9 @@ src_install() {
 	if use contrib; then
 		#elisp-install ${PN}/contrib contrib/lisp/*org*.el || die
 		#elisp-install ${PN} contrib/lisp/*org*.el contrib/lisp/*org*.elc || die
-		elisp-install ${PN} contrib/lisp/*org*.el || die
+		elisp-install ${PN} contrib/lisp/org*.el || die
+		elisp-install ${PN} contrib/lisp/ox-*.el || die
+		elisp-install ${PN} contrib/lisp/ob-*.el || die
 		insinto /usr/share/doc/${PF}/contrib
 		doins -r contrib/README contrib/scripts
 		find "${ED}/usr/share/doc/${PF}/contrib" -type f -name '.*' \

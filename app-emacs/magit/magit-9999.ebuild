@@ -28,7 +28,7 @@ src_compile() {
 }
 
 src_install() {
-	elisp-install ${PN} magit{,-bisect,-blame,-cherry,-compat,-flow,-key-mode,-stgit,-svn,-topgit,-wip}.{el,elc} || die
+	elisp-install ${PN} magit{,-bisect,-blame,-key-mode,-stgit,-svn,-topgit,-wip}.{el,elc} || die
 	elisp-site-file-install "${FILESDIR}/${SITEFILE}" || die
 	doinfo magit.info
 	dodoc README.md
