@@ -11,10 +11,10 @@ HOMEPAGE="http://nikola.ralsina.com.ar/"
 
 if [[ ${PV} == *9999* ]]; then
 	inherit git-2
-	EGIT_REPO_URI="git://github.com/ralsina/${PN}.git"
+	EGIT_REPO_URI="git://github.com/getnikola/${PN}.git"
 	KEYWORDS=""
 else
-	SRC_URI="http://nikola-generator.googlecode.com/files/${P}.zip"
+	SRC_URI="https://github.com/getnikola/nikola/archive/v{PV}.tar.gz"
 	KEYWORDS="~amd64"
 fi
 
@@ -38,6 +38,8 @@ RDEPEND="${DEPEND}
 	dev-python/python-dateutil
 	dev-python/micawber
 	dev-python/Pyphen
+	dev-python/blinker
+	dev-python/logbook
 	bbcode? ( dev-python/bbcode )
 	livereload? ( dev-python/livereload )
 	pyphen? ( dev-python/Pyphen )
@@ -50,7 +52,7 @@ src_install() {
 	# hackish way to remove docs that ended up in the wrong place
 	rm -rf "${D}"/usr/share/doc/${PN}
 
-	dodoc AUTHORS.txt CHANGES.txt README.md docs/*.txt
+	dodoc AUTHORS.txt CHANGES.txt README.rst docs/*.txt
 }
 
 pkg_postinst() {
