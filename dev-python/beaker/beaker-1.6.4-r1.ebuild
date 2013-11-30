@@ -38,6 +38,8 @@ python_prepare_all() {
 	sed -e "s/import anydbm/& as anydbm/;/import anydbm/a dbm = anydbm" \
 		-i beaker/container.py || die
 
+	sed -i -e 's/KeyError, e/KeyError as e/' beaker/cache.py
+
 	distutils-r1_python_prepare_all
 }
 

@@ -6,10 +6,12 @@ EAPI=5
 
 PYTHON_COMPAT=( python{2_7,3_2,3_3} )
 
-inherit distutils-r1
+EGIT_REPO_URI="https://github.com/Kozea/pygal.git"
+
+inherit distutils-r1 git-2
 
 DESCRIPTION="A python SVG Charts Creator"
-SRC_URI="mirror://pypi/${P:0:1}/${PN}/${P}.tar.gz"
+#SRC_URI="mirror://pypi/${P:0:1}/${PN}/${P}.tar.gz"
 HOMEPAGE="https://pygal.org"
 
 LICENSE="LGPL-3+"
