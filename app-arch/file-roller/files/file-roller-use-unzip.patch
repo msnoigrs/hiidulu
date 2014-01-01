@@ -1,0 +1,18 @@
+--- file-roller-3.10.2.1.orig/src/fr-init.c	2013-10-27 21:28:46.000000000 +0900
++++ file-roller-3.10.2.1/src/fr-init.c	2014-01-02 00:41:16.071696922 +0900
+@@ -352,6 +352,7 @@
+ 
+ 	register_archive (FR_TYPE_COMMAND_TAR);
+ 	register_archive (FR_TYPE_COMMAND_CFILE);
++	register_archive (FR_TYPE_COMMAND_ZIP);
+ 	register_archive (FR_TYPE_COMMAND_7Z);
+ 	register_archive (FR_TYPE_COMMAND_DPKG);
+ 
+@@ -366,7 +367,6 @@
+ 	register_archive (FR_TYPE_COMMAND_RAR);
+ 	register_archive (FR_TYPE_COMMAND_RPM);
+ 	register_archive (FR_TYPE_COMMAND_UNSTUFF);
+-	register_archive (FR_TYPE_COMMAND_ZIP);
+ 	register_archive (FR_TYPE_COMMAND_LRZIP);
+ 	register_archive (FR_TYPE_COMMAND_ZOO);
+ #if HAVE_JSON_GLIB

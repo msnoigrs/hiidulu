@@ -13,13 +13,14 @@ PROTOBUF_VER="2.5.0"
 GMOCK_VER="1.6.0"
 GTEST_VER="1.6.0"
 JSONCPP_VER="0.6.0-rc2"
+MOZC_OLD_URL="http://mozc.googlecode.com/files/mozc-1.10.1390.102.tar.bz2"
 MOZC_URL="http://mozc.googlecode.com/files/${P}.tar.bz2"
 PROTOBUF_URL="http://protobuf.googlecode.com/files/protobuf-${PROTOBUF_VER}.tar.bz2"
 GMOCK_URL="https://googlemock.googlecode.com/files/gmock-${GMOCK_VER}.zip"
 GTEST_URL="https://googletest.googlecode.com/files/gtest-${GTEST_VER}.zip"
 JSONCPP_URL="mirror://sourceforge/jsoncpp/jsoncpp-src-${JSONCPP_VER}.tar.gz"
 #FCITX_URL="https://fcitx.googlecode.com/files/fcitx-mozc-1.10.1390.102.2.patch"
-SRC_URI="${MOZC_URL} ${PROTOBUF_URL}
+SRC_URI="${MOZC_URL} ${MOZC_OLD_URL} ${PROTOBUF_URL}
 	test? ( ${GMOCK_URL} ${GTEST_URL} ${JSONCPP_URL} )"
 #	fcitx? ( ${FCITX_URL} )
 
@@ -52,10 +53,16 @@ SITEFILE=50${PN}-gentoo.el
 
 src_unpack() {
 	unpack $(basename ${MOZC_URL})
+	unpack $(basename ${MOZC_OLD_URL})
 
-	cd "${S}"/protobuf
+	#cd "${S}"/protobuf
 	unpack $(basename ${PROTOBUF_URL})
-	mv protobuf-${PROTOBUF_VER} files || die
+	#mv protobuf-${PROTOBUF_VER} files || die
+	mv protobuf-${PROTOBUF_VER} "${S}"/third_party/protobuf || die
+
+	cd "${WORKDIR}"
+	rmdir "${S}"/third_party/gyp
+	mv mozc-1.10.1390.102/third_party/gyp "${S}"/third_party
 
 	if use test; then
 		cd "${S}"/third_party
@@ -68,13 +75,12 @@ src_unpack() {
 }
 
 src_prepare() {
-	epatch "${FILESDIR}"/${P}-drop-Werror.patch
-
 	if use fcitx; then
-		epatch "${FILESDIR}/fcitx-20c29d190f.patch"
-		#epatch "${DISTDIR}/"$(basename ${FCITX_URL})
+		epatch "${FILESDIR}/fcitx-b56a938.patch"
 		mv b/src/unix/fcitx unix
 	fi
+
+	epatch_user
 }
 
 src_configure() {
@@ -91,7 +97,7 @@ src_configure() {
 
 	# export GYP_DEFINES="${GYP_DEFINES} use_libprotobuf=1"
 
-	"${PYTHON}" build_mozc.py gyp ${myconf} || die "gyp failed"
+	"${PYTHON}" build_mozc.py gyp ${myconf} --gypdir="$(pwd)/third_party/gyp" --channel_dev=0 || die "gyp failed"
 }
 
 src_compile() {
