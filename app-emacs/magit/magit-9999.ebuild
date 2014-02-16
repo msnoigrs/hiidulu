@@ -1,8 +1,8 @@
-# Copyright 1999-2013 Gentoo Foundation
+# Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI=4
+EAPI=5
 
 EGIT_REPO_URI="git://github.com/magit/magit.git"
 
@@ -28,7 +28,7 @@ src_compile() {
 }
 
 src_install() {
-	elisp-install ${PN} magit{,-bisect,-blame,-key-mode,-stgit,-svn,-topgit,-wip}.{el,elc} || die
+	elisp-install ${PN} magit{,-blame,-key-mode,-stgit,-svn,-topgit,-wip}.{el,elc} || die
 	elisp-site-file-install "${FILESDIR}/${SITEFILE}" || die
 	doinfo magit.info
 	dodoc README.md
