@@ -1,4 +1,4 @@
-# Copyright 1999-2013 Gentoo Foundation
+# Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -41,7 +41,7 @@ RDEPEND="${DEPEND}
 	dev-python/blinker
 	dev-python/logbook
 	bbcode? ( dev-python/bbcode )
-	livereload? ( dev-python/livereload )
+	livereload? ( =dev-python/livereload-2.1* )
 	pyphen? ( dev-python/Pyphen )
 	jinja? ( dev-python/jinja )
 	markdown? ( dev-python/markdown )"
