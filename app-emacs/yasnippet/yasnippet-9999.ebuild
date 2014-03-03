@@ -1,8 +1,11 @@
-# Copyright 1999-2013 Gentoo Foundation
+# Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
+EAPI=5
+
 EGIT_REPO_URI="git://github.com/capitaomorte/yasnippet.git"
+EGIT_HAS_SUBMODULES="true"
 
 inherit elisp git-2
 
@@ -18,19 +21,18 @@ IUSE="doc"
 DEPEND=">=app-emacs/dropdown-list-20080316"
 RDEPEND="${DEPEND}"
 
-SITEFILE="50${PN}-gentoo.el"
+#SITEFILE="50${PN}-gentoo.el"
 
-#src_unpack() {
-#	git-2_src_unpack
+src_unpack() {
+	git-2_src_unpack
 
-	# remove bundled copy of dropdown-list
-	#rm "${S}/dropdown-list.el" || die
-#}
+	rm -rf "${S}/snippets/.git" || die
+}
 
 src_install() {
 	elisp_src_install
 
-	insinto "${SITELISP}/${PN}"
+	insinto "${SITEETC}/${PN}"
 	doins -r snippets || die "doins failed"
 
 	if use doc; then
@@ -38,11 +40,10 @@ src_install() {
 	fi
 }
 
-pkg_postinst() {
-	elisp-site-regen
-
+#pkg_postinst() {
+#	elisp-site-regen
+#
 #	elog "Please add the following code into your .emacs to use yasnippet:"
 #	elog "(require 'yasnippet)"
-#	elog "(yas/global-mode 1)"
-#	elog "(yas/load-directory \"${SITEETC}/${PN}/snippets\")"
-}
+#	elog "(yas-global-mode 1)"
+#}
