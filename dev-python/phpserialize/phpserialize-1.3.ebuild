@@ -1,4 +1,4 @@
-# Copyright 1999-2013 Gentoo Foundation
+# Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -8,9 +8,9 @@ PYTHON_COMPAT=( python{2_7,3_2,3_3} )
 
 inherit distutils-r1
 
-DESCRIPTION="Typography related template filters for Django & Jinja2 applications"
+DESCRIPTION="a port of the serialize and unserialize functions of php to python"
 SRC_URI="mirror://pypi/${P:0:1}/${PN}/${P}.tar.gz"
-HOMEPAGE="https://github.com/mintchaos/typogrify"
+HOMEPAGE="https://github.com/mitsuhiko/phpserialize"
 
 LICENSE="BSD"
 SLOT="0"

@@ -1,4 +1,4 @@
-# Copyright 1999-2013 Gentoo Foundation
+# Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -9,7 +9,7 @@ PYTHON_COMPAT=( python{2_6,2_7,3_1,3_2,3_3} )
 inherit distutils-r1
 
 DESCRIPTION="A pure python bbcode parser and formatter"
-SRC_URI="https://pypi.python.org/packages/source/b/${PN}/${P}.tar.gz"
+SRC_URI="mirror://pypi/${PN:0:1}/${PN}/${P}.tar.gz"
 HOMEPAGE="https://github.com/dcwatson/bbcode"
 
 LICENSE="BSD"
