@@ -1,8 +1,8 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI="2"
+EAPI="5"
 JAVA_PKG_IUSE="doc source"
 
 ESVN_REPO_URI="http://svn.apache.org/repos/asf/pdfbox/trunk/jempbox"
@@ -11,7 +11,6 @@ inherit subversion java-pkg-2 java-ant-2
 
 DESCRIPTION="An open source Java XMP library"
 HOMEPAGE="http://pdfbox.apache.org/"
-SRC_URI=""
 
 LICENSE="Apache-2.0"
 SLOT="0"

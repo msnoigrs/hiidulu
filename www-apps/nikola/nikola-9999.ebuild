@@ -30,7 +30,7 @@ RDEPEND="${DEPEND}
 	>=dev-python/mako-0.6
 	dev-python/unidecode
 	dev-python/lxml
-	=dev-python/yapsy-1.10.2
+	dev-python/yapsy
 	dev-python/PyRSS2Gen
 	dev-python/pytz
 	dev-python/logbook
