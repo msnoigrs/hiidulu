@@ -1,4 +1,4 @@
-# Copyright 1999-2013 Gentoo Foundation
+# Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -26,6 +26,9 @@ DEPEND=">=virtual/jdk-1.6
 	${COMMON_DEP}"
 
 java_prepare() {
+	epatch "${FILESDIR}/zuki-fontbox.patch"
+	epatch "${FILESDIR}/zuki-fontbox-ucs4.patch"
+
 	mkdir lib || die
 	java-pkg_jar-from --into lib jcl-over-slf4j
 

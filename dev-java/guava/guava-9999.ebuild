@@ -1,4 +1,4 @@
-# Copyright 1999-2013 Gentoo Foundation
+# Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -12,7 +12,7 @@ inherit java-pkg-2 java-ant-2 git-2
 DESCRIPTION="The Google Collections Library is a suite of new collections and collection-related goodness for Java 5.0"
 HOMEPAGE="http://code.google.com/p/guava-libraries/"
 LICENSE="Apache-2.0"
-SLOT="15"
+SLOT="0"
 KEYWORDS="~x86 ~amd64"
 IUSE=""
 

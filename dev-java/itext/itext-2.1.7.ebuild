@@ -27,9 +27,9 @@ IUSE="cjk rtf"
 
 BCV="1.38"
 
-COMMON_DEPEND="dev-java/bcmail
-	dev-java/bcprov
-	dev-java/bcpkix"
+COMMON_DEPEND="dev-java/bcmail:1.49
+	dev-java/bcprov:1.49
+	dev-java/bcpkix:1.49"
 DEPEND=">=virtual/jdk-1.6
 	cjk? ( app-arch/unzip )
 	 ${COMMON_DEPEND}"
@@ -72,9 +72,9 @@ java_prepare() {
 
 	mkdir -p "${WORKDIR}/lib" || die "Failed to create ${WORKDIR}/lib"
 	cd "${WORKDIR}/lib" || die "Could not cd ${WORKDIR}/lib"
-	java-pkg_jar-from bcmail bcmail.jar "bcmail-jdk16-${BCV/./}.jar"
-	java-pkg_jar-from bcprov bcprov.jar "bcprov-jdk16-${BCV/./}.jar"
-	java-pkg_jar-from bcpkix bcpkix.jar "bctsp-jdk16-${BCV/./}.jar"
+	java-pkg_jar-from bcmail-1.49 bcmail.jar "bcmail-jdk16-${BCV/./}.jar"
+	java-pkg_jar-from bcprov-1.49 bcprov.jar "bcprov-jdk16-${BCV/./}.jar"
+	java-pkg_jar-from bcpkix-1.49 bcpkix.jar "bctsp-jdk16-${BCV/./}.jar"
 	#if use rups; then
 	#	java-pkg_jar-from dom4j-1 dom4j.jar "dom4j-1.6.1.jar"
 	#	EANT_GENTOO_CLASSPATH="pdf-renderer"

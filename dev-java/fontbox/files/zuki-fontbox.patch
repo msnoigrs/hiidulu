@@ -1,0 +1,409 @@
+diff --git a/fontbox/src/main/java/org/apache/fontbox/ttf/AbstractTTFParser.java b/fontbox/src/main/java/org/apache/fontbox/ttf/AbstractTTFParser.java
+index 3fb4733..68383db 100644
+--- a/fontbox/src/main/java/org/apache/fontbox/ttf/AbstractTTFParser.java
++++ b/fontbox/src/main/java/org/apache/fontbox/ttf/AbstractTTFParser.java
+@@ -196,7 +196,7 @@ abstract class AbstractTTFParser
+         }
+     }
+ 
+-    private TTFTable readTableDirectory(TTFDataStream raf) throws IOException
++    protected TTFTable readTableDirectory(TTFDataStream raf) throws IOException
+     {
+         TTFTable retval = null;
+         String tag = raf.readString(4);
+diff --git a/fontbox/src/main/java/org/apache/fontbox/ttf/CIDFontType2Parser.java b/fontbox/src/main/java/org/apache/fontbox/ttf/CIDFontType2Parser.java
+index 95f6a6f..3aa55d7 100644
+--- a/fontbox/src/main/java/org/apache/fontbox/ttf/CIDFontType2Parser.java
++++ b/fontbox/src/main/java/org/apache/fontbox/ttf/CIDFontType2Parser.java
+@@ -16,9 +16,18 @@
+  */
+ package org.apache.fontbox.ttf;
+ 
++import java.io.File;
++import java.io.InputStream;
++import java.io.IOException;
+ 
+ public class CIDFontType2Parser extends AbstractTTFParser
+-{   
++{
++    /** Number of fonts in ttc file: ttc file only */
++    private int numFonts;
++
++    /** Offest of each font in ttc file: ttc file only */
++    private long[] offsetTable;
++
+ 	public CIDFontType2Parser() {
+ 		super(false);
+ 	}
+@@ -27,4 +36,109 @@ public class CIDFontType2Parser extends AbstractTTFParser
+ 		super(isEmbedded);
+ 	}
+ 
++    /**
++     * Parse a TTC file and set the offset for the each font
++     * 
++     * @param raf The TTC file.
++     * @throws IOException If there is an error parsing the true type font.
++     */
++    public void parseTTC(String ttcFile) throws IOException
++    {
++        RAFDataStream raf = new RAFDataStream(ttcFile, "r");
++        parseTTC(raf);
++    }
++
++    /**
++     * Parse a TTC file and set the offset for the each font
++     * 
++     * @param raf The TTC file.
++     * @throws IOException If there is an error parsing the true type font.
++     */
++    public void parseTTC(File ttcFile) throws IOException
++    {
++        RAFDataStream raf = new RAFDataStream(ttcFile, "r");
++        parseTTC(raf);
++    }
++
++    /**
++     * Parse a TTC file and set the offset for the each font
++     * 
++     * @param raf The TTC file.
++     * @throws IOException If there is an error parsing the true type font.
++     */
++    public void parseTTC(InputStream ttcData) throws IOException
++    {
++        parseTTC(new MemoryTTFDataStream(ttcData));
++    }
++
++    /**
++     * Parse a TTC file and set the offset for the each font
++     * 
++     * @param raf The TTC file.
++     * @throws IOException If there is an error parsing the true type font.
++     */
++    public void parseTTC(TTFDataStream raf) throws IOException
++    {
++        String ttcTag = raf.readString(4);
++        if (!"ttcf".equals(ttcTag))
++        {
++            throw new IOException("This is not ttc file");
++        }
++        float version = raf.read32Fixed();
++        numFonts = (int)raf.readUnsignedInt();
++        offsetTable = new long[numFonts];
++        for (int i=0; i<numFonts; i++)
++        {
++            offsetTable[i] = raf.readUnsignedInt();
++        }
++
++        if (version > 1.0)
++        {
++            raf.readUnsignedInt();  // ulDsigTag
++            raf.readUnsignedInt();  // ulDsigLength
++            raf.readUnsignedInt();  // ulDsigLength
++        }
++    }
++
++
++    /**
++     * Parse a file and get a true type font.
++     * 
++     * @param raf The TTC file.
++     * @param index The Font index in the TTC file
++     * @return A true type font.
++     * @throws IOException If there is an error parsing the true type font.
++     */
++    public TrueTypeFont parseTTF(TTFDataStream raf, int index) throws IOException
++    {
++        if (!isValidIndex(index))
++        {
++            throw new IOException("Invalid font index "+index);
++        }
++
++        TrueTypeFont font = new TrueTypeFont(raf);
++        raf.seek(offsetTable[index]);
++
++        font.setVersion(raf.read32Fixed());
++        int numberOfTables = raf.readUnsignedShort();
++        int searchRange = raf.readUnsignedShort();
++        int entrySelector = raf.readUnsignedShort();
++        int rangeShift = raf.readUnsignedShort();
++        for (int i = 0; i < numberOfTables; i++)
++        {
++            TTFTable table = super.readTableDirectory(raf);
++            font.addTable(table);
++        }
++
++        // need to initialize a couple tables in a certain order
++        parseTables(font, raf);
++
++        return font;
++    }
++
++    private boolean isValidIndex(int index)
++    {
++        return (0 <= index && index <= numFonts);
++    }
++
+ }
+diff --git a/fontbox/src/main/java/org/apache/fontbox/ttf/CMAPEncodingEntry.java b/fontbox/src/main/java/org/apache/fontbox/ttf/CMAPEncodingEntry.java
+index b038ec2..5369ec4 100644
+--- a/fontbox/src/main/java/org/apache/fontbox/ttf/CMAPEncodingEntry.java
++++ b/fontbox/src/main/java/org/apache/fontbox/ttf/CMAPEncodingEntry.java
+@@ -23,6 +23,9 @@ import java.util.HashMap;
+ import java.util.Map;
+ import java.util.Map.Entry;
+ 
++import org.apache.commons.logging.Log;
++import org.apache.commons.logging.LogFactory;
++
+ /**
+  * An encoding entry for a cmap.
+  * 
+@@ -31,6 +34,8 @@ import java.util.Map.Entry;
+  */
+ public class CMAPEncodingEntry
+ {
++    private static final Log LOG = LogFactory.getLog(CMAPEncodingEntry.class);
++
+     private static final long LEAD_OFFSET = 0xD800 - (0x10000 >> 10);
+     private static final long SURROGATE_OFFSET = 0x10000 - (0xD800 << 10) - 0xDC00;
+ 
+@@ -139,7 +144,7 @@ public class CMAPEncodingEntry
+ 
+         glyphIdToCharacterCode = new int[numGlyphs];
+         // -- Read all sub header
+-        for (long i = 0; i <= nbGroups; ++i)
++        for (long i = 0; i < nbGroups; ++i)
+         {
+             long firstCode = data.readUnsignedInt();
+             long endCode = data.readUnsignedInt();
+@@ -228,7 +233,7 @@ public class CMAPEncodingEntry
+     {
+         long nbGroups = data.readUnsignedInt();
+         glyphIdToCharacterCode = new int[numGlyphs];
+-        for (long i = 0; i <= nbGroups; ++i)
++        for (long i = 0; i < nbGroups; ++i)
+         {
+             long firstCode = data.readUnsignedInt();
+             long endCode = data.readUnsignedInt();
+@@ -275,7 +280,7 @@ public class CMAPEncodingEntry
+     protected void processSubtype13(TrueTypeFont ttf, TTFDataStream data, int numGlyphs) throws IOException
+     {
+         long nbGroups = data.readUnsignedInt();
+-        for (long i = 0; i <= nbGroups; ++i)
++        for (long i = 0; i < nbGroups; ++i)
+         {
+             long firstCode = data.readUnsignedInt();
+             long endCode = data.readUnsignedInt();
+diff --git a/fontbox/src/main/java/org/apache/fontbox/ttf/OS2WindowsMetricsTable.java b/fontbox/src/main/java/org/apache/fontbox/ttf/OS2WindowsMetricsTable.java
+index 8636b53..921acc6 100644
+--- a/fontbox/src/main/java/org/apache/fontbox/ttf/OS2WindowsMetricsTable.java
++++ b/fontbox/src/main/java/org/apache/fontbox/ttf/OS2WindowsMetricsTable.java
+@@ -674,6 +674,86 @@ public class OS2WindowsMetricsTable extends TTFTable
+         this.winDescent = winDescentValue;
+     }
+ 
++    /**
++     * @return Returns the height.
++     */
++    public int getHeight()
++    {
++        return height;
++    }
++
++    /**
++     * @param height The height to set.
++     */
++    public void setHeight(int height)
++    {
++        this.height = height;
++    }
++
++    /**
++     * @return Returns the capHeight.
++     */
++    public int getCapHeight()
++    {
++        return capHeight;
++    }
++
++    /**
++     * @param capHeight The capHeight to set.
++     */
++    public void setCapHeight(int capHeight)
++    {
++        this.capHeight = capHeight;
++    }
++
++    /**
++     * @return Returns the default char.
++     */
++    public int getDefaultChar()
++    {
++        return defaultChar;
++    }
++
++    /**
++     * @param defaultChar The defaultChar to set.
++     */
++    public void setDefaultChar(int defaultChar)
++    {
++        this.defaultChar = defaultChar;
++    }
++
++    /**
++     * @return Returns the breakChar.
++     */
++    public int getBreakChar()
++    {
++        return breakChar;
++    }
++
++    /**
++     * @param breakChar The breakChar to set.
++     */
++    public void setBreakChar(int breakChar)
++    {
++        this.breakChar = breakChar;
++    }
++
++    /**
++     * @return Returns the maxContext.
++     */
++    public int getMaxContext()
++    {
++        return maxContext;
++    }
++
++    /**
++     * @param maxContext The MaxContext to set.
++     */
++    public void setMaxContext(int maxContext)
++    {
++        this.maxContext = maxContext;
++    }
++
+     private int version;
+     private short averageCharWidth;
+     private int weightClass;
+@@ -707,6 +787,11 @@ public class OS2WindowsMetricsTable extends TTFTable
+     private int winDescent;
+     private long codePageRange1 = -1;
+     private long codePageRange2 = -1;
++    private int height = 0;
++    private int capHeight = 0;
++    private int defaultChar = 0;
++    private int breakChar = 32;
++    private int maxContext = 2;
+ 
+     /**
+      * A tag that identifies this table type.
+@@ -758,5 +843,13 @@ public class OS2WindowsMetricsTable extends TTFTable
+             codePageRange1 = data.readUnsignedInt();
+             codePageRange2 = data.readUnsignedInt();
+         }
++        if (version >= 2)
++        {
++            height = data.readSignedShort();
++            capHeight = data.readSignedShort();
++            defaultChar = data.readUnsignedShort();
++            breakChar = data.readUnsignedShort();
++            maxContext = data.readUnsignedShort();
++        }
+     }
+ }
+diff --git a/fontbox/src/main/java/org/apache/fontbox/ttf/TTFSubFont.java b/fontbox/src/main/java/org/apache/fontbox/ttf/TTFSubFont.java
+index daddf5b..a2a9330 100755
+--- a/fontbox/src/main/java/org/apache/fontbox/ttf/TTFSubFont.java
++++ b/fontbox/src/main/java/org/apache/fontbox/ttf/TTFSubFont.java
+@@ -55,7 +55,7 @@ public class TTFSubFont
+     private static final byte[] PAD_BUF = new byte[] {0,0,0};
+     
+     private final TrueTypeFont baseTTF;
+-    private final String nameSuffix;
++    private final String namePrefix;
+     private final CMAPEncodingEntry baseCmap;
+     
+     // A map of unicode char codes to glyph IDs of the original font.
+@@ -65,16 +65,16 @@ public class TTFSubFont
+     private final SortedSet<Integer> glyphIds;
+     
+     /**
+-     * Constructs a subfont based on the given font using the given suffix.
++     * Constructs a subfont based on the given font using the given prefix.
+      * 
+      * @param baseFont the base font of the subfont
+-     * @param suffix suffix used for the naming
++     * @param prefix prefix used for the naming
+      * 
+      */
+-    public TTFSubFont(TrueTypeFont baseFont, String suffix) 
++    public TTFSubFont(TrueTypeFont baseFont, String prefix) 
+     {
+         baseTTF = baseFont;
+-        nameSuffix = suffix;
++        namePrefix = prefix;
+         characters = new TreeMap<Integer, Integer>();
+         glyphIds = new TreeSet<Integer>();
+         
+@@ -90,7 +90,9 @@ public class TTFSubFont
+                 break;
+             }
+         }
++
+         baseCmap = unicodeCmap;
++
+         // add notdef character.
+         addCharCode(0);
+     }
+@@ -330,7 +332,7 @@ public class TTFSubFont
+     {
+         return nr.getPlatformId() == NameRecord.PLATFORM_WINDOWS 
+                 && nr.getPlatformEncodingId() == NameRecord.PLATFORM_ENCODING_WINDOWS_UNICODE 
+-                && nr.getLanguageId() == 0 
++                //&& nr.getLanguageId() == 0 (ex, DevaVuSans uses 0x0409(=1033) United States)
+                 && nr.getNameId() >= 0 && nr.getNameId() < 7;
+     }
+     
+@@ -413,9 +415,9 @@ public class TTFSubFont
+                     }
+                 }
+                 String value = nr.getString();
+-                if (nr.getNameId() == 6 && this.nameSuffix != null) 
++                if (nr.getNameId() == 6 && this.namePrefix != null) 
+                 {
+-                    value += this.nameSuffix;
++                    value = this.namePrefix + value;
+                 }
+                 names[j] = value.getBytes(charset);
+                 ++j;
+@@ -955,7 +957,8 @@ public class TTFSubFont
+         writeUint32(dos,p.getMaxMemType42());
+         writeUint32(dos,p.getMimMemType1());
+         writeUint32(dos,p.getMaxMemType1());
+-        writeUint16(dos,baseTTF.getHorizontalHeader().getNumberOfHMetrics());
++        //writeUint16(dos,baseTTF.getHorizontalHeader().getNumberOfHMetrics());
++        writeUint16(dos,glyphIds.size());
+             
+         List<String> additionalNames = new ArrayList<String>();
+         Map<String,Integer> additionalNamesIndices = new HashMap<String,Integer>();
+diff --git a/fontbox/src/main/java/org/apache/fontbox/ttf/TTFTable.java b/fontbox/src/main/java/org/apache/fontbox/ttf/TTFTable.java
+index 6596427..42403d8 100644
+--- a/fontbox/src/main/java/org/apache/fontbox/ttf/TTFTable.java
++++ b/fontbox/src/main/java/org/apache/fontbox/ttf/TTFTable.java
+@@ -17,6 +17,7 @@
+ package org.apache.fontbox.ttf;
+ 
+ import java.io.IOException;
++import java.util.Arrays;
+ 
+ /**
+  * A table in a true type font.
+@@ -30,6 +31,7 @@ public class TTFTable
+     private long checkSum;
+     private long offset;
+     private long length;
++    private byte[] rawBytes;
+       
+     /**
+      * @return Returns the checkSum.

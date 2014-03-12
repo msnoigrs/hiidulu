@@ -1,4 +1,4 @@
-# Copyright 1999-2013 Gentoo Foundation
+# Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -15,16 +15,14 @@ HOMEPAGE="http://www.bouncycastle.org/java.html"
 SRC_URI="http://www.bouncycastle.org/download/${MY_P}.tar.gz"
 
 LICENSE="BSD"
-SLOT="0"
+SLOT="1.49"
 KEYWORDS="~amd64 ~ppc ~ppc64 ~x86 ~amd64-fbsd ~x86-fbsd ~amd64-linux ~x86-linux ~x64-macos"
 
 # Tests are currently broken. Appears to need older version of bcprov; but since bcprov is not slotted, this can cause conflicts.
 # Needs further investigation; though, only a small part has tests and there are no tests for bcpg itself.
 RESTRICT="test"
 
-COMMON_DEPEND="
-	~dev-java/bcmail-${PV}:0
-	~dev-java/bcprov-${PV}:0"
+COMMON_DEPEND="dev-java/bcprov:${SLOT}"
 
 DEPEND=">=virtual/jdk-1.6
 	app-arch/unzip
@@ -54,7 +52,7 @@ java_prepare() {
 
 	mkdir lib
 	cd lib
-	java-pkg_jar-from bcprov
+	java-pkg_jar-from bcprov-${SLOT}
 }
 
 JAVA_ANT_ENCODING="iso-8859-1"

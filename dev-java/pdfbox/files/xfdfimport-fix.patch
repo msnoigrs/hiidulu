@@ -1,0 +1,14 @@
+diff --git a/pdfbox/src/main/java/org/apache/pdfbox/pdmodel/fdf/FDFDictionary.java b/pdfbox/src/main/java/org/apache/pdfbox/pdmodel/fdf/FDFDictionary.java
+index e70e842..bcc855e 100644
+--- a/pdfbox/src/main/java/org/apache/pdfbox/pdmodel/fdf/FDFDictionary.java
++++ b/pdfbox/src/main/java/org/apache/pdfbox/pdmodel/fdf/FDFDictionary.java
+@@ -102,6 +102,9 @@ public class FDFDictionary implements COSObjectable
+                     List fieldList = new ArrayList();
+                     for( int f=0; f<fields.getLength(); f++ )
+                     {
++                        if( fields.item( f ).getNodeType() != Node.ELEMENT_NODE){
++                            continue;
++                        }
+                         fieldList.add( new FDFField( (Element)fields.item( f ) ) );
+                         Node currentNode = fields.item( f );
+                         if (currentNode instanceof Element) 

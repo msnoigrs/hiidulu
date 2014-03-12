@@ -15,13 +15,14 @@ HOMEPAGE="http://www.bouncycastle.org/java.html"
 SRC_URI="http://www.bouncycastle.org/download/${MY_P}.tar.gz"
 
 LICENSE="BSD"
-SLOT="1.49"
+SLOT="1.48"
 KEYWORDS="~amd64 ~ppc ~ppc64 ~x86 ~amd64-fbsd ~x86-fbsd ~amd64-linux ~x86-linux ~x64-macos"
 
-COMMON_DEPEND="dev-java/bcprov:${SLOT}
-		dev-java/bcpkix:${SLOT}
-		dev-java/sun-jaf:0
-		java-virtuals/javamail:0"
+# Tests are currently broken. Appears to need older version of bcprov; but since bcprov is not slotted, this can cause conflicts.
+# Needs further investigation; though, only a small part has tests and there are no tests for bcpg itself.
+RESTRICT="test"
+
+COMMON_DEPEND="dev-java/bcprov:${SLOT}"
 
 DEPEND=">=virtual/jdk-1.6
 	app-arch/unzip
@@ -31,9 +32,6 @@ RDEPEND=">=virtual/jre-1.6
 	${COMMON_DEPEND}"
 
 S="${WORKDIR}/${MY_P}"
-
-# Package can't be build with test as bcprov and bcpkix can't be built with test.
-RESTRICT="test"
 
 src_unpack() {
 	default
@@ -55,9 +53,6 @@ java_prepare() {
 	mkdir lib
 	cd lib
 	java-pkg_jar-from bcprov-${SLOT}
-	java-pkg_jar-from bcpkix-${SLOT}
-	java-pkg_jar-from --virtual jaf
-	java-pkg_jar-from --virtual javamail
 }
 
 JAVA_ANT_ENCODING="iso-8859-1"
