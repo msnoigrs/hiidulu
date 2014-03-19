@@ -9,7 +9,7 @@ JAVA_PKG_IUSE="source doc"
 ESVN_REPO_URI="http://svn.apache.org/repos/asf/pdfbox/trunk/tools"
 inherit subversion java-pkg-2 java-ant-2
 
-DESCRIPTION="PDFBox tools"
+DESCRIPTION="Apache PDFBox tools"
 HOMEPAGE="http://www.pdfbox.org"
 SRC_URI=""
 

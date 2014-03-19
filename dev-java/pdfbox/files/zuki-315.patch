@@ -1,0 +1,348 @@
+diff --git a/pdfbox/src/main/java/org/apache/pdfbox/pdmodel/edit/PDPageContentStream.java b/pdfbox/src/main/java/org/apache/pdfbox/pdmodel/edit/PDPageContentStream.java
+index 5579d95..142ddf3 100644
+--- a/pdfbox/src/main/java/org/apache/pdfbox/pdmodel/edit/PDPageContentStream.java
++++ b/pdfbox/src/main/java/org/apache/pdfbox/pdmodel/edit/PDPageContentStream.java
+@@ -560,6 +560,31 @@ public class PDPageContentStream
+         appendRawCommands(SHOW_TEXT);
+     }
+ 
++    /**
++     * This will draw a Unicode string as is.
++     *
++     * @param text The text to draw.
++     * @throws IOException If an io exception occurs.
++     */
++    public void drawUnicodeString(String text) throws IOException
++    {
++        if (!inTextMode)
++        {
++            throw new IOException("Error: must call beginText() before drawString");
++        }
++
++        byte[] codes = text.getBytes("UTF-16BE");
++        StringBuilder sb = new StringBuilder(codes.length * 2);
++        for (int i = 0; i < codes.length; i++)
++        {
++            sb.append(String.format("%02X", codes[i]));
++        }
++
++        appendRawCommands("<"+sb.toString()+">");
++        appendRawCommands(SPACE);
++        appendRawCommands(SHOW_TEXT);
++    }
++
+     public void drawStringByCID(PDType0TTFont font, String text) throws IOException
+     {
+         if (!inTextMode)
+diff --git a/pdfbox/src/main/java/org/apache/pdfbox/pdmodel/font/PDType0CJKFont.java b/pdfbox/src/main/java/org/apache/pdfbox/pdmodel/font/PDType0CJKFont.java
+index 11d407d..e8b4ddb 100644
+--- a/pdfbox/src/main/java/org/apache/pdfbox/pdmodel/font/PDType0CJKFont.java
++++ b/pdfbox/src/main/java/org/apache/pdfbox/pdmodel/font/PDType0CJKFont.java
+@@ -60,70 +60,75 @@ public class PDType0CJKFont extends PDType0Font
+         loadSupportedFonts("org/apache/pdfbox/resources/cjk/supported_fonts.properties");
+     }
+ 
+-    private static final Map<String, PDFont> CACHED_FONTS = new HashMap<String, PDFont>();
++    public static final PDType0CJKFont JAPANESE_GOTHIC = new PDType0CJKFont("KozGoPr6N-Medium");
+ 
+-    public static PDFont getFont(String fontName) throws IOException
+-    {
+-        if (!SUPPORTED_FONTS.containsKey(fontName))
+-        {
+-            throw new IOException(fontName+" is not supported");
+-        }
++    public static final PDType0CJKFont JAPANESE_MINCHO = new PDType0CJKFont("KozMinPr6N-Regular");
+ 
+-        PDFont font = null;
+-        if (CACHED_FONTS.containsKey(fontName))
+-        {
+-            font = CACHED_FONTS.get(fontName);
+-        }
+-        else
+-        {
+-            font = makeFont(fontName);
+-            CACHED_FONTS.put(fontName, font);
+-        }
++    public static final PDType0CJKFont SIMPLIFIED_CHINESE_GOTHIC = new PDType0CJKFont("AdobeHeitiStd-Regular");
+ 
+-        return font;
+-    }
++    public static final PDType0CJKFont SIMPLIFIED_CHINESE_MINCHO = new PDType0CJKFont("AdobeSongStd-Light");
++
++    public static final PDType0CJKFont TRADITIONAL_CHINESE_GOTHIC = new PDType0CJKFont("AdobeFanHeitiStd-Bold");
++
++    public static final PDType0CJKFont TRADITIONAL_CHINESE_MINCHO = new PDType0CJKFont("AdobeMingStd-Light");
++
++    public static final PDType0CJKFont KOREAN_GOTHIC = new PDType0CJKFont("AdobeGothicStd-Bold");
+ 
+-    private static PDFont makeFont(String fontName) throws IOException
++    public static final PDType0CJKFont KOREAN_MINCHO = new PDType0CJKFont("AdobeMyungjoStd-Medium");
++
++
++    public PDType0CJKFont(String fontName)
+     {
+-        String path = String.format("org/apache/pdfbox/resources/cjk/%s.properties", fontName);
+-        Properties fontProperties = ResourceLoader.loadProperties(path, false);
+-        if (fontProperties == null)
++        super();
++
++        try
+         {
+-            throw new MissingResourceException("Font properties not found: " + path, PDType0CJKFont.class.getName(), path);
++            if (!SUPPORTED_FONTS.containsKey(fontName))
++            {
++                throw new IOException(fontName+" is not supported");
++            }
++    
++            String path = String.format("org/apache/pdfbox/resources/cjk/%s.properties", fontName);
++            Properties fontProperties = ResourceLoader.loadProperties(path, false);
++            if (fontProperties == null)
++            {
++                throw new MissingResourceException("Font properties not found: " + path, PDType0CJKFont.class.getName(), path);
++            }
++    
++            PDFontDescriptorDictionary fd = new PDFontDescriptorDictionary();
++            fd.setFontName(fontName);
++            fd.setFlags(Integer.valueOf(fontProperties.getProperty("Flags")).intValue());
++    
++            String fontBBox = fontProperties.getProperty("FontBBox");
++            String[] bb = fontBBox.substring(1, fontBBox.length() - 1).split(" ");
++            BoundingBox bbox = new BoundingBox();
++            bbox.setLowerLeftX(Integer.valueOf(bb[0]).intValue());
++            bbox.setLowerLeftY(Integer.valueOf(bb[1]).intValue());
++            bbox.setUpperRightX(Integer.valueOf(bb[2]).intValue());
++            bbox.setUpperRightY(Integer.valueOf(bb[3]).intValue());
++            fd.setFontBoundingBox(new PDRectangle(bbox));
++    
++            fd.setItalicAngle(Integer.valueOf(fontProperties.getProperty("ItalicAngle")).intValue());
++            fd.setAscent(Integer.valueOf(fontProperties.getProperty("Ascent")).intValue());
++            fd.setDescent(Integer.valueOf(fontProperties.getProperty("Descent")).intValue());
++            fd.setCapHeight(Integer.valueOf(fontProperties.getProperty("CapHeight")).intValue());
++            fd.setStemV(Integer.valueOf(fontProperties.getProperty("StemV")).intValue());
++    
++            PDCIDFont cid = new PDCIDFontType0Font();
++            cid.setBaseFont(fontName);
++            cid.setCIDSystemInfo(new PDCIDSystemInfo(fontProperties.getProperty("CIDSystemInfo")));
++            cid.setFontDescriptor(fd);
++            cid.setDefaultWidth(Integer.valueOf(fontProperties.getProperty("DW")).intValue());
++            cid.setFontWidths(fontProperties.getProperty("W"));
++    
++            setBaseFont(fontName);
++            setEncoding(COSName.getPDFName(fontProperties.getProperty("Encoding")));
++            setDescendantFont(cid);
++        }
++        catch (IOException e)
++        {
++            LOG.error("Something went wrong when constructing PDType0CJKFont", e);
+         }
+-
+-        PDFontDescriptorDictionary fd = new PDFontDescriptorDictionary();
+-        fd.setFontName(fontName);
+-        fd.setFlags(Integer.valueOf(fontProperties.getProperty("Flags")).intValue());
+-
+-        String fontBBox = fontProperties.getProperty("FontBBox");
+-        String[] bb = fontBBox.substring(1, fontBBox.length() - 2).split(" ");
+-        BoundingBox bbox = new BoundingBox();
+-        bbox.setLowerLeftX(Integer.valueOf(bb[0]).intValue());
+-        bbox.setLowerLeftY(Integer.valueOf(bb[1]).intValue());
+-        bbox.setUpperRightX(Integer.valueOf(bb[2]).intValue());
+-        bbox.setUpperRightY(Integer.valueOf(bb[3]).intValue());
+-        fd.setFontBoundingBox(new PDRectangle(bbox));
+-
+-        fd.setItalicAngle(Integer.valueOf(fontProperties.getProperty("ItalicAngle")).intValue());
+-        fd.setAscent(Integer.valueOf(fontProperties.getProperty("Ascent")).intValue());
+-        fd.setDescent(Integer.valueOf(fontProperties.getProperty("Descent")).intValue());
+-        fd.setCapHeight(Integer.valueOf(fontProperties.getProperty("CapHeight")).intValue());
+-        fd.setStemV(Integer.valueOf(fontProperties.getProperty("StemV")).intValue());
+-
+-        PDCIDFontType0Font cid = new PDCIDFontType0Font();
+-        cid.setBaseFont(fontName);
+-        cid.setCIDSystemInfo(new PDCIDSystemInfo(fontProperties.getProperty("CIDSystemInfo")));
+-        cid.setFontDescriptor(fd);
+-        cid.setDefaultWidth(Integer.valueOf(fontProperties.getProperty("DW")).intValue());
+-        cid.setFontWidths(fontProperties.getProperty("W"));
+-
+-        PDType0Font font = new PDType0Font();
+-        font.setBaseFont(fontName);
+-        font.setEncoding(COSName.getPDFName(fontProperties.getProperty("Encoding")));
+-        font.setDescendantFont(cid);
+-
+-        return font;
+     }
+ 
+     private static void loadSupportedFonts(String location)
+diff --git a/pdfbox/src/main/java/org/apache/pdfbox/pdmodel/font/PDType0Font.java b/pdfbox/src/main/java/org/apache/pdfbox/pdmodel/font/PDType0Font.java
+index 710519e..4713ed2 100644
+--- a/pdfbox/src/main/java/org/apache/pdfbox/pdmodel/font/PDType0Font.java
++++ b/pdfbox/src/main/java/org/apache/pdfbox/pdmodel/font/PDType0Font.java
+@@ -90,24 +90,6 @@ public class PDType0Font extends PDSimpleFont
+     @Override
+     public float getFontWidth(byte[] c, int offset, int length) throws IOException
+     {
+-        if (descendantFont instanceof PDCIDFontType2Font)
+-        {
+-            // a suitable mapping is needed to address the correct width value
+-            PDCIDFontType2Font cidType2Font = (PDCIDFontType2Font) descendantFont;
+-            int code = getCodeFromArray(c, offset, length);
+-            if (cidType2Font.hasIdentityCIDToGIDMap() || cidType2Font.hasCIDToGIDMap())
+-            {
+-                return cidType2Font.getFontWidth(code);
+-            }
+-            else if (getCMap() != null)
+-            {
+-                String mappedString = getCMap().lookup(code, length);
+-                if (mappedString != null)
+-                {
+-                    return cidType2Font.getFontWidth(mappedString.codePointAt(0));
+-                }
+-            }
+-        }
+         return descendantFont.getFontWidth(c, offset, length);
+     }
+ 
+diff --git a/pdfbox/src/main/java/org/apache/pdfbox/pdmodel/font/PDType0TTFont.java b/pdfbox/src/main/java/org/apache/pdfbox/pdmodel/font/PDType0TTFont.java
+index 783e454..3c0a79c 100644
+--- a/pdfbox/src/main/java/org/apache/pdfbox/pdmodel/font/PDType0TTFont.java
++++ b/pdfbox/src/main/java/org/apache/pdfbox/pdmodel/font/PDType0TTFont.java
+@@ -72,15 +72,15 @@ public class PDType0TTFont extends PDType0Font
+     /** Codes used in wrriten text */
+     private TreeSet<Integer> usedCodes = new TreeSet<Integer>();
+ 
+-    /** Default font width of the embedded font */
+-    private long defaultW;
+-
+     /** Embedded font */
+     private TTFSubFont subFont;
+ 
+     /** Map from unicode to cid */
+     private CMAPEncodingEntry unicode2cidMap;
+ 
++    /** font widths of original font */
++    private int[] widths;
++
+     /** Use Unicode UCS-4 encoding for CMAP */
+     private boolean useUCS4 = false;
+ 
+@@ -126,15 +126,15 @@ public class PDType0TTFont extends PDType0Font
+         PDFontDescriptorDictionary fd = new PDFontDescriptorDictionary();
+         loadDescriptorDictionary(ttf, fd);
+ 
+-        PDCIDFontType2Font desendant = new PDCIDFontType2Font();
+-        desendant.setBaseFont(bfname);
+-        desendant.setCIDSystemInfo(PDCIDSystemInfo.ADOBE_IDENTITY_0);
+-        desendant.setFontDescriptor(fd);
+-        desendant.setDefaultWidth(defaultW);
++        PDCIDFont descendant = new PDCIDFontType2Font();
++        descendant.setBaseFont(bfname);
++        descendant.setCIDSystemInfo(PDCIDSystemInfo.ADOBE_IDENTITY_0);
++        descendant.setFontDescriptor(fd);
++        descendant.setDefaultWidth(widths[0]);
+ 
+         setBaseFont(bfname);
+         setEncoding(COSName.IDENTITY_H);
+-        setDescendantFont(desendant);
++        setDescendantFont(descendant);
+ 
+     }
+ 
+@@ -217,12 +217,12 @@ public class PDType0TTFont extends PDType0Font
+             float scaling = 1000f / header.getUnitsPerEm();
+ 
+             HorizontalMetricsTable hmtx = ttf.getHorizontalMetrics();
+-            int[] widths = hmtx.getAdvanceWidth();
++            int[] subwidths = hmtx.getAdvanceWidth();
+             StringBuilder sb = new StringBuilder();
+             for (Integer gid : gidset)
+             {
+                 sb.append(" ").append(gid2cid.get(gid.intValue()))
+-                  .append(" ").append(Math.round(widths[gid.intValue()] * scaling));
++                  .append(" ").append(Math.round(subwidths[gid.intValue()] * scaling));
+             }
+             COSArray wArray = descendantFont.getFontWidthsArray(sb.toString().substring(1));
+             descendantFont.resetFontWidths(wArray);
+@@ -249,7 +249,7 @@ public class PDType0TTFont extends PDType0Font
+             NameRecord nr = records.get(i);
+             if (nr.getNameId() == NameRecord.NAME_POSTSCRIPT_NAME)
+             {
+-                bfname = nr.getString();
++                bfname = prefix + nr.getString();
+                 fd.setFontName(bfname);
+             }
+         }
+@@ -389,8 +389,11 @@ public class PDType0TTFont extends PDType0Font
+         }
+         
+         HorizontalMetricsTable hmtx = ttf.getHorizontalMetrics();
+-        int[] widths = hmtx.getAdvanceWidth();
+-        defaultW = Math.round(widths[0] * scaling);
++        widths = hmtx.getAdvanceWidth();
++        for (int i=0; i<widths.length; i++)
++        {
++            widths[i] =  Math.round(widths[i] * scaling);
++        }
+     }
+ 
+     public int getCID(int unicode)
+@@ -398,6 +401,29 @@ public class PDType0TTFont extends PDType0Font
+         return unicode2cidMap.getGlyphId(unicode);
+     }
+ 
++    /**
++     * {@inheritDoc}
++     */
++    @Override
++    public float getStringWidth(String string) throws IOException
++    {
++        float totalWidth = 0f;
++        for (int i = 0, cp; i < string.length(); i += Character.charCount(cp))
++        {
++            cp = string.codePointAt(i);
++            int gid = getCID(cp);
++            if (gid > -1 && gid < widths.length)
++            {
++                totalWidth += widths[gid];
++            }
++            else
++            {
++                totalWidth += widths[0];
++            }
++        }
++        return totalWidth;
++    }
++
+     private String getPrefix()
+     {
+         Random rnd = new Random();
+diff --git a/pdfbox/src/main/java/org/apache/pdfbox/util/PDFStreamEngine.java b/pdfbox/src/main/java/org/apache/pdfbox/util/PDFStreamEngine.java
+index d5ad127..aea239a 100644
+--- a/pdfbox/src/main/java/org/apache/pdfbox/util/PDFStreamEngine.java
++++ b/pdfbox/src/main/java/org/apache/pdfbox/util/PDFStreamEngine.java
+@@ -375,6 +375,14 @@ public class PDFStreamEngine
+         int codeLength = 1;
+         for (int i = 0; i < string.length; i += codeLength)
+         {
++            // ignore BOM
++            if ((string[i] == (byte)0xfe && string[i+1] == (byte)0xff)
++             || (string[i] == (byte)0xff && string[i+1] == (byte)0xfe))
++            {
++                codeLength = 2;
++                continue;
++            }
++
+             // Decode the value to a Unicode character
+             codeLength = 1;
+             String c = font.encode(string, i, codeLength);
+@@ -386,6 +394,13 @@ public class PDFStreamEngine
+                 c = font.encode(string, i, codeLength);
+                 codePoints = new int[] { font.getCodeFromArray(string, i, codeLength) };
+             }
++            if (c == null && i + 3 < string.length)
++            {
++                // maybe a multibyte encoding
++                codeLength += 2;
++                c = font.encode(string, i, codeLength);
++                codePoints = new int[] { font.getCodeFromArray(string, i, codeLength) };
++            }
+             else
+             {
+                 codePoints = new int[] { font.getCodeFromArray(string, i, codeLength) };

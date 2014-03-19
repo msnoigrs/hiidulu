@@ -1,0 +1,2953 @@
+diff --git a/src/core/com/lowagie/text/Chunk.java b/src/core/com/lowagie/text/Chunk.java
+index 8130846..dbe3ce8 100644
+--- a/src/core/com/lowagie/text/Chunk.java
++++ b/src/core/com/lowagie/text/Chunk.java
+@@ -875,4 +875,31 @@ public class Chunk implements Element {
+ 	/** Key for encoding. */
+ 	public static final String ENCODING = "ENCODING";
+ 
+-}
+\ No newline at end of file
++	/**
++	 * Key for character spacing.
++	 */
++	public static final String CHAR_SPACING = "CHAR_SPACING";
++
++	/**
++	 * Sets the character spacing.
++	 *
++	 * @param charSpace the character spacing value
++	 * @return this <CODE>Chunk</CODE>
++	 */
++	public Chunk setCharacterSpacing(float charSpace) {
++		return setAttribute(CHAR_SPACING, new Float(charSpace));
++	}
++
++	/**
++	 * Gets the character spacing.
++	 *
++	 * @return a value in float
++	 */
++	public float getCharacterSpacing() {
++		if (attributes != null && attributes.containsKey(CHAR_SPACING)) {
++			Float f = (Float) attributes.get(CHAR_SPACING);
++			return f.floatValue();
++		}
++		return 0.0f;
++	}
++}
+diff --git a/src/core/com/lowagie/text/Font.java b/src/core/com/lowagie/text/Font.java
+index 00bc426..65218cc 100644
+--- a/src/core/com/lowagie/text/Font.java
++++ b/src/core/com/lowagie/text/Font.java
+@@ -495,7 +495,7 @@ public class Font implements Comparable {
+ 	}
+ 
+ 	/**
+-	 * checks if this font is Bold.
++	 * checks if this font is Italic.
+ 	 * 
+ 	 * @return a <CODE>boolean</CODE>
+ 	 */
+diff --git a/src/core/com/lowagie/text/Jpeg.java b/src/core/com/lowagie/text/Jpeg.java
+index 57ea67c..cd817ba 100644
+--- a/src/core/com/lowagie/text/Jpeg.java
++++ b/src/core/com/lowagie/text/Jpeg.java
+@@ -279,6 +279,11 @@ public class Jpeg extends Image {
+                             if (app2.equals("ICC_PROFILE")) {
+                                 int order = byteapp2[12] & 0xff;
+                                 int count = byteapp2[13] & 0xff;
++                                // some jpeg producers don't know how to count to 1
++                                if (order < 1)
++                                    order = 1;
++                                if (count < 1)
++                                    count = 1;
+                                 if (icc == null)
+                                     icc = new byte[count][];
+                                 icc[order - 1] = byteapp2;
+diff --git a/src/core/com/lowagie/text/pdf/AcroFields.java b/src/core/com/lowagie/text/pdf/AcroFields.java
+index 98c59cd..a0844f1 100644
+--- a/src/core/com/lowagie/text/pdf/AcroFields.java
++++ b/src/core/com/lowagie/text/pdf/AcroFields.java
+@@ -701,8 +701,10 @@ public class AcroFields {
+         }
+     }
+ 
+-    PdfAppearance getAppearance(PdfDictionary merged, String text, String fieldName) throws IOException, DocumentException {
++    PdfAppearance getAppearance(PdfDictionary merged, String values[], String fieldName) throws IOException, DocumentException {
+         topFirst = 0;
++        String text = (values.length > 0) ? values[0] : null;
++
+         TextField tx = null;
+         if (fieldCache == null || !fieldCache.containsKey(fieldName)) {
+             tx = new TextField(writer, null, null);
+@@ -725,7 +727,9 @@ public class AcroFields {
+         }
+         PdfName fieldType = merged.getAsName(PdfName.FT);
+         if (PdfName.TX.equals(fieldType)) {
+-            tx.setText(text);
++            if (values.length > 0 && values[0] != null) {
++                tx.setText(values[0]);
++            }
+             return tx.getAppearance();
+         }
+         if (!PdfName.CH.equals(fieldType))
+@@ -763,22 +767,31 @@ public class AcroFields {
+                 tx.setText(text);
+                 return tx.getAppearance();
+             }
+-            int idx = 0;
++            ArrayList indexes = new ArrayList();
+             for (int k = 0; k < choicesExp.length; ++k) {
+-                if (text.equals(choicesExp[k])) {
+-                    idx = k;
+-                    break;
++                for (int j = 0; j < values.length; ++j) {
++                    String val = values[j];
++                    if (val != null && val.equals(choicesExp[k])) {
++                        indexes.add(new Integer(k));
++                        break;
++                    }
+                 }
+             }
+             tx.setChoices(choices);
+             tx.setChoiceExports(choicesExp);
+-            tx.setChoiceSelection(idx);
++            tx.setChoiceSelections(indexes);
+         }
+         PdfAppearance app = tx.getListAppearance();
+         topFirst = tx.getTopFirst();
+         return app;
+     }
+ 
++    PdfAppearance getAppearance(PdfDictionary merged, String text, String fieldName) throws IOException, DocumentException {
++        String valueArr[] = new String[1];
++        valueArr[0] = text;
++        return getAppearance(merged, valueArr, fieldName);
++    }
++
+     Color getMKColor(PdfArray ar) {
+         if (ar == null)
+             return null;
+@@ -1389,11 +1402,9 @@ public class AcroFields {
+                 }
+             }
+             int vidx = lopt.indexOf(value);
+-            PdfName valt = null;
+             PdfName vt;
+-            if (vidx >= 0) {
+-                vt = valt = new PdfName(String.valueOf(vidx));
+-            }
++            if (vidx >= 0)
++                vt = new PdfName(String.valueOf(vidx));
+             else
+                 vt = v;
+             for (int idx = 0; idx < item.size(); ++idx) {
+@@ -1401,15 +1412,8 @@ public class AcroFields {
+                 PdfDictionary widget = item.getWidget(idx);
+                 PdfDictionary valDict = item.getValue(idx);
+                 markUsed(item.getValue(idx));
+-                if (valt != null) {
+-                    PdfString ps = new PdfString(value, PdfObject.TEXT_UNICODE);
+-                    valDict.put(PdfName.V, ps);
+-                    merged.put(PdfName.V, ps);
+-                }
+-                else {
+-                    valDict.put(PdfName.V, v);
+-                    merged.put(PdfName.V, v);
+-                }
++                valDict.put(PdfName.V, vt);
++                merged.put(PdfName.V, vt);
+                 markUsed(widget);
+                 if (isInAP(widget,  vt)) {
+                     merged.put(PdfName.AS, vt);
+@@ -1438,7 +1442,8 @@ public class AcroFields {
+         Item item = getFieldItem(name);
+         if (item == null)
+             return false;
+-        PdfName type = item.getMerged(0).getAsName(PdfName.FT);
++        PdfDictionary merged = item.getMerged( 0 );
++        PdfName type = merged.getAsName(PdfName.FT);
+         if (!PdfName.CH.equals(type)) {
+         	return false;
+         }
+@@ -1448,12 +1453,26 @@ public class AcroFields {
+         	for (int j = 0; j < options.length; j++) {
+         		if (options[j].equals(value[i])) {
+         			array.add(new PdfNumber(j));
++                    break;
+         		}
+         	}
+         }
+         item.writeToAll(PdfName.I, array, Item.WRITE_MERGED | Item.WRITE_VALUE);
+-        item.writeToAll(PdfName.V, null, Item.WRITE_MERGED | Item.WRITE_VALUE);
+-        item.writeToAll(PdfName.AP, null, Item.WRITE_MERGED | Item.WRITE_WIDGET);
++
++        PdfArray vals = new PdfArray();
++        for (int i = 0; i < value.length; ++i) {
++        	vals.add( new PdfString( value[i] ) );
++        }
++        item.writeToAll(PdfName.V, vals, Item.WRITE_MERGED | Item.WRITE_VALUE);
++
++        PdfAppearance app = getAppearance( merged, value, name );
++
++        PdfDictionary apDic = new PdfDictionary();
++        apDic.put( PdfName.N, app.getIndirectReference() );
++        item.writeToAll(PdfName.AP, apDic, Item.WRITE_MERGED | Item.WRITE_WIDGET);
++
++        writer.releaseTemplate( app );
++
+         item.markUsed( this, Item.WRITE_VALUE | Item.WRITE_WIDGET );
+         return true;
+ 	}
+diff --git a/src/core/com/lowagie/text/pdf/BaseField.java b/src/core/com/lowagie/text/pdf/BaseField.java
+index 669b3ed..a8553f8 100644
+--- a/src/core/com/lowagie/text/pdf/BaseField.java
++++ b/src/core/com/lowagie/text/pdf/BaseField.java
+@@ -111,7 +111,12 @@ public abstract class BaseField {
+      */    
+     public static final int EDIT = PdfFormField.FF_EDIT;
+ 
+-    /**
++    /** whether or not a list may have multiple selections.  Only applies to /CH LIST
++     * fields, not combo boxes.
++     */
++    public static final int MULTISELECT = PdfFormField.FF_MULTISELECT;
++
++   /**
+      * combo box flag.
+      */
+     public static final int COMB = PdfFormField.FF_COMB;
+diff --git a/src/core/com/lowagie/text/pdf/ColumnText.java b/src/core/com/lowagie/text/pdf/ColumnText.java
+index 68dc870..2ac8325 100644
+--- a/src/core/com/lowagie/text/pdf/ColumnText.java
++++ b/src/core/com/lowagie/text/pdf/ColumnText.java
+@@ -1434,11 +1434,8 @@ public class ColumnText {
+                     ArrayList sub = nt.getRows();
+                     
+                     // first we add the real header rows (if necessary)
+-                    if (!skipHeader) {
+-                        for (int j = 0; j < realHeaderRows; ++j) {
+-                        	PdfPRow headerRow = table.getRow(j);
+-                            sub.add(headerRow);
+-                        }
++                    if (!skipHeader && realHeaderRows > 0) {
++                        sub.addAll(table.getRows(0, realHeaderRows));
+                     }
+                     else
+                         nt.setHeaderRows(footerRows);
+@@ -1447,9 +1444,11 @@ public class ColumnText {
+                     // if k < table.size(), we must indicate that the new table is complete;
+                     // otherwise no footers will be added (because iText thinks the table continues on the same page)
+                     boolean showFooter = !table.isSkipLastFooter();
++                    boolean newPageFollows = false;
+                     if (k < table.size()) {
+                     	nt.setComplete(true);
+                     	showFooter = true;
++                    	newPageFollows = true;
+                     }
+                     // we add the footer rows if necessary (not for incomplete tables)
+                     for (int j = 0; j < footerRows && nt.isComplete() && showFooter; ++j)
+@@ -1457,8 +1456,10 @@ public class ColumnText {
+ 
+                     // we need a correction if the last row needs to be extended
+                     float rowHeight = 0;
+-                    PdfPRow last = (PdfPRow)sub.get(sub.size() - 1 - footerRows);
+-                    if (table.isExtendLastRow()) {
++                    int index = sub.size() - 1;
++                    if (showFooter) index -= footerRows;
++                    PdfPRow last = (PdfPRow)sub.get(index);
++                    if (table.isExtendLastRow(newPageFollows)) {
+                         rowHeight = last.getMaxHeights();
+                         last.setMaxHeights(yTemp - minY + rowHeight);
+                         yTemp = minY;
+@@ -1469,7 +1470,7 @@ public class ColumnText {
+                         nt.writeSelectedRows(0, -1, x1, yLineWrite, canvases);
+                     else
+                         nt.writeSelectedRows(0, -1, x1, yLineWrite, canvas);
+-                    if (table.isExtendLastRow()) {
++                    if (table.isExtendLastRow(newPageFollows)) {
+                         last.setMaxHeights(rowHeight);
+                     }
+                 }
+diff --git a/src/core/com/lowagie/text/pdf/FontDetails.java b/src/core/com/lowagie/text/pdf/FontDetails.java
+index fe5b37d..e6fdbc1 100755
+--- a/src/core/com/lowagie/text/pdf/FontDetails.java
++++ b/src/core/com/lowagie/text/pdf/FontDetails.java
+@@ -49,7 +49,6 @@
+ 
+ package com.lowagie.text.pdf;
+ 
+-import java.awt.font.GlyphVector;
+ import java.io.UnsupportedEncodingException;
+ import java.util.HashMap;
+ 
+diff --git a/src/core/com/lowagie/text/pdf/PRTokeniser.java b/src/core/com/lowagie/text/pdf/PRTokeniser.java
+index a27bce1..be60dbb 100755
+--- a/src/core/com/lowagie/text/pdf/PRTokeniser.java
++++ b/src/core/com/lowagie/text/pdf/PRTokeniser.java
+@@ -50,6 +50,8 @@
+ package com.lowagie.text.pdf;
+ 
+ import java.io.IOException;
++import com.lowagie.text.exceptions.InvalidPdfException;
++
+ /**
+  *
+  * @author  Paulo Soares (psoares@consiste.pt)
+@@ -66,6 +68,7 @@ public class PRTokeniser {
+     public static final int TK_END_DIC = 8;
+     public static final int TK_REF = 9;
+     public static final int TK_OTHER = 10;
++    public static final int TK_ENDOFFILE = 11;
+     public static final boolean delims[] = {
+         true,  true,  false, false, false, false, false, false, false, false,
+         true,  true,  false, true,  true,  false, false, false, false, false,
+@@ -288,8 +291,10 @@ public class PRTokeniser {
+         do {
+             ch = file.read();
+         } while (ch != -1 && isWhitespace(ch));
+-        if (ch == -1)
++        if (ch == -1) {
++            type = TK_ENDOFFILE;
+             return false;
++        }
+ 
+         // Note:  We have to initialize stringValue here, after we've looked for the end of the stream,
+         // to ensure that we don't lose the value of a token that might end exactly at the end
+diff --git a/src/core/com/lowagie/text/pdf/PdfChunk.java b/src/core/com/lowagie/text/pdf/PdfChunk.java
+index 0d28f97..c4454d0 100644
+--- a/src/core/com/lowagie/text/pdf/PdfChunk.java
++++ b/src/core/com/lowagie/text/pdf/PdfChunk.java
+@@ -97,6 +97,7 @@ public class PdfChunk {
+         keysAttributes.put(Chunk.HSCALE, null);
+         keysAttributes.put(Chunk.SEPARATOR, null);
+         keysAttributes.put(Chunk.TAB, null);
++        keysAttributes.put(Chunk.CHAR_SPACING, null);
+         keysNoStroke.put(Chunk.SUBSUPSCRIPT, null);
+         keysNoStroke.put(Chunk.SPLITCHARACTER, null);
+         keysNoStroke.put(Chunk.HYPHENATION, null);
+@@ -341,7 +342,7 @@ public class PdfChunk {
+                     PdfChunk pc = new PdfChunk(returnValue, this);
+                     return pc;
+                 }
+-                currentWidth += font.width(cidChar);
++                currentWidth += getCharWidth(cidChar);
+                 if (character == ' ') {
+                     lastSpace = currentPosition + 1;
+                     lastSpaceWidth = currentWidth;
+@@ -374,9 +375,9 @@ public class PdfChunk {
+                 }
+                 surrogate = Utilities.isSurrogatePair(valueArray, currentPosition);
+                 if (surrogate)
+-                    currentWidth += font.width(Utilities.convertToUtf32(valueArray[currentPosition], valueArray[currentPosition + 1]));
++                    currentWidth += getCharWidth(Utilities.convertToUtf32(valueArray[currentPosition], valueArray[currentPosition + 1]));
+                 else
+-                    currentWidth += font.width(character);
++                    currentWidth += getCharWidth(character);
+                 if (character == ' ') {
+                     lastSpace = currentPosition + 1;
+                     lastSpaceWidth = currentWidth;
+@@ -467,9 +468,9 @@ public class PdfChunk {
+             // the width of every character is added to the currentWidth
+             surrogate = Utilities.isSurrogatePair(value, currentPosition);
+             if (surrogate)
+-                currentWidth += font.width(Utilities.convertToUtf32(value, currentPosition));
++                currentWidth += getCharWidth(Utilities.convertToUtf32(value, currentPosition));
+             else
+-                currentWidth += font.width(value.charAt(currentPosition));
++                currentWidth += getCharWidth(value.charAt(currentPosition));
+             if (currentWidth > width)
+                 break;
+             if (surrogate)
+@@ -525,6 +526,10 @@ public class PdfChunk {
+  */
+     
+     float width() {
++        if (isAttribute(Chunk.CHAR_SPACING)) {
++        	Float cs = (Float) getAttribute(Chunk.CHAR_SPACING);
++            return font.width(value) + value.length() * cs.floatValue();
++		}
+         return font.width(value);
+     }
+     
+@@ -835,6 +840,10 @@ public class PdfChunk {
+     float getCharWidth(int c) {
+         if (noPrint(c))
+             return 0;
++        if (isAttribute(Chunk.CHAR_SPACING)) {
++        	Float cs = (Float) getAttribute(Chunk.CHAR_SPACING);
++			return font.width(c) + cs.floatValue();
++		}
+         return font.width(c);
+     }
+     
+diff --git a/src/core/com/lowagie/text/pdf/PdfContentByte.java b/src/core/com/lowagie/text/pdf/PdfContentByte.java
+index f783ee2..3a7b4d4 100644
+--- a/src/core/com/lowagie/text/pdf/PdfContentByte.java
++++ b/src/core/com/lowagie/text/pdf/PdfContentByte.java
+@@ -946,10 +946,11 @@ public class PdfContentByte {
+         // the backgroundcolor is set
+         Color background = rectangle.getBackgroundColor();
+         if (background != null) {
++        	saveState();
+             setColorFill(background);
+             rectangle(x1, y1, x2 - x1, y2 - y1);
+             fill();
+-            resetRGBColorFill();
++            restoreState();
+         }
+ 
+         // if the element hasn't got any borders, nothing is added
+diff --git a/src/core/com/lowagie/text/pdf/PdfDestination.java b/src/core/com/lowagie/text/pdf/PdfDestination.java
+index 0a53796..4f72b28 100644
+--- a/src/core/com/lowagie/text/pdf/PdfDestination.java
++++ b/src/core/com/lowagie/text/pdf/PdfDestination.java
+@@ -49,6 +49,8 @@
+ 
+ package com.lowagie.text.pdf;
+ 
++import java.util.StringTokenizer;
++
+ /**
+  * A <CODE>PdfColor</CODE> defines a Color (it's a <CODE>PdfArray</CODE> containing 3 values).
+  *
+@@ -191,6 +193,24 @@ public class PdfDestination extends PdfArray {
+         add(new PdfNumber(top));
+     }
+     
++    /**
++     * Creates a PdfDestination based on a String.
++     * Valid Strings are for instance the values returned by SimpleNamedDestination:
++     * "Fit", "XYZ 36 806 0",...
++     * @param	dest	a String notation of a destination.
++     * @since	iText 5.0
++     */
++    public PdfDestination(String dest) {
++    	super();
++    	StringTokenizer tokens = new StringTokenizer(dest);
++    	if (tokens.hasMoreTokens()) {
++    		add(new PdfName(tokens.nextToken()));
++    	}
++    	while (tokens.hasMoreTokens()) {
++    		add(new PdfNumber(tokens.nextToken()));
++    	}
++    }
++
+     // methods
+     
+ /**
+@@ -217,4 +237,4 @@ public class PdfDestination extends PdfArray {
+         }
+         return false;
+     }
+-}
+\ No newline at end of file
++}
+diff --git a/src/core/com/lowagie/text/pdf/PdfDocument.java b/src/core/com/lowagie/text/pdf/PdfDocument.java
+index ac561f5..70a1edc 100644
+--- a/src/core/com/lowagie/text/pdf/PdfDocument.java
++++ b/src/core/com/lowagie/text/pdf/PdfDocument.java
+@@ -483,7 +483,7 @@ public class PdfDocument extends Document {
+                     Annotation annot = (Annotation) element;
+                     Rectangle rect = new Rectangle(0, 0);
+                     if (line != null)
+-                    	rect = new Rectangle(annot.llx(indentRight() - line.widthLeft()), annot.lly(indentTop() - currentHeight), annot.urx(indentRight() - line.widthLeft() + 20), annot.ury(indentTop() - currentHeight - 20));
++                        rect = new Rectangle(annot.llx(indentRight() - line.widthLeft()), annot.ury(indentTop() - currentHeight - 20), annot.urx(indentRight() - line.widthLeft() + 20), annot.lly(indentTop() - currentHeight));
+                     PdfAnnotation an = PdfAnnotationsImp.convertAnnotation(writer, annot, rect);
+                     annotationsImp.addPlainAnnotation(an);
+                     pageEmpty = false;
+@@ -850,7 +850,7 @@ public class PdfDocument extends Document {
+      */
+     public boolean newPage() {
+         lastElementType = -1;
+-        if (writer == null || (writer.getDirectContent().size() == 0 && writer.getDirectContentUnder().size() == 0 && (pageEmpty || writer.isPaused()))) {
++        if (isPageEmpty()) {
+         	setNewPageSizeAndMargins();
+             return false;
+         }
+@@ -1581,6 +1581,10 @@ public class PdfDocument extends Document {
+                             hScale = hs.floatValue();
+                         text.setTextMatrix(hScale, b, c, 1, xMarker, yMarker);
+                     }
++                    if (chunk.isAttribute(Chunk.CHAR_SPACING)) {
++                    	Float cs = (Float) chunk.getAttribute(Chunk.CHAR_SPACING);
++						text.setCharacterSpacing(cs.floatValue());
++					}
+                     if (chunk.isImage()) {
+                         Image image = chunk.getImage();
+                         float matrix[] = image.matrix();
+@@ -1644,7 +1648,7 @@ public class PdfDocument extends Document {
+                 if (hScale != lastHScale) {
+                     lastHScale = hScale;
+                     text.setWordSpacing(baseWordSpacing / hScale);
+-                    text.setCharacterSpacing(baseCharacterSpacing / hScale);
++                    text.setCharacterSpacing(baseCharacterSpacing / hScale + text.getCharacterSpacing());
+                 }
+                 String s = chunk.toString();
+                 int idx = s.indexOf(' ');
+@@ -1668,7 +1672,7 @@ public class PdfDocument extends Document {
+                 if (isJustified && hScale != lastHScale) {
+                     lastHScale = hScale;
+                     text.setWordSpacing(baseWordSpacing / hScale);
+-                    text.setCharacterSpacing(baseCharacterSpacing / hScale);
++                    text.setCharacterSpacing(baseCharacterSpacing / hScale + text.getCharacterSpacing());
+                 }
+                 text.showText(chunk.toString());
+             }
+@@ -1687,6 +1691,9 @@ public class PdfDocument extends Document {
+                 adjustMatrix = true;
+                 text.setTextMatrix(xMarker, yMarker);
+             }
++            if (chunk.isAttribute(Chunk.CHAR_SPACING)) {
++				text.setCharacterSpacing(baseCharacterSpacing);
++            }
+         }
+         if (isJustified) {
+             text.setWordSpacing(0);
+@@ -2092,7 +2099,8 @@ public class PdfDocument extends Document {
+             return false;
+         obj[2] = destination;
+         localDestinations.put(name, obj);
+-        destination.addPage(writer.getCurrentPage());
++        if (!destination.hasPage())
++        	destination.addPage(writer.getCurrentPage());
+         return true;
+     }
+ 
+@@ -2288,12 +2296,16 @@ public class PdfDocument extends Document {
+ //	[U2] empty pages
+ 
+     /** This checks if the page is empty. */
+-    protected boolean pageEmpty = true;
++    private boolean pageEmpty = true;
+ 
+     void setPageEmpty(boolean pageEmpty) {
+         this.pageEmpty = pageEmpty;
+     }
+ 
++    boolean isPageEmpty() {
++        return writer == null || (writer.getDirectContent().size() == 0 && writer.getDirectContentUnder().size() == 0 && (pageEmpty || writer.isPaused()));
++    }
++
+ //	[U3] page actions
+ 
+     /** The duration of the page */
+@@ -3127,4 +3139,4 @@ public class PdfDocument extends Document {
+         // End added: Bonf (Marc Schneider) 2003-07-29
+ 		// End Added by Edgar Leonardo Prieto Perilla
+     }
+-}
+\ No newline at end of file
++}
+diff --git a/src/core/com/lowagie/text/pdf/PdfFileSpecification.java b/src/core/com/lowagie/text/pdf/PdfFileSpecification.java
+index a350ab9..e36bdf4 100755
+--- a/src/core/com/lowagie/text/pdf/PdfFileSpecification.java
++++ b/src/core/com/lowagie/text/pdf/PdfFileSpecification.java
+@@ -148,7 +148,7 @@ public class PdfFileSpecification extends PdfDictionary {
+      * @return the file specification
+      */    
+     public static PdfFileSpecification fileEmbedded(PdfWriter writer, String filePath, String fileDisplay, byte fileStore[], boolean compress, String mimeType, PdfDictionary fileParameter) throws IOException {
+-    	return fileEmbedded(writer, filePath, fileDisplay, fileStore, null, null, compress ? PdfStream.BEST_COMPRESSION : PdfStream.NO_COMPRESSION);
++    	return fileEmbedded(writer, filePath, fileDisplay, fileStore, mimeType, fileParameter, compress ? PdfStream.BEST_COMPRESSION : PdfStream.NO_COMPRESSION);
+     }
+     
+     /**
+@@ -174,10 +174,10 @@ public class PdfFileSpecification extends PdfDictionary {
+         PdfEFStream stream;
+         InputStream in = null;
+         PdfIndirectReference ref;
+-        PdfIndirectReference refFileLength;
++        PdfIndirectReference refFileLength = null;
+         try {
+-            refFileLength = writer.getPdfIndirectReference();
+             if (fileStore == null) {
++                refFileLength = writer.getPdfIndirectReference();
+                 File file = new File(filePath);
+                 if (file.canRead()) {
+                     in = new FileInputStream(filePath);
+@@ -194,22 +194,32 @@ public class PdfFileSpecification extends PdfDictionary {
+                 }
+                 stream = new PdfEFStream(in, writer);
+             }
+-            else
++            else {
+                 stream = new PdfEFStream(fileStore);
++            }
+             stream.put(PdfName.TYPE, PdfName.EMBEDDEDFILE);
+             stream.flateCompress(compressionLevel);
+-            stream.put(PdfName.PARAMS, refFileLength);
++            PdfDictionary param = new PdfDictionary();
++            if (fileParameter != null) {
++                param.merge(fileParameter);
++            }
++
++            if (fileStore != null) {
++                param.put(PdfName.SIZE, new PdfNumber(stream.getRawLength()));
++                stream.put(PdfName.PARAMS, param);
++            }
++            else
++                stream.put(PdfName.PARAMS, refFileLength);
++
+             if (mimeType != null)
+                 stream.put(PdfName.SUBTYPE, new PdfName(mimeType));
++
+             ref = writer.addToBody(stream).getIndirectReference();
+             if (fileStore == null) {
+                 stream.writeLength();
++                param.put(PdfName.SIZE, new PdfNumber(stream.getRawLength()));
++                writer.addToBody(param, refFileLength);
+             }
+-            PdfDictionary params = new PdfDictionary();
+-            if (fileParameter != null)
+-                params.merge(fileParameter);
+-            params.put(PdfName.SIZE, new PdfNumber(stream.getRawLength()));
+-            writer.addToBody(params, refFileLength);
+         }
+         finally {
+             if (in != null)
+@@ -295,4 +305,4 @@ public class PdfFileSpecification extends PdfDictionary {
+     public void addCollectionItem(PdfCollectionItem ci) {
+     	put(PdfName.CI, ci);
+     }
+-}
+\ No newline at end of file
++}
+diff --git a/src/core/com/lowagie/text/pdf/PdfImage.java b/src/core/com/lowagie/text/pdf/PdfImage.java
+index f2db07a..ebb2731 100644
+--- a/src/core/com/lowagie/text/pdf/PdfImage.java
++++ b/src/core/com/lowagie/text/pdf/PdfImage.java
+@@ -272,7 +272,7 @@ public class PdfImage extends PdfStream {
+     static void transferBytes(InputStream in, OutputStream out, int len) throws IOException {
+         byte buffer[] = new byte[TRANSFERSIZE];
+         if (len < 0)
+-            len = 0x7ffffff;
++            len = 0x7fff0000;
+         int size;
+         while (len != 0) {
+             size = in.read(buffer, 0, Math.min(len, TRANSFERSIZE));
+diff --git a/src/core/com/lowagie/text/pdf/PdfName.java b/src/core/com/lowagie/text/pdf/PdfName.java
+index 46287ae..4c823cf 100644
+--- a/src/core/com/lowagie/text/pdf/PdfName.java
++++ b/src/core/com/lowagie/text/pdf/PdfName.java
+@@ -294,6 +294,8 @@ public class PdfName extends PdfObject implements Comparable{
+     /** A name */
+     public static final PdfName CHARPROCS = new PdfName("CharProcs");
+     /** A name */
++    public static final PdfName CHECKSUM = new PdfName("CheckSum");
++    /** A name */
+     public static final PdfName CI = new PdfName("CI");
+     /** A name */
+     public static final PdfName CIDFONTTYPE0 = new PdfName("CIDFontType0");
+@@ -461,6 +463,8 @@ public class PdfName extends PdfObject implements Comparable{
+     /** A name */
+     public static final PdfName DIV = new PdfName("Div");
+     /** A name */
++    public static final PdfName DL = new PdfName("DL");
++    /** A name */
+     public static final PdfName DM = new PdfName("Dm");
+     /** A name */
+     public static final PdfName DOCMDP = new PdfName("DocMDP");
+diff --git a/src/core/com/lowagie/text/pdf/PdfPKCS7.java b/src/core/com/lowagie/text/pdf/PdfPKCS7.java
+index 8ccc73e..6a49970 100755
+--- a/src/core/com/lowagie/text/pdf/PdfPKCS7.java
++++ b/src/core/com/lowagie/text/pdf/PdfPKCS7.java
+@@ -88,7 +88,6 @@ import org.bouncycastle.asn1.DERNull;
+ import org.bouncycastle.asn1.DERObject;
+ import org.bouncycastle.asn1.DERObjectIdentifier;
+ import org.bouncycastle.asn1.DEROctetString;
+-import org.bouncycastle.asn1.DEROutputStream;
+ import org.bouncycastle.asn1.DERSequence;
+ import org.bouncycastle.asn1.DERSet;
+ import org.bouncycastle.asn1.DERString;
+@@ -495,7 +494,7 @@ public class PdfPKCS7 {
+                 ASN1Set unat = ASN1Set.getInstance(taggedObject, false);
+                 AttributeTable attble = new AttributeTable(unat);
+                 Attribute ts = attble.get(PKCSObjectIdentifiers.id_aa_signatureTimeStampToken);
+-                if (ts != null) {
++                if (ts != null && ts.getAttrValues().size() > 0) {
+                     ASN1Set attributeValues = ts.getAttrValues();
+                     ASN1Sequence tokenSequence = ASN1Sequence.getInstance(attributeValues.getObjectAt(0));
+                     ContentInfo contentInfo = new ContentInfo(tokenSequence);
+@@ -1249,16 +1248,6 @@ public class PdfPKCS7 {
+             body.add(contentinfo);
+             body.add(new DERTaggedObject(false, 0, dercertificates));
+             
+-           if (!crls.isEmpty()) {
+-                v = new ASN1EncodableVector();
+-                for (Iterator i = crls.iterator();i.hasNext();) {
+-                    ASN1InputStream t = new ASN1InputStream(new ByteArrayInputStream(((X509CRL)i.next()).getEncoded()));
+-                    v.add(t.readObject());
+-                }
+-                DERSet dercrls = new DERSet(v);
+-                body.add(new DERTaggedObject(false, 1, dercrls));
+-            }
+-            
+             // Only allow one signerInfo
+             body.add(new DERSet(new DERSequence(signerinfo)));
+             
+diff --git a/src/core/com/lowagie/text/pdf/PdfPTable.java b/src/core/com/lowagie/text/pdf/PdfPTable.java
+index 8e43364..30eb87a 100644
+--- a/src/core/com/lowagie/text/pdf/PdfPTable.java
++++ b/src/core/com/lowagie/text/pdf/PdfPTable.java
+@@ -155,7 +155,7 @@ public class PdfPTable implements LargeElement{
+     /**
+      * Holds value of property extendLastRow.
+      */
+-    private boolean extendLastRow;
++    private boolean[] extendLastRow = { false, false };
+     
+     /**
+      * Holds value of property headersInEvent.
+@@ -1424,19 +1424,48 @@ public class PdfPTable implements LargeElement{
+      * @return true if the last row will extend; false otherwise
+      */
+     public boolean isExtendLastRow() {
+-        return extendLastRow;
++        return extendLastRow[0];
+     }
+     
+     /**
+-     * When set the last row will be extended to fill all the remaining space
+-     * to the bottom boundary.
++     * When set the last row on every page will be extended to fill
++     * all the remaining space to the bottom boundary.
+      * 
+-     * @param extendLastRow true to extend the last row; false otherwise
++     * @param extendLastRows true to extend the last row; false otherwise
+      */
+-    public void setExtendLastRow(boolean extendLastRow) {
+-        this.extendLastRow = extendLastRow;
++    public void setExtendLastRow(boolean extendLastRows) {
++        extendLastRow[0] = extendLastRows;
++		extendLastRow[1] = extendLastRows;
+     }
+-    
++
++    /**
++     * When set the last row on every page will be extended to fill
++     * all the remaining space to the bottom boundary; except maybe the
++     * final row.
++     *
++     * @param extendLastRows true to extend the last row on each page; false otherwise
++     * @param extendFinalRow false if you don't want to extend the final row of the complete table
++	 * @since iText 5.0.0
++	 */
++	public void setExtendLastRow(boolean extendLastRows, boolean extendFinalRow) {
++		extendLastRow[0] = extendLastRows;
++		extendLastRow[1] = extendFinalRow;
++	}
++
++    /**
++     * Gets the value of the last row extension, taking into account
++     * if the final row is reached or not.
++     *
++     * @return true if the last row will extend; false otherwise
++     * @since iText 5.0.0
++     */
++    public boolean isExtendLastRow(boolean newPageFollows) {
++    	if (newPageFollows) {
++            return extendLastRow[0];	
++    	}
++		return extendLastRow[1];
++    }
++
+     /**
+      * Gets the header status inclusion in PdfPTableEvent.
+      * 
+@@ -1559,4 +1588,4 @@ public class PdfPTable implements LargeElement{
+ 	public void setComplete(boolean complete) {
+ 		this.complete = complete;
+ 	}
+-}
+\ No newline at end of file
++}
+diff --git a/src/core/com/lowagie/text/pdf/PdfPublicKeySecurityHandler.java b/src/core/com/lowagie/text/pdf/PdfPublicKeySecurityHandler.java
+index ed30814..b037837 100644
+--- a/src/core/com/lowagie/text/pdf/PdfPublicKeySecurityHandler.java
++++ b/src/core/com/lowagie/text/pdf/PdfPublicKeySecurityHandler.java
+@@ -149,55 +149,6 @@ public class PdfPublicKeySecurityHandler {
+         recipients = new ArrayList();
+     }
+ 
+-
+-    /* 
+-     * Routine for decode output of PdfContentByte.escapeString(byte[] bytes).
+-     * It should be moved to PdfContentByte. 
+-     */
+-     
+-    static public byte[] unescapedString(byte[] bytes) throws BadPdfFormatException {
+-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+-              
+-        int index = 0;
+-        
+-        if (bytes[0] != '(' && bytes[bytes.length-1] != ')') throw new BadPdfFormatException("Expect '(' and ')' at begin and end of the string.");
+-        
+-        while (index < bytes.length) {
+-            if (bytes[index] == '\\') {
+-                index++;
+-                switch (bytes[index]) {
+-                case 'b':
+-                    baos.write('\b');
+-                    break;
+-                case 'f':
+-                    baos.write('\f');
+-                    break;
+-                case 't':
+-                    baos.write('\t');
+-                    break;
+-                case 'n':
+-                    baos.write('\n');
+-                    break;
+-                case 'r':
+-                    baos.write('\r');
+-                    break;
+-                case '(':
+-                        baos.write('(');
+-                        break;
+-                case ')':
+-                        baos.write(')');
+-                        break;                        
+-                case '\\':
+-                    baos.write('\\');
+-                    break;
+-                }
+-            } else
+-                baos.write(bytes[index]);
+-            index++;
+-        }
+-        return baos.toByteArray();
+-    }
+-    
+     public void addRecipient(PdfPublicKeyRecipient recipient) {
+         recipients.add(recipient);
+     }
+diff --git a/src/core/com/lowagie/text/pdf/PdfReader.java b/src/core/com/lowagie/text/pdf/PdfReader.java
+index 8699f22..be816bd 100755
+--- a/src/core/com/lowagie/text/pdf/PdfReader.java
++++ b/src/core/com/lowagie/text/pdf/PdfReader.java
+@@ -125,6 +125,7 @@ public class PdfReader implements PdfViewerPreferences {
+     protected ArrayList strings = new ArrayList();
+     protected boolean sharedStreams = true;
+     protected boolean consolidateNamedDestinations = false;
++    protected boolean remoteToLocalNamedDestinations = false;
+     protected int rValue;
+     protected int pValue;
+     private int objNum;
+@@ -1634,6 +1635,8 @@ public class PdfReader implements PdfViewerPreferences {
+                 int num = tokens.getReference();
+                 PRIndirectReference ref = new PRIndirectReference(this, num, tokens.getGeneration());
+                 return ref;
++            case PRTokeniser.TK_ENDOFFILE:
++                throw new IOException("Unexpected end of file");
+             default:
+                 String sv = tokens.getStringValue();
+                 if ("null".equals(sv)) {
+@@ -2604,51 +2607,6 @@ public class PdfReader implements PdfViewerPreferences {
+         return new HashMap();
+     }
+ 
+-    private boolean replaceNamedDestination(PdfObject obj, HashMap names) {
+-        obj = getPdfObject(obj);
+-        int objIdx = lastXrefPartial;
+-        releaseLastXrefPartial();
+-        if (obj != null && obj.isDictionary()) {
+-            PdfObject ob2 = getPdfObjectRelease(((PdfDictionary)obj).get(PdfName.DEST));
+-            Object name = null;
+-            if (ob2 != null) {
+-                if (ob2.isName())
+-                    name = ob2;
+-                else if (ob2.isString())
+-                    name = ob2.toString();
+-                PdfArray dest = (PdfArray)names.get(name);
+-                if (dest != null) {
+-                    ((PdfDictionary)obj).put(PdfName.DEST, dest);
+-                    setXrefPartialObject(objIdx, obj);
+-                    return true;
+-                }
+-            }
+-            else if ((ob2 = getPdfObject(((PdfDictionary)obj).get(PdfName.A))) != null) {
+-                int obj2Idx = lastXrefPartial;
+-                releaseLastXrefPartial();
+-                PdfDictionary dic = (PdfDictionary)ob2;
+-                PdfName type = (PdfName)getPdfObjectRelease(dic.get(PdfName.S));
+-                if (PdfName.GOTO.equals(type)) {
+-                    PdfObject ob3 = getPdfObjectRelease(dic.get(PdfName.D));
+-                    if (ob3 != null) {
+-                        if (ob3.isName())
+-                            name = ob3;
+-                        else if (ob3.isString())
+-                            name = ob3.toString();
+-                    }
+-                    PdfArray dest = (PdfArray)names.get(name);
+-                    if (dest != null) {
+-                        dic.put(PdfName.D, dest);
+-                        setXrefPartialObject(obj2Idx, ob2);
+-                        setXrefPartialObject(objIdx, obj);
+-                        return true;
+-                    }
+-                }
+-            }
+-        }
+-        return false;
+-    }
+-
+     /**
+      * Removes all the fields from the document.
+      */
+@@ -2725,6 +2683,82 @@ public class PdfReader implements PdfViewerPreferences {
+         }
+     }
+ 
++    /**
++     * Replaces remote named links with local destinations that have the same name.
++     * @since	5.0
++     */
++    public void makeRemoteNamedDestinationsLocal() {
++        if (remoteToLocalNamedDestinations)
++            return;
++        remoteToLocalNamedDestinations = true;
++        HashMap names = getNamedDestination(true);
++        if (names.isEmpty())
++            return;
++        for (int k = 1; k <= pageRefs.size(); ++k) {
++            PdfDictionary page = pageRefs.getPageN(k);
++            PdfObject annotsRef;
++            PdfArray annots = (PdfArray)getPdfObject(annotsRef = page.get(PdfName.ANNOTS));
++            int annotIdx = lastXrefPartial;
++            releaseLastXrefPartial();
++            if (annots == null) {
++                pageRefs.releasePage(k);
++                continue;
++            }
++            boolean commitAnnots = false;
++            for (int an = 0; an < annots.size(); ++an) {
++                PdfObject objRef = annots.getPdfObject(an);
++                if (convertNamedDestination(objRef, names) && !objRef.isIndirect())
++                    commitAnnots = true;
++            }
++            if (commitAnnots)
++                setXrefPartialObject(annotIdx,  annots);
++            if (!commitAnnots || annotsRef.isIndirect())
++                pageRefs.releasePage(k);
++        }
++    }
++    
++    /**
++     * Converts a remote named destination GoToR with a local named destination
++     * if there's a corresponding name.
++     * @param	obj	an annotation that needs to be screened for links to external named destinations.
++     * @param	names	a map with names of local named destinations
++     * @since	iText 5.0
++     */
++    private boolean convertNamedDestination(PdfObject obj, HashMap names) {
++        obj = getPdfObject(obj);
++        int objIdx = lastXrefPartial;
++        releaseLastXrefPartial();
++        if (obj != null && obj.isDictionary()) {
++            PdfObject ob2 = getPdfObject(((PdfDictionary)obj).get(PdfName.A));
++            if (ob2 != null) {
++                int obj2Idx = lastXrefPartial;
++                releaseLastXrefPartial();
++                PdfDictionary dic = (PdfDictionary)ob2;
++                PdfName type = (PdfName)getPdfObjectRelease(dic.get(PdfName.S));
++                if (PdfName.GOTOR.equals(type)) {
++                    PdfObject ob3 = getPdfObjectRelease(dic.get(PdfName.D));
++                    Object name = null;
++                    if (ob3 != null) {
++                        if (ob3.isName())
++                            name = ob3;
++                        else if (ob3.isString())
++                            name = ob3.toString();
++                        PdfArray dest = (PdfArray)names.get(name);
++                        if (dest != null) {
++                        	dic.remove(PdfName.F);
++                        	dic.remove(PdfName.NEWWINDOW);
++                        	dic.put(PdfName.S, PdfName.GOTO);
++                        	setXrefPartialObject(obj2Idx, ob2);
++                        	setXrefPartialObject(objIdx, obj);
++                        	return true;
++                        }
++                    }
++                }
++            }
++        }
++        return false;
++    }
++
+     /** Replaces all the local named links with the actual destinations. */
+     public void consolidateNamedDestinations() {
+         if (consolidateNamedDestinations)
+@@ -2760,6 +2794,51 @@ public class PdfReader implements PdfViewerPreferences {
+         iterateBookmarks(outlines.get(PdfName.FIRST), names);
+     }
+ 
++    private boolean replaceNamedDestination(PdfObject obj, HashMap names) {
++        obj = getPdfObject(obj);
++        int objIdx = lastXrefPartial;
++        releaseLastXrefPartial();
++        if (obj != null && obj.isDictionary()) {
++            PdfObject ob2 = getPdfObjectRelease(((PdfDictionary)obj).get(PdfName.DEST));
++            Object name = null;
++            if (ob2 != null) {
++                if (ob2.isName())
++                    name = ob2;
++                else if (ob2.isString())
++                    name = ob2.toString();
++                PdfArray dest = (PdfArray)names.get(name);
++                if (dest != null) {
++                    ((PdfDictionary)obj).put(PdfName.DEST, dest);
++                    setXrefPartialObject(objIdx, obj);
++                    return true;
++                }
++            }
++            else if ((ob2 = getPdfObject(((PdfDictionary)obj).get(PdfName.A))) != null) {
++                int obj2Idx = lastXrefPartial;
++                releaseLastXrefPartial();
++                PdfDictionary dic = (PdfDictionary)ob2;
++                PdfName type = (PdfName)getPdfObjectRelease(dic.get(PdfName.S));
++                if (PdfName.GOTO.equals(type)) {
++                    PdfObject ob3 = getPdfObjectRelease(dic.get(PdfName.D));
++                    if (ob3 != null) {
++                        if (ob3.isName())
++                            name = ob3;
++                        else if (ob3.isString())
++                            name = ob3.toString();
++                    }
++                    PdfArray dest = (PdfArray)names.get(name);
++                    if (dest != null) {
++                        dic.put(PdfName.D, dest);
++                        setXrefPartialObject(obj2Idx, ob2);
++                        setXrefPartialObject(objIdx, obj);
++                        return true;
++                    }
++                }
++            }
++        }
++        return false;
++    }
++
+     protected static PdfDictionary duplicatePdfDictionary(PdfDictionary original, PdfDictionary copy, PdfReader newReader) {
+         if (copy == null)
+             copy = new PdfDictionary();
+@@ -3092,11 +3171,16 @@ public class PdfReader implements PdfViewerPreferences {
+ 
+     static class PageRefs {
+         private PdfReader reader;
+-        private IntHashtable refsp;
++        /** ArrayList with the indirect references to every page. Element 0 = page 1; 1 = page 2;... Not used for partial reading. */
+         private ArrayList refsn;
+-        private ArrayList pageInh;
+-        private int lastPageRead = -1;
++        /** The number of pages, updated only in case of partial reading. */
+         private int sizep;
++        /** intHashtable that does the same thing as refsn in case of partial reading: major difference: not all the pages are read. */
++        private IntHashtable refsp;
++        /** Page number of the last page that was read (partial reading only) */
++        private int lastPageRead = -1;
++        /** stack to which pages dictionaries are pushed to keep track of the current page attributes */
++        private ArrayList pageInh;
+         private boolean keepPages;
+ 
+         private PageRefs(PdfReader reader) throws IOException {
+@@ -3176,7 +3260,8 @@ public class PdfReader implements PdfViewerPreferences {
+             return ref;
+         }
+ 
+-        /** Gets the page reference to this page.
++        /**
++         * Gets the page reference to this page.
+          * @param pageNum the page number. 1 is the first
+          * @return the page reference
+          */
+@@ -3275,6 +3360,10 @@ public class PdfReader implements PdfViewerPreferences {
+             }
+         }
+ 
++        /**
++         * Adds a PdfDictionary to the pageInh stack to keep track of the page attributes.
++         * @param nodePages	a Pages dictionary
++         */
+         private void pushPageAttributes(PdfDictionary nodePages) {
+             PdfDictionary dic = new PdfDictionary();
+             if (!pageInh.isEmpty()) {
+@@ -3288,6 +3377,9 @@ public class PdfReader implements PdfViewerPreferences {
+             pageInh.add(dic);
+         }
+ 
++        /**
++         * Removes the last PdfDictionary that was pushed to the pageInh stack.
++         */
+         private void popPageAttributes() {
+             pageInh.remove(pageInh.size() - 1);
+         }
+@@ -3295,6 +3387,7 @@ public class PdfReader implements PdfViewerPreferences {
+         private void iteratePages(PRIndirectReference rpage) throws IOException {
+             PdfDictionary page = (PdfDictionary)getPdfObject(rpage);
+             PdfArray kidsPR = page.getAsArray(PdfName.KIDS);
++            // reference to a leaf
+             if (kidsPR == null) {
+                 page.put(PdfName.TYPE, PdfName.PAGE);
+                 PdfDictionary dic = (PdfDictionary)pageInh.get(pageInh.size() - 1);
+@@ -3310,6 +3403,7 @@ public class PdfReader implements PdfViewerPreferences {
+                 }
+                 refsn.add(rpage);
+             }
++            // reference to a branch
+             else {
+                 page.put(PdfName.TYPE, PdfName.PAGES);
+                 pushPageAttributes(page);
+@@ -3493,4 +3587,4 @@ public class PdfReader implements PdfViewerPreferences {
+     	if (!encrypted || !ownerPasswordUsed) return null;
+     	return decrypt.computeUserPassword(password);
+     }
+-}
+\ No newline at end of file
++}
+diff --git a/src/core/com/lowagie/text/pdf/PdfStamperImp.java b/src/core/com/lowagie/text/pdf/PdfStamperImp.java
+index 60ed73e..cd43c89 100644
+--- a/src/core/com/lowagie/text/pdf/PdfStamperImp.java
++++ b/src/core/com/lowagie/text/pdf/PdfStamperImp.java
+@@ -955,6 +955,7 @@ class PdfStamperImp extends PdfWriter {
+             PdfReader.killIndirect(iFields);
+             acrodic.put(PdfName.FIELDS, new PdfArray());
+         }
++        acrodic.remove(PdfName.SIGFLAGS);
+ //        PdfReader.killIndirect(acro);
+ //        reader.getCatalog().remove(PdfName.ACROFORM);
+     }
+@@ -1206,10 +1207,10 @@ class PdfStamperImp extends PdfWriter {
+                             switch (rotation) {
+                                 case 90:
+                                     annot.put(PdfName.RECT, new PdfRectangle(
+-                                    pageSize.getTop() - rect.bottom(),
+-                                    rect.left(),
+                                     pageSize.getTop() - rect.top(),
+-                                    rect.right()));
++                                    rect.right(),
++                                    pageSize.getTop() - rect.bottom(),
++                                    rect.left()));
+                                     break;
+                                 case 180:
+                                     annot.put(PdfName.RECT, new PdfRectangle(
+@@ -1311,6 +1312,13 @@ class PdfStamperImp extends PdfWriter {
+             old.put(nn, entry.getValue());
+         }
+         PdfDictionary tree = PdfNameTree.writeTree(old, this);
++        // Remove old EmbeddedFiles object if preset
++        PdfObject oldEmbeddedFiles = names.get(PdfName.EMBEDDEDFILES);
++        if (oldEmbeddedFiles != null) {
++            PdfReader.killIndirect(oldEmbeddedFiles);
++        }
++
++        // Add new EmbeddedFiles object
+         names.put(PdfName.EMBEDDEDFILES, addToBody(tree).getIndirectReference());
+     }
+ 
+diff --git a/src/core/com/lowagie/text/pdf/PdfWriter.java b/src/core/com/lowagie/text/pdf/PdfWriter.java
+index c2d066c..8166095 100644
+--- a/src/core/com/lowagie/text/pdf/PdfWriter.java
++++ b/src/core/com/lowagie/text/pdf/PdfWriter.java
+@@ -1496,6 +1496,43 @@ public class PdfWriter extends DocWriter implements
+ 
+ //  [C5] named objects: named destinations, javascript, embedded files
+ 
++    /**
++     * Adds named destinations in bulk.
++     * Valid keys and values of the map can be found in the map
++     * that is created by SimpleNamedDestination.
++     * @param	map	a map with strings as keys for the names,
++     * 			and structured strings as values for the destinations
++     * @param	page_offset	number of pages that has to be added to
++     * 			the page numbers in the destinations (useful if you
++     *          use this method in combination with PdfCopy).
++     * @since	iText 5.0
++     */
++    public void addNamedDestinations(Map map, int page_offset) {
++    	Map.Entry entry;
++    	int page;
++    	String dest;
++    	PdfDestination destination;
++    	for (Iterator i = map.entrySet().iterator(); i.hasNext(); ) {
++    		entry = (Map.Entry)i.next();
++    		dest = (String)entry.getValue();
++    		page = Integer.parseInt(dest.substring(0, dest.indexOf(" ")));
++    		destination = new PdfDestination(dest.substring(dest.indexOf(" ") + 1));
++    		addNamedDestination((String)entry.getKey(), page + page_offset, destination);
++    	}
++    }
++
++    /**
++     * Adds one named destination.
++     * @param	name	the name for the destination
++     * @param	page	the page number where you want to jump to
++     * @param	dest	an explicit destination
++     * @since	iText 5.0
++     */
++    public void addNamedDestination(String name, int page, PdfDestination dest) {
++    	dest.addPage(getPageReference(page));
++    	pdf.localDestination(name, dest);
++    }
++
+      /**
+       * Use this method to add a JavaScript action at the document level.
+       * When the document opens, all this JavaScript runs.
+@@ -2604,12 +2641,24 @@ public class PdfWriter extends DocWriter implements
+      * Use this method to make sure a page is added,
+      * even if it's empty. If you use setPageEmpty(false),
+      * invoking newPage() after a blank page will add a newPage.
++     * setPageEmpty(true) won't have any effect.
+      * @param pageEmpty the state
+      */
+     public void setPageEmpty(boolean pageEmpty) {
++        if (pageEmpty)
++            return;
+         pdf.setPageEmpty(pageEmpty);
+     }
+ 
++    /**
++     * Checks if a newPage() will actually generate a new page.
++     * @return true if a new page will be generated, false otherwise
++     * @since 2.1.8
++     */
++    public boolean isPageEmpty() {
++        return pdf.isPageEmpty();
++    }
++
+ //  [U3] page actions (open and close)
+ 
+     /** action value */
+diff --git a/src/core/com/lowagie/text/pdf/RadioCheckField.java b/src/core/com/lowagie/text/pdf/RadioCheckField.java
+index bb4fa22..c385e01 100644
+--- a/src/core/com/lowagie/text/pdf/RadioCheckField.java
++++ b/src/core/com/lowagie/text/pdf/RadioCheckField.java
+@@ -377,6 +377,7 @@ public class RadioCheckField extends BaseField {
+             if ((options & REQUIRED) != 0)
+                 field.setFieldFlags(PdfFormField.FF_REQUIRED);
+             field.setValueAsName(checked ? onValue : "Off");
++            setCheckType(TYPE_CHECK);
+         }
+         if (text != null)
+             field.setMKNormalCaption(text);
+@@ -414,4 +415,4 @@ public class RadioCheckField extends BaseField {
+         }
+         return field;
+     }
+-}
+\ No newline at end of file
++}
+diff --git a/src/core/com/lowagie/text/pdf/RandomAccessFileOrArray.java b/src/core/com/lowagie/text/pdf/RandomAccessFileOrArray.java
+index 567d6d7..a02e5bd 100755
+--- a/src/core/com/lowagie/text/pdf/RandomAccessFileOrArray.java
++++ b/src/core/com/lowagie/text/pdf/RandomAccessFileOrArray.java
+@@ -88,7 +88,8 @@ public class RandomAccessFileOrArray implements DataInput {
+         this.plainRandomAccess = plainRandomAccess;
+         File file = new File(filename);
+         if (!file.canRead()) {
+-            if (filename.startsWith("file:/") || filename.startsWith("http://") || filename.startsWith("https://") || filename.startsWith("jar:")) {
++            if (filename.startsWith("file:/") || filename.startsWith("http://") 
++                    || filename.startsWith("https://") || filename.startsWith("jar:") || filename.startsWith("wsjar:")) {
+                 InputStream is = new URL(filename).openStream();
+                 try {
+                     this.arrayIn = InputStreamToArray(is);
+diff --git a/src/core/com/lowagie/text/pdf/TextField.java b/src/core/com/lowagie/text/pdf/TextField.java
+index 13b5dd8..3bd71e3 100644
+--- a/src/core/com/lowagie/text/pdf/TextField.java
++++ b/src/core/com/lowagie/text/pdf/TextField.java
+@@ -75,8 +75,8 @@ public class TextField extends BaseField {
+     private String[] choiceExports;
+     
+     /** Holds value of property choiceSelection. */
+-    private int choiceSelection;
+-    
++    private ArrayList choiceSelections = new ArrayList();
++
+     private int topFirst;
+     
+     private float extraMarginLeft;
+@@ -325,20 +325,18 @@ public class TextField extends BaseField {
+      */
+     PdfAppearance getListAppearance() throws IOException, DocumentException {
+         PdfAppearance app = getBorderAppearance();
+-        app.beginVariableText();
+         if (choices == null || choices.length == 0) {
+-            app.endVariableText();
+             return app;
+         }
+-        int topChoice = choiceSelection;
+-        if (topChoice >= choices.length)
+-            topChoice = choices.length - 1;
+-        if (topChoice < 0)
+-            topChoice = 0;
++        app.beginVariableText();
++
++        int topChoice = getTopChoice();
++
+         BaseFont ufont = getRealFont();
+         float usize = fontSize;
+         if (usize == 0)
+             usize = 12;
++
+         boolean borderExtra = borderStyle == PdfBorderDictionary.STYLE_BEVELED || borderStyle == PdfBorderDictionary.STYLE_INSET;
+         float h = box.getHeight() - borderWidth * 2;
+         float offsetX = borderWidth;
+@@ -346,17 +344,12 @@ public class TextField extends BaseField {
+             h -= borderWidth * 2;
+             offsetX *= 2;
+         }
++
+         float leading = ufont.getFontDescriptor(BaseFont.BBOXURY, usize) - ufont.getFontDescriptor(BaseFont.BBOXLLY, usize);
+         int maxFit = (int)(h / leading) + 1;
+         int first = 0;
+         int last = 0;
+-        last = topChoice + maxFit / 2 + 1;
+-        first = last - maxFit;
+-        if (first < 0) {
+-            last += first;
+-            first = 0;
+-        }
+-//        first = topChoice;
++        first = topChoice;
+         last = first + maxFit;
+         if (last > choices.length)
+             last = choices.length;
+@@ -366,16 +359,28 @@ public class TextField extends BaseField {
+         app.clip();
+         app.newPath();
+         Color fcolor = (textColor == null) ? GrayColor.GRAYBLACK : textColor;
++
++
++        // background boxes for selected value[s]
+         app.setColorFill(new Color(10, 36, 106));
+-        app.rectangle(offsetX, offsetX + h - (topChoice - first + 1) * leading, box.getWidth() - 2 * offsetX, leading);
+-        app.fill();
++        for (int curVal = 0; curVal < choiceSelections.size(); ++curVal) {
++        	int curChoice = ((Integer)choiceSelections.get( curVal )).intValue();
++        	// only draw selections within our display range... not strictly necessary with 
++        	// that clipping rect from above, but it certainly doesn't hurt either 
++        	if (curChoice >= first && curChoice <= last) {
++        		app.rectangle(offsetX, offsetX + h - (curChoice - first + 1) * leading, box.getWidth() - 2 * offsetX, leading);
++        		app.fill();
++        	}
++        }
+         float xp = offsetX * 2;
+         float yp = offsetX + h - ufont.getFontDescriptor(BaseFont.BBOXURY, usize);
+         for (int idx = first; idx < last; ++idx, yp -= leading) {
+             String ptext = choices[idx];
+             int rtl = checkRTL(ptext) ? PdfWriter.RUN_DIRECTION_LTR : PdfWriter.RUN_DIRECTION_NO_BIDI;
+             ptext = removeCRLF(ptext);
+-            Phrase phrase = composePhrase(ptext, ufont, (idx == topChoice) ? GrayColor.GRAYWHITE : fcolor, usize);
++            // highlight selected values against their (presumably) darker background
++            Color textCol = (choiceSelections.contains( new Integer( idx ))) ? GrayColor.GRAYWHITE : fcolor;
++            Phrase phrase = composePhrase(ptext, ufont, textCol, usize);
+             ColumnText.showTextAligned(app, Element.ALIGN_LEFT, phrase, xp, yp, 0, rtl, 0);
+         }
+         app.restoreState();
+@@ -479,22 +484,43 @@ public class TextField extends BaseField {
+         return getChoiceField(true);
+     }
+ 
++    private int getTopChoice() {
++    	if (choiceSelections == null || choiceSelections.size() ==0) {
++    		return 0;
++    	}
++    	
++    	Integer firstValue = (Integer)choiceSelections.get(0);
++    	
++    	if (firstValue == null) {
++    		return 0;
++    	}
++    	
++    	int topChoice = 0;
++    	if (choices != null) {
++    		topChoice = firstValue.intValue();
++    		topChoice = Math.min( topChoice, choices.length );
++    		topChoice = Math.max( 0, topChoice);
++    	} // else topChoice still 0
++    	return topChoice;
++    }
++
+     protected PdfFormField getChoiceField(boolean isList) throws IOException, DocumentException {
+         options &= (~MULTILINE) & (~COMB);
+         String uchoices[] = choices;
+         if (uchoices == null)
+             uchoices = new String[0];
+-        int topChoice = choiceSelection;
+-        if (topChoice >= uchoices.length)
+-            topChoice = uchoices.length - 1;
++
++        int topChoice = getTopChoice();
++
+         if (text == null)
+         	text = ""; //fixed by Kazuya Ujihara (ujihara.jp)
++
+         if (topChoice >= 0)
+             text = uchoices[topChoice];
+-        if (topChoice < 0)
+-            topChoice = 0;
++
+         PdfFormField field = null;
+         String mix[][] = null;
++
+         if (choiceExports == null) {
+             if (isList)
+                 field = PdfFormField.createList(writer, uchoices, topChoice);
+@@ -522,12 +548,19 @@ public class TextField extends BaseField {
+             field.setFieldName(fieldName);
+             if (uchoices.length > 0) {
+                 if (mix != null) {
+-                    field.setValueAsString(mix[topChoice][0]);
+-                    field.setDefaultValueAsString(mix[topChoice][0]);
+-                }
+-                else {
+-                    field.setValueAsString(text);
+-                    field.setDefaultValueAsString(text);
++                	if (choiceSelections.size() < 2) {
++                		field.setValueAsString(mix[topChoice][0]);
++                		field.setDefaultValueAsString(mix[topChoice][0]);
++                	} else {
++                		writeMultipleValues( field, mix);
++                	}
++                } else {
++                	if (choiceSelections.size() < 2) {
++                		field.setValueAsString(text);
++                		field.setDefaultValueAsString(text);
++                	} else {
++                		writeMultipleValues( field, null );
++                	}
+                 }
+             }
+             if ((options & READ_ONLY) != 0)
+@@ -536,7 +569,10 @@ public class TextField extends BaseField {
+                 field.setFieldFlags(PdfFormField.FF_REQUIRED);
+             if ((options & DO_NOT_SPELL_CHECK) != 0)
+                 field.setFieldFlags(PdfFormField.FF_DONOTSPELLCHECK);
+-        }
++            if ((options & MULTISELECT) != 0) {
++            	field.setFieldFlags( PdfFormField.FF_MULTISELECT );
++            }
++}
+         field.setBorderStyle(new PdfBorderDictionary(borderWidth, borderStyle, new PdfDashPattern(3)));
+         PdfAppearance tp;
+         if (isList) {
+@@ -573,7 +609,25 @@ public class TextField extends BaseField {
+         }
+         return field;
+     }
+-    
++
++    private void writeMultipleValues( PdfFormField field, String mix[][] ) {
++		PdfArray indexes = new PdfArray();
++		PdfArray values = new PdfArray();
++		for (int i = 0; i < choiceSelections.size(); ++i) {
++			int idx = ((Integer)choiceSelections.get( i )).intValue();
++			indexes.add( new PdfNumber( idx ) );
++
++            if (mix != null) 
++				values.add( new PdfString( mix[idx][0] ) );
++			else if (choices != null)
++				values.add( new PdfString( choices[ idx ] ) );
++		}
++
++		field.put( PdfName.V, values );
++		field.put( PdfName.I, indexes );
++
++    }
++
+     /**
+      * Gets the default text.
+      * @return the default text
+@@ -629,17 +683,53 @@ public class TextField extends BaseField {
+      * @return the zero based index of the selected item
+      */
+     public int getChoiceSelection() {
+-        return this.choiceSelection;
++    	return getTopChoice();
+     }
+-    
++
++    public ArrayList gteChoiceSelections() {
++    	return choiceSelections;
++    }
++
+     /**
+      * Sets the zero based index of the selected item.
+      * @param choiceSelection the zero based index of the selected item
+      */
+     public void setChoiceSelection(int choiceSelection) {
+-        this.choiceSelection = choiceSelection;
++        choiceSelections = new ArrayList();
++        choiceSelections.add( new Integer( choiceSelection ) );
+     }
+-    
++
++    /**
++     * adds another (or a first I suppose) selection to a MULTISELECT list.
++     * This doesn't do anything unless this.options & MUTLISELECT != 0 
++     * @param selection new selection
++     */
++    public void addChoiceSelection( int selection) {
++    	if ((this.options & BaseField.MULTISELECT) != 0) {
++    		choiceSelections.add( new Integer( selection ) );
++    	}
++    }
++
++    /**
++     * replaces the existing selections with the param. If this field isn't a MULTISELECT
++     * list, all but the first element will be removed.
++     * @param selections new selections.  If null, it clear()s the underlying ArrayList.
++     */
++    public void setChoiceSelections( ArrayList selections ) {
++    	if (selections != null) {
++    		choiceSelections = new ArrayList( selections );
++    		if (choiceSelections.size() > 1 && (options & BaseField.MULTISELECT) == 0 ) {
++    			// can't have multiple selections in a single-select field
++    			while (choiceSelections.size() > 1) {
++    				choiceSelections.remove( 1 );
++    			}
++    		}
++
++    	} else { 
++    		choiceSelections.clear();
++    	}
++    }
++
+     int getTopFirst() {
+         return topFirst;
+     }
+@@ -699,4 +789,4 @@ public class TextField extends BaseField {
+     public void setExtensionFont(BaseFont extensionFont) {
+         this.extensionFont = extensionFont;
+     }
+-}
+\ No newline at end of file
++}
+diff --git a/src/core/com/lowagie/text/pdf/XfaForm.java b/src/core/com/lowagie/text/pdf/XfaForm.java
+index 8579f62..7be1c10 100644
+--- a/src/core/com/lowagie/text/pdf/XfaForm.java
++++ b/src/core/com/lowagie/text/pdf/XfaForm.java
+@@ -51,7 +51,11 @@ package com.lowagie.text.pdf;
+ 
+ import java.io.ByteArrayInputStream;
+ import java.io.ByteArrayOutputStream;
++import java.io.File;
++import java.io.FileInputStream;
++import java.io.FileOutputStream;
+ import java.io.IOException;
++import java.io.InputStream;
+ import java.util.ArrayList;
+ import java.util.Collection;
+ import java.util.EmptyStackException;
+@@ -62,7 +66,11 @@ import javax.xml.parsers.DocumentBuilder;
+ import javax.xml.parsers.DocumentBuilderFactory;
+ import javax.xml.parsers.ParserConfigurationException;
+ 
++import org.w3c.dom.Document;
++import org.w3c.dom.Element;
+ import org.w3c.dom.Node;
++import org.w3c.dom.NodeList;
++import org.xml.sax.InputSource;
+ import org.xml.sax.SAXException;
+ 
+ import com.lowagie.text.xml.XmlDomWriter;
+@@ -1097,4 +1105,36 @@ public class XfaForm {
+     public Node getDatasetsNode() {
+         return datasetsNode;
+     }
++
++    public void fillXfaForm(File file) throws ParserConfigurationException, SAXException, IOException {
++		fillXfaForm(new FileInputStream(file));
++    }
++
++    public void fillXfaForm(InputStream is) throws ParserConfigurationException, SAXException, IOException {
++    	fillXfaForm(new InputSource(is));
++    }
++
++    public void fillXfaForm(InputSource is) throws ParserConfigurationException, SAXException, IOException {
++		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
++    	DocumentBuilder db = dbf.newDocumentBuilder();        		
++    	Document newdoc = db.parse(is);
++    	fillXfaForm(newdoc.getDocumentElement());
++    }
++
++    /**
++     * Replaces the data under datasets/data.
++     * @since	iText 5.0.0
++     */
++    public void fillXfaForm(Node node) {
++		Node data = datasetsNode.getFirstChild();
++		NodeList list = data.getChildNodes();
++		if (list.getLength() == 0) {
++			data.appendChild(domDocument.importNode(node, true));
++		}
++		else {
++			data.replaceChild(domDocument.importNode(node, true), data.getFirstChild());
++		}
++        extractNodes();
++		setChanged(true);
++    }
+ }
+diff --git a/src/core/com/lowagie/text/pdf/fonts/cmaps/CMap.java b/src/core/com/lowagie/text/pdf/fonts/cmaps/CMap.java
+index 9cd0bb2..7e932db 100644
+--- a/src/core/com/lowagie/text/pdf/fonts/cmaps/CMap.java
++++ b/src/core/com/lowagie/text/pdf/fonts/cmaps/CMap.java
+@@ -94,14 +94,14 @@ public class CMap
+         if( length == 1 )
+         {
+             
+-            key = new Integer( (code[offset]+256)%256 );
++            key = new Integer( code[offset] & 0xff );
+             result = (String)singleByteMappings.get( key );
+         }
+         else if( length == 2 )
+         {
+-            int intKey = (code[offset]+256)%256;
++            int intKey = code[offset] & 0xff;
+             intKey <<= 8;
+-            intKey += (code[offset+1]+256)%256;
++            intKey += code[offset+1] & 0xff;
+             key = new Integer( intKey );
+ 
+             result = (String)doubleByteMappings.get( key );
+@@ -122,7 +122,7 @@ public class CMap
+     {
+         if( src.length == 1 )
+         {
+-            singleByteMappings.put( new Integer( src[0] ), dest );
++            singleByteMappings.put( new Integer( src[0] & 0xff ), dest );
+         }
+         else if( src.length == 2 )
+         {
+@@ -158,4 +158,4 @@ public class CMap
+         return codeSpaceRanges;
+     }
+ 
+-}
+\ No newline at end of file
++}
+diff --git a/src/core/com/lowagie/text/pdf/parser/Matrix.java b/src/core/com/lowagie/text/pdf/parser/Matrix.java
+index 7a0acd5..1dd2a0f 100644
+--- a/src/core/com/lowagie/text/pdf/parser/Matrix.java
++++ b/src/core/com/lowagie/text/pdf/parser/Matrix.java
+@@ -54,25 +54,25 @@ import java.util.Arrays;
+  * @since	2.1.4
+  */
+ public class Matrix {
+-	/** an array position referring to a specific value in the matrix. */
+-    public static final int I11 = 0; 
+-	/** an array position referring to a specific value in the matrix. */
+-    public static final int I12 = 1; 
+-	/** an array position referring to a specific value in the matrix. */
++    /** the row=1, col=1 position ('a') in the matrix. */
++    public static final int I11 = 0;
++    /** the row=1, col=2 position ('b') in the matrix. */
++    public static final int I12 = 1;
++    /** the row=1, col=3 position (always 0 for 2-D) in the matrix. */
+     public static final int I13 = 2;
+-	/** an array position referring to a specific value in the matrix. */ 
+-    public static final int I21 = 3; 
+-	/** an array position referring to a specific value in the matrix. */
+-    public static final int I22 = 4;  
+-	/** an array position referring to a specific value in the matrix. */
+-    public static final int I23 = 5;  
+-	/** an array position referring to a specific value in the matrix. */
+-    public static final int I31 = 6;  
+-	/** an array position referring to a specific value in the matrix. */
+-    public static final int I32 = 7;  
+-	/** an array position referring to a specific value in the matrix. */
+-    public static final int I33 = 8;   
+-    
++    /** the row=2, col=1 position ('c') in the matrix. */
++    public static final int I21 = 3;
++    /** the row=2, col=2 position ('d') in the matrix. */
++    public static final int I22 = 4;
++    /** the row=2, col=3 position (always 0 for 2-D) in the matrix. */
++    public static final int I23 = 5;
++    /** the row=3, col=1 ('e', or X translation) position in the matrix. */
++    public static final int I31 = 6;
++	/** the row=3, col=2 ('f', or Y translation) position in the matrix. */
++    public static final int I32 = 7;
++	/** the row=3, col=3 position (always 1 for 2-D) in the matrix. */
++    public static final int I33 = 8;
++
+     /** the values inside the matrix (the identity matrix by default). */
+     private final float[] vals = new float[]{
+             1,0,0,
+@@ -153,6 +153,31 @@ public class Matrix {
+     }
+ 
+     /**
++     * Subtracts a matrix from this matrix and returns the results
++     * @param arg the matrix to subtract from this matrix
++     * @return
++     */
++    public Matrix subtract(Matrix arg){
++        Matrix rslt = new Matrix();
++
++        float[] a = vals;
++        float[] b = arg.vals;
++        float[] c = rslt.vals;
++
++        c[I11] = a[I11]-b[I11];
++        c[I12] = a[I12]-b[I12];
++        c[I13] = a[I13]-b[I13];
++        c[I21] = a[I21]-b[I21];
++        c[I22] = a[I22]-b[I22];
++        c[I23] = a[I23]-b[I23];
++        c[I31] = a[I31]-b[I31];
++        c[I32] = a[I32]-b[I32];
++        c[I33] = a[I33]-b[I33];
++
++        return rslt;
++    }
++
++    /**
+      * Checks equality of matrices.
+      * @param obj	the other Matrix that needs to be compared with this matrix.
+      * @return	true if both matrices are equal
+@@ -181,7 +206,7 @@ public class Matrix {
+     }
+     
+     /**
+-     * Generates a String representating of the matrix.
++     * Generates a String representation of the matrix.
+      * @return	the values, delimited with tabs and newlines.
+      * @see java.lang.Object#toString()
+      */
+diff --git a/src/core/com/lowagie/text/pdf/parser/PdfContentReaderTool.java b/src/core/com/lowagie/text/pdf/parser/PdfContentReaderTool.java
+index d9286ad..b74c01b 100644
+--- a/src/core/com/lowagie/text/pdf/parser/PdfContentReaderTool.java
++++ b/src/core/com/lowagie/text/pdf/parser/PdfContentReaderTool.java
+@@ -142,7 +142,7 @@ public class PdfContentReaderTool {
+         }
+ 
+         out.println("- - - - - Text Extraction - - - - - -");
+-        PdfTextExtractor extractor = new PdfTextExtractor(reader);
++        PdfTextExtractor extractor = new PdfTextExtractor(reader, new SimpleTextExtractingPdfContentRenderListener());
+         String extractedText = extractor.getTextFromPage(pageNum);
+         if (extractedText.length() != 0)
+             out.println(extractedText);
+diff --git a/src/core/com/lowagie/text/pdf/parser/PdfContentStreamProcessor.java b/src/core/com/lowagie/text/pdf/parser/PdfContentStreamProcessor.java
+index 3b080bb..9531992 100644
+--- a/src/core/com/lowagie/text/pdf/parser/PdfContentStreamProcessor.java
++++ b/src/core/com/lowagie/text/pdf/parser/PdfContentStreamProcessor.java
+@@ -69,7 +69,7 @@ import com.lowagie.text.pdf.PdfString;
+  * Processor for a PDF content Stream.
+  * @since	2.1.4
+  */
+-public abstract class PdfContentStreamProcessor {
++public class PdfContentStreamProcessor {
+ 
+ 	/** A map with all supported operators operators (PDF syntax). */
+     private Map operators;
+@@ -81,11 +81,17 @@ public abstract class PdfContentStreamProcessor {
+     private Matrix textMatrix;
+     /** Text line matrix. */
+     private Matrix textLineMatrix;
+-    
++    /** A list of listeners that will be notified of render events */
++    final private RenderListener renderListener;
++
+     /**
+-     * Creates a new PDF Content Stream Processor.
++     * Creates a new PDF Content Stream Processor that will send it's output to the
++     * designated render listener.
++     *
++     * @param renderListener the {@link AbstractRenderListener} that will receive rendering notifications
+      */
+-    public PdfContentStreamProcessor() {
++    public PdfContentStreamProcessor(RenderListener renderListener) {
++        this.renderListener = renderListener;
+         populateOperators();
+         reset();
+     }
+@@ -96,33 +102,53 @@ public abstract class PdfContentStreamProcessor {
+     private void populateOperators(){
+         operators = new HashMap();
+         
+-        operators.put("q", new PushGraphicsState());
+-        operators.put("Q", new PopGraphicsState());
+-        operators.put("cm", new ModifyCurrentTransformationMatrix());
+-        operators.put("gs", new ProcessGraphicsStateResource());
+-        
+-        operators.put("Tc", new SetTextCharacterSpacing());
+-        operators.put("Tw", new SetTextWordSpacing());
+-        operators.put("Tz", new SetTextHorizontalScaling());
+-        operators.put("TL", new SetTextLeading());
+-        operators.put("Tf", new SetTextFont());
+-        operators.put("Tr", new SetTextRenderMode());
+-        operators.put("Ts", new SetTextRise());
+-        
+-        operators.put("BT", new BeginText());
+-        operators.put("ET", new EndText());
++        registerContentOperator("q", new PushGraphicsState());
++        registerContentOperator("Q", new PopGraphicsState());
++        registerContentOperator("cm", new ModifyCurrentTransformationMatrix());
++        registerContentOperator("gs", new ProcessGraphicsStateResource());
++
++        SetTextCharacterSpacing tcOperator = new SetTextCharacterSpacing();
++        registerContentOperator("Tc", tcOperator);
++        SetTextWordSpacing twOperator = new SetTextWordSpacing();
++        registerContentOperator("Tw", twOperator);
++        registerContentOperator("Tz", new SetTextHorizontalScaling());
++        SetTextLeading tlOperator = new SetTextLeading();
++        registerContentOperator("TL", tlOperator);
++        registerContentOperator("Tf", new SetTextFont());
++        registerContentOperator("Tr", new SetTextRenderMode());
++        registerContentOperator("Ts", new SetTextRise());
++
++        registerContentOperator("BT", new BeginText());
++        registerContentOperator("ET", new EndText());
++
++        TextMoveStartNextLine tdOperator = new TextMoveStartNextLine();
++        registerContentOperator("Td", tdOperator);
++        registerContentOperator("TD", new TextMoveStartNextLineWithLeading(tdOperator, tlOperator));
++        registerContentOperator("Tm", new TextSetTextMatrix());
++        TextMoveNextLine tstarOperator = new TextMoveNextLine(tdOperator);
++        registerContentOperator("T*", tstarOperator);
++
++        ShowText tjOperator = new ShowText();
++        registerContentOperator("Tj", new ShowText());
++        MoveNextLineAndShowText tickOperator = new MoveNextLineAndShowText(tstarOperator, tjOperator);
++        registerContentOperator("'", tickOperator);
++        registerContentOperator("\"", new MoveNextLineAndShowTextWithSpacing(twOperator, tcOperator, tickOperator));
++        registerContentOperator("TJ", new ShowTextArray());
++    }
++
++    /**
++     * Registers a content operator that will be called when the specified operator string is encountered during content processing.
++     * Each operator may be registered only once (it is not legal to have multiple operators with the same operatorString)
++     * @param operatorString the operator id
++     * @param operator the operator that will receive notification when the operator is encountered
++     * @since 2.1.7
++     */
++    public void registerContentOperator(String operatorString, ContentOperator operator){
++        if (operators.containsKey(operatorString))
++            throw new IllegalArgumentException("Operator " + operatorString + " already registered");
++        operators.put(operatorString, operator);
++}
+ 
+-        operators.put("Td", new TextMoveStartNextLine());
+-        operators.put("TD", new TextMoveStartNextLineWithLeading());
+-        operators.put("Tm", new TextSetTextMatrix());
+-        operators.put("T*", new TextMoveNextLine());
+-        
+-        operators.put("Tj", new ShowText());
+-        operators.put("'", new MoveNextLineAndShowText());
+-        operators.put("\"", new MoveNextLineAndShowTextWithSpacing());
+-        operators.put("TJ", new ShowTextArray());
+-    }
+-    
+     /**
+      * Resets the graphics state stack, matrices and resources.
+      */
+@@ -138,7 +164,7 @@ public abstract class PdfContentStreamProcessor {
+      * Returns the current graphics state.
+      * @return	the graphics state
+      */
+-    public GraphicsState gs(){
++    private GraphicsState gs(){
+         return (GraphicsState)gsStack.peek();
+     }
+     
+@@ -147,7 +173,7 @@ public abstract class PdfContentStreamProcessor {
+      * @return	the text matrix
+      * @since 2.1.5
+      */
+-    public Matrix getCurrentTextMatrix(){
++    private Matrix getCurrentTextMatrix(){
+         return textMatrix;
+     }
+     
+@@ -156,7 +182,7 @@ public abstract class PdfContentStreamProcessor {
+      * @return	the line matrix
+      * @since 2.1.5
+      */
+-    public Matrix getCurrentTextLineMatrix(){
++    private Matrix getCurrentTextLineMatrix(){
+         return textLineMatrix;
+     }
+     
+@@ -165,7 +191,7 @@ public abstract class PdfContentStreamProcessor {
+      * @param operator	the PDF Syntax of the operator
+      * @param operands	a list with operands
+      */
+-    public void invokeOperator(PdfLiteral operator, ArrayList operands){
++    private void invokeOperator(PdfLiteral operator, ArrayList operands){
+         ContentOperator op = (ContentOperator)operators.get(operator.toString());
+         if (op == null){
+             //System.out.println("Skipping operator " + operator);
+@@ -189,45 +215,26 @@ public abstract class PdfContentStreamProcessor {
+     
+     /**
+      * Displays text.
+-     * @param text	the text that needs to be displayed
+-     * @param nextTextMatrix	a text matrix
+-     */
+-    abstract public void displayText(String text, Matrix nextTextMatrix);
+-    
+-    /**
+-     * Gets the width of a String.
+-     * @param string	the string that needs measuring
+-     * @param tj	text adjustment
+-     * @return	the width of a String
+-     */
+-    public float getStringWidth(String string, float tj){
+-        DocumentFont font = gs().font;
+-        char[] chars = string.toCharArray();
+-        float totalWidth = 0;
+-        for (int i = 0; i < chars.length; i++) {
+-            float w = font.getWidth(chars[i]) / 1000.0f;
+-            float wordSpacing = chars[i] == 32 ? gs().wordSpacing : 0f;
+-            totalWidth += ((w - tj/1000f) * gs().fontSize + gs().characterSpacing + wordSpacing) * gs().horizontalScaling;
+-        }
+-        
+-        return totalWidth;
+-    }
+-    
+-    /**
+-     * Displays text.
+      * @param string	the text to display
+-     * @param tj		the text adjustment
+      */
+-    public void displayPdfString(PdfString string, float tj){
++    private void displayPdfString(PdfString string){
+         String unicode = decode(string);
+-        
+-        float width = getStringWidth(unicode, tj); // this is width in unscaled units - we have to normalize by the Tm scaling
+ 
+-        Matrix nextTextMatrix = new Matrix(width, 0).multiply(textMatrix);
++        TextRenderInfo renderInfo = new TextRenderInfo(unicode, gs(), textMatrix);
+ 
+-        displayText(unicode, nextTextMatrix);
++        renderListener.renderText(renderInfo);
+ 
+-        textMatrix = nextTextMatrix;
++        textMatrix = new Matrix(renderInfo.getUnscaledWidth(), 0).multiply(textMatrix);
++    }
++
++    /**
++     * Adjusts the text matrix for the specified adjustment value (see TJ operator in the PDF spec for information)
++     * @param tj the text adjustment
++     */
++    private void applyTextAdjust(float tj){
++        float adjustBy = -tj/1000f * gs().fontSize * gs().horizontalScaling;
++
++        textMatrix = new Matrix(adjustBy, 0).multiply(textMatrix);
+     }
+     
+     /**
+@@ -265,10 +272,11 @@ public abstract class PdfContentStreamProcessor {
+             for (Iterator i = array.listIterator(); i.hasNext(); ) {
+             	Object entryObj = i.next();
+                 if (entryObj instanceof PdfString){
+-                    processor.displayPdfString((PdfString)entryObj, tj);
++                    processor.displayPdfString((PdfString)entryObj);
+                     tj = 0;
+                 } else {
+                     tj = ((PdfNumber)entryObj).floatValue();
++                    processor.applyTextAdjust(tj);
+                 }
+             }
+ 
+@@ -279,6 +287,16 @@ public abstract class PdfContentStreamProcessor {
+      * A content operator implementation (").
+      */
+     private static class MoveNextLineAndShowTextWithSpacing implements ContentOperator{
++        private final SetTextWordSpacing setTextWordSpacing;
++        private final SetTextCharacterSpacing setTextCharacterSpacing;
++        private final MoveNextLineAndShowText moveNextLineAndShowText;
++
++        public MoveNextLineAndShowTextWithSpacing(SetTextWordSpacing setTextWordSpacing, SetTextCharacterSpacing setTextCharacterSpacing, MoveNextLineAndShowText moveNextLineAndShowText) {
++            this.setTextWordSpacing = setTextWordSpacing;
++            this.setTextCharacterSpacing = setTextCharacterSpacing;
++            this.moveNextLineAndShowText = moveNextLineAndShowText;
++        }
++
+         public void invoke(PdfContentStreamProcessor processor, PdfLiteral operator, ArrayList operands) {
+             PdfNumber aw = (PdfNumber)operands.get(0);
+             PdfNumber ac = (PdfNumber)operands.get(1);
+@@ -286,15 +304,15 @@ public abstract class PdfContentStreamProcessor {
+             
+             ArrayList twOperands = new ArrayList(1);
+             twOperands.add(0, aw);
+-            processor.invokeOperator(new PdfLiteral("Tw"), twOperands);
++            setTextWordSpacing.invoke(processor, null, twOperands);
+ 
+             ArrayList tcOperands = new ArrayList(1);
+             tcOperands.add(0, ac);
+-            processor.invokeOperator(new PdfLiteral("Tc"), tcOperands);
++            setTextCharacterSpacing.invoke(processor, null, tcOperands);
+             
+             ArrayList tickOperands = new ArrayList(1);
+             tickOperands.add(0, string);
+-            processor.invokeOperator(new PdfLiteral("'"), tickOperands);
++            moveNextLineAndShowText.invoke(processor, null, tickOperands);
+         }
+     }
+ 
+@@ -302,9 +320,16 @@ public abstract class PdfContentStreamProcessor {
+      * A content operator implementation (').
+      */
+     private static class MoveNextLineAndShowText implements ContentOperator{
++        private final TextMoveNextLine textMoveNextLine;
++        private final ShowText showText;
++        public MoveNextLineAndShowText(TextMoveNextLine textMoveNextLine, ShowText showText) {
++            this.textMoveNextLine = textMoveNextLine;
++            this.showText = showText;
++        }
++
+         public void invoke(PdfContentStreamProcessor processor, PdfLiteral operator, ArrayList operands) {
+-            processor.invokeOperator(new PdfLiteral("T*"), new ArrayList(0));
+-            processor.invokeOperator(new PdfLiteral("Tj"), operands);
++            textMoveNextLine.invoke(processor, null, new ArrayList(0));
++            showText.invoke(processor, null, operands);
+         }
+     }
+ 
+@@ -314,8 +339,8 @@ public abstract class PdfContentStreamProcessor {
+     private static class ShowText implements ContentOperator{
+         public void invoke(PdfContentStreamProcessor processor, PdfLiteral operator, ArrayList operands) {
+             PdfString string = (PdfString)operands.get(0);
+-            
+-            processor.displayPdfString(string, 0);
++
++            processor.displayPdfString(string);
+         }
+     }
+     
+@@ -324,11 +349,16 @@ public abstract class PdfContentStreamProcessor {
+      * A content operator implementation (T*).
+      */
+     private static class TextMoveNextLine implements ContentOperator{
++        private final TextMoveStartNextLine moveStartNextLine;
++        public TextMoveNextLine(TextMoveStartNextLine moveStartNextLine){
++            this.moveStartNextLine = moveStartNextLine;
++        }
++
+         public void invoke(PdfContentStreamProcessor processor, PdfLiteral operator, ArrayList operands) {
+             ArrayList tdoperands = new ArrayList(2);
+             tdoperands.add(0, new PdfNumber(0));
+-            tdoperands.add(1, new PdfNumber(processor.gs().leading));
+-            processor.invokeOperator(new PdfLiteral("Td"), tdoperands);
++            tdoperands.add(1, new PdfNumber(-processor.gs().leading));
++            moveStartNextLine.invoke(processor, null, tdoperands);
+         }
+     }
+ 
+@@ -353,13 +383,20 @@ public abstract class PdfContentStreamProcessor {
+      * A content operator implementation (TD).
+      */
+     private static class TextMoveStartNextLineWithLeading implements ContentOperator{
++        private final TextMoveStartNextLine moveStartNextLine;
++        private final SetTextLeading setTextLeading;
++        public TextMoveStartNextLineWithLeading(TextMoveStartNextLine moveStartNextLine, SetTextLeading setTextLeading){
++            this.moveStartNextLine = moveStartNextLine;
++            this.setTextLeading = setTextLeading;
++        }
++
+         public void invoke(PdfContentStreamProcessor processor, PdfLiteral operator, ArrayList operands) {
+             float ty = ((PdfNumber)operands.get(1)).floatValue();
+             
+             ArrayList tlOperands = new ArrayList(1);
+             tlOperands.add(0, new PdfNumber(-ty));
+-            processor.invokeOperator(new PdfLiteral("TL"), tlOperands);
+-            processor.invokeOperator(new PdfLiteral("Td"), operands);
++            setTextLeading.invoke(processor, null, tlOperands);
++            moveStartNextLine.invoke(processor, null, operands);
+         }
+     }
+ 
+diff --git a/src/core/com/lowagie/text/pdf/parser/PdfTextExtractor.java b/src/core/com/lowagie/text/pdf/parser/PdfTextExtractor.java
+index a75d40e..aaaf5bc 100644
+--- a/src/core/com/lowagie/text/pdf/parser/PdfTextExtractor.java
++++ b/src/core/com/lowagie/text/pdf/parser/PdfTextExtractor.java
+@@ -46,10 +46,16 @@
+  */
+ package com.lowagie.text.pdf.parser;
+ 
++import java.io.ByteArrayOutputStream;
+ import java.io.IOException;
++import java.util.ListIterator;
+ 
++import com.lowagie.text.pdf.PRIndirectReference;
++import com.lowagie.text.pdf.PRStream;
++import com.lowagie.text.pdf.PdfArray;
+ import com.lowagie.text.pdf.PdfDictionary;
+ import com.lowagie.text.pdf.PdfName;
++import com.lowagie.text.pdf.PdfObject;
+ import com.lowagie.text.pdf.PdfReader;
+ import com.lowagie.text.pdf.RandomAccessFileOrArray;
+ 
+@@ -61,31 +67,85 @@ public class PdfTextExtractor {
+ 
+ 	/** The PdfReader that holds the PDF file. */
+     private final PdfReader reader;
+-    /** The processor that will extract the text. */
+-    private final SimpleTextExtractingPdfContentStreamProcessor extractionProcessor;
+-    
++
++    /** The {@link TextProvidingRenderListener} that will receive render notifications and provide resultant text */
++    private final TextProvidingRenderListener renderListener;
++
+     /**
+-     * Creates a new Text Extractor object.
++     * Creates a new Text Extractor object, using a {@link SimpleTextExtractingPdfContentRenderListener} as the render listener
+      * @param reader	the reader with the PDF
+      */
+     public PdfTextExtractor(PdfReader reader) {
+-        this.reader = reader;
+-        extractionProcessor = new SimpleTextExtractingPdfContentStreamProcessor();
++        this(reader, new SimpleTextExtractingPdfContentRenderListener());
+     }
+ 
+     /**
+      * Gets the content stream of a page.
++     * Creates a new Text Extractor object.
++     * @param reader    the reader with the PDF
++     * @param renderListener the render listener that will be used to analyze renderText operations and provide resultant text
++     */
++    public PdfTextExtractor(PdfReader reader, TextProvidingRenderListener renderListener) {
++        this.reader = reader;
++        this.renderListener = renderListener;
++    }
++
++    /**
++     * Gets the content bytes of a page.
+      * @param pageNum	the page number of page you want get the content stream from
+-     * @return	a byte array with the content stream of a page
++     * @return	a byte array with the effective content stream of a page
+      * @throws IOException
+      */
+     private byte[] getContentBytesForPage(int pageNum) throws IOException {
+         RandomAccessFileOrArray f = reader.getSafeFile();
+-        byte[] contentBytes = reader.getPageContent(pageNum, f);
+-        f.close();
+-        return contentBytes;
++        try{
++            final PdfDictionary pageDictionary = reader.getPageN(pageNum);
++            final PdfObject contentObject = pageDictionary.get(PdfName.CONTENTS);
++            final byte[] contentBytes = getContentBytesFromContentObject(contentObject);
++            return contentBytes;
++        } finally {
++            f.close();
++        }
++    }
++
++    /**
++     * Gets the content bytes from a content object, which may be a reference
++     * a stream or an array.
++     * @param contentObject the object to read bytes from
++     * @return the content bytes
++     * @throws IOException
++     */
++    private byte[] getContentBytesFromContentObject(final PdfObject contentObject) throws IOException {
++        final byte[] result;
++        switch (contentObject.type()) {
++            case PdfObject.INDIRECT:
++                final PRIndirectReference ref = (PRIndirectReference) contentObject;
++                final PdfObject directObject = PdfReader.getPdfObject(ref);
++                result = getContentBytesFromContentObject(directObject);
++                break;
++            case PdfObject.STREAM:
++                final PRStream stream = (PRStream) PdfReader.getPdfObject(contentObject);
++                result = PdfReader.getStreamBytes(stream);
++                break;
++            case PdfObject.ARRAY:
++                // Stitch together all content before calling processContent(), because
++                // processContent() resets state.
++                final ByteArrayOutputStream allBytes = new ByteArrayOutputStream();
++                final PdfArray contentArray = (PdfArray) contentObject;
++                final ListIterator iter = contentArray.listIterator();
++                while (iter.hasNext()) {
++                    final PdfObject element = (PdfObject) iter.next();
++                    allBytes.write(getContentBytesFromContentObject(element));
++                }
++                result = allBytes.toByteArray();
++                break;
++            default:
++                final String msg = "Unable to handle Content of type " + contentObject.getClass();
++                throw new IllegalStateException(msg);
++        }
++        return result;
+     }
+-    
++
+     /**
+      * Gets the text from a page.
+      * @param page	the page number of the page
+@@ -95,7 +155,9 @@ public class PdfTextExtractor {
+     public String getTextFromPage(int page) throws IOException {
+         PdfDictionary pageDic = reader.getPageN(page);
+         PdfDictionary resourcesDic = pageDic.getAsDict(PdfName.RESOURCES);
+-        extractionProcessor.processContent(getContentBytesForPage(page), resourcesDic);        
+-        return extractionProcessor.getResultantText();
++        renderListener.reset();
++        PdfContentStreamProcessor processor = new PdfContentStreamProcessor(renderListener);
++        processor.processContent(getContentBytesForPage(page), resourcesDic);
++        return renderListener.getResultantText();
+     }
+ }
+diff --git a/src/core/com/lowagie/text/pdf/parser/RenderListener.java b/src/core/com/lowagie/text/pdf/parser/RenderListener.java
+new file mode 100644
+index 0000000..2d03c27
+--- /dev/null
++++ b/src/core/com/lowagie/text/pdf/parser/RenderListener.java
+@@ -0,0 +1,65 @@
++/*
++ * Copyright 2009 by Kevin Day.
++ *
++ * The contents of this file are subject to the Mozilla Public License Version 1.1
++ * (the "License"); you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at http://www.mozilla.org/MPL/
++ *
++ * Software distributed under the License is distributed on an "AS IS" basis,
++ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
++ * for the specific language governing rights and limitations under the License.
++ *
++ * The Original Code is 'iText, a free JAVA-PDF library'.
++ *
++ * The Initial Developer of the Original Code is Bruno Lowagie. Portions created by
++ * the Initial Developer are Copyright (C) 1999-2008 by Bruno Lowagie.
++ * All Rights Reserved.
++ * Co-Developer of the code is Paulo Soares. Portions created by the Co-Developer
++ * are Copyright (C) 2000-2008 by Paulo Soares. All Rights Reserved.
++ *
++ * Contributor(s): all the names of the contributors are added in the source code
++ * where applicable.
++ *
++ * Alternatively, the contents of this file may be used under the terms of the
++ * LGPL license (the "GNU LIBRARY GENERAL PUBLIC LICENSE"), in which case the
++ * provisions of LGPL are applicable instead of those above.  If you wish to
++ * allow use of your version of this file only under the terms of the LGPL
++ * License and not to allow others to use your version of this file under
++ * the MPL, indicate your decision by deleting the provisions above and
++ * replace them with the notice and other provisions required by the LGPL.
++ * If you do not delete the provisions above, a recipient may use your version
++ * of this file under either the MPL or the GNU LIBRARY GENERAL PUBLIC LICENSE.
++ *
++ * This library is free software; you can redistribute it and/or modify it
++ * under the terms of the MPL as stated above or under the terms of the GNU
++ * Library General Public License as published by the Free Software Foundation;
++ * either version 2 of the License, or any later version.
++ *
++ * This library is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
++ * FOR A PARTICULAR PURPOSE. See the GNU Library general Public License for more
++ * details.
++ *
++ * If you didn't download this code from the following link, you should check if
++ * you aren't using an obsolete version:
++ * http://www.lowagie.com/iText/
++ */
++package com.lowagie.text.pdf.parser;
++
++/**
++ * Callback interface for render operations during {@link PdfContentStreamProcessor} execution
++ * @since    2.1.6
++ */
++public interface RenderListener {
++
++    /**
++     * Called when text should be rendered
++     * @param renderInfo information specifying what to render
++     */
++    public void renderText(TextRenderInfo renderInfo);
++
++    /**
++     * Resets the internal state of the RenderListener
++     */
++    public void reset();
++}
+diff --git a/src/core/com/lowagie/text/pdf/parser/SimpleTextExtractingPdfContentRenderListener.java b/src/core/com/lowagie/text/pdf/parser/SimpleTextExtractingPdfContentRenderListener.java
+new file mode 100644
+index 0000000..6ba4e3d
+--- /dev/null
++++ b/src/core/com/lowagie/text/pdf/parser/SimpleTextExtractingPdfContentRenderListener.java
+@@ -0,0 +1,159 @@
++/*
++ * Copyright 2009 by Kevin Day.
++ *
++ * The contents of this file are subject to the Mozilla Public License Version 1.1
++ * (the "License"); you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at http://www.mozilla.org/MPL/
++ *
++ * Software distributed under the License is distributed on an "AS IS" basis,
++ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
++ * for the specific language governing rights and limitations under the License.
++ *
++ * The Original Code is 'iText, a free JAVA-PDF library'.
++ *
++ * The Initial Developer of the Original Code is Bruno Lowagie. Portions created by
++ * the Initial Developer are Copyright (C) 1999-2008 by Bruno Lowagie.
++ * All Rights Reserved.
++ * Co-Developer of the code is Paulo Soares. Portions created by the Co-Developer
++ * are Copyright (C) 2000-2008 by Paulo Soares. All Rights Reserved.
++ *
++ * Contributor(s): all the names of the contributors are added in the source code
++ * where applicable.
++ *
++ * Alternatively, the contents of this file may be used under the terms of the
++ * LGPL license (the "GNU LIBRARY GENERAL PUBLIC LICENSE"), in which case the
++ * provisions of LGPL are applicable instead of those above.  If you wish to
++ * allow use of your version of this file only under the terms of the LGPL
++ * License and not to allow others to use your version of this file under
++ * the MPL, indicate your decision by deleting the provisions above and
++ * replace them with the notice and other provisions required by the LGPL.
++ * If you do not delete the provisions above, a recipient may use your version
++ * of this file under either the MPL or the GNU LIBRARY GENERAL PUBLIC LICENSE.
++ *
++ * This library is free software; you can redistribute it and/or modify it
++ * under the terms of the MPL as stated above or under the terms of the GNU
++ * Library General Public License as published by the Free Software Foundation;
++ * either version 2 of the License, or any later version.
++ *
++ * This library is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
++ * FOR A PARTICULAR PURPOSE. See the GNU Library general Public License for more
++ * details.
++ *
++ * If you didn't download this code from the following link, you should check if
++ * you aren't using an obsolete version:
++ * http://www.lowagie.com/iText/
++ */
++package com.lowagie.text.pdf.parser;
++
++
++/**
++ * A simple text extraction renderer.
++ *
++ * This renderer keeps track of the current Y position of each string.  If it detects
++ * that the y position has changed, it inserts a line break into the output.  If the
++ * PDF renders text in a non-top-to-bottom fashion, this will result in the text not
++ * being a true representation of how it appears in the PDF.
++ *
++ * This renderer also uses a simple strategy based on the font metrics to determine if
++ * a blank space should be inserted into the output.
++ *
++ * @since	2.1.5
++ */
++public class SimpleTextExtractingPdfContentRenderListener implements TextProvidingRenderListener {
++
++    /** keeps track of the Y position of the last rendered text */
++    private float lastYPos;
++    /** keeps track of the X position of the end of the last rendered text */
++    private float lastEndingXPos;
++
++    private Matrix lastTextLineMatrix;
++
++
++    private Vector lastStart;
++    private Vector lastEnd;
++
++    /** used to store the resulting String. */
++    private StringBuffer result;
++
++    /**
++     * Creates a new text extraction renderer.
++     */
++    public SimpleTextExtractingPdfContentRenderListener() {
++        reset();
++    }
++
++    public void reset() {
++        lastYPos = 0f;
++        lastEndingXPos = 0f;
++        lastTextLineMatrix = null;
++        result = new StringBuffer();
++    }
++
++    /**
++     * Returns the result so far.
++     * @return	a String with the resulting text.
++     */
++    public String getResultantText(){
++        return result.toString();
++    }
++    /**
++     * Writes text to the result.
++     * @param text  The text that needs to be displayed
++     * @param gs    The current graphics state, including the current font and various spacings needed to compute glyph widths
++     * @param renderInto The rectangle that the result will be rendered into
++     * @param spaceWidth The scaled width of a space character in the current font
++     * @see com.lowagie.text.pdf.parser.RenderListener#renderText(String, GraphicsState, Rectangle)
++     */
++
++    /**
++     * Captures text using a simplified algorithm for inserting hard returns and spaces
++     * @see com.lowagie.text.pdf.parser.AbstractRenderListener#renderText(java.lang.String, com.lowagie.text.pdf.parser.GraphicsState, com.lowagie.text.pdf.parser.Matrix, com.lowagie.text.pdf.parser.Matrix)
++     */
++    public void renderText(TextRenderInfo renderInfo) {
++        boolean firstRender = result.length() == 0;
++        boolean hardReturn = false;
++
++        Vector start = renderInfo.getStartPoint();
++        Vector end = renderInfo.getEndPoint();
++
++        if (!firstRender){
++            Vector x0 = start;
++            Vector x1 = lastStart;
++            Vector x2 = lastEnd;
++
++            // see http://mathworld.wolfram.com/Point-LineDistance2-Dimensional.html
++            float dist = (x2.subtract(x1)).cross((x1.subtract(x0))).lengthSquared() / x2.subtract(x1).lengthSquared();
++
++            float sameLineThreshold = 1f; // we should probably base this on the current font metrics, but 1 pt seems to be sufficient for the time being
++            if (dist > sameLineThreshold)
++                hardReturn = true;
++            
++            // Note:  Technically, we should check both the start and end positions, in case the angle of the text changed without any displacement
++            // but this sort of thing probably doesn't happen much in reality, so we'll leave it alone for now
++        }
++
++        if (hardReturn){
++            //System.out.println("<< Hard Return >>");
++            result.append('\n');
++        } else if (!firstRender){ 
++            if (result.charAt(result.length()-1) != ' ' && renderInfo.getText().charAt(0) != ' '){ // we only insert a blank space if the trailing character of the previous string wasn't a space, and the leading character of the current string isn't a space
++                float spacing = lastEnd.subtract(start).length();
++                if (spacing > renderInfo.getSingleSpaceWidth()/2f){
++                    result.append(' ');
++                    //System.out.println("Inserting implied space before '" + renderInfo.getText() + "'");
++                }
++            }
++        } else {
++            //System.out.println("Displaying first string of content '" + text + "' :: x1 = " + x1);
++        }
++
++        //System.out.println("[" + renderInfo.getStartPoint() + "]->[" + renderInfo.getEndPoint() + "] " + renderInfo.getText());
++        result.append(renderInfo.getText());
++
++        lastStart = start;
++        lastEnd = end;
++        
++    }
++
++}
+diff --git a/src/core/com/lowagie/text/pdf/parser/SimpleTextExtractingPdfContentStreamProcessor.java b/src/core/com/lowagie/text/pdf/parser/SimpleTextExtractingPdfContentStreamProcessor.java
+deleted file mode 100644
+index b3032e3..0000000
+--- a/src/core/com/lowagie/text/pdf/parser/SimpleTextExtractingPdfContentStreamProcessor.java
++++ /dev/null
+@@ -1,128 +0,0 @@
+-/*
+- * Copyright 2008 by Kevin Day.
+- *
+- * The contents of this file are subject to the Mozilla Public License Version 1.1
+- * (the "License"); you may not use this file except in compliance with the License.
+- * You may obtain a copy of the License at http://www.mozilla.org/MPL/
+- *
+- * Software distributed under the License is distributed on an "AS IS" basis,
+- * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+- * for the specific language governing rights and limitations under the License.
+- *
+- * The Original Code is 'iText, a free JAVA-PDF library'.
+- *
+- * The Initial Developer of the Original Code is Bruno Lowagie. Portions created by
+- * the Initial Developer are Copyright (C) 1999-2008 by Bruno Lowagie.
+- * All Rights Reserved.
+- * Co-Developer of the code is Paulo Soares. Portions created by the Co-Developer
+- * are Copyright (C) 2000-2008 by Paulo Soares. All Rights Reserved.
+- *
+- * Contributor(s): all the names of the contributors are added in the source code
+- * where applicable.
+- *
+- * Alternatively, the contents of this file may be used under the terms of the
+- * LGPL license (the "GNU LIBRARY GENERAL PUBLIC LICENSE"), in which case the
+- * provisions of LGPL are applicable instead of those above.  If you wish to
+- * allow use of your version of this file only under the terms of the LGPL
+- * License and not to allow others to use your version of this file under
+- * the MPL, indicate your decision by deleting the provisions above and
+- * replace them with the notice and other provisions required by the LGPL.
+- * If you do not delete the provisions above, a recipient may use your version
+- * of this file under either the MPL or the GNU LIBRARY GENERAL PUBLIC LICENSE.
+- *
+- * This library is free software; you can redistribute it and/or modify it
+- * under the terms of the MPL as stated above or under the terms of the GNU
+- * Library General Public License as published by the Free Software Foundation;
+- * either version 2 of the License, or any later version.
+- *
+- * This library is distributed in the hope that it will be useful, but WITHOUT
+- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+- * FOR A PARTICULAR PURPOSE. See the GNU Library general Public License for more
+- * details.
+- *
+- * If you didn't download this code from the following link, you should check if
+- * you aren't using an obsolete version:
+- * http://www.lowagie.com/iText/
+- */
+-package com.lowagie.text.pdf.parser;
+-
+-/**
+- * A simple text extraction processor.
+- * @since	2.1.4
+- */
+-public class SimpleTextExtractingPdfContentStreamProcessor extends PdfContentStreamProcessor {
+-
+-    /** keeps track of a text matrix. */
+-    Matrix lastTextLineMatrix = null;
+-    /** keeps track of a text matrix. */
+-    Matrix lastEndingTextMatrix = null;
+-
+-    /** The StringBuffer used to write the resulting String. */
+-    StringBuffer result = null;
+-
+-    /**
+-     * Creates a new text extraction processor.
+-     */
+-    public SimpleTextExtractingPdfContentStreamProcessor() {
+-    }
+-
+-    public void reset() {
+-        super.reset();
+-        lastTextLineMatrix = null;
+-        lastEndingTextMatrix = null;
+-        result = new StringBuffer();
+-    }
+-    
+-    /**
+-     * Returns the result so far.
+-     * @return	a String with the resulting text.
+-     */
+-    public String getResultantText(){
+-        return result.toString();
+-    }
+-    
+-    /**
+-     * Writes text to the result.
+-     * @param text	The text that needs to be displayed
+-     * @param endingTextMatrix	a text matrix
+-     * @see com.lowagie.text.pdf.parser.PdfContentStreamProcessor#displayText(java.lang.String, com.lowagie.text.pdf.parser.Matrix)
+-     */
+-    public void displayText(String text, Matrix endingTextMatrix){
+-        boolean hardReturn = false;
+-        if (lastTextLineMatrix != null && lastTextLineMatrix.get(Matrix.I32) != getCurrentTextLineMatrix().get(Matrix.I32)){
+-        //if (!textLineMatrix.equals(lastTextLineMatrix)){
+-            hardReturn = true;
+-        }
+-
+-        float currentX = getCurrentTextMatrix().get(Matrix.I31);
+-        if (hardReturn){
+-            //System.out.println("<Hard Return>");
+-            result.append('\n');
+-        } else if (lastEndingTextMatrix != null){
+-            float lastEndX = lastEndingTextMatrix.get(Matrix.I31);
+-            
+-            //System.out.println("Displaying '" + text + "' :: lastX + lastWidth = " + lastEndX + " =?= currentX = " + currentX + " :: Delta is " + (currentX - lastEndX));
+-            
+-            float spaceGlyphWidth = gs().font.getWidth(' ')/1000f;
+-            float spaceWidth = (spaceGlyphWidth * gs().fontSize + gs().characterSpacing + gs().wordSpacing) * gs().horizontalScaling; // this is unscaled!!
+-            Matrix scaled = new Matrix(spaceWidth, 0).multiply(getCurrentTextMatrix());
+-            float scaledSpaceWidth = scaled.get(Matrix.I31) - getCurrentTextMatrix().get(Matrix.I31);
+-            
+-            if (currentX - lastEndX > scaledSpaceWidth/2f ){
+-                //System.out.println("<Implied space on text '" + text + "'> lastEndX=" + lastEndX + ", currentX=" + currentX + ", spaceWidth=" + spaceWidth);
+-                result.append(' ');
+-            }
+-        } else {
+-            //System.out.println("Displaying first string of content '" + text + "' :: currentX = " + currentX);
+-        }
+-        
+-        //System.out.println("After displaying '" + text + "' :: Start at " + currentX + " end at " + endingTextMatrix.get(Matrix.I31));
+-        
+-        result.append(text);
+-
+-        lastTextLineMatrix = getCurrentTextLineMatrix();
+-        lastEndingTextMatrix = endingTextMatrix;
+-        
+-    }
+-
+-}
+diff --git a/src/core/com/lowagie/text/pdf/parser/TextProvidingRenderListener.java b/src/core/com/lowagie/text/pdf/parser/TextProvidingRenderListener.java
+new file mode 100644
+index 0000000..a2defa5
+--- /dev/null
++++ b/src/core/com/lowagie/text/pdf/parser/TextProvidingRenderListener.java
+@@ -0,0 +1,17 @@
++/*
++ * Created on Oct 28, 2009
++ * (c) 2009 Trumpet, Inc.
++ *
++ */
++package com.lowagie.text.pdf.parser;
++
++/**
++ * Defines an interface for {@link RenderListener}s that can return text
++ */
++public interface TextProvidingRenderListener extends RenderListener {
++    /**
++     * Returns the result so far.
++     * @return  a String with the resulting text.
++     */
++    public String getResultantText();
++}
+diff --git a/src/core/com/lowagie/text/pdf/parser/TextRenderInfo.java b/src/core/com/lowagie/text/pdf/parser/TextRenderInfo.java
+new file mode 100644
+index 0000000..9cf598a
+--- /dev/null
++++ b/src/core/com/lowagie/text/pdf/parser/TextRenderInfo.java
+@@ -0,0 +1,142 @@
++/*
++ * Copyright 2009 by Kevin Day.
++ *
++ * The contents of this file are subject to the Mozilla Public License Version 1.1
++ * (the "License"); you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at http://www.mozilla.org/MPL/
++ *
++ * Software distributed under the License is distributed on an "AS IS" basis,
++ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
++ * for the specific language governing rights and limitations under the License.
++ *
++ * The Original Code is 'iText, a free JAVA-PDF library'.
++ *
++ * The Initial Developer of the Original Code is Bruno Lowagie. Portions created by
++ * the Initial Developer are Copyright (C) 1999-2008 by Bruno Lowagie.
++ * All Rights Reserved.
++ * Co-Developer of the code is Paulo Soares. Portions created by the Co-Developer
++ * are Copyright (C) 2000-2008 by Paulo Soares. All Rights Reserved.
++ *
++ * Contributor(s): all the names of the contributors are added in the source code
++ * where applicable.
++ *
++ * Alternatively, the contents of this file may be used under the terms of the
++ * LGPL license (the "GNU LIBRARY GENERAL PUBLIC LICENSE"), in which case the
++ * provisions of LGPL are applicable instead of those above.  If you wish to
++ * allow use of your version of this file only under the terms of the LGPL
++ * License and not to allow others to use your version of this file under
++ * the MPL, indicate your decision by deleting the provisions above and
++ * replace them with the notice and other provisions required by the LGPL.
++ * If you do not delete the provisions above, a recipient may use your version
++ * of this file under either the MPL or the GNU LIBRARY GENERAL PUBLIC LICENSE.
++ *
++ * This library is free software; you can redistribute it and/or modify it
++ * under the terms of the MPL as stated above or under the terms of the GNU
++ * Library General Public License as published by the Free Software Foundation;
++ * either version 2 of the License, or any later version.
++ *
++ * This library is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
++ * FOR A PARTICULAR PURPOSE. See the GNU Library general Public License for more
++ * details.
++ *
++ * If you didn't download this code from the following link, you should check if
++ * you aren't using an obsolete version:
++ * http://www.lowagie.com/iText/
++ */
++package com.lowagie.text.pdf.parser;
++
++import com.lowagie.text.pdf.DocumentFont;
++
++/**
++ * Provides information and calculations needed by render listeners
++ * to display/evaluate text render operations.
++ * <br><br>
++ * This is passed between the {@link PdfContentStreamProcessor} and 
++ * {@link RenderListener} objects as text rendering operations are
++ * discovered
++ */
++public class TextRenderInfo {
++    private final String text;
++    private final Matrix textToUserSpaceTransformMatrix;
++    private final GraphicsState gs;
++
++    /**
++     * Creates a new TextRenderInfo object
++     * @param text the text that should be displayed
++     * @param gs the graphics state (note: at this time, this is not immutable, so don't cache it)
++     * @param textMatrix the text matrix at the time of the render operation
++     */
++    TextRenderInfo(String text, GraphicsState gs, Matrix textMatrix) {
++        this.text = text;
++        this.textToUserSpaceTransformMatrix = textMatrix.multiply(gs.ctm);
++        this.gs = gs;
++    }
++
++    /**
++     * @return the text to render
++     */
++    public String getText(){ 
++        return text; 
++    }
++
++    /**
++     * @return the unscaled (i.e. in Text space) width of the text
++     */
++    public float getUnscaledWidth(){ 
++        return getStringWidth(text); 
++    }
++
++    /**
++     * @return a vector in User space representing the start point of the text
++     */
++    public Vector getStartPoint(){ 
++        return new Vector(0, 0, 1).cross(textToUserSpaceTransformMatrix); 
++    }
++
++    /**
++     * @return a vector in User space representing the end point of the text (i.e. the 
++     * starting point of the text plus the width of the text, transformed by the applicable transformation matrices)
++     */
++    public Vector getEndPoint(){ 
++        return new Vector(getUnscaledWidth(), 0, 1).cross(textToUserSpaceTransformMatrix); 
++    }
++
++    /**
++     * @return The width, in user space units, of a single space character in the current font
++     */
++    public float getSingleSpaceWidth(){
++        return new Vector(getUnscaledFontSpaceWidth(), 0, 1).cross(textToUserSpaceTransformMatrix).subtract(getStartPoint()).length();
++    }
++
++    /**
++     * Calculates the width of a space character.  If the font does not define
++     * a width for a standard space character \u0020, we also attempt to use
++     * the width of \u00A0 (a non-breaking space in many fonts)
++     * @return the width of a single space character in text space units
++     */
++    private float getUnscaledFontSpaceWidth(){
++        char charToUse = ' ';
++        if (gs.font.getWidth(charToUse) == 0)
++            charToUse = '\u00A0';
++        return getStringWidth(String.valueOf(charToUse));
++    }
++
++    /**
++     * Gets the width of a String in text space units
++     * @param string    the string that needs measuring
++     * @return  the width of a String in text space units
++     */
++    private float getStringWidth(String string){
++        DocumentFont font = gs.font;
++        char[] chars = string.toCharArray();
++        float totalWidth = 0;
++        for (int i = 0; i < chars.length; i++) {
++            float w = font.getWidth(chars[i]) / 1000.0f;
++            float wordSpacing = chars[i] == 32 ? gs.wordSpacing : 0f;
++            totalWidth += (w * gs.fontSize + gs.characterSpacing + wordSpacing) * gs.horizontalScaling;
++        }
++
++        return totalWidth;
++    }    
++}
+diff --git a/src/core/com/lowagie/text/pdf/parser/Vector.java b/src/core/com/lowagie/text/pdf/parser/Vector.java
+new file mode 100644
+index 0000000..6b2909a
+--- /dev/null
++++ b/src/core/com/lowagie/text/pdf/parser/Vector.java
+@@ -0,0 +1,178 @@
++/*
++ * Copyright 2009 by Kevin Day.
++ *
++ * The contents of this file are subject to the Mozilla Public License Version 1.1
++ * (the "License"); you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at http://www.mozilla.org/MPL/
++ *
++ * Software distributed under the License is distributed on an "AS IS" basis,
++ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
++ * for the specific language governing rights and limitations under the License.
++ *
++ * The Original Code is 'iText, a free JAVA-PDF library'.
++ *
++ * The Initial Developer of the Original Code is Bruno Lowagie. Portions created by
++ * the Initial Developer are Copyright (C) 1999-2008 by Bruno Lowagie.
++ * All Rights Reserved.
++ * Co-Developer of the code is Paulo Soares. Portions created by the Co-Developer
++ * are Copyright (C) 2000-2008 by Paulo Soares. All Rights Reserved.
++ *
++ * Contributor(s): all the names of the contributors are added in the source code
++ * where applicable.
++ *
++ * Alternatively, the contents of this file may be used under the terms of the
++ * LGPL license (the "GNU LIBRARY GENERAL PUBLIC LICENSE"), in which case the
++ * provisions of LGPL are applicable instead of those above.  If you wish to
++ * allow use of your version of this file only under the terms of the LGPL
++ * License and not to allow others to use your version of this file under
++ * the MPL, indicate your decision by deleting the provisions above and
++ * replace them with the notice and other provisions required by the LGPL.
++ * If you do not delete the provisions above, a recipient may use your version
++ * of this file under either the MPL or the GNU LIBRARY GENERAL PUBLIC LICENSE.
++ *
++ * This library is free software; you can redistribute it and/or modify it
++ * under the terms of the MPL as stated above or under the terms of the GNU
++ * Library General Public License as published by the Free Software Foundation;
++ * either version 2 of the License, or any later version.
++ *
++ * This library is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
++ * FOR A PARTICULAR PURPOSE. See the GNU Library general Public License for more
++ * details.
++ *
++ * If you didn't download this code from the following link, you should check if
++ * you aren't using an obsolete version:
++ * http://www.lowagie.com/iText/
++ */
++package com.lowagie.text.pdf.parser;
++
++/**
++ * Represents a vector (i.e. a point in space).  This class is completely
++ * unrelated to the {@link java.util.Vector} class in the standard JRE.
++ * <br><br>
++ * For many PDF related operations, the z coordinate is specified as 1
++ * This is to support the coordinate transformation calculations.  If it
++ * helps, just think of all PDF drawing operations as occurring in a single plane
++ * with z=1.
++ */
++public class Vector {
++    /** index of the X coordinate */
++    public static final int I1 = 0;
++    /** index of the Y coordinate */
++    public static final int I2 = 1;
++    /** index of the Z coordinate */
++    public static final int I3 = 2;
++
++    /** the values inside the vector */
++    private final float[] vals = new float[]{
++            0,0,0
++    };
++
++    /**
++     * Creates a new Vector
++     * @param x the X coordinate
++     * @param y the Y coordinate
++     * @param z the Z coordinate
++     */
++    public Vector(float x, float y, float z) {
++        vals[I1] = x;
++        vals[I2] = y;
++        vals[I3] = z;
++    }
++
++    /**
++     * Gets the value from a coordinate of the vector
++     * @param index the index of the value to get (I1, I2 or I3)
++     * @return
++     */
++    public float get(int index){
++        return vals[index];
++    }
++
++    /**
++     * Computes the cross product of this vector and the specified matrix
++     * @param by the matrix to cross this vector with
++     * @return the result of the cross product
++     */
++    public Vector cross(Matrix by){
++
++        float x = vals[I1]*by.get(Matrix.I11) + vals[I2]*by.get(Matrix.I21) + vals[I3]*by.get(Matrix.I31);
++        float y = vals[I1]*by.get(Matrix.I12) + vals[I2]*by.get(Matrix.I22) + vals[I3]*by.get(Matrix.I32);
++        float z = vals[I1]*by.get(Matrix.I13) + vals[I2]*by.get(Matrix.I23) + vals[I3]*by.get(Matrix.I33);
++
++        return new Vector(x, y, z);
++    }
++
++    /**
++     * Computes the difference between this vector and the specified vector
++     * @param v the vector to subtract from this one
++     * @return the results of the subtraction
++     */
++    public Vector subtract(Vector v){
++        float x = vals[I1] - v.vals[I1];
++        float y = vals[I2] - v.vals[I2];
++        float z = vals[I3] - v.vals[I3];
++
++        return new Vector(x, y, z);
++    }
++
++    /**
++     * Computes the cross product of this vector and the specified vector
++     * @param with the vector to cross this vector with
++     * @return the cross product
++     */
++    public Vector cross(Vector with){
++        float x = vals[I2]*with.vals[I3] - vals[I3]*with.vals[I2];
++        float y = vals[I3]*with.vals[I1] - vals[I1]*with.vals[I3];
++        float z = vals[I1]*with.vals[I2] - vals[I2]*with.vals[I1];
++
++        return new Vector(x, y, z);
++    }
++
++    /**
++     * Computes the dot product of this vector with the specified vector
++     * @param with the vector to dot product this vector with
++     * @return the dot product
++     */
++    public float dot(Vector with){
++        return vals[I1]*with.vals[I1] + vals[I2]*with.vals[I2] + vals[I3]*with.vals[I3];
++    }
++
++    /**
++     * Computes the length of this vector
++     *
++     * <b>Note:</b> If you are working with raw vectors from PDF, be careful - 
++     * the Z axis will generally be set to 1.  If you want to compute the
++     * length of a vector, subtract it from the origin first (this will set
++     * the Z axis to 0).
++     *
++     * For example: 
++     * <code>aVector.subtract(originVector).length();</code>
++     *
++     * @return the length of this vector
++     */
++    public float length(){
++        return (float)Math.sqrt(lengthSquared());
++    }
++
++    /**
++     * Computes the length squared of this vector.
++     *
++     * The square of the length is less expensive to compute, and is often
++     * useful without taking the square root.
++     * <br><br>
++     * <b>Note:</b> See the important note under {@link Vector#length()}
++     *
++     * @return the square of the length of the vector
++     */
++    public float lengthSquared(){
++        return vals[I1]*vals[I1] + vals[I2]*vals[I2] + vals[I3]*vals[I3];
++    }
++
++    /**
++     * @see java.lang.Object#toString()
++     */
++    public String toString() {
++        return vals[I1]+","+vals[I2]+","+vals[I3];
++    }
++}
+diff --git a/src/core/com/lowagie/text/xml/SAXiTextHandler.java b/src/core/com/lowagie/text/xml/SAXiTextHandler.java
+index 0dcc9a6..9c1804c 100644
+--- a/src/core/com/lowagie/text/xml/SAXiTextHandler.java
++++ b/src/core/com/lowagie/text/xml/SAXiTextHandler.java
+@@ -787,6 +787,7 @@ public class SAXiTextHandler extends DefaultHandler {
+                                     width.substring(0, width.length() - 1)
+                                             + "f");
+                             total += cellWidths[j];
++                            cellNulls[j] = false;
+                         } catch (Exception e) {
+                             // empty on purpose
+                         }
+@@ -895,4 +896,4 @@ public class SAXiTextHandler extends DefaultHandler {
+     protected boolean isDocumentRoot(String tag) {
+         return ElementTags.ITEXT.equals(tag);
+     }
+-}
+\ No newline at end of file
++}
+diff --git a/src/core/com/lowagie/text/xml/simpleparser/SimpleXMLParser.java b/src/core/com/lowagie/text/xml/simpleparser/SimpleXMLParser.java
+index 279e1c6..1908304 100644
+--- a/src/core/com/lowagie/text/xml/simpleparser/SimpleXMLParser.java
++++ b/src/core/com/lowagie/text/xml/simpleparser/SimpleXMLParser.java
+@@ -244,6 +244,7 @@ public final class SimpleXMLParser {
+                     saveState(state);
+                     entity.setLength(0);
+                     state = ENTITY;
++                    nowhite = true;
+                 } else if (Character.isWhitespace((char)character)) {
+                 	if (nowhite)
+                 		text.append((char)character);
+@@ -758,4 +759,4 @@ public final class SimpleXMLParser {
+         // default encoding
+         return "UTF-8";
+     }
+-}
+\ No newline at end of file
++}

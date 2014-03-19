@@ -1,4 +1,4 @@
-# Copyright 1999-2013 Gentoo Foundation
+# Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -49,6 +49,7 @@ src_unpack() {
 }
 
 java_prepare() {
+	epatch "${FILESDIR}"/syoux2.patch
 	epatch "${FILESDIR}"/itext-2.1.5-pdftk.patch
 
 	find -name '*.java' -exec sed -i -e 's/DERObject$/ASN1Primitive/g' {} \;

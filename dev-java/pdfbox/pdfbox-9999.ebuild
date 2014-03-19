@@ -47,6 +47,7 @@ java_prepare() {
 	epatch "${FILESDIR}/xfdfimport-fix.patch"
 	epatch "${FILESDIR}/zuki-cjk.patch"
 	epatch "${FILESDIR}/zuki-pdfbox-ucs4.patch"
+	epatch "${FILESDIR}/zuki-315.patch"
 
 	#sed -i -e 's/\(material.getPrivateKey()\), "BC"/new org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient((java.security.PrivateKey)\1).setProvider("BC")/' \
 	#	src/main/java/org/apache/pdfbox/pdmodel/encryption/PublicKeySecurityHandler.java

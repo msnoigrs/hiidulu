@@ -28,6 +28,7 @@ DEPEND=">=virtual/jdk-1.6
 java_prepare() {
 	epatch "${FILESDIR}/zuki-fontbox.patch"
 	epatch "${FILESDIR}/zuki-fontbox-ucs4.patch"
+	epatch "${FILESDIR}/zuki-fontbox-cmap.patch"
 
 	mkdir lib || die
 	java-pkg_jar-from --into lib jcl-over-slf4j
