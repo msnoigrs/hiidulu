@@ -3,7 +3,7 @@
 # $Header: $
 
 EAPI=5
-PYTHON_COMPAT=( python{2_6,2_7,3_3} pypy2_0 )
+PYTHON_COMPAT=( python{2_6,2_7,3_3,3_4} pypy2_0 )
 
 EGIT_REPO_URI="https://github.com/kennethreitz/requests.git"
 

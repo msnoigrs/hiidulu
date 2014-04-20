@@ -1,10 +1,10 @@
-# Copyright 1999-2013 Gentoo Foundation
+# Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
 EAPI=5
 
-PYTHON_COMPAT=( python{2_7,3_2,3_3} pypy2_0 )
+PYTHON_COMPAT=( python{2_7,3_2,3_3,3_4} pypy2_0 )
 
 EGIT_REPO_URI="https://github.com/Pylons/deform.git"
 
@@ -31,11 +31,18 @@ DEPEND="${RDEPEND}
 # Include COPYRIGHT.txt because the license seems to require it.
 DOCS=( CHANGES.txt COPYRIGHT.txt README.txt )
 
-#python_prepare_all() {
-#	sed -i -e '/zope.deprecation/ d' setup.py
-#
-#	distutils-r1_python_prepare_all
-#}
+python_prepare_all() {
+	sed -i -e '/zope.deprecation/ d' setup.py
+
+	distutils-r1_python_prepare_all
+}
+
+python_install() {
+	distutils-r1_python_install
+
+	insinto $(python_get_sitedir)/${PN}
+	doins -r "${S}/${PN}/locale"
+}
 
 src_install() {
 	distutils-r1_src_install

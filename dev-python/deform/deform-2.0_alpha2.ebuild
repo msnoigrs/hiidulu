@@ -7,9 +7,11 @@ EAPI=5
 PYTHON_COMPAT=( python{2_7,3_2,3_3,3_4} pypy2_0 )
 inherit distutils-r1
 
+MY_P="${P/_alpha/a}"
+
 DESCRIPTION="Another form generation library"
 HOMEPAGE="http://docs.pylonsproject.org/projects/deform/en/latest/ http://pypi.python.org/pypi/deform https://github.com/Pylons/deform"
-SRC_URI="mirror://pypi/${PN:0:1}/${PN}/${P}.tar.gz"
+SRC_URI="mirror://pypi/${PN:0:1}/${PN}/${MY_P}.tar.gz"
 
 LICENSE="repoze"
 SLOT="0"
@@ -27,6 +29,8 @@ DEPEND="${RDEPEND}
 
 # Include COPYRIGHT.txt because the license seems to require it.
 DOCS=( CHANGES.txt COPYRIGHT.txt README.txt )
+
+S="${WORKDIR}/${MY_P}"
 
 python_prepare_all() {
 	sed -i -e '/zope.deprecation/ d' setup.py
