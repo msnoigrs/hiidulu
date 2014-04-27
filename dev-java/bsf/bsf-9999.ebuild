@@ -1,8 +1,8 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI="2"
+EAPI="5"
 JAVA_PKG_IUSE="doc examples source"
 inherit subversion java-pkg-2 java-ant-2
 
@@ -18,7 +18,7 @@ LICENSE="Apache-2.0"
 SLOT="2.3"
 KEYWORDS="~amd64 ~ia64 ~ppc ~ppc64 ~x86 ~x86-fbsd"
 #IUSE="python javascript tcl"
-IUSE="javascript tcl"
+IUSE="javascript python tcl"
 
 
 #COMMON_DEP="dev-java/jcl-over-slf4j
