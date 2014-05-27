@@ -1,4 +1,4 @@
-# Copyright 1999-2012 Gentoo Foundation
+# Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -18,9 +18,9 @@ SLOT="1"
 KEYWORDS="~amd64 ~ia64 ~ppc ~ppc64 ~x86 ~x86-fbsd"
 IUSE="test"
 
-DEPEND=">=virtual/jdk-1.5
+DEPEND=">=virtual/jdk-1.6
 	test? ( dev-java/ant-junit )"
-RDEPEND=">=virtual/jre-1.5"
+RDEPEND=">=virtual/jre-1.6"
 
 java_prepare() {
 	java-ant_ignore-system-classes

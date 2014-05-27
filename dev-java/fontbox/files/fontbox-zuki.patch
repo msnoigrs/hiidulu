@@ -1,0 +1,707 @@
+diff --git a/fontbox/src/main/java/org/apache/fontbox/cmap/CMap.java b/fontbox/src/main/java/org/apache/fontbox/cmap/CMap.java
+index a9239df..b866a2d 100644
+--- a/fontbox/src/main/java/org/apache/fontbox/cmap/CMap.java
++++ b/fontbox/src/main/java/org/apache/fontbox/cmap/CMap.java
+@@ -164,14 +164,15 @@ public class CMap
+      *
+      * @return The CID that matches the lookup.
+      */
+-    public int lookupCID(byte[] code, int offset, int length) 
++    public int lookupCID(byte[] code, int offset, int length)
+     {
+         if (isInCodeSpaceRanges(code,offset,length)) 
+         {
+             int codeAsInt = getCodeFromArray(code, offset, length);
+-            if (char2CIDMappings.containsKey(codeAsInt)) 
++            String codeAsStr = createStringFromBytes(code, offset, length);
++            if (char2CIDMappings.containsKey(codeAsStr)) 
+             {
+-                return char2CIDMappings.get(codeAsInt);
++                return char2CIDMappings.get(codeAsStr);
+             } 
+             else 
+             {
+@@ -188,6 +189,28 @@ public class CMap
+         }
+         return -1;
+     }
++
++    private String createStringFromBytes(byte[] bytes, int offset, int length )
++    {
++        String retval = null;
++        try
++        {
++            if (length == 1)
++            {
++                retval = new String(bytes, offset, length, "ISO-8859-1");
++            }
++            else
++            {
++                retval = new String(bytes, offset, length, "UTF-16BE");
++            }
++        }
++        catch (IOException e)
++        {
++            // do nothing
++        }
++        return retval;
++    }
++
+     
+     /**
+      * Convert the given part of a byte array to an integer.
+diff --git a/fontbox/src/main/java/org/apache/fontbox/ttf/AbstractTTFParser.java b/fontbox/src/main/java/org/apache/fontbox/ttf/AbstractTTFParser.java
+index 3fb4733..68383db 100644
+--- a/fontbox/src/main/java/org/apache/fontbox/ttf/AbstractTTFParser.java
++++ b/fontbox/src/main/java/org/apache/fontbox/ttf/AbstractTTFParser.java
+@@ -196,7 +196,7 @@ abstract class AbstractTTFParser
+         }
+     }
+ 
+-    private TTFTable readTableDirectory(TTFDataStream raf) throws IOException
++    protected TTFTable readTableDirectory(TTFDataStream raf) throws IOException
+     {
+         TTFTable retval = null;
+         String tag = raf.readString(4);
+diff --git a/fontbox/src/main/java/org/apache/fontbox/ttf/CIDFontType2Parser.java b/fontbox/src/main/java/org/apache/fontbox/ttf/CIDFontType2Parser.java
+index 95f6a6f..3aa55d7 100644
+--- a/fontbox/src/main/java/org/apache/fontbox/ttf/CIDFontType2Parser.java
++++ b/fontbox/src/main/java/org/apache/fontbox/ttf/CIDFontType2Parser.java
+@@ -16,9 +16,18 @@
+  */
+ package org.apache.fontbox.ttf;
+ 
++import java.io.File;
++import java.io.InputStream;
++import java.io.IOException;
+ 
+ public class CIDFontType2Parser extends AbstractTTFParser
+-{   
++{
++    /** Number of fonts in ttc file: ttc file only */
++    private int numFonts;
++
++    /** Offest of each font in ttc file: ttc file only */
++    private long[] offsetTable;
++
+ 	public CIDFontType2Parser() {
+ 		super(false);
+ 	}
+@@ -27,4 +36,109 @@ public class CIDFontType2Parser extends AbstractTTFParser
+ 		super(isEmbedded);
+ 	}
+ 
++    /**
++     * Parse a TTC file and set the offset for the each font
++     * 
++     * @param raf The TTC file.
++     * @throws IOException If there is an error parsing the true type font.
++     */
++    public void parseTTC(String ttcFile) throws IOException
++    {
++        RAFDataStream raf = new RAFDataStream(ttcFile, "r");
++        parseTTC(raf);
++    }
++
++    /**
++     * Parse a TTC file and set the offset for the each font
++     * 
++     * @param raf The TTC file.
++     * @throws IOException If there is an error parsing the true type font.
++     */
++    public void parseTTC(File ttcFile) throws IOException
++    {
++        RAFDataStream raf = new RAFDataStream(ttcFile, "r");
++        parseTTC(raf);
++    }
++
++    /**
++     * Parse a TTC file and set the offset for the each font
++     * 
++     * @param raf The TTC file.
++     * @throws IOException If there is an error parsing the true type font.
++     */
++    public void parseTTC(InputStream ttcData) throws IOException
++    {
++        parseTTC(new MemoryTTFDataStream(ttcData));
++    }
++
++    /**
++     * Parse a TTC file and set the offset for the each font
++     * 
++     * @param raf The TTC file.
++     * @throws IOException If there is an error parsing the true type font.
++     */
++    public void parseTTC(TTFDataStream raf) throws IOException
++    {
++        String ttcTag = raf.readString(4);
++        if (!"ttcf".equals(ttcTag))
++        {
++            throw new IOException("This is not ttc file");
++        }
++        float version = raf.read32Fixed();
++        numFonts = (int)raf.readUnsignedInt();
++        offsetTable = new long[numFonts];
++        for (int i=0; i<numFonts; i++)
++        {
++            offsetTable[i] = raf.readUnsignedInt();
++        }
++
++        if (version > 1.0)
++        {
++            raf.readUnsignedInt();  // ulDsigTag
++            raf.readUnsignedInt();  // ulDsigLength
++            raf.readUnsignedInt();  // ulDsigLength
++        }
++    }
++
++
++    /**
++     * Parse a file and get a true type font.
++     * 
++     * @param raf The TTC file.
++     * @param index The Font index in the TTC file
++     * @return A true type font.
++     * @throws IOException If there is an error parsing the true type font.
++     */
++    public TrueTypeFont parseTTF(TTFDataStream raf, int index) throws IOException
++    {
++        if (!isValidIndex(index))
++        {
++            throw new IOException("Invalid font index "+index);
++        }
++
++        TrueTypeFont font = new TrueTypeFont(raf);
++        raf.seek(offsetTable[index]);
++
++        font.setVersion(raf.read32Fixed());
++        int numberOfTables = raf.readUnsignedShort();
++        int searchRange = raf.readUnsignedShort();
++        int entrySelector = raf.readUnsignedShort();
++        int rangeShift = raf.readUnsignedShort();
++        for (int i = 0; i < numberOfTables; i++)
++        {
++            TTFTable table = super.readTableDirectory(raf);
++            font.addTable(table);
++        }
++
++        // need to initialize a couple tables in a certain order
++        parseTables(font, raf);
++
++        return font;
++    }
++
++    private boolean isValidIndex(int index)
++    {
++        return (0 <= index && index <= numFonts);
++    }
++
+ }
+diff --git a/fontbox/src/main/java/org/apache/fontbox/ttf/CMAPEncodingEntry.java b/fontbox/src/main/java/org/apache/fontbox/ttf/CMAPEncodingEntry.java
+index 79c8aa8..a2e7b2c 100644
+--- a/fontbox/src/main/java/org/apache/fontbox/ttf/CMAPEncodingEntry.java
++++ b/fontbox/src/main/java/org/apache/fontbox/ttf/CMAPEncodingEntry.java
+@@ -23,6 +23,9 @@ import java.util.HashMap;
+ import java.util.Map;
+ import java.util.Map.Entry;
+ 
++import org.apache.commons.logging.Log;
++import org.apache.commons.logging.LogFactory;
++
+ /**
+  * An encoding entry for a cmap.
+  * 
+@@ -31,6 +34,8 @@ import java.util.Map.Entry;
+  */
+ public class CMAPEncodingEntry
+ {
++    private static final Log LOG = LogFactory.getLog(CMAPEncodingEntry.class);
++
+     private static final long LEAD_OFFSET = 0xD800 - (0x10000 >> 10);
+     private static final long SURROGATE_OFFSET = 0x10000 - (0xD800 << 10) - 0xDC00;
+ 
+diff --git a/fontbox/src/main/java/org/apache/fontbox/ttf/CMAPTable.java b/fontbox/src/main/java/org/apache/fontbox/ttf/CMAPTable.java
+index 9ace400..3c9287f 100644
+--- a/fontbox/src/main/java/org/apache/fontbox/ttf/CMAPTable.java
++++ b/fontbox/src/main/java/org/apache/fontbox/ttf/CMAPTable.java
+@@ -75,6 +75,11 @@ public class CMAPTable extends TTFTable
+      */
+     public static final int ENCODING_JOHAB = 6;
+ 
++    /**
++     * An encoding constant.
++     */
++    public static final int ENCODING_UCS4 = 10;
++
+     private CMAPEncodingEntry[] cmaps;
+ 
+     /**
+diff --git a/fontbox/src/main/java/org/apache/fontbox/ttf/OS2WindowsMetricsTable.java b/fontbox/src/main/java/org/apache/fontbox/ttf/OS2WindowsMetricsTable.java
+index 8636b53..921acc6 100644
+--- a/fontbox/src/main/java/org/apache/fontbox/ttf/OS2WindowsMetricsTable.java
++++ b/fontbox/src/main/java/org/apache/fontbox/ttf/OS2WindowsMetricsTable.java
+@@ -674,6 +674,86 @@ public class OS2WindowsMetricsTable extends TTFTable
+         this.winDescent = winDescentValue;
+     }
+ 
++    /**
++     * @return Returns the height.
++     */
++    public int getHeight()
++    {
++        return height;
++    }
++
++    /**
++     * @param height The height to set.
++     */
++    public void setHeight(int height)
++    {
++        this.height = height;
++    }
++
++    /**
++     * @return Returns the capHeight.
++     */
++    public int getCapHeight()
++    {
++        return capHeight;
++    }
++
++    /**
++     * @param capHeight The capHeight to set.
++     */
++    public void setCapHeight(int capHeight)
++    {
++        this.capHeight = capHeight;
++    }
++
++    /**
++     * @return Returns the default char.
++     */
++    public int getDefaultChar()
++    {
++        return defaultChar;
++    }
++
++    /**
++     * @param defaultChar The defaultChar to set.
++     */
++    public void setDefaultChar(int defaultChar)
++    {
++        this.defaultChar = defaultChar;
++    }
++
++    /**
++     * @return Returns the breakChar.
++     */
++    public int getBreakChar()
++    {
++        return breakChar;
++    }
++
++    /**
++     * @param breakChar The breakChar to set.
++     */
++    public void setBreakChar(int breakChar)
++    {
++        this.breakChar = breakChar;
++    }
++
++    /**
++     * @return Returns the maxContext.
++     */
++    public int getMaxContext()
++    {
++        return maxContext;
++    }
++
++    /**
++     * @param maxContext The MaxContext to set.
++     */
++    public void setMaxContext(int maxContext)
++    {
++        this.maxContext = maxContext;
++    }
++
+     private int version;
+     private short averageCharWidth;
+     private int weightClass;
+@@ -707,6 +787,11 @@ public class OS2WindowsMetricsTable extends TTFTable
+     private int winDescent;
+     private long codePageRange1 = -1;
+     private long codePageRange2 = -1;
++    private int height = 0;
++    private int capHeight = 0;
++    private int defaultChar = 0;
++    private int breakChar = 32;
++    private int maxContext = 2;
+ 
+     /**
+      * A tag that identifies this table type.
+@@ -758,5 +843,13 @@ public class OS2WindowsMetricsTable extends TTFTable
+             codePageRange1 = data.readUnsignedInt();
+             codePageRange2 = data.readUnsignedInt();
+         }
++        if (version >= 2)
++        {
++            height = data.readSignedShort();
++            capHeight = data.readSignedShort();
++            defaultChar = data.readUnsignedShort();
++            breakChar = data.readUnsignedShort();
++            maxContext = data.readUnsignedShort();
++        }
+     }
+ }
+diff --git a/fontbox/src/main/java/org/apache/fontbox/ttf/TTFSubFont.java b/fontbox/src/main/java/org/apache/fontbox/ttf/TTFSubFont.java
+index daddf5b..42c38b8 100755
+--- a/fontbox/src/main/java/org/apache/fontbox/ttf/TTFSubFont.java
++++ b/fontbox/src/main/java/org/apache/fontbox/ttf/TTFSubFont.java
+@@ -55,7 +55,7 @@ public class TTFSubFont
+     private static final byte[] PAD_BUF = new byte[] {0,0,0};
+     
+     private final TrueTypeFont baseTTF;
+-    private final String nameSuffix;
++    private final String namePrefix;
+     private final CMAPEncodingEntry baseCmap;
+     
+     // A map of unicode char codes to glyph IDs of the original font.
+@@ -63,34 +63,56 @@ public class TTFSubFont
+     // A sorted version of this set will comprise the generated glyph IDs
+     // for the written truetype font.
+     private final SortedSet<Integer> glyphIds;
++
++    private boolean useUCS4;
+     
+     /**
+-     * Constructs a subfont based on the given font using the given suffix.
++     * Constructs a subfont based on the given font using the given prefix.
+      * 
+      * @param baseFont the base font of the subfont
+-     * @param suffix suffix used for the naming
++     * @param prefix prefix used for the naming
+      * 
+      */
+-    public TTFSubFont(TrueTypeFont baseFont, String suffix) 
++    public TTFSubFont(TrueTypeFont baseFont, String prefix) 
+     {
+         baseTTF = baseFont;
+-        nameSuffix = suffix;
++        namePrefix = prefix;
+         characters = new TreeMap<Integer, Integer>();
+         glyphIds = new TreeSet<Integer>();
+         
+         CMAPEncodingEntry[] cmaps = this.baseTTF.getCMAP().getCmaps();
+-        CMAPEncodingEntry unicodeCmap = null;
++        CMAPEncodingEntry unicodeCmap_bmp = null;
++        CMAPEncodingEntry unicodeCmap_ucs4 = null;
+         
+         for (CMAPEncodingEntry cmap : cmaps) 
+         {
+             // take first unicode map.
+-            if (cmap.getPlatformId() == 0 || (cmap.getPlatformId() == 3 && cmap.getPlatformEncodingId() == 1)) 
++            if ( (cmap.getPlatformId() == 3 && cmap.getPlatformEncodingId() == 10)
++              || (cmap.getPlatformId() == 0 && (cmap.getPlatformEncodingId() == 4
++                                             || cmap.getPlatformEncodingId() == 6)) )
+             {
+-                unicodeCmap = cmap;
++                unicodeCmap_ucs4 = cmap;
+                 break;
+             }
++            else if ((cmap.getPlatformId() == 0 && cmap.getPlatformEncodingId() != 4
++                                                && cmap.getPlatformEncodingId() != 6)
++                  || (cmap.getPlatformId() == 3 && cmap.getPlatformEncodingId() == 1)) 
++            {
++                unicodeCmap_bmp = cmap;
++            }
++        }
++
++        if (unicodeCmap_ucs4 != null)
++        {
++            baseCmap = unicodeCmap_ucs4;
++            useUCS4 = true;
+         }
+-        baseCmap = unicodeCmap;
++        else
++        {
++            baseCmap = unicodeCmap_bmp;
++            useUCS4 = false;
++        }
++
+         // add notdef character.
+         addCharCode(0);
+     }
+@@ -330,7 +352,7 @@ public class TTFSubFont
+     {
+         return nr.getPlatformId() == NameRecord.PLATFORM_WINDOWS 
+                 && nr.getPlatformEncodingId() == NameRecord.PLATFORM_ENCODING_WINDOWS_UNICODE 
+-                && nr.getLanguageId() == 0 
++                //&& nr.getLanguageId() == 0 (ex, DevaVuSans uses 0x0409(=1033) United States)
+                 && nr.getNameId() >= 0 && nr.getNameId() < 7;
+     }
+     
+@@ -413,9 +435,9 @@ public class TTFSubFont
+                     }
+                 }
+                 String value = nr.getString();
+-                if (nr.getNameId() == 6 && this.nameSuffix != null) 
++                if (nr.getNameId() == 6 && this.namePrefix != null) 
+                 {
+-                    value += this.nameSuffix;
++                    value = this.namePrefix + value;
+                 }
+                 names[j] = value.getBytes(charset);
+                 ++j;
+@@ -810,7 +832,7 @@ public class TTFSubFont
+          */
+         writeUint16(dos,0);
+         writeUint16(dos,1);
+-        /*
++       /*
+          * UInt16    platformID    Platform identifier
+          * UInt16    platformSpecificID    Platform-specific encoding identifier
+          * UInt32    offset    Offset of the mapping table
+@@ -869,6 +891,130 @@ public class TTFSubFont
+         endCode[nseg] = 0xffff;
+         idDelta[nseg] = 1;
+         ++nseg;
++
++        /*
++         * UInt16    format    Format number is set to 4     
++         * UInt16    length    Length of subtable in bytes     
++         * UInt16    language    Language code for this encoding subtable, or zero if language-independent     
++         * UInt16    segCountX2    2 * segCount     
++         * UInt16    searchRange    2 * (2**FLOOR(log2(segCount)))     
++         * UInt16    entrySelector    log2(searchRange/2)     
++         * UInt16    rangeShift    (2 * segCount) - searchRange     
++         * UInt16    endCode[segCount]    Ending character code for each segment, last = 0xFFFF.    
++         * UInt16    reservedPad    This value should be zero    
++         * UInt16    startCode[segCount]    Starting character code for each segment    
++         * UInt16    idDelta[segCount]    Delta for all character codes in segment     
++         * UInt16    idRangeOffset[segCount]    Offset in bytes to glyph indexArray, or 0     
++         * UInt16    glyphIndexArray[variable]    Glyph index array
++         */
++        
++        writeUint16(dos,4);
++        writeUint16(dos, 8*2 + nseg * (4*2));
++        writeUint16(dos,0);
++        writeUint16(dos,nseg*2);
++        int nsegHigh = Integer.highestOneBit(nseg);
++        writeUint16(dos,nsegHigh*2);
++        writeUint16(dos,log2i(nsegHigh));
++        writeUint16(dos,2*(nseg-nsegHigh));
++        
++        for (int i=0;i<nseg;++i) 
++        {    
++            writeUint16(dos,endCode[i]);
++        }
++        writeUint16(dos,0);
++        for (int i=0;i<nseg;++i) 
++        {    
++            writeUint16(dos,startCode[i]);
++        }
++        for (int i=0;i<nseg;++i) 
++        {    
++            writeUint16(dos,idDelta[i]);
++        }
++        for (int i=0;i<nseg;++i) 
++        {    
++            writeUint16(dos,0);
++        }
++        LOG.debug("Finished table [cmap].");
++        return bos.toByteArray();
++    }
++
++    private byte[] buildUCS4CmapTable() throws IOException 
++    {
++        ByteArrayOutputStream bos = new ByteArrayOutputStream();
++        DataOutputStream dos = new DataOutputStream(bos);
++        LOG.debug("Building table [cmap]...");
++        /*
++         * UInt16    version    Version number (Set to zero)
++         * UInt16    numberSubtables    Number of encoding subtables
++         */
++        writeUint16(dos,0);
++        writeUint16(dos,2);
++       /*
++         * UInt16    platformID    Platform identifier
++         * UInt16    platformSpecificID    Platform-specific encoding identifier
++         * UInt32    offset    Offset of the mapping table
++         */
++        writeUint16(dos,3); // unicode
++        writeUint16(dos,1); // Default Semantics
++        writeUint32(dos, 8 * 2 + 4);
++        // mapping of type 4.
++        Iterator<Entry<Integer, Integer>> it = this.characters.entrySet().iterator();
++        it.next(); // notdef
++        Entry<Integer, Integer> lastChar = it.next();
++        Entry<Integer, Integer> prevChar = lastChar;
++        int lastGid = this.getNewGlyphId(lastChar.getValue());
++
++        int[] startCode = new int[this.characters.size()];
++        int[] endCode = new int[this.characters.size()];
++        int[] idDelta = new int[this.characters.size()];
++        int nseg = 0;
++        while(it.hasNext()) 
++        {
++            Entry<Integer, Integer> curChar = it.next();
++            int curGid = this.getNewGlyphId(curChar.getValue());
++            
++            if (curChar.getKey() != prevChar.getKey()+1 ||
++                    curGid - lastGid != curChar.getKey() - lastChar.getKey()) 
++            {
++                // Don't emit ranges, which map to the undef glyph, the
++                // undef glyph is emitted a the very last segment.
++                if (lastGid != 0) 
++                {
++                    startCode[nseg] = lastChar.getKey();
++                    endCode[nseg] = prevChar.getKey();
++                    idDelta[nseg] = lastGid - lastChar.getKey();
++                    ++nseg;
++                }
++                // shorten ranges which start with undef by one.
++                else if (!lastChar.getKey().equals(prevChar.getKey())) 
++                {
++                    startCode[nseg] = lastChar.getKey()+1;
++                    endCode[nseg] = prevChar.getKey();
++                    idDelta[nseg] = lastGid - lastChar.getKey();
++                    ++nseg;
++                }
++                lastGid = curGid;
++                lastChar = curChar;
++            }
++            prevChar = curChar;
++        }
++        // trailing segment
++        startCode[nseg] = lastChar.getKey();
++        endCode[nseg] = prevChar.getKey();
++        idDelta[nseg] = lastGid -lastChar.getKey();
++        ++nseg;
++        // notdef character.
++        startCode[nseg] = 0xffff;
++        endCode[nseg] = 0xffff;
++        idDelta[nseg] = 1;
++        ++nseg;
++
++        // record of encodingID 10
++        writeUint16(dos,3);  // Windows
++        writeUint16(dos,10); // Unicode UCS-4
++        // header (4 byte) + encoding record (2 * 8 byte) 
++        //  + length of encoding 1 record (fixed 2 byte * 8 + nseg * 2byte * 4)
++        writeUint32(dos, 4 + 2*8 + 8*2 + nseg * (4*2));
+         
+         /*
+          * UInt16    format    Format number is set to 4     
+@@ -912,6 +1058,65 @@ public class TTFSubFont
+         {    
+             writeUint16(dos,0);
+         }
++
++        // mapping of type 12
++        it = this.characters.entrySet().iterator();
++        it.next();  // ignore .notdef code
++        lastChar = it.next();
++        prevChar = lastChar;
++        lastGid = this.getNewGlyphId(lastChar.getValue());
++
++        startCode      = new int[this.characters.size()];
++        endCode        = new int[this.characters.size()];
++        int[] startGid = new int[this.characters.size()];
++        int ngrp = 0;
++        while(it.hasNext()) 
++        {
++            Entry<Integer, Integer> curChar = it.next();
++            int curGid = this.getNewGlyphId(curChar.getValue());
++            if (curChar.getKey() != prevChar.getKey()+1
++             || curGid - lastGid != curChar.getKey() - lastChar.getKey()) 
++            {
++                if (lastGid != 0) 
++                {
++                    startCode[ngrp] = lastChar.getKey();
++                    endCode[ngrp]   = prevChar.getKey();
++                    startGid[ngrp]  = lastGid;
++                    ++ngrp;
++                }
++                lastGid = curGid;
++                lastChar = curChar;
++            }
++            prevChar = curChar;
++        }
++        // trailing segment
++        startCode[ngrp] = lastChar.getKey();
++        endCode[ngrp] = prevChar.getKey();
++        startGid[ngrp] = lastGid;
++        ++ngrp;
++
++        /*
++         * UInt16    format    Format number is set to 12
++         * UInt16    reserved
++         * UInt32    length    Length of subtable in bytes (including the header)
++         * UInt32    language  0
++         * UInt32    nGropus
++         * UInt32    startCharCode
++         * UInt32    entryCharCode
++         * UInt32    startGlyphID
++         */
++        
++        writeUint16(dos,12);
++        writeUint16(dos,0);
++        dos.writeInt(4*4 + ngrp*4*3);
++        dos.writeInt(0);
++        dos.writeInt(ngrp);
++        for (int i=0; i<ngrp; i++)
++        {
++            dos.writeInt(startCode[i]);
++            dos.writeInt(endCode[i]);
++            dos.writeInt(startGid[i]);
++        }
+         LOG.debug("Finished table [cmap].");
+         return bos.toByteArray();
+     }
+@@ -955,7 +1160,8 @@ public class TTFSubFont
+         writeUint32(dos,p.getMaxMemType42());
+         writeUint32(dos,p.getMimMemType1());
+         writeUint32(dos,p.getMaxMemType1());
+-        writeUint16(dos,baseTTF.getHorizontalHeader().getNumberOfHMetrics());
++        //writeUint16(dos,baseTTF.getHorizontalHeader().getNumberOfHMetrics());
++        writeUint16(dos,glyphIds.size());
+             
+         List<String> additionalNames = new ArrayList<String>();
+         Map<String,Integer> additionalNamesIndices = new HashMap<String,Integer>();
+@@ -1126,7 +1332,15 @@ public class TTFSubFont
+             tables[0] = this.buildOS2Table();
+             tables[2] = this.buildGlyfTable(newOffsets);
+             tables[6] = this.buildLocaTable(newOffsets);
+-            tables[1] = this.buildCmapTable();
++            if (useUCS4)
++            {
++                tables[1] = this.buildUCS4CmapTable();
++            }
++            else
++            {
++                tables[1] = this.buildCmapTable();
++            }
++
+             tables[5] = this.buildHmtxTable();
+             tables[9] = this.buildPostTable();
+             long checksum = writeFileHeader(dos,tableNames.length);
+diff --git a/fontbox/src/main/java/org/apache/fontbox/ttf/TTFTable.java b/fontbox/src/main/java/org/apache/fontbox/ttf/TTFTable.java
+index 6596427..42403d8 100644
+--- a/fontbox/src/main/java/org/apache/fontbox/ttf/TTFTable.java
++++ b/fontbox/src/main/java/org/apache/fontbox/ttf/TTFTable.java
+@@ -17,6 +17,7 @@
+ package org.apache.fontbox.ttf;
+ 
+ import java.io.IOException;
++import java.util.Arrays;
+ 
+ /**
+  * A table in a true type font.
+@@ -30,6 +31,7 @@ public class TTFTable
+     private long checkSum;
+     private long offset;
+     private long length;
++    private byte[] rawBytes;
+       
+     /**
+      * @return Returns the checkSum.

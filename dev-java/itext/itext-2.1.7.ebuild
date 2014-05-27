@@ -25,8 +25,6 @@ KEYWORDS="amd64 ~ppc64 x86"
 #IUSE="cjk rtf rups"
 IUSE="cjk rtf"
 
-BCV="1.38"
-
 COMMON_DEPEND="dev-java/bcmail:1.49
 	dev-java/bcprov:1.49
 	dev-java/bcpkix:1.49"
@@ -35,6 +33,8 @@ DEPEND=">=virtual/jdk-1.6
 	 ${COMMON_DEPEND}"
 RDEPEND=">=virtual/jre-1.6
 	${COMMON_DEPEND}"
+
+BCV="1.38"
 
 S="${WORKDIR}/src"
 
@@ -51,17 +51,18 @@ src_unpack() {
 java_prepare() {
 	epatch "${FILESDIR}"/syoux2.patch
 	epatch "${FILESDIR}"/itext-2.1.5-pdftk.patch
+	epatch "${FILESDIR}"/itext-bcprov149.patch
 
-	find -name '*.java' -exec sed -i -e 's/DERObject$/ASN1Primitive/g' {} \;
-	find -name '*.java' -exec sed -i -e 's/DERObject /ASN1Primitive /g' {} \;
-	find -name '*.java' -exec sed -i -e 's/DERObject;/ASN1Primitive;/g' {} \;
-	find -name '*.java' -exec sed -i -e 's/(DERObject)/(ASN1Primitive)/g' {} \;
-	find -name '*.java' -exec sed -i -e 's/(DERString)/(ASN1String)/g' {} \;
-	find -name '*.java' -exec sed -i -e 's/DERString;/ASN1String;/g' {} \;
-	find -name '*.java' -exec sed -i -e 's/ASN1Encodable;/ASN1Object;/g' {} \;
-	find -name '*.java' -exec sed -i -e 's/ASN1Encodable.DER/org.bouncycastle.asn1.ASN1Encoding.DER/g' {} \;
-	find -name '*.java' -exec sed -i -e 's/getDERObject/toASN1Primitive/g' {} \;
-	sed -i -e 's/EnvelopedData(null, derset, encryptedcontentinfo, null)/EnvelopedData(null, derset, encryptedcontentinfo, (org.bouncycastle.asn1.ASN1Set)null)/' core/com/lowagie/text/pdf/PdfPublicKeySecurityHandler.java
+	#find -name '*.java' -exec sed -i -e 's/DERObject$/ASN1Primitive/g' {} \;
+	#find -name '*.java' -exec sed -i -e 's/DERObject /ASN1Primitive /g' {} \;
+	#find -name '*.java' -exec sed -i -e 's/DERObject;/ASN1Primitive;/g' {} \;
+	#find -name '*.java' -exec sed -i -e 's/(DERObject)/(ASN1Primitive)/g' {} \;
+	#find -name '*.java' -exec sed -i -e 's/(DERString)/(ASN1String)/g' {} \;
+	#find -name '*.java' -exec sed -i -e 's/DERString;/ASN1String;/g' {} \;
+	#find -name '*.java' -exec sed -i -e 's/ASN1Encodable;/ASN1Object;/g' {} \;
+	#find -name '*.java' -exec sed -i -e 's/ASN1Encodable.DER/org.bouncycastle.asn1.ASN1Encoding.DER/g' {} \;
+	#find -name '*.java' -exec sed -i -e 's/getDERObject/toASN1Primitive/g' {} \;
+	#sed -i -e 's/EnvelopedData(null, derset, encryptedcontentinfo, null)/EnvelopedData(null, derset, encryptedcontentinfo, (org.bouncycastle.asn1.ASN1Set)null)/' core/com/lowagie/text/pdf/PdfPublicKeySecurityHandler.java
 
 	sed -i -e 's/jdk14/jdk16/' ant/.ant.properties
 

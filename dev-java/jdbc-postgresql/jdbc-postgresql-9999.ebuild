@@ -35,6 +35,8 @@ S="${WORKDIR}/pgjdbc"
 RESTRICT="test"
 
 java_prepare() {
+	epatch "${FILESDIR}/remove-maven.patch"
+
 	java-ant_rewrite-classpath
 }
 

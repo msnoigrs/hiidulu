@@ -72,7 +72,7 @@
         <exclude name="**/package.html"/>
       </fileset>
     </copy>
-    <jar jarfile="${dist}/${jarfile}" manifest="src/conf/MANIFEST.MF">
+    <jar jarfile="${dist}/${jarfile}">
       <!--
       <manifest>
         <attribute name="Bundle-Name" value="${project.name}"/>

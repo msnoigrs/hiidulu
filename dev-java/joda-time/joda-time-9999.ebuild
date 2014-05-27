@@ -1,4 +1,4 @@
-# Copyright 1999-2012 Gentoo Foundation
+# Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -16,7 +16,7 @@ HOMEPAGE="http://joda-time.sourceforge.net/"
 #SRC_URI="mirror://sourceforge/${PN}/${PV}/${MY_P}.tar.gz"
 LICENSE="Apache-2.0"
 SLOT="0"
-KEYWORDS="~amd64 ~ppc ~ppc64 ~x86"
+KEYWORDS=""
 IUSE=""
 
 COMMON_DEP="dev-java/joda-convert"

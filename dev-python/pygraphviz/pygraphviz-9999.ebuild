@@ -1,4 +1,4 @@
-# Copyright 1999-2013 Gentoo Foundation
+# Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -6,7 +6,7 @@ EAPI=5
 
 EGIT_REPO_URI="git://github.com/pygraphviz/pygraphviz.git"
 
-PYTHON_COMPAT=( python{2_7,3_3} )
+PYTHON_COMPAT=( python{2_7,3_3,3_4} )
 
 inherit git-2 distutils-r1
 
@@ -24,9 +24,9 @@ RDEPEND="media-gfx/graphviz"
 DEPEND="dev-lang/swig
 		${RDEPEND}"
 
-PATCHES=(
-	"${FILESDIR}"/setup.patch
-)
+#PATCHES=(
+#	"${FILESDIR}"/setup.patch
+#)
 #	"${FILESDIR}"/${PN}-1.0-setup.py.patch
 #	"${FILESDIR}"/${P}-avoid_tests.patch
 

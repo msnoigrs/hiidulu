@@ -1,0 +1,71 @@
+--- build.xml.orig	2014-04-29 13:04:54.126889670 +0900
++++ build.xml	2014-04-29 14:31:22.688484663 +0900
+@@ -62,9 +62,7 @@
+   <!-- ====================================================================== -->
+ 
+   <path id="build.classpath">
+-    <pathelement location="${maven.repo.local}/javax/servlet/servlet-api/2.4/servlet-api-2.4.jar"/>
+-    <pathelement location="${maven.repo.local}/portlet-api/portlet-api/1.0/portlet-api-1.0.jar"/>
+-    <pathelement location="${maven.repo.local}/commons-io/commons-io/2.2/commons-io-2.2.jar"/>
++    <fileset dir="lib"><include name="*.jar"/></fileset>
+   </path>
+   <path id="build.test.classpath">
+     <pathelement location="${maven.repo.local}/junit/junit/4.11/junit-4.11.jar"/>
+@@ -86,7 +84,7 @@
+   <!-- Compilation target                                                     -->
+   <!-- ====================================================================== -->
+ 
+-  <target name="compile" depends="get-deps" description="Compile the code">
++  <target name="compile" description="Compile the code">
+     <mkdir dir="${maven.build.outputDir}"/>
+     <javac destdir="${maven.build.outputDir}" 
+            encoding="iso-8859-1" 
+@@ -103,13 +101,6 @@
+       </src>
+       <classpath refid="build.classpath"/>
+     </javac>
+-    <mkdir dir="${maven.build.outputDir}/META-INF"/>
+-    <copy todir="${maven.build.outputDir}/META-INF">
+-      <fileset dir="${maven.build.resourceDir.1}">
+-        <include name="NOTICE.txt"/>
+-        <include name="LICENSE.txt"/>
+-      </fileset>
+-    </copy>
+   </target>
+ 
+   <!-- ====================================================================== -->
+@@ -139,13 +130,6 @@
+         <pathelement location="${maven.build.outputDir}"/>
+       </classpath>
+     </javac>
+-    <mkdir dir="${maven.build.testOutputDir}/META-INF"/>
+-    <copy todir="${maven.build.testOutputDir}/META-INF">
+-      <fileset dir="${maven.build.testResourceDir.1}">
+-        <include name="NOTICE.txt"/>
+-        <include name="LICENSE.txt"/>
+-      </fileset>
+-    </copy>
+   </target>
+ 
+   <!-- ====================================================================== -->
+@@ -248,16 +232,13 @@
+   <!-- Package target                                                         -->
+   <!-- ====================================================================== -->
+ 
+-  <target name="package" depends="compile,test" description="Package the application">
+-    <jar jarfile="${maven.build.dir}/${maven.build.finalName}.jar" 
++
++  <target name="package" depends="compile" description="Package the application">
++    <jar jarfile="${maven.build.dir}/${maven.build.finalName}.jar"
+          compress="true" 
+          index="false" 
+-         manifest="${commons.manifestfile}" 
+-         basedir="${maven.build.outputDir}" 
++         basedir="${maven.build.outputDir}"
+          excludes="**/package.html">
+-      <manifest>
+-        <attribute name="Main-Class"/>
+-      </manifest>
+     </jar>
+   </target>
+ 

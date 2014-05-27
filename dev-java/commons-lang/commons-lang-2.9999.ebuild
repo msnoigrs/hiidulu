@@ -1,4 +1,4 @@
-# Copyright 1999-2012 Gentoo Foundation
+# Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -8,11 +8,10 @@ JAVA_PKG_IUSE="source test"
 
 ESVN_REPO_URI="https://svn.apache.org/repos/asf/commons/proper/lang/branches/LANG_2_X"
 
-inherit eutils subversion java-pkg-2 java-ant-2
+inherit subversion java-pkg-2 java-ant-2
 
 DESCRIPTION="Commons components to manipulate core java classes"
 HOMEPAGE="http://commons.apache.org/lang/"
-#SRC_URI="mirror://apache/commons/lang/source/${P}-src.tar.gz"
 SRC_URI=""
 IUSE=""
 

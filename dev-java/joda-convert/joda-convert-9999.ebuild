@@ -1,8 +1,8 @@
-# Copyright 1999-2012 Gentoo Foundation
+# Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI="2"
+EAPI="4"
 JAVA_PKG_IUSE="doc examples source"
 
 EGIT_REPO_URI="git://github.com/JodaOrg/joda-convert.git"
@@ -16,7 +16,7 @@ HOMEPAGE="http://joda-convert.sourceforge.net/"
 #SRC_URI="mirror://sourceforge/${PN}/${PV}/${MY_P}.tar.gz"
 LICENSE="Apache-2.0"
 SLOT="0"
-KEYWORDS="~amd64 ~ppc ~ppc64 ~x86"
+KEYWORDS=""
 IUSE=""
 
 DEPEND=">=virtual/jdk-1.5"

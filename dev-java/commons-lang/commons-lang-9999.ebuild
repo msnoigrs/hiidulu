@@ -1,4 +1,4 @@
-# Copyright 1999-2012 Gentoo Foundation
+# Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -14,10 +14,9 @@ HOMEPAGE="http://commons.apache.org/lang/"
 SRC_URI=""
 IUSE=""
 
-DEPEND=">=virtual/jdk-1.5
-	dev-java/jcip-annotations
+DEPEND=">=virtual/jdk-1.6
 	test? ( dev-java/ant-junit:0 )"
-RDEPEND=">=virtual/jre-1.5"
+RDEPEND=">=virtual/jre-1.6"
 
 LICENSE="Apache-2.0"
 SLOT="3.0"
@@ -30,13 +29,12 @@ JAVA_ANT_ENCODING="ISO-8859-1"
 java_prepare() {
 	cp ${FILESDIR}/gentoo-build.xml build.xml
 	mkdir lib || die
-	java-pkg_jar-from --into lib --build-only jcip-annotations
 }
 
 EANT_EXTRA_ARGS="-Dproject.name=${PN}"
 
 src_install() {
-	java-pkg_newjar target/${PN}.jar
+	java-pkg_newjar target/${PN}*.jar
 
 	dodoc RELEASE-NOTES.txt NOTICE.txt || die
 	#dohtml *.html || die

@@ -1,4 +1,4 @@
-# Copyright 1999-2012 Gentoo Foundation
+# Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -11,7 +11,6 @@ inherit subversion java-pkg-2 java-ant-2
 
 DESCRIPTION="Simple Java API Windows style .ini file handling"
 HOMEPAGE="http://ini4j.sourceforge.net/"
-#SRC_URI="mirror://sourceforge/${PN}/${P}-src.zip"
 SRC_URI=""
 
 LICENSE="Apache-2.0"
@@ -20,10 +19,10 @@ KEYWORDS="~amd64 ~x86"
 
 IUSE=""
 
-RDEPEND=">=virtual/jre-1.5"
+RDEPEND=">=virtual/jre-1.6"
 # Preferences api is broken in 1.6 if a later xalan version is in cp
 # http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6519088
-DEPEND=">=virtual/jdk-1.5
+DEPEND=">=virtual/jdk-1.6
 	java-virtuals/servlet-api:3.0
 	${COMMON_DEP}"
 
