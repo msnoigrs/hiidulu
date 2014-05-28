@@ -18,6 +18,7 @@ KEYWORDS="~amd64 ~x86"
 
 DEPEND="app-emacs/emacs-epc
 	app-emacs/emacs-deferred
+	app-emacs/emacs-python-environment
 	app-emacs/auto-complete"
 RDEPEND="${DEPEND}
 	dev-python/jedi

@@ -3,17 +3,14 @@
 # $Header: $
 
 EAPI="5"
-SUPPORT_PYTHON_ABIS="1"
-RESTRICT_PYTHON_ABIS="2.5 3.1 *-jython"
-DISTUTILS_SRC_TEST="nosetests"
+PYTHON_COMPAT=( python{2_6,2_7,3_2,3_3,3_4} pypy pypy2_0 )
 
-EGIT_REPO_URI="git://github.com/benoitc/gunicorn.git"
+EGIT_REPO_URI="https://github.com/benoitc/gunicorn.git"
 
 inherit distutils eutils git-2
 
 DESCRIPTION="A WSGI HTTP Server for UNIX"
 HOMEPAGE="http://gunicorn.org http://pypi.python.org/pypi/gunicorn"
-#SRC_URI="mirror://pypi/${PN:0:1}/${PN}/${P}.tar.gz"
 
 LICENSE="MIT"
 SLOT="0"
@@ -27,23 +24,30 @@ DEPEND="dev-python/setuptools
 
 DOCS="README.rst"
 
-src_prepare() {
+python_prepare() {
 	# these tests requires an already installed version of gunicorn
 	rm tests/test_003-config.py
+
+	sed -ie "s/..\/bin/\/usr\/bin\//" docs/Makefile || die
+
+	distutils-r1_python_prepare
 }
 
-src_compile() {
-	distutils_src_compile
+python_compile_all() {
+	use doc && emake -C docs html
+}
 
-	if use doc; then
-		einfo "Generation of documentation"
-		cd docs
-		sphinx-build -b html source build || die "Generation of documentation failed"
+python_test() {
+	py.test -v || die "Testing failed with ${EPYTHON}"
+}
+
+python_install_all() {
+	use doc && local HTML_DOCS=( docs/build/html/. )
+
+	distutils-r1_python_install_all
+
+	if use examples; then
+		insinto /usr/share/doc/${P}
+		doins -r examples
 	fi
-}
-
-src_install() {
-	distutils_src_install
-
-	use doc && dohtml -r docs/build/
 }
