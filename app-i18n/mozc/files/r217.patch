@@ -1,0 +1,3224 @@
+diff -uNr mozc-1.15.1785.102/DEPS mozc-r217/DEPS
+--- mozc-1.15.1785.102/DEPS	2014-05-16 20:56:29.754134000 +0900
++++ mozc-r217/DEPS	2014-05-29 18:30:11.160823000 +0900
+@@ -36,7 +36,6 @@
+   "protobuf_revision": "462",
+   "wtl_revision": "459",
+   "zinnia_revision": "16",
+-  "openssl_revision": "164645",
+   "jsr305_version": "2.0.2",
+   "zlib_revision": "198222",
+   "japanese_usage_dictionary_revision": "10",
+@@ -83,9 +82,6 @@
+       File("http://findbugs.googlecode.com/"
+            + "svn/repos/release-repository/com/google/code/findbugs/jsr305/"
+            + Var("jsr305_version") + "/jsr305-" + Var("jsr305_version") + ".jar"),
+-    "src/third_party/openssl":
+-      "http://src.chromium.org/svn/trunk/deps/third_party/openssl@" +
+-      Var("openssl_revision"),
+     "src/third_party/zlib/v1_2_8":
+       "https://src.chromium.org/chrome/trunk/src/third_party/zlib@" +
+       Var("zlib_revision"),
+diff -uNr mozc-1.15.1785.102/android/android.gyp mozc-r217/android/android.gyp
+--- mozc-1.15.1785.102/android/android.gyp	2014-05-16 20:56:29.754134000 +0900
++++ mozc-r217/android/android.gyp	2014-05-31 20:07:05.122785000 +0900
+@@ -132,7 +132,7 @@
+             '../build_tools/run_after_chdir.py', 'tests',
+             'ant',
+             'debug',
+-            '-Dgyp.protobuf_root=<(protobuf_root)',
++            '-Dgyp.protobuf_java_root=<(protobuf_java_root)',
+             '-Dsdk.dir=<(android_home)',
+           ],
+         },
+@@ -175,7 +175,7 @@
+             'ant',
+             'install',
+             '-Dgyp.build_type=<(CONFIGURATION_NAME)',
+-            '-Dgyp.protobuf_root=<(protobuf_root)',
++            '-Dgyp.protobuf_java_root=<(protobuf_java_root)',
+           ],
+         },
+       ],
+@@ -211,7 +211,7 @@
+             'ant',
+             'apk',
+             '-Dgyp.build_type=<(CONFIGURATION_NAME)',
+-            '-Dgyp.protobuf_root=<(protobuf_root)',
++            '-Dgyp.protobuf_java_root=<(protobuf_java_root)',
+             '-Dsdk.dir=<(android_home)',
+           ],
+         },
+diff -uNr mozc-1.15.1785.102/android/genproto_java.gyp mozc-r217/android/genproto_java.gyp
+--- mozc-1.15.1785.102/android/genproto_java.gyp	2014-01-06 16:15:27.288995000 +0900
++++ mozc-r217/android/genproto_java.gyp	2014-05-30 01:54:17.136389000 +0900
+@@ -56,11 +56,15 @@
+     # Android SDK
+     'sdk_gen_dir': 'gen',
+     'sdk_protobuf_gen_dir': 'protobuf/gen',
++    'wrapper_path': '<(DEPTH)/build_tools/protoc_wrapper.py',
++    'protoc_command': 'protoc<(EXECUTABLE_SUFFIX)',
++    'additional_inputs': ['<(PRODUCT_DIR)/<(protoc_command)'],
+     'genproto_java_common': [
+-      'python', '../build_tools/protoc_wrapper.py',
++      'python',
++      '<(wrapper_path)',
+       '--project_root=<(DEPTH)',
+-      '--protoc_command=protoc<(EXECUTABLE_SUFFIX)',
+-      '--protoc_dir=<(mozc_build_tools_dir)',
++      '--protoc_command=<(protoc_command)',
++      '--protoc_dir=<(PRODUCT_DIR)',
+     ],
+   },
+   'targets': [
+@@ -97,18 +101,24 @@
+     {
+       'target_name': 'adt_genproto_java_descriptor',
+       'type': 'none',
++      'variables': {
++        'proto_files': [
++          '<(protobuf_root)/src/google/protobuf/descriptor.proto',
++        ],
++      },
+       'actions': [
+         {
+           'action_name': 'genproto_descriptor',
+           'inputs': [
+-            '<(protobuf_root)/src/google/protobuf/descriptor.proto',
++            '<@(proto_files)',
++            '<@(additional_inputs)',
+           ],
+           'outputs': [
+             '<(adt_protobuf_gen_dir)/com/google/protobuf/DescriptorProtos.java',
+           ],
+           'action': [
+             '<@(genproto_java_common)',
+-            '--proto=<(_inputs)',
++            '--proto=<(proto_files)',
+             '--proto_path=<(protobuf_root)',
+             '--java_out=<(DEPTH)/<(relative_dir)/<(adt_protobuf_gen_dir)',
+           ],
+@@ -128,18 +138,24 @@
+     {
+       'target_name': 'adt_genproto_java_config',
+       'type': 'none',
++      'variables': {
++        'proto_files': [
++          '../config/config.proto',
++        ],
++      },
+       'actions': [
+         {
+           'action_name': 'genproto_config',
+           'inputs': [
+-            '../config/config.proto',
++            '<@(proto_files)',
++            '<@(additional_inputs)',
+           ],
+           'outputs': [
+             '<(adt_gen_dir)/org/mozc/android/inputmethod/japanese/protobuf/ProtoConfig.java',
+           ],
+           'action': [
+             '<@(genproto_java_common)',
+-            '--proto=<(_inputs)',
++            '--proto=<(proto_files)',
+             '--java_out=<(DEPTH)/<(relative_dir)/<(adt_gen_dir)',
+           ],
+         },
+@@ -158,18 +174,24 @@
+     {
+       'target_name': 'adt_genproto_java_user_dictionary_storage',
+       'type': 'none',
++      'variables': {
++        'proto_files': [
++          '../dictionary/user_dictionary_storage.proto',
++        ],
++      },
+       'actions': [
+         {
+           'action_name': 'genproto_user_dictionary_storage',
+           'inputs': [
+-            '../dictionary/user_dictionary_storage.proto',
++            '<@(proto_files)',
++            '<@(additional_inputs)',
+           ],
+           'outputs': [
+             '<(adt_gen_dir)/org/mozc/android/inputmethod/japanese/protobuf/ProtoUserDictionaryStorage.java',
+           ],
+           'action': [
+             '<@(genproto_java_common)',
+-            '--proto=<(_inputs)',
++            '--proto=<(proto_files)',
+             '--java_out=<(DEPTH)/<(relative_dir)/<(adt_gen_dir)',
+           ],
+         },
+@@ -189,12 +211,18 @@
+     {
+       'target_name': 'adt_genproto_java_session',
+       'type': 'none',
++      'variables': {
++        'proto_files': [
++          '../session/candidates.proto',
++          '../session/commands.proto',
++        ],
++      },
+       'actions': [
+         {
+           'action_name': 'genproto_session',
+           'inputs': [
+-            '../session/candidates.proto',
+-            '../session/commands.proto',
++            '<@(proto_files)',
++            '<@(additional_inputs)',
+           ],
+           'outputs': [
+             '<(adt_gen_dir)/org/mozc/android/inputmethod/japanese/protobuf/ProtoCandidates.java',
+@@ -202,7 +230,7 @@
+           ],
+           'action': [
+             '<@(genproto_java_common)',
+-            '--proto=<(_inputs)',
++            '--proto=<(proto_files)',
+             '--java_out=<(DEPTH)/<(relative_dir)/<(adt_gen_dir)',
+           ],
+         },
+diff -uNr mozc-1.15.1785.102/android/jni/mozcjni.cc mozc-r217/android/jni/mozcjni.cc
+--- mozc-1.15.1785.102/android/jni/mozcjni.cc	2014-05-16 20:56:29.754134000 +0900
++++ mozc-r217/android/jni/mozcjni.cc	2014-05-29 18:07:56.254621000 +0900
+@@ -84,11 +84,8 @@
+   // First of all, set the user profile directory.
+   SystemUtil::SetUserProfileDirectory(user_profile_directory);
+ 
+-  // Initialize Java native callback proxies.
+-#ifdef MOZC_USE_LEGACY_ENCRYPTOR
+-  JavaEncryptorProxy::SetJavaVM(vm);
+-#endif  // MOZC_USE_LEGACY_ENCRYPTOR
+ #ifdef MOZC_ENABLE_HTTP_CLIENT
++  // Initialize Java native callback proxy.
+   JavaHttpClientProxy::SetJavaVM(vm);
+ #endif  // MOZC_ENABLE_HTTP_CLIENT
+ 
+@@ -213,9 +210,6 @@
+ }
+ 
+ JNIEXPORT void JNICALL JNI_OnUnload(JavaVM *vm, void *reserved) {
+-#ifdef MOZC_USE_LEGACY_ENCRYPTOR
+-  mozc::jni::JavaEncryptorProxy::SetJavaVM(NULL);
+-#endif  // MOZC_USE_LEGACY_ENCRYPTOR
+ #ifdef MOZC_ENABLE_HTTP_CLIENT
+   mozc::jni::JavaHttpClientProxy::SetJavaVM(NULL);
+ #endif  // MOZC_ENABLE_HTTP_CLIENT
+diff -uNr mozc-1.15.1785.102/android/protobuf/ant.properties mozc-r217/android/protobuf/ant.properties
+--- mozc-1.15.1785.102/android/protobuf/ant.properties	2014-01-06 16:15:27.288995000 +0900
++++ mozc-r217/android/protobuf/ant.properties	2014-05-31 20:07:05.122785000 +0900
+@@ -47,4 +47,4 @@
+ # The source directory of Protocol Buffer
+ # Note that gyp.protobuf_root is relative path from android directory.
+ # Here is android/protobuf so go one level upper.
+-source.dir=../${gyp.protobuf_root}/java/src/main/java
++source.dir=../${gyp.protobuf_java_root}
+diff -uNr mozc-1.15.1785.102/android/src/com/google/android/inputmethod/japanese/nativecallback/Encryptor.java mozc-r217/android/src/com/google/android/inputmethod/japanese/nativecallback/Encryptor.java
+--- mozc-1.15.1785.102/android/src/com/google/android/inputmethod/japanese/nativecallback/Encryptor.java	2014-01-06 16:15:27.288995000 +0900
++++ mozc-r217/android/src/com/google/android/inputmethod/japanese/nativecallback/Encryptor.java	1970-01-01 09:00:00.000000000 +0900
+@@ -1,152 +0,0 @@
+-// Copyright 2010-2014, Google Inc.
+-// All rights reserved.
+-//
+-// Redistribution and use in source and binary forms, with or without
+-// modification, are permitted provided that the following conditions are
+-// met:
+-//
+-//     * Redistributions of source code must retain the above copyright
+-// notice, this list of conditions and the following disclaimer.
+-//     * Redistributions in binary form must reproduce the above
+-// copyright notice, this list of conditions and the following disclaimer
+-// in the documentation and/or other materials provided with the
+-// distribution.
+-//     * Neither the name of Google Inc. nor the names of its
+-// contributors may be used to endorse or promote products derived from
+-// this software without specific prior written permission.
+-//
+-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-
+-package org.mozc.android.inputmethod.japanese.nativecallback;
+-
+-import java.security.InvalidAlgorithmParameterException;
+-import java.security.InvalidKeyException;
+-import java.security.MessageDigest;
+-import java.security.NoSuchAlgorithmException;
+-import java.util.Arrays;
+-
+-import javax.crypto.BadPaddingException;
+-import javax.crypto.Cipher;
+-import javax.crypto.IllegalBlockSizeException;
+-import javax.crypto.NoSuchPaddingException;
+-import javax.crypto.spec.IvParameterSpec;
+-import javax.crypto.spec.SecretKeySpec;
+-
+-/**
+- * AES/CBC encryptor implementation.
+- *
+- * This class is designed to be invoked from native layers, in order to use Java library
+- * whose functionalities are not included by c libraries on android instead of
+- * including libraries built by ourselves because of package size.
+- *
+- * See also {@code JavaEncryptorProxy} class in code base/android_util. It is a proxy class
+- * to invoke static methods in this class from mozc server.
+- *
+- */
+-public class Encryptor {
+-  // Note: the same constant is defined in c++.
+-  private static final int KEY_SIZE_IN_BITS = 256;
+-
+-  // Encryption algorithm used in mozc server on other platforms.
+-  private static final String TRANSFORMATION_TYPE = "AES/CBC/PKCS5Padding";
+-
+-  // Disallow instantiation.
+-  private Encryptor() {
+-  }
+-
+-  /**
+-   * Makes a session key from the given password and salt.
+-   */
+-  public static byte[] deriveFromPassword(byte[] password, byte[] salt)
+-      throws NoSuchAlgorithmException {
+-    return GetMsCryptDeriveKeyWithSha1(password, salt);
+-  }
+-
+-  /**
+-   * Ported from base/encryptor.cc. See it for details.
+-   * @throws NoSuchAlgorithmException if SHA-1 is not supported.
+-   */
+-  private static byte[] GetMsCryptDeriveKeyWithSha1(byte[] password, byte[] salt)
+-      throws NoSuchAlgorithmException {
+-    // Step 1.
+-    byte[] buf1 = new byte[64];
+-    Arrays.fill(buf1, (byte) 0x36);
+-
+-    // Step 2.
+-    byte[] buf2 = new byte[64];
+-    Arrays.fill(buf2, (byte) 0x5C);
+-
+-    // Step 3 & 4.
+-    MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
+-    byte[] hash = sha1.digest(concatByteArray(password, salt));
+-    for (int i = 0; i < hash.length; ++i) {
+-      byte h = hash[i];
+-      buf1[i] ^= h;
+-      buf2[i] ^= h;
+-    }
+-
+-    // Step 5 & 6.
+-    sha1.reset();
+-    byte[] result1 = sha1.digest(buf1);
+-    sha1.reset();
+-    byte[] result2 = sha1.digest(buf2);
+-
+-    // SHA-1's result is 160 bits, so result1 + result2 length is 320 bits,
+-    // which should be larger than expected key bits.
+-    byte[] result = new byte[KEY_SIZE_IN_BITS / 8];
+-    System.arraycopy(result1, 0, result, 0, result1.length);
+-    System.arraycopy(result2, 0, result, result1.length, result.length - result1.length);
+-    return result;
+-  }
+-
+-  /**
+-   * Concatenates given two arrays.
+-   */
+-  private static byte[] concatByteArray(byte[] array1, byte[] array2) {
+-    byte[] result = new byte[array1.length + array2.length];
+-    System.arraycopy(array1, 0, result, 0, array1.length);
+-    System.arraycopy(array2, 0, result, array1.length, array2.length);
+-    return result;
+-  }
+-
+-  /**
+-   * Encrypts {@code data}, based on given {@code key} and {@code iv}.
+-   * The used algorithm is AES in CBC mode with PKCS #5 padding.
+-   */
+-  public static byte[] encrypt(byte[] data, byte[] key, byte[] iv)
+-      throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException,
+-             NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException {
+-    return getCipher(Cipher.ENCRYPT_MODE, key, iv).doFinal(data);
+-  }
+-
+-  /**
+-   * Decrypts {@code data}, based on given {@code key} and {@code iv}.
+-   * The used algorithm is AES in CBC mode with PKCS #5 padding.
+-   */
+-  public static byte[] decrypt(byte[] data, byte[] key, byte[] iv)
+-      throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException,
+-             NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException {
+-    return getCipher(Cipher.DECRYPT_MODE, key, iv).doFinal(data);
+-  }
+-
+-  /**
+-   * @returns an initialized crypting instance.
+-   */
+-  private static Cipher getCipher(int mode, byte[] key, byte[] iv)
+-      throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException,
+-             InvalidAlgorithmParameterException {
+-    Cipher cipher = Cipher.getInstance(TRANSFORMATION_TYPE);
+-    cipher.init(mode, new SecretKeySpec(key, "AES"), new IvParameterSpec(iv));
+-    return cipher;
+-  }
+-}
+diff -uNr mozc-1.15.1785.102/android/tests/src/com/google/android/inputmethod/japanese/nativecallback/EncryptorTest.java mozc-r217/android/tests/src/com/google/android/inputmethod/japanese/nativecallback/EncryptorTest.java
+--- mozc-1.15.1785.102/android/tests/src/com/google/android/inputmethod/japanese/nativecallback/EncryptorTest.java	2014-05-16 20:56:29.754134000 +0900
++++ mozc-r217/android/tests/src/com/google/android/inputmethod/japanese/nativecallback/EncryptorTest.java	1970-01-01 09:00:00.000000000 +0900
+@@ -1,222 +0,0 @@
+-// Copyright 2010-2014, Google Inc.
+-// All rights reserved.
+-//
+-// Redistribution and use in source and binary forms, with or without
+-// modification, are permitted provided that the following conditions are
+-// met:
+-//
+-//     * Redistributions of source code must retain the above copyright
+-// notice, this list of conditions and the following disclaimer.
+-//     * Redistributions in binary form must reproduce the above
+-// copyright notice, this list of conditions and the following disclaimer
+-// in the documentation and/or other materials provided with the
+-// distribution.
+-//     * Neither the name of Google Inc. nor the names of its
+-// contributors may be used to endorse or promote products derived from
+-// this software without specific prior written permission.
+-//
+-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-
+-package org.mozc.android.inputmethod.japanese.nativecallback;
+-
+-import org.mozc.android.inputmethod.japanese.MozcUtil;
+-
+-import android.test.MoreAsserts;
+-import android.test.suitebuilder.annotation.SmallTest;
+-
+-import junit.framework.TestCase;
+-
+-import java.io.EOFException;
+-import java.io.FileInputStream;
+-import java.io.IOException;
+-import java.security.InvalidAlgorithmParameterException;
+-import java.security.InvalidKeyException;
+-import java.security.NoSuchAlgorithmException;
+-import java.util.Arrays;
+-
+-import javax.crypto.BadPaddingException;
+-import javax.crypto.IllegalBlockSizeException;
+-import javax.crypto.NoSuchPaddingException;
+-
+-/**
+- */
+-public class EncryptorTest extends TestCase {
+-  // Note: following test cases are ported from base/enryptor_test.cc
+-
+-  private static final int BLOCK_SIZE = 16;
+-
+-  // Ported from Util::GetSecureRandomSequence in base/util.cc
+-  @SuppressWarnings("resource")
+-  private static byte[] getSecureRandomSequence(int size) throws IOException {
+-    byte[] buffer = new byte[size];
+-    FileInputStream inputStream = new FileInputStream("/dev/urandom");
+-    boolean succeeded = false;
+-    try {
+-      int currentPosition = 0;
+-      while (currentPosition < size) {
+-        int result = inputStream.read(buffer, currentPosition, size - currentPosition);
+-        if (result == -1) {
+-          throw new EOFException("EOF is found during reading /dev/urandom");
+-        }
+-        currentPosition += result;
+-      }
+-
+-      succeeded = true;
+-    } finally {
+-      MozcUtil.close(inputStream, !succeeded);
+-    }
+-    return buffer;
+-  }
+-
+-  private static byte[] newByteArray(int... values) {
+-    byte[] result = new byte[values.length];
+-    for (int i = 0; i < values.length; ++i) {
+-      int value = values[i];
+-      if ((value & ~0xFF) != 0) {
+-        throw new IllegalArgumentException("Non byte value is passed: " + value);
+-      }
+-      result[i] = (byte) values[i];
+-    }
+-    return result;
+-  }
+-
+-  @SmallTest
+-  public void testVerification()
+-      throws NoSuchAlgorithmException, InvalidKeyException, IllegalBlockSizeException,
+-             BadPaddingException, NoSuchPaddingException, InvalidAlgorithmParameterException {
+-    class Parameter {
+-      final byte[] password;
+-      final byte[] salt;
+-      final byte[] iv;
+-      final byte[] input;
+-      final byte[] encrypted;
+-
+-      public Parameter(byte[] password, byte[] salt, byte[] iv, byte[] input, byte[] encrypted) {
+-        this.password = password;
+-        this.salt = salt;
+-        this.iv = iv;
+-        this.input = input;
+-        this.encrypted = encrypted;
+-      }
+-    }
+-    Parameter[] parameters = {
+-        new Parameter(
+-            newByteArray(0x66, 0x6F, 0x6F, 0x68, 0x6F, 0x67, 0x65),
+-            newByteArray(0x73, 0x61, 0x6C, 0x74),
+-            newByteArray(0x31, 0x31, 0x31, 0x31, 0x31, 0x31, 0x31, 0x31,
+-                         0x31, 0x31, 0x31, 0x31, 0x31, 0x31, 0x31, 0x31),
+-            newByteArray(0x66, 0x6F, 0x6F),
+-            newByteArray(0x27, 0x32, 0x66, 0x88, 0x82, 0x33, 0x78, 0x80,
+-                         0x58, 0x29, 0xBF, 0xDD, 0x46, 0x9A, 0xCC, 0x87)),
+-        new Parameter(
+-            newByteArray(0x70, 0x61, 0x73, 0x73, 0x77, 0x6F, 0x72, 0x64),
+-            newByteArray(0x73, 0x61, 0x6C, 0x74),
+-            newByteArray(0x31, 0x31, 0x31, 0x31, 0x31, 0x31, 0x31, 0x31,
+-                         0x31, 0x31, 0x31, 0x31, 0x31, 0x31, 0x31, 0x31),
+-            newByteArray(0x61),
+-            newByteArray(0x2A, 0xA1, 0x73, 0xB0, 0x91, 0x1C, 0x22, 0x40,
+-                         0x55, 0xDB, 0xAB, 0xC0, 0x77, 0x39, 0xE6, 0x57)),
+-        new Parameter(
+-            newByteArray(0x70, 0x61, 0x73, 0x73, 0x77, 0x6F, 0x72, 0x64),
+-            newByteArray(0x73, 0x61, 0x6C, 0x74),
+-            newByteArray(0x31, 0x31, 0x31, 0x31, 0x31, 0x31, 0x31, 0x31,
+-                         0x31, 0x31, 0x31, 0x31, 0x31, 0x31, 0x31, 0x31),
+-            newByteArray(0x74, 0x65, 0x73, 0x74),
+-            newByteArray(0x13, 0x16, 0x0A, 0xA4, 0x2B, 0xA3, 0x02, 0xC4,
+-                         0xEF, 0x47, 0x98, 0x6D, 0x9F, 0xC9, 0xAD, 0x43)),
+-        new Parameter(
+-            newByteArray(0x70, 0x61, 0x73, 0x73, 0x77, 0x6F, 0x72, 0x64),
+-            newByteArray(0x73, 0x61, 0x6C, 0x74),
+-            newByteArray(0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37,
+-                         0x38, 0x39, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66),
+-            newByteArray(0x64, 0x68, 0x6F, 0x69, 0x66, 0x61, 0x73, 0x6F,
+-                         0x69, 0x66, 0x61, 0x6F, 0x69, 0x73, 0x68, 0x64,
+-                         0x6F, 0x69, 0x66, 0x61, 0x68, 0x73, 0x6F, 0x69,
+-                         0x66, 0x64, 0x68, 0x61, 0x6F, 0x69, 0x73, 0x68,
+-                         0x66, 0x69, 0x6F, 0x61, 0x73, 0x68, 0x64, 0x6F,
+-                         0x69, 0x66, 0x61, 0x68, 0x69, 0x73, 0x6F, 0x64,
+-                         0x66, 0x68, 0x61, 0x69, 0x6F, 0x73, 0x68, 0x64,
+-                         0x66, 0x69, 0x6F, 0x61),
+-            newByteArray(0x27, 0x92, 0xD1, 0x4F, 0xCE, 0x71, 0xFF, 0xA0,
+-                         0x9E, 0x52, 0xAB, 0x96, 0xB4, 0x5D, 0x1A, 0x2F,
+-                         0xE0, 0xC7, 0xB3, 0x92, 0xD7, 0xB8, 0x29, 0xB0,
+-                         0xEF, 0xD3, 0x51, 0x9F, 0xBD, 0x87, 0xE0, 0xB4,
+-                         0x0A, 0x06, 0xE0, 0x9A, 0x03, 0x72, 0x48, 0xB3,
+-                         0x8F, 0x9A, 0x5E, 0xAC, 0xCD, 0x5D, 0xB8, 0x0B,
+-                         0x01, 0x1D, 0x2C, 0xD7, 0xAA, 0x55, 0x05, 0x0F,
+-                         0x4E, 0xD5, 0x73, 0xC0, 0xCB, 0xE2, 0x10, 0x69)),
+-    };
+-
+-    for (Parameter parameter : parameters) {
+-      byte[] key1 = Encryptor.deriveFromPassword(parameter.password, parameter.salt);
+-      byte[] key2 = Encryptor.deriveFromPassword(parameter.password, parameter.salt);
+-
+-      byte[] encrypted = Encryptor.encrypt(parameter.input.clone(), key1, parameter.iv.clone());
+-      MoreAsserts.assertEquals(parameter.encrypted, encrypted);
+-      byte[] decrypted = Encryptor.decrypt(encrypted, key2, parameter.iv.clone());
+-      MoreAsserts.assertEquals(parameter.input, decrypted);
+-    }
+-  }
+-
+-  @SmallTest
+-  public void testEncryptBatch()
+-      throws IOException, NoSuchAlgorithmException, InvalidKeyException,
+-             IllegalBlockSizeException, BadPaddingException, NoSuchPaddingException,
+-             InvalidAlgorithmParameterException {
+-    int[] parameters = { 1, 10, 16, 32, 100, 1000, 1600, 1000, 16000, 100000 };
+-    byte[] iv = new byte[16];
+-    for (int parameter : parameters) {
+-      byte[] buf = getSecureRandomSequence(parameter);
+-
+-      byte[] key1 = Encryptor.deriveFromPassword(
+-          "test".getBytes("utf-8"), "salt".getBytes("utf-8"));
+-      byte[] key2 = Encryptor.deriveFromPassword(
+-          "test".getBytes("utf-8"), "salt".getBytes("utf-8"));
+-
+-      byte[] key3 = Encryptor.deriveFromPassword(
+-          "test".getBytes("utf-8"), "salt2".getBytes("utf-8"));  // wrong salt.
+-      byte[] key4 = Encryptor.deriveFromPassword(
+-          "test2".getBytes("utf-8"), "salt".getBytes("utf-8"));  // wrong key.
+-
+-      byte[] encrypted = Encryptor.encrypt(buf.clone(), key1, iv.clone());
+-      assertEquals(0, encrypted.length % BLOCK_SIZE);
+-      assertFalse(Arrays.equals(buf, encrypted));
+-
+-      byte[] decrypted = Encryptor.decrypt(encrypted.clone(), key2, iv.clone());
+-      MoreAsserts.assertEquals(buf, decrypted);
+-
+-      // Wrong key.
+-      {
+-        boolean decryptSucceeded = false;
+-        try {
+-          byte[] decrypted3 = Encryptor.decrypt(encrypted.clone(), key3, iv.clone());
+-          decryptSucceeded = Arrays.equals(buf, decrypted3);
+-        } catch (Exception e) {
+-          // Exception may be thrown by decrypting based on different key.
+-        }
+-        assertFalse(decryptSucceeded);
+-      }
+-
+-      {
+-        boolean decryptSucceeded = false;
+-        try {
+-          byte[] decrypted4 = Encryptor.decrypt(encrypted.clone(), key4, iv.clone());
+-          decryptSucceeded = Arrays.equals(buf, decrypted4);
+-        } catch (Exception e) {
+-          // Exception may be thrown by decrypting based on different key.
+-        }
+-        assertFalse(decryptSucceeded);
+-      }
+-    }
+-  }
+-}
+diff -uNr mozc-1.15.1785.102/base/android_jni_mock.cc mozc-r217/base/android_jni_mock.cc
+--- mozc-1.15.1785.102/base/android_jni_mock.cc	2014-05-16 20:56:29.754134000 +0900
++++ mozc-r217/base/android_jni_mock.cc	2014-05-29 11:45:23.838355000 +0900
+@@ -81,13 +81,6 @@
+ }
+ 
+ jclass MockJNIEnv::FindClass(const char *class_path) {
+-#ifdef MOZC_USE_LEGACY_ENCRYPTOR
+-  static const char kEncryptorPath[] =
+-      "org/mozc/android/inputmethod/japanese/nativecallback/Encryptor";
+-  if (strcmp(class_path, kEncryptorPath) == 0) {
+-    return &mock_encryptor_class_;
+-  }
+-#endif  // MOZC_USE_LEGACY_ENCRYPTOR
+   static const char kHttpClientPath[] =
+       "org/mozc/android/inputmethod/japanese/nativecallback/HttpClient";
+   if (strcmp(class_path, kHttpClientPath) == 0) {
+@@ -98,23 +91,6 @@
+ 
+ jmethodID MockJNIEnv::GetStaticMethodID(
+     jclass cls, const char *name, const char *signature) {
+-#ifdef MOZC_USE_LEGACY_ENCRYPTOR
+-  if (cls == &mock_encryptor_class_) {
+-    if (strcmp(name, "deriveFromPassword") == 0 &&
+-        strcmp(signature, "([B[B)[B") == 0) {
+-      return reinterpret_cast<jmethodID>(&mock_derive_from_password_);
+-    }
+-    if (strcmp(name, "encrypt") == 0 &&
+-        strcmp(signature, "([B[B[B)[B") == 0) {
+-      return reinterpret_cast<jmethodID>(&mock_encrypt_);
+-    }
+-    if (strcmp(name, "decrypt") == 0 &&
+-        strcmp(signature, "([B[B[B)[B") == 0) {
+-      return reinterpret_cast<jmethodID>(&mock_decrypt_);
+-    }
+-    return NULL;
+-  }
+-#endif  // MOZC_USE_LEGACY_ENCRYPTOR
+   if (cls == &mock_http_client_class_) {
+     if (strcmp(name, "request") == 0 &&
+         strcmp(signature, "([B[B[B)[B") == 0) {
+@@ -127,31 +103,6 @@
+ 
+ jobject MockJNIEnv::CallStaticObjectMethodV(
+     jclass cls, jmethodID method, va_list args) {
+-#ifdef MOZC_USE_LEGACY_ENCRYPTOR
+-  if (cls == &mock_encryptor_class_) {
+-    CHECK(mock_encryptor_.get() != NULL)
+-        << "mock_encryptor_ is not initialized.";
+-    if (method == reinterpret_cast<jmethodID>(&mock_derive_from_password_)) {
+-      jbyteArray password = va_arg(args, jbyteArray);
+-      jbyteArray salt = va_arg(args, jbyteArray);
+-      return mock_encryptor_->DeriveFromPassword(password, salt);
+-    }
+-    if (method == reinterpret_cast<jmethodID>(&mock_encrypt_)) {
+-      jbyteArray data = va_arg(args, jbyteArray);
+-      jbyteArray key = va_arg(args, jbyteArray);
+-      jbyteArray iv = va_arg(args, jbyteArray);
+-      return mock_encryptor_->Encrypt(data, key, iv);
+-    }
+-    if (method == reinterpret_cast<jmethodID>(&mock_decrypt_)) {
+-      jbyteArray data = va_arg(args, jbyteArray);
+-      jbyteArray key = va_arg(args, jbyteArray);
+-      jbyteArray iv = va_arg(args, jbyteArray);
+-      return mock_encryptor_->Decrypt(data, key, iv);
+-    }
+-    LOG(FATAL) << "Unexpected call.";
+-    return NULL;
+-  }
+-#endif  // MOZC_USE_LEGACY_ENCRYPTOR
+   if (cls == &mock_http_client_class_) {
+     CHECK(mock_http_client_.get() != NULL)
+         << "mock_http_client_ is not initialized.";
+diff -uNr mozc-1.15.1785.102/base/android_jni_mock.h mozc-r217/base/android_jni_mock.h
+--- mozc-1.15.1785.102/base/android_jni_mock.h	2014-05-16 20:56:29.754134000 +0900
++++ mozc-r217/base/android_jni_mock.h	2014-05-29 11:45:23.838355000 +0900
+@@ -41,33 +41,6 @@
+ namespace mozc {
+ namespace jni {
+ 
+-#ifdef MOZC_USE_LEGACY_ENCRYPTOR
+-class MockJavaEncryptor {
+- public:
+-  MockJavaEncryptor() {
+-  }
+-  virtual ~MockJavaEncryptor() {
+-  }
+-
+-  // Following methods are interfaces to emulate the behavior of Encryptor
+-  // class (in Java). Do nothing by default.
+-  virtual jbyteArray DeriveFromPassword(jbyteArray password, jbyteArray salt) {
+-    return NULL;
+-  }
+-
+-  virtual jbyteArray Encrypt(jbyteArray data, jbyteArray key, jbyteArray iv) {
+-    return NULL;
+-  }
+-
+-  virtual jbyteArray Decrypt(jbyteArray data, jbyteArray key, jbyteArray iv) {
+-    return NULL;
+-  }
+-
+- private:
+-  DISALLOW_COPY_AND_ASSIGN(MockJavaEncryptor);
+-};
+-#endif  // MOZC_USE_LEGACY_ENCRYPTOR
+-
+ class MockJavaHttpClient {
+  public:
+   MockJavaHttpClient() {
+@@ -120,14 +93,6 @@
+   void SetByteArrayRegion(
+       jbyteArray array, jsize start, jsize len, const jbyte *buf);
+ 
+-#ifdef MOZC_USE_LEGACY_ENCRYPTOR
+-  // Register mocked encryptor. This method takes the ownership of
+-  // mock_encryptor instance.
+-  void RegisterMockJavaEncryptor(MockJavaEncryptor *mock_encryptor) {
+-    mock_encryptor_.reset(mock_encryptor);
+-  }
+-#endif  // MOZC_USE_LEGACY_ENCRYPTOR
+-
+   // Register mocked http client. This method takes the ownership of
+   // mock_http_client instance.
+   void RegisterMockJavaHttpClient(MockJavaHttpClient *mock_http_client) {
+@@ -142,15 +107,6 @@
+   JNIEnv env_;
+   map<jbyteArray, pair<jsize, jbyte*> > byte_array_map_;
+ 
+-#ifdef MOZC_USE_LEGACY_ENCRYPTOR
+-  // Encryptor's mock injecting point.
+-  scoped_ptr<MockJavaEncryptor> mock_encryptor_;
+-  _jclass mock_encryptor_class_;
+-  MockJMethodId mock_derive_from_password_;
+-  MockJMethodId mock_encrypt_;
+-  MockJMethodId mock_decrypt_;
+-#endif  // MOZC_USE_LEGACY_ENCRYPTOR
+-
+   // Http client's mock injecting point.
+   scoped_ptr<MockJavaHttpClient> mock_http_client_;
+   _jclass mock_http_client_class_;
+diff -uNr mozc-1.15.1785.102/base/android_jni_proxy.cc mozc-r217/base/android_jni_proxy.cc
+--- mozc-1.15.1785.102/base/android_jni_proxy.cc	2014-05-16 20:56:29.754134000 +0900
++++ mozc-r217/base/android_jni_proxy.cc	2014-05-29 11:45:23.838355000 +0900
+@@ -112,13 +112,6 @@
+   return result;
+ }
+ 
+-#ifdef MOZC_USE_LEGACY_ENCRYPTOR
+-// Creates jbyteArray instance containing the data.
+-jbyteArray StringToJByteArray(JNIEnv *env, const string &data) {
+-  return BufferToJByteArray(env, data.data(), data.size());
+-}
+-#endif  // MOZC_USE_LEGACY_ENCRYPTOR
+-
+ // Copies the contents of the given source to buf, and store the size into
+ // buf_size.
+ // Retruns true, if finished successfully. Otherwise, false.
+@@ -174,103 +167,6 @@
+ 
+ mozc::Mutex jvm_mutex;
+ 
+-#ifdef MOZC_USE_LEGACY_ENCRYPTOR
+-class JavaEncryptorDescriptor {
+- public:
+-  JavaEncryptorDescriptor(JavaVM *jvm) : jvm_(jvm) {
+-    CHECK(jvm != NULL) << "Given JVM is null.";
+-
+-    ScopedJavaThreadAttacher thread_attacher(jvm);
+-    JNIEnv *env = thread_attacher.mutable_jni_env();
+-    ScopedJavaLocalFrame local_frame(env, kDefaultLocalFrameSize);
+-
+-    const char kEncryptorClassPath[] =
+-        "org/mozc/android/inputmethod/japanese/nativecallback/Encryptor";
+-    jclass encryptor_class = env->FindClass(kEncryptorClassPath);
+-    CHECK(encryptor_class != NULL) << kEncryptorClassPath << " is not found.";
+-    // We need to keep "global" reference for jclass instance, in order to
+-    // avoid the garbage collection of the encryptor class.
+-    encryptor_class_ = static_cast<jclass>(env->NewGlobalRef(encryptor_class));
+-
+-    derive_from_password_id_ = env->GetStaticMethodID(
+-        encryptor_class, "deriveFromPassword", "([B[B)[B");
+-    encrypt_id_ = env->GetStaticMethodID(
+-        encryptor_class, "encrypt", "([B[B[B)[B");
+-    decrypt_id_ = env->GetStaticMethodID(
+-        encryptor_class, "decrypt", "([B[B[B)[B");
+-  }
+-
+-  ~JavaEncryptorDescriptor() {
+-    ScopedJavaThreadAttacher thread_attacher(jvm_);
+-    JNIEnv *env = thread_attacher.mutable_jni_env();
+-    env->DeleteGlobalRef(encryptor_class_);
+-  }
+-
+-  JavaVM *mutable_jvm() {
+-    return jvm_;
+-  }
+-
+-  jbyteArray DeriveFromPassword(
+-      JNIEnv *env, jbyteArray password, jbyteArray salt) {
+-    jbyteArray result = static_cast<jbyteArray>(env->CallStaticObjectMethod(
+-        encryptor_class_, derive_from_password_id_, password, salt));
+-
+-    if (env->ExceptionOccurred() != NULL) {
+-      env->ExceptionDescribe();
+-      env->ExceptionClear();
+-      return NULL;
+-    }
+-
+-    return result;
+-  }
+-
+-  jbyteArray Encrypt(
+-      JNIEnv *env, jbyteArray data, jbyteArray key, jbyteArray iv) {
+-    jbyteArray result = static_cast<jbyteArray>(env->CallStaticObjectMethod(
+-        encryptor_class_, encrypt_id_, data, key, iv));
+-
+-    if (env->ExceptionOccurred() != NULL) {
+-      env->ExceptionDescribe();
+-      env->ExceptionClear();
+-      return NULL;
+-    }
+-
+-    return result;
+-  }
+-
+-  jbyteArray Decrypt(
+-      JNIEnv *env, jbyteArray data, jbyteArray key, jbyteArray iv) {
+-    jbyteArray result = static_cast<jbyteArray>(env->CallStaticObjectMethod(
+-        encryptor_class_, decrypt_id_, data, key, iv));
+-
+-    if (env->ExceptionOccurred() != NULL) {
+-      env->ExceptionDescribe();
+-      env->ExceptionClear();
+-      return NULL;
+-    }
+-
+-    return result;
+-  }
+-
+-  static JavaEncryptorDescriptor *Create(JavaVM *jvm) {
+-    if (jvm == NULL) {
+-      return NULL;
+-    }
+-    return new JavaEncryptorDescriptor(jvm);
+-  }
+-
+- private:
+-  JavaVM *jvm_;
+-  jclass encryptor_class_;
+-  jmethodID derive_from_password_id_;
+-  jmethodID encrypt_id_;
+-  jmethodID decrypt_id_;
+-
+-  DISALLOW_COPY_AND_ASSIGN(JavaEncryptorDescriptor);
+-};
+-scoped_ptr<JavaEncryptorDescriptor> encryptor_descriptor;
+-#endif  // MOZC_USE_LEGACY_ENCRYPTOR
+-
+ class JavaHttpClientDescriptor {
+  public:
+   explicit JavaHttpClientDescriptor(JavaVM *jvm) : jvm_(jvm) {
+@@ -338,109 +234,6 @@
+ namespace mozc {
+ namespace jni {
+ 
+-#ifdef MOZC_USE_LEGACY_ENCRYPTOR
+-// static
+-bool JavaEncryptorProxy::DeriveFromPassword(
+-    const string &password, const string &salt, uint8 *buf, size_t *buf_size) {
+-  mozc::scoped_lock lock(&jvm_mutex);
+-  JavaEncryptorDescriptor *descriptor = encryptor_descriptor.get();
+-  if (descriptor == NULL) {
+-    LOG(ERROR) << "JavaVM is not initialized.";
+-    return false;
+-  }
+-
+-  ScopedJavaThreadAttacher thread_attacher(descriptor->mutable_jvm());
+-  JNIEnv *env = thread_attacher.mutable_jni_env();
+-  if (env == NULL) {
+-    return false;
+-  }
+-
+-  ScopedJavaLocalFrame local_frame(env, kDefaultLocalFrameSize);
+-  jbyteArray java_result = descriptor->DeriveFromPassword(
+-      env, StringToJByteArray(env, password), StringToJByteArray(env, salt));
+-
+-  if (java_result == NULL) {
+-    return false;
+-  }
+-
+-  return CopyJByteArrayToBuf(env, java_result, buf, buf_size);
+-}
+-
+-// static
+-bool JavaEncryptorProxy::Encrypt(
+-    const uint8 *key, const uint8 *iv, size_t max_buf_size,
+-    char *buf, size_t *buf_size) {
+-  mozc::scoped_lock lock(&jvm_mutex);
+-  JavaEncryptorDescriptor *descriptor = encryptor_descriptor.get();
+-  if (descriptor == NULL) {
+-    LOG(ERROR) << "JavaVM is not initialized.";
+-    return false;
+-  }
+-
+-  ScopedJavaThreadAttacher thread_attacher(descriptor->mutable_jvm());
+-  JNIEnv *env = thread_attacher.mutable_jni_env();
+-  if (env == NULL) {
+-    return false;
+-  }
+-
+-  ScopedJavaLocalFrame local_frame(env, kDefaultLocalFrameSize);
+-  jbyteArray java_result = descriptor->Encrypt(
+-      env,
+-      BufferToJByteArray(env, buf, *buf_size),
+-      BufferToJByteArray(env, key, kKeySizeInBits / 8),
+-      BufferToJByteArray(env, iv, kBlockSizeInBytes));
+-  if (java_result == NULL) {
+-    return false;
+-  }
+-
+-  bool result = CopyJByteArrayToBuf(env, java_result, buf, &max_buf_size);
+-  if (result) {
+-    *buf_size = max_buf_size;
+-  }
+-  return result;
+-}
+-
+-// static
+-bool JavaEncryptorProxy::Decrypt(
+-    const uint8 *key, const uint8 *iv, size_t max_buf_size,
+-    char *buf, size_t *buf_size) {
+-  mozc::scoped_lock lock(&jvm_mutex);
+-  JavaEncryptorDescriptor *descriptor = encryptor_descriptor.get();
+-  if (descriptor == NULL) {
+-    LOG(ERROR) << "JavaVM is not initialized.";
+-    return false;
+-  }
+-
+-  ScopedJavaThreadAttacher thread_attacher(descriptor->mutable_jvm());
+-  JNIEnv *env = thread_attacher.mutable_jni_env();
+-  if (env == NULL) {
+-    return false;
+-  }
+-
+-  ScopedJavaLocalFrame local_frame(env, kDefaultLocalFrameSize);
+-  jbyteArray java_result = descriptor->Decrypt(
+-      env,
+-      BufferToJByteArray(env, buf, *buf_size),
+-      BufferToJByteArray(env, key, kKeySizeInBits / 8),
+-      BufferToJByteArray(env, iv, kBlockSizeInBytes));
+-  if (java_result == NULL) {
+-    return false;
+-  }
+-
+-  bool result = CopyJByteArrayToBuf(env, java_result, buf, &max_buf_size);
+-  if (result) {
+-    *buf_size = max_buf_size;
+-  }
+-  return result;
+-}
+-
+-// static
+-void JavaEncryptorProxy::SetJavaVM(JavaVM *jvm) {
+-  mozc::scoped_lock lock(&jvm_mutex);
+-  encryptor_descriptor.reset(JavaEncryptorDescriptor::Create(jvm));
+-}
+-#endif  // MOZC_USE_LEGACY_ENCRYPTOR
+-
+ // static
+ bool JavaHttpClientProxy::Request(HTTPMethodType type,
+                                   const string &url,
+diff -uNr mozc-1.15.1785.102/base/android_jni_proxy.h mozc-r217/base/android_jni_proxy.h
+--- mozc-1.15.1785.102/base/android_jni_proxy.h	2014-05-16 20:56:29.754134000 +0900
++++ mozc-r217/base/android_jni_proxy.h	2014-05-29 11:45:23.838355000 +0900
+@@ -41,49 +41,6 @@
+ namespace mozc {
+ namespace jni {
+ 
+-#ifdef MOZC_USE_LEGACY_ENCRYPTOR
+-// Proxy to invoke
+-// org.mozc.android.inputmethod.japanese.nativecallback.Encryptor from
+-// mozc server.
+-// To use this class, it is necessary to set JavaVM instance via SetJavaVM.
+-class JavaEncryptorProxy {
+- public:
+-  static const size_t kBlockSizeInBytes = 16;
+-  // (kKeySizeInBits % 8) must be 0.
+-  static const size_t kKeySizeInBits = 256;
+-
+-  // Creates encryption key from the given password and salt.
+-  // buf_size is the capacity of buf.
+-  // Returns true if the method is finished successfully, and stores the result
+-  // into buf. Otherwise returns false.
+-  // The size of buf needs to be 256 (or greater) [bytes].
+-  static bool DeriveFromPassword(const string &password, const string &salt,
+-                                 uint8 *buf, size_t *buf_size);
+-
+-  // Encrypts the buf's contents and stores back the result into buf.
+-  // The size of key must be 256, and the size of iv must be 16 [bytes].
+-  // max_buf_size is the capacity of the buf, and buf_size is a pointer
+-  // to the current contents size of the buf.
+-  // Returns true if the method is completed successfully, and stores the
+-  // result to buf, and its size to buf_size.
+-  static bool Encrypt(const uint8 *key, const uint8 *iv, size_t max_buf_size,
+-                      char *buf, size_t *buf_size);
+-
+-  // Decrypts the buf's contents and stores back the result into buf.
+-  // The size of key must be 256, and the size of iv must be 16 [bytes].
+-  // max_buf_size is the capacity of the buf, and buf_size is a pointer
+-  // to the current contents size of the buf.
+-  // Returns true if the method is completed successfully, and stores the
+-  // result to buf, and its size to buf_size.
+-  static bool Decrypt(const uint8 *key, const uint8 *iv, size_t max_buf_size,
+-                      char *buf, size_t *buf_size);
+-
+-  static void SetJavaVM(JavaVM *jvm);
+- private:
+-  DISALLOW_IMPLICIT_CONSTRUCTORS(JavaEncryptorProxy);
+-};
+-#endif  // MOZC_USE_LEGACY_ENCRYPTOR
+-
+ class JavaHttpClientProxy {
+  public:
+   static bool Request(HTTPMethodType type,
+diff -uNr mozc-1.15.1785.102/base/android_jni_proxy_test.cc mozc-r217/base/android_jni_proxy_test.cc
+--- mozc-1.15.1785.102/base/android_jni_proxy_test.cc	2014-05-16 20:56:29.754134000 +0900
++++ mozc-r217/base/android_jni_proxy_test.cc	2014-05-29 11:45:23.838355000 +0900
+@@ -51,151 +51,6 @@
+   MOCK_METHOD3(Request, jbyteArray(jbyteArray, jbyteArray, jbyteArray));
+ };
+ 
+-#ifdef MOZC_USE_LEGACY_ENCRYPTOR
+-// We'd probably want to replace this class by gmock, but it has not been
+-// well tested on android yet. To split the work to add jni's proxy from
+-// introducing gmock, we manually mock JavaEncryptor temporarily.
+-// TODO(hidehiko): replace this class by gmock.
+-class MockJavaEncryptorImpl : public MockJavaEncryptor {
+- public:
+-  MockJavaEncryptorImpl(MockJNIEnv *env) : env_(env) {
+-  }
+-
+-  virtual jbyteArray DeriveFromPassword(jbyteArray password, jbyteArray salt) {
+-    CHECK(expected_derive_from_password_.get() != NULL);
+-    CHECK_EQ(expected_derive_from_password_->expected_password(),
+-             env_->JByteArrayToString(password));
+-    CHECK_EQ(expected_derive_from_password_->expected_salt(),
+-             env_->JByteArrayToString(salt));
+-    jbyteArray result = env_->StringToJByteArray(
+-        expected_derive_from_password_->expected_result());
+-    expected_derive_from_password_.reset();
+-    return result;
+-  }
+-
+-  virtual jbyteArray Encrypt(jbyteArray data, jbyteArray key, jbyteArray iv) {
+-    CHECK(expected_encrypt_.get() != NULL);
+-    CHECK_EQ(expected_encrypt_->expected_data(),
+-             env_->JByteArrayToString(data));
+-    CHECK_EQ(expected_encrypt_->expected_key(), env_->JByteArrayToString(key));
+-    CHECK_EQ(expected_encrypt_->expected_iv(), env_->JByteArrayToString(iv));
+-    jbyteArray result =
+-        env_->StringToJByteArray(expected_encrypt_->expected_result());
+-    expected_encrypt_.reset();
+-    return result;
+-  }
+-
+-  virtual jbyteArray Decrypt(jbyteArray data, jbyteArray key, jbyteArray iv) {
+-    CHECK(expected_decrypt_.get() != NULL);
+-    CHECK_EQ(expected_decrypt_->expected_data(),
+-             env_->JByteArrayToString(data));
+-    CHECK_EQ(expected_decrypt_->expected_key(), env_->JByteArrayToString(key));
+-    CHECK_EQ(expected_decrypt_->expected_iv(), env_->JByteArrayToString(iv));
+-    jbyteArray result =
+-        env_->StringToJByteArray(expected_decrypt_->expected_result());
+-    expected_decrypt_.reset();
+-    return result;
+-  }
+-
+-  void ExpectDeriveFromPassword(
+-      const string &password, const string &salt, const string &result) {
+-    expected_derive_from_password_.reset(
+-        new ExpectedDeriveFromPassword(password, salt, result));
+-  }
+-
+-  void ExpectEncrypt(
+-      const string &data, const string &key, const string &iv,
+-      const string &result) {
+-    expected_encrypt_.reset(new ExpectedCrypt(data, key, iv, result));
+-  }
+-
+-  void ExpectDecrypt(
+-      const string &data, const string &key, const string &iv,
+-      const string &result) {
+-    expected_decrypt_.reset(new ExpectedCrypt(data, key, iv, result));
+-  }
+-
+-  bool has_expected_derive_from_password() const {
+-    return expected_derive_from_password_.get() != NULL;
+-  }
+-  bool has_expected_encrypt() const {
+-    return expected_encrypt_.get() != NULL;
+-  }
+-  bool has_expected_decrypt() const {
+-    return expected_decrypt_.get() != NULL;
+-  }
+-
+- private:
+-  class ExpectedDeriveFromPassword {
+-   public:
+-    ExpectedDeriveFromPassword(const string &expected_password,
+-                                const string &expected_salt,
+-                                const string &expected_result) :
+-        expected_password_(expected_password),
+-        expected_salt_(expected_salt),
+-        expected_result_(expected_result) {
+-    }
+-
+-    const string &expected_password() const {
+-      return expected_password_;
+-    }
+-    const string &expected_salt() const {
+-      return expected_salt_;
+-    }
+-    const string &expected_result() const {
+-      return expected_result_;
+-    }
+-   private:
+-    string expected_password_;
+-    string expected_salt_;
+-    string expected_result_;
+-
+-    DISALLOW_COPY_AND_ASSIGN(ExpectedDeriveFromPassword);
+-  };
+-
+-  class ExpectedCrypt {
+-   public:
+-    ExpectedCrypt(const string &expected_data,
+-                  const string &expected_key,
+-                  const string &expected_iv,
+-                  const string &expected_result) :
+-        expected_data_(expected_data),
+-        expected_key_(expected_key),
+-        expected_iv_(expected_iv),
+-        expected_result_(expected_result) {
+-    }
+-
+-    const string &expected_data() const {
+-      return expected_data_;
+-    }
+-    const string &expected_key() const {
+-      return expected_key_;
+-    }
+-    const string &expected_iv() const {
+-      return expected_iv_;
+-    }
+-    const string &expected_result() const {
+-      return expected_result_;
+-    }
+-   private:
+-    string expected_data_;
+-    string expected_key_;
+-    string expected_iv_;
+-    string expected_result_;
+-
+-    DISALLOW_COPY_AND_ASSIGN(ExpectedCrypt);
+-  };
+-
+-  MockJNIEnv *env_;
+-
+-  scoped_ptr<ExpectedDeriveFromPassword> expected_derive_from_password_;
+-  scoped_ptr<ExpectedCrypt> expected_encrypt_;
+-  scoped_ptr<ExpectedCrypt> expected_decrypt_;
+-
+-  DISALLOW_COPY_AND_ASSIGN(MockJavaEncryptorImpl);
+-};
+-#endif  // MOZC_USE_LEGACY_ENCRYPTOR
+-
+ class AndroidJniProxyTest : public ::testing::Test {
+  protected:
+   virtual void SetUp() {
+@@ -209,29 +64,6 @@
+   scoped_ptr<MockJavaVM> jvm_;
+ };
+ 
+-#ifdef MOZC_USE_LEGACY_ENCRYPTOR
+-class AndroidJniProxyEncryptorTest : public AndroidJniProxyTest {
+- protected:
+-  virtual void SetUp() {
+-    AndroidJniProxyTest::SetUp();
+-    MockJNIEnv *env = jvm_->mutable_env();
+-    mock_encryptor_ = new MockJavaEncryptorImpl(env);
+-
+-    // env takes ownership of the mocks.
+-    env->RegisterMockJavaEncryptor(mock_encryptor_);
+-    JavaEncryptorProxy::SetJavaVM(jvm_->mutable_jvm());
+-  }
+-
+-  virtual void TearDown() {
+-    JavaEncryptorProxy::SetJavaVM(NULL);
+-    mock_encryptor_ = NULL;
+-    AndroidJniProxyTest::TearDown();
+-  }
+-
+-  MockJavaEncryptorImpl *mock_encryptor_;
+-};
+-#endif  // MOZC_USE_LEGACY_ENCRYPTOR
+-
+ bool IsEqualByteArray(MockJNIEnv *env,
+                       const jbyteArray& lhs, const jbyteArray& rhs) {
+   jboolean dummy;
+@@ -259,54 +91,6 @@
+ 
+ }  // namespace
+ 
+-#ifdef MOZC_USE_LEGACY_ENCRYPTOR
+-TEST_F(AndroidJniProxyEncryptorTest, DeriveFromPassword) {
+-  mock_encryptor_->ExpectDeriveFromPassword("password", "salt", "result");
+-
+-  uint8 buf[10];
+-  size_t buf_size = sizeof(buf);
+-  ASSERT_TRUE(JavaEncryptorProxy::DeriveFromPassword(
+-      "password", "salt", buf, &buf_size));
+-  EXPECT_EQ("result", string(reinterpret_cast<char*>(buf), buf_size));
+-  EXPECT_FALSE(mock_encryptor_->has_expected_derive_from_password());
+-}
+-
+-TEST_F(AndroidJniProxyEncryptorTest, Encrypt) {
+-  mock_encryptor_->ExpectEncrypt(
+-      "data",
+-      "0123456789abcdef0123456789abcdef",
+-      "0123456789ABCDEF",
+-      "result");
+-
+-  char buf[10];
+-  strcpy(buf, "data");
+-  size_t buf_size = strlen(buf);
+-  ASSERT_TRUE(JavaEncryptorProxy::Encrypt(
+-      reinterpret_cast<const uint8*>("0123456789abcdef0123456789abcdef"),
+-      reinterpret_cast<const uint8*>("0123456789ABCDEF"),
+-      sizeof(buf), buf, &buf_size));
+-  EXPECT_EQ("result", string(buf, buf_size));
+-  EXPECT_FALSE(mock_encryptor_->has_expected_encrypt());
+-}
+-
+-TEST_F(AndroidJniProxyEncryptorTest, Decrypt) {
+-  mock_encryptor_->ExpectDecrypt(
+-      "data",
+-      "0123456789abcdef0123456789abcdef",
+-      "0123456789ABCDEF",
+-      "result");
+-
+-  char buf[10];
+-  strcpy(buf, "data");
+-  size_t buf_size = strlen(buf);
+-  ASSERT_TRUE(JavaEncryptorProxy::Decrypt(
+-      reinterpret_cast<const uint8*>("0123456789abcdef0123456789abcdef"),
+-      reinterpret_cast<const uint8*>("0123456789ABCDEF"),
+-      sizeof(buf), buf, &buf_size));
+-  EXPECT_EQ("result", string(buf, buf_size));
+-  EXPECT_FALSE(mock_encryptor_->has_expected_decrypt());
+-}
+-#endif  // MOZC_USE_LEGACY_ENCRYPTOR
+ 
+ class HttpClientParams {
+  public:
+diff -uNr mozc-1.15.1785.102/base/base.gyp mozc-r217/base/base.gyp
+--- mozc-1.15.1785.102/base/base.gyp	2014-05-16 20:56:29.754134000 +0900
++++ mozc-r217/base/base.gyp	2014-05-29 18:30:11.160823000 +0900
+@@ -223,6 +223,7 @@
+     {
+       'target_name': 'obfuscator_support',
+       'type': 'static_library',
++      'toolsets': ['host', 'target'],
+       'sources': [
+         'unverified_aes256.cc',
+         'unverified_sha1.cc',
+@@ -234,6 +235,7 @@
+     {
+       'target_name': 'encryptor',
+       'type': 'static_library',
++      'toolsets': ['host', 'target'],
+       'sources': [
+         'encryptor.cc',
+         'password_manager.cc',
+@@ -243,15 +245,6 @@
+         'obfuscator_support',
+       ],
+       'conditions': [
+-        ['use_legacy_encryptor==1', {
+-          # Use legacy implementation.
+-          'sources!': [
+-            'encryptor.cc',
+-          ],
+-          'sources': [
+-            'encryptor_legacy.cc',
+-          ],
+-        }],
+         ['OS=="win"', {
+           'link_settings': {
+             'msvs_settings': {
+@@ -263,49 +256,6 @@
+             },
+           },
+         }],
+-        ['use_legacy_encryptor==1 and OS=="mac"', {
+-          'defines': [
+-            'HAVE_OPENSSL=1',
+-          ],
+-          'link_settings': {
+-            'libraries': [
+-              '/usr/lib/libcrypto.dylib',  # used in 'encryptor.cc'
+-            ],
+-          },
+-        }],
+-        ['use_legacy_encryptor==1 and '
+-         'OS=="linux" and target_platform!="Android" and '
+-         'not (target_platform=="NaCl" and _toolset=="target")', {
+-          'cflags': [
+-            '<!@(<(pkg_config_command) --cflags-only-other openssl)',
+-          ],
+-          'defines': [
+-            'HAVE_OPENSSL=1',
+-          ],
+-          'include_dirs': [
+-            '<!@(<(pkg_config_command) --cflags-only-I openssl)',
+-          ],
+-          'link_settings': {
+-            'ldflags': [
+-              '<!@(<(pkg_config_command) --libs-only-L openssl)',
+-            ],
+-            'libraries': [
+-              '<!@(<(pkg_config_command) --libs-only-l openssl)',
+-            ],
+-          },
+-        }],
+-        ['use_legacy_encryptor==1 and target_platform=="Android"', {
+-          'dependencies': [
+-            'jni_proxy'
+-          ],
+-        }],
+-        ['use_legacy_encryptor==1 and '
+-         'target_platform=="NaCl" and _toolset=="target"', {
+-          'dependencies': [
+-            'openssl_crypto_aes',
+-            'openssl_config',
+-          ],
+-        }],
+       ],
+     },
+     {
+@@ -526,71 +476,6 @@
+             'base.gyp:base',
+           ],
+         },
+-        {
+-          'target_name': 'openssl_crypto_aes',
+-          'type': 'static_library',
+-          'variables': {
+-            'openssl_dir%': '<(DEPTH)/third_party/openssl/openssl',
+-          },
+-          'direct_dependent_settings': {
+-            'defines': [
+-              'HAVE_OPENSSL=1',
+-            ],
+-            'include_dirs': [
+-              '<(gen_out_dir)/openssl/include',
+-              '<(openssl_dir)/include',
+-            ],
+-          },
+-          'cflags': [
+-            # Suppresses warnings in third_party codes.
+-            '-Wno-unused-value',
+-          ],
+-          'include_dirs': [
+-            '<(gen_out_dir)/openssl/include',
+-            '<(openssl_dir)',
+-            '<(openssl_dir)/crypto',
+-            '<(openssl_dir)/include',
+-          ],
+-          'hard_dependency': 1,
+-          'sources': [
+-            # The following files are the minumum set for 'encryptor.cc'
+-            '<(openssl_dir)/crypto/aes/aes_cbc.c',
+-            '<(openssl_dir)/crypto/aes/aes_core.c',
+-            '<(openssl_dir)/crypto/aes/aes_misc.c',
+-            '<(openssl_dir)/crypto/mem_clr.c',
+-            '<(openssl_dir)/crypto/modes/cbc128.c',
+-            '<(openssl_dir)/crypto/sha/sha1dgst.c',
+-            '<(openssl_dir)/crypto/sha/sha1_one.c',
+-            '<(openssl_dir)/crypto/sha/sha256.c',
+-            '<(openssl_dir)/crypto/sha/sha512.c',
+-            '<(openssl_dir)/crypto/sha/sha_dgst.c',
+-            '<(openssl_dir)/crypto/sha/sha_one.c',
+-          ],
+-          'dependencies': [
+-            'openssl_config',
+-          ],
+-          'export_dependent_settings': [
+-            'openssl_config',
+-          ],
+-        },
+-        {
+-          'target_name': 'openssl_config',
+-          'type': 'none',
+-          'actions': [
+-            {
+-              'action_name': 'openssl_config',
+-              'inputs': [
+-                'openssl_config.sh',
+-              ],
+-              'outputs': [
+-                '<(gen_out_dir)/openssl/include/openssl/opensslconf.h',
+-              ],
+-              'action': [
+-                'bash', 'openssl_config.sh', '<(gen_out_dir)', '$(abspath ./)',
+-              ],
+-            },
+-          ],
+-        },
+       ]},
+     ],
+   ],
+diff -uNr mozc-1.15.1785.102/base/base_test.gyp mozc-r217/base/base_test.gyp
+--- mozc-1.15.1785.102/base/base_test.gyp	2014-05-16 20:56:29.754134000 +0900
++++ mozc-r217/base/base_test.gyp	2014-05-29 18:30:11.160823000 +0900
+@@ -264,16 +264,6 @@
+         '../testing/testing.gyp:gtest_main',
+         'base.gyp:encryptor',
+       ],
+-      'conditions': [
+-        ['use_legacy_encryptor==1 and target_platform=="Android"', {
+-          'sources!': [
+-            # Testing of encryptor is ported to java test. See also
+-            # org.mozc.android.inputmethod.japanese.nativecallback.EncryptorTest
+-            # and jni_proxy_test target.
+-            'encryptor_test.cc',
+-          ],
+-        }],
+-      ],
+     },
+     # init_test.cc is separated from all other base_core_test because it
+     # calls finalizers.
+diff -uNr mozc-1.15.1785.102/base/encryptor.h mozc-r217/base/encryptor.h
+--- mozc-1.15.1785.102/base/encryptor.h	2014-05-16 20:56:29.754134000 +0900
++++ mozc-r217/base/encryptor.h	2014-05-29 18:30:11.160823000 +0900
+@@ -36,10 +36,6 @@
+ 
+ namespace mozc {
+ 
+-#ifdef MOZC_USE_LEGACY_ENCRYPTOR
+-struct KeyData;
+-#endif  // MOZC_USE_LEGACY_ENCRYPTOR
+-
+ class Encryptor {
+  public:
+   // Internal class for representing a key
+@@ -83,23 +79,11 @@
+     // return the size required to encrypt the buffer of size |size|.
+     size_t GetEncryptedSize(size_t size) const;
+ 
+-#ifdef MOZC_USE_LEGACY_ENCRYPTOR
+-    // Get Internal KeyData
+-    KeyData *GetKeyData() const;
+-#endif  // MOZC_USE_LEGACY_ENCRYPTOR
+-
+     Key();
+     ~Key();
+ 
+-#ifdef MOZC_USE_LEGACY_ENCRYPTOR
+-   private:
+-    scoped_ptr<KeyData> data_;
+-    scoped_ptr<uint8[]> iv_;
+-    bool is_available_;
+-#else
+     struct InternalData;
+     scoped_ptr<InternalData> data_;
+-#endif  // MOZC_USE_LEGACY_ENCRYPTOR
+   };
+ 
+   // Encrypt character buffer. set the size of character buffer
+diff -uNr mozc-1.15.1785.102/base/encryptor_legacy.cc mozc-r217/base/encryptor_legacy.cc
+--- mozc-1.15.1785.102/base/encryptor_legacy.cc	2014-05-16 20:56:29.754134000 +0900
++++ mozc-r217/base/encryptor_legacy.cc	1970-01-01 09:00:00.000000000 +0900
+@@ -1,713 +0,0 @@
+-// Copyright 2010-2014, Google Inc.
+-// All rights reserved.
+-//
+-// Redistribution and use in source and binary forms, with or without
+-// modification, are permitted provided that the following conditions are
+-// met:
+-//
+-//     * Redistributions of source code must retain the above copyright
+-// notice, this list of conditions and the following disclaimer.
+-//     * Redistributions in binary form must reproduce the above
+-// copyright notice, this list of conditions and the following disclaimer
+-// in the documentation and/or other materials provided with the
+-// distribution.
+-//     * Neither the name of Google Inc. nor the names of its
+-// contributors may be used to endorse or promote products derived from
+-// this software without specific prior written permission.
+-//
+-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-
+-#include "base/encryptor.h"
+-
+-
+-#if defined(OS_WIN)
+-#include <windows.h>
+-#include <wincrypt.h>
+-#elif defined(OS_MACOSX)
+-#include <unistd.h>
+-#include <sys/types.h>
+-#else
+-#include <string.h>
+-#endif  // platforms (OS_WIN, OS_MACOSX, ...)
+-
+-#ifdef HAVE_OPENSSL
+-#include <openssl/sha.h>   // Use default openssl
+-#include <openssl/aes.h>
+-#endif  // HAVE_OPENSSL
+-
+-#ifdef OS_ANDROID
+-#include "base/android_jni_proxy.h"
+-#endif  // OS_ANDROID
+-
+-#include "base/logging.h"
+-#include "base/password_manager.h"
+-#include "base/util.h"
+-
+-#ifdef OS_MACOSX
+-#include "base/mac_util.h"
+-#endif  // OS_MACOSX
+-
+-#include <string>
+-
+-namespace mozc {
+-namespace {
+-
+-#if defined(OS_ANDROID)
+-using jni::JavaEncryptorProxy;
+-const size_t kBlockSize = JavaEncryptorProxy::kBlockSizeInBytes;
+-const size_t kKeySize = JavaEncryptorProxy::kKeySizeInBits;
+-#elif defined(OS_WIN)
+-const size_t kBlockSize = 16;  // 128bit
+-const size_t kKeySize = 256;   // key length in bit
+-// Use CBC mode:
+-// CBC has been the most commonly used mode of operation.
+-// See http://en.wikipedia.org/wiki/Block_cipher_modes_of_operation
+-const DWORD kCryptMode = CRYPT_MODE_CBC;   // crypt mode (CBC)
+-// Use PKCS5 padding:
+-// See http://www.chilkatsoft.com/faq/PKCS5_Padding.html
+-const DWORD kPaddingMode = PKCS5_PADDING;  // padding mode
+-#elif defined(HAVE_OPENSSL)
+-const size_t kBlockSize = AES_BLOCK_SIZE;
+-const size_t kKeySize = 256;   // key length in bit
+-
+-// Return SHA1 digest
+-string HashSHA1(const string &data) {
+-  uint8 buf[SHA_DIGEST_LENGTH];   // 160bit
+-  SHA1(reinterpret_cast<const uint8 *>(data.data()), data.size(), buf);
+-  string result(reinterpret_cast<char *>(buf), SHA_DIGEST_LENGTH);
+-  return result;
+-}
+-
+-// By using OpenSSL's SHA1, emulate Microsoft's CryptDerivePassword API
+-// http://msdn.microsoft.com/en-us/library/aa379916.aspx
+-// says:
+-// Let n be the required derived key length, in bytes.
+-// The derived key is the first n bytes of the hash value after
+-// the hash computation has been completed by CryptDeriveKey.
+-// If the hash is not a member of the SHA-2 family and the required key
+-// is for either 3DES or AES, the key is derived as follows:
+-//
+-// 1. Form a 64-byte buffer by repeating the constant 0x36 64 times.
+-//    Let k be the length of the hash value that is represented by
+-//    the input parameter hBaseData. Set the first k bytes of the
+-//    buffer to the result of an XOR operation of the first k bytes
+-//    of the buffer with the hash value that is represented by the
+-//    input parameter hBaseData.
+-// 2. Form a 64-byte buffer by repeating the constant 0x5C 64 times.
+-//    Set the first k bytes of the buffer to the result of an XOR
+-//    operation of the first k bytes of the buffer with the hash
+-//    value that is represented by the input parameter hBaseData.
+-// 3. Hash the result of step 1 by using the same hash algorithm
+-//    as that used to compute the hash value that is represented
+-//     by the hBaseData parameter.
+-// 4. Hash the result of step 2 by using the same hash algorithm as
+-//    that used to compute the hash value that is represented by the
+-//    hBaseData parameter.
+-// 5. Concatenate the result of step 3 with the result of step 4.
+-// 6. Use the first n bytes of the result of step 5 as the derived key.
+-string GetMSCryptDeriveKeyWithSHA1(const string &password,
+-                                   const string &salt) {
+-  uint8 buf1[64];
+-  uint8 buf2[64];
+-
+-  // Step1.
+-  memset(buf1, 0x36, sizeof(buf1));
+-
+-  // Step2.
+-  memset(buf2, 0x5c, sizeof(buf2));
+-
+-  // Step 3 & 4
+-  const string hash = HashSHA1(password + salt);
+-  for (size_t i = 0; i < hash.size(); ++i) {
+-    buf1[i] ^= static_cast<uint8>(hash[i]);
+-    buf2[i] ^= static_cast<uint8>(hash[i]);
+-  }
+-
+-  // Step 5 & 6
+-  const string result1(reinterpret_cast<const char *>(buf1), sizeof(buf1));
+-  const string result2(reinterpret_cast<const char *>(buf2), sizeof(buf2));
+-
+-  return HashSHA1(result1) + HashSHA1(result2);
+-}
+-#else
+-// None of OS_ANDROID/OS_WIN/HAVE_OPENSSL is defined.
+-#error "Encryptor does not support your platform."
+-#endif
+-
+-}  // namespace
+-
+-struct KeyData {
+-#if defined(OS_ANDROID)
+-  uint8 key[kKeySize / 8];
+-#elif defined(OS_WIN)
+-  HCRYPTPROV prov;
+-  HCRYPTHASH hash;
+-  HCRYPTKEY  key;
+-#elif defined(HAVE_OPENSSL)
+-  AES_KEY encrypt_key;
+-  AES_KEY decrypt_key;
+-#else
+-// None of OS_ANDROID/OS_WIN/HAVE_OPENSSL is defined.
+-#error "Encryptor does not support your platform."
+-#endif
+-};
+-
+-size_t Encryptor::Key::block_size() const {
+-  return kBlockSize;
+-}
+-
+-const uint8 *Encryptor::Key::iv() const {
+-  return iv_.get();
+-}
+-
+-size_t Encryptor::Key::iv_size() const {
+-  return block_size();   // the same as block size
+-}
+-
+-size_t Encryptor::Key::key_size() const {
+-  return kKeySize;
+-}
+-
+-bool Encryptor::Key::IsAvailable() const {
+-  return is_available_;
+-}
+-
+-size_t Encryptor::Key::GetEncryptedSize(size_t size) const {
+-  // Even when given size is already multples of 16, we add
+-  // an extra block_size as a padding.
+-  // The extra padding can allow us to know that the message decrypted
+-  // is invalid or broken.
+-  return (size / block_size() + 1) * block_size();
+-}
+-
+-KeyData *Encryptor::Key::GetKeyData() const {
+-  return data_.get();
+-}
+-
+-#ifdef OS_WIN
+-bool Encryptor::Key::DeriveFromPassword(const string &password,
+-                                        const string &salt,
+-                                        const uint8 *iv) {
+-  if (is_available_) {
+-    LOG(WARNING) << "key is already set";
+-    return false;
+-  }
+-
+-  if (password.empty()) {
+-    LOG(WARNING) << "password is empty";
+-    return false;
+-  }
+-
+-  // http://support.microsoft.com/kb/238187/en-us/
+-  // First, AcquireContext. if it failed, make a
+-  // key with CRYPT_NEWKEYSET flag
+-  if (!::CryptAcquireContext(&(GetKeyData()->prov),
+-                             NULL,
+-                             NULL,  // use default
+-                             PROV_RSA_AES, CRYPT_VERIFYCONTEXT)) {
+-    if (NTE_BAD_KEYSET == ::GetLastError()) {
+-      if (!::CryptAcquireContext(&(GetKeyData()->prov),
+-                                 NULL,
+-                                 NULL,  // use default
+-                                 PROV_RSA_AES,
+-                                 CRYPT_NEWKEYSET)) {
+-        LOG(ERROR) << "CryptAcquireContext failed: " << ::GetLastError();
+-        return false;
+-      }
+-    } else {
+-      LOG(ERROR) << "CryptAcquireContext failed: " << ::GetLastError();
+-      return false;
+-    }
+-  }
+-
+-  // Create Hash
+-  if (!::CryptCreateHash(GetKeyData()->prov, CALG_SHA1, 0, 0,
+-                         &(GetKeyData()->hash))) {
+-    LOG(ERROR) << "CryptCreateHash failed: " << ::GetLastError();
+-    ::CryptReleaseContext(GetKeyData()->prov, 0);
+-    return false;
+-  }
+-
+-  // Set password + salt
+-  const string final_password = password + salt;
+-  if (!::CryptHashData(GetKeyData()->hash,
+-                       const_cast<BYTE *>(
+-                           reinterpret_cast<const BYTE *>(
+-                               final_password.data())),
+-                       final_password.size(), 0)) {
+-    LOG(ERROR) << "CryptHashData failed: " << ::GetLastError();
+-    ::CryptReleaseContext(GetKeyData()->prov, 0);
+-    ::CryptDestroyHash(GetKeyData()->hash);
+-    return false;
+-  }
+-
+-  // Set algorithm
+-  if (!::CryptDeriveKey(GetKeyData()->prov,
+-                        CALG_AES_256,
+-                        GetKeyData()->hash,
+-                        (key_size() << 16),
+-                        &(GetKeyData()->key))) {
+-    LOG(ERROR) << "CryptDeriveKey failed: "<< ::GetLastError();
+-    ::CryptReleaseContext(GetKeyData()->prov, 0);
+-    ::CryptDestroyHash(GetKeyData()->hash);
+-    return false;
+-  }
+-
+-  // Set IV
+-  if (iv != NULL) {
+-    memcpy(iv_.get(), iv, iv_size());
+-  } else {
+-    memset(iv_.get(), '\0', iv_size());
+-  }
+-
+-  // Set padding mode, IV, CBC
+-  if (!::CryptSetKeyParam(GetKeyData()->key,
+-                          KP_PADDING,
+-                          const_cast<BYTE *>(
+-                              reinterpret_cast<const BYTE *>(
+-                                  &kPaddingMode)), 0) ||
+-      !::CryptSetKeyParam(GetKeyData()->key,
+-                          KP_MODE,
+-                          const_cast<BYTE *>(
+-                              reinterpret_cast<const BYTE *>(
+-                                  &kCryptMode)), 0) ||
+-      !::CryptSetKeyParam(GetKeyData()->key,
+-                          KP_IV,
+-                          iv_.get(), 0)) {
+-    LOG(ERROR) << "CryptSetKeyParam failed" << ::GetLastError();
+-    ::CryptReleaseContext(GetKeyData()->prov, 0);
+-    ::CryptDestroyKey(GetKeyData()->key);
+-    ::CryptDestroyHash(GetKeyData()->hash);
+-    return false;
+-  }
+-
+-  is_available_ = true;
+-
+-  return true;
+-}
+-#else  // OS_WIN
+-
+-bool Encryptor::Key::DeriveFromPassword(const string &password,
+-                                        const string &salt,
+-                                        const uint8 *iv) {
+-  if (is_available_) {
+-    LOG(WARNING) << "key is already set";
+-    return false;
+-  }
+-
+-  if (password.empty()) {
+-    LOG(WARNING) << "password is empty";
+-    return false;
+-  }
+-
+-  if (iv != NULL) {
+-    memcpy(iv_.get(), iv, iv_size());
+-  } else {
+-    memset(iv_.get(), '\0', iv_size());
+-  }
+-
+-#ifdef OS_ANDROID
+-  size_t size = sizeof(GetKeyData()->key);
+-  if (!JavaEncryptorProxy::DeriveFromPassword(
+-          password, salt, GetKeyData()->key, &size)) {
+-    LOG(WARNING) << "Failed to generate key.";
+-    return false;
+-  }
+-  if (size != sizeof(GetKeyData()->key)) {
+-    LOG(WARNING) << "Key size is changed: " << size;
+-    return false;
+-  }
+-#else
+-  const string key = GetMSCryptDeriveKeyWithSHA1(password, salt);
+-  DCHECK_EQ(40, key.size());   // SHA1 is 160bit hash, so 160*2/8 = 40byte
+-
+-  AES_set_encrypt_key(reinterpret_cast<const uint8 *>(key.data()),
+-                      key_size(),
+-                      &(GetKeyData()->encrypt_key));
+-  AES_set_decrypt_key(reinterpret_cast<const uint8 *>(key.data()),
+-                      key_size(),
+-                      &(GetKeyData()->decrypt_key));
+-#endif  // OS_ANDROID
+-
+-  is_available_ = true;
+-
+-  return true;
+-}
+-#endif   // OS_WIN
+-
+-Encryptor::Key::Key()
+-    : data_(new KeyData),
+-      iv_(new uint8[kBlockSize]),
+-      is_available_(false) {
+-  memset(iv_.get(), '\0', iv_size());
+-}
+-
+-Encryptor::Key::~Key() {
+-#ifdef OS_WIN
+-  if (is_available_) {
+-    ::CryptDestroyKey(GetKeyData()->key);
+-    ::CryptDestroyHash(GetKeyData()->hash);
+-    ::CryptReleaseContext(GetKeyData()->prov, 0);
+-  }
+-#endif
+-}
+-
+-bool Encryptor::EncryptString(const Encryptor::Key &key, string *data) {
+-  if (data == NULL || data->empty()) {
+-    LOG(ERROR) << "data is NULL or empty";
+-    return false;
+-  }
+-  size_t size = data->size();
+-  scoped_ptr<char[]> buf(new char[key.GetEncryptedSize(data->size())]);
+-  memcpy(buf.get(), data->data(), data->size());
+-  if (!Encryptor::EncryptArray(key, buf.get(), &size)) {
+-    LOG(ERROR) << "EncryptArray() failed";
+-    return false;
+-  }
+-  data->assign(buf.get(), size);
+-  return true;
+-}
+-
+-bool Encryptor::DecryptString(const Encryptor::Key &key, string *data) {
+-  if (data == NULL || data->empty()) {
+-    LOG(ERROR) << "data is NULL or empty";
+-    return false;
+-  }
+-  size_t size = data->size();
+-  scoped_ptr<char[]> buf(new char[data->size()]);
+-  memcpy(buf.get(), data->data(), data->size());
+-  if (!Encryptor::DecryptArray(key, buf.get(), &size)) {
+-    LOG(ERROR) << "DecryptArray() failed";
+-    return false;
+-  }
+-  data->assign(buf.get(), size);
+-  return true;
+-}
+-
+-bool Encryptor::EncryptArray(const Encryptor::Key &key,
+-                             char *buf, size_t *buf_size) {
+-  if (!key.IsAvailable()) {
+-    LOG(ERROR) << "key is not available";
+-    return false;
+-  }
+-
+-  if (buf == NULL || buf_size == NULL || *buf_size == 0) {
+-    LOG(ERROR) << "invalid buffer given";
+-    return false;
+-  }
+-
+-  const size_t enc_size = key.GetEncryptedSize(*buf_size);
+-
+-#if defined(OS_ANDROID)
+-  if (!JavaEncryptorProxy::Encrypt(
+-          key.GetKeyData()->key, key.iv(), enc_size, buf, buf_size)) {
+-    LOG(ERROR) << "CryptEncrypt failed";
+-    return false;
+-  }
+-  return true;
+-#elif defined(OS_WIN)
+-  uint32 size = *buf_size;
+-  if (!::CryptEncrypt(key.GetKeyData()->key,
+-                      0, TRUE, 0,
+-                      reinterpret_cast<BYTE *>(buf),
+-                      reinterpret_cast<DWORD *>(&size),
+-                      static_cast<DWORD>(enc_size))) {
+-    LOG(ERROR) << "CryptEncrypt failed: " << ::GetLastError();
+-    return false;
+-  }
+-  *buf_size = enc_size;
+-  return true;
+-#elif defined(HAVE_OPENSSL)
+-  // perform PKCS#5 padding
+-  const size_t padding_size = enc_size - *buf_size;
+-  const uint8 padding_value = static_cast<uint8>(padding_size);
+-  for (size_t i = *buf_size; i < enc_size; ++i) {
+-    buf[i] = static_cast<char>(padding_value);
+-  }
+-
+-  // iv is used inside AES_cbc_encrypt, so must copy it.
+-  scoped_ptr<uint8[]> iv(new uint8[key.iv_size()]);
+-  memcpy(iv.get(), key.iv(), key.iv_size());  // copy iv
+-
+-  AES_cbc_encrypt(reinterpret_cast<const uint8 *>(buf),
+-                  reinterpret_cast<uint8 *>(buf),
+-                  enc_size, &(key.GetKeyData()->encrypt_key),
+-                  iv.get(), AES_ENCRYPT);
+-  *buf_size = enc_size;
+-  return true;
+-#else
+-// None of OS_ANDROID/OS_WIN/HAVE_OPENSSL is defined.
+-#error "Encryptor does not support your platform."
+-  return false;
+-#endif
+-}
+-
+-bool Encryptor::DecryptArray(const Encryptor::Key &key,
+-                             char *buf, size_t *buf_size) {
+-  if (!key.IsAvailable()) {
+-    LOG(ERROR) << "key is not available";
+-    return false;
+-  }
+-
+-  if (buf == NULL || buf_size == NULL || *buf_size == 0) {
+-    LOG(ERROR) << "invalid buffer given";
+-    return false;
+-  }
+-
+-  if (*buf_size < key.block_size() || *buf_size % key.block_size() != 0) {
+-    LOG(ERROR) << "buf size is not multiples of " << key.block_size();
+-    return false;
+-  }
+-
+-#if defined(OS_ANDROID)
+-  if (!JavaEncryptorProxy::Decrypt(
+-          key.GetKeyData()->key, key.iv(), *buf_size, buf, buf_size)) {
+-    LOG(ERROR) << "CryptDecrypt failed";
+-    return false;
+-  }
+-  return true;
+-#elif defined(OS_WIN)
+-  DWORD size = static_cast<DWORD>(*buf_size);
+-  if (!::CryptDecrypt(key.GetKeyData()->key,
+-                      0, TRUE, 0,
+-                      reinterpret_cast<uint8 *>(buf),
+-                      &size)) {
+-    LOG(ERROR) << "CryptDecrypt failed: " << ::GetLastError();
+-    return false;
+-  }
+-
+-  *buf_size = size;
+-  return true;
+-#elif defined(HAVE_OPENSSL)
+-  size_t size = *buf_size;
+-  // iv is used inside AES_cbc_encrypt, so must copy it.
+-  scoped_ptr<uint8[]> iv(new uint8[key.iv_size()]);
+-  memcpy(iv.get(), key.iv(), key.iv_size());  // copy iv
+-
+-  AES_cbc_encrypt(reinterpret_cast<const uint8 *>(buf),
+-                  reinterpret_cast<uint8 *>(buf), size,
+-                  &(key.GetKeyData()->decrypt_key), iv.get(), AES_DECRYPT);
+-
+-  // perform PKCS#5 un-padding
+-  // see. http://www.chilkatsoft.com/faq/PKCS5_Padding.html
+-  const uint8 padding_value = static_cast<uint8>(buf[size - 1]);
+-  const size_t padding_size = static_cast<size_t>(padding_value);
+-  if (padding_value == 0x00 || padding_value > AES_BLOCK_SIZE) {
+-    LOG(ERROR) << "Cannot find PKCS#5 padding values: ";
+-    return false;
+-  }
+-
+-  if (size <= padding_size) {
+-    LOG(ERROR) << "padding size is no smaller than original message";
+-    return false;
+-  }
+-
+-  for (size_t i = size - padding_size; i < size; ++i) {
+-    if (static_cast<uint8>(buf[i]) != padding_value) {
+-      LOG(ERROR) << "invalid padding value. message is broken";
+-      return false;
+-    }
+-  }
+-  *buf_size -= padding_size;   // remove padding part
+-  return true;
+-#else
+-// None of OS_ANDROID/OS_WIN/HAVE_OPENSSL is defined.
+-#error "Encryptor does not support your platform."
+-  return false;
+-#endif
+-}
+-
+-// Protect|Unprotect Data
+-#ifdef OS_WIN
+-// See. http://msdn.microsoft.com/en-us/library/aa380261.aspx
+-bool Encryptor::ProtectData(const string &plain_text,
+-                            string *cipher_text) {
+-  DCHECK(cipher_text);
+-  DATA_BLOB input;
+-  input.pbData = const_cast<BYTE *>(
+-      reinterpret_cast<const BYTE *>(plain_text.data()));
+-  input.cbData = static_cast<DWORD>(plain_text.size());
+-
+-  DATA_BLOB output;
+-  const BOOL result = ::CryptProtectData(&input, L"",
+-                                         NULL, NULL, NULL,
+-                                         CRYPTPROTECT_UI_FORBIDDEN,
+-                                         &output);
+-  if (!result) {
+-    LOG(ERROR) << "CryptProtectData failed: " << ::GetLastError();
+-    return false;
+-  }
+-
+-  cipher_text->assign(reinterpret_cast<char *>(output.pbData),
+-                      output.cbData);
+-
+-  ::LocalFree(output.pbData);
+-
+-  return true;
+-}
+-
+-// See. http://msdn.microsoft.com/en-us/library/aa380882(VS.85).aspx
+-bool Encryptor::UnprotectData(const string &cipher_text,
+-                              string *plain_text) {
+-  DCHECK(plain_text);
+-  DATA_BLOB input;
+-  input.pbData = const_cast<BYTE *>(
+-      reinterpret_cast<const BYTE*>(cipher_text.data()));
+-  input.cbData = static_cast<DWORD>(cipher_text.length());
+-
+-  DATA_BLOB output;
+-  const BOOL result = ::CryptUnprotectData(&input,
+-                                           NULL, NULL, NULL, NULL,
+-                                           CRYPTPROTECT_UI_FORBIDDEN,
+-                                           &output);
+-  if (!result) {
+-    LOG(ERROR) << "CryptUnprotectData failed: " << ::GetLastError();
+-    return false;
+-  }
+-
+-  plain_text->assign(reinterpret_cast<char *>(output.pbData), output.cbData);
+-
+-  ::LocalFree(output.pbData);
+-
+-  return true;
+-}
+-
+-#elif defined(OS_MACOSX)
+-
+-// ProtectData for Mac uses the serial number and the current pid as the key.
+-bool Encryptor::ProtectData(const string &plain_text,
+-                            string *cipher_text) {
+-  DCHECK(cipher_text);
+-  Encryptor::Key key;
+-  const string serial_number = MacUtil::GetSerialNumber();
+-  const string salt = Util::StringPrintf("%x", ::getuid());
+-  if (serial_number.empty()) {
+-    LOG(ERROR) << "Cannot get the serial number";
+-    return false;
+-  }
+-  if (!key.DeriveFromPassword(serial_number, salt)) {
+-    LOG(ERROR) << "Cannot prepare the internal key";
+-    return false;
+-  }
+-
+-  cipher_text->assign(plain_text);
+-  if (!EncryptString(key, cipher_text)) {
+-    cipher_text->clear();
+-    LOG(ERROR) << "Cannot encrypt the text";
+-    return false;
+-  }
+-  return true;
+-}
+-
+-// Same as ProtectData.
+-bool Encryptor::UnprotectData(const string &cipher_text,
+-                              string *plain_text) {
+-  DCHECK(plain_text);
+-  Encryptor::Key key;
+-  const string serial_number = MacUtil::GetSerialNumber();
+-  const string salt = Util::StringPrintf("%x", ::getuid());
+-  if (serial_number.empty()) {
+-    LOG(ERROR) << "Cannot get the serial number";
+-    return false;
+-  }
+-  if (!key.DeriveFromPassword(serial_number, salt)) {
+-    LOG(ERROR) << "Cannot prepare the internal key";
+-    return false;
+-  }
+-
+-  plain_text->assign(cipher_text);
+-  if (!DecryptString(key, plain_text)) {
+-    plain_text->clear();
+-    LOG(ERROR) << "Cannot encrypt the text";
+-    return false;
+-  }
+-  return true;
+-}
+-
+-#else  // OS_WIN | OS_MACOSX
+-
+-namespace {
+-
+-const size_t kSaltSize = 32;
+-
+-}  // namespace
+-
+-// Use AES to emulate ProtectData
+-bool Encryptor::ProtectData(const string &plain_text, string *cipher_text) {
+-  string password;
+-  if (!PasswordManager::GetPassword(&password)) {
+-    LOG(ERROR) << "Cannot get password";
+-    return false;
+-  }
+-
+-  char salt_buf[kSaltSize];
+-  Util::GetRandomSequence(salt_buf, sizeof(salt_buf));
+-
+-  string salt(salt_buf, kSaltSize);
+-
+-  Encryptor::Key key;
+-  if (!key.DeriveFromPassword(password, salt)) {
+-    LOG(ERROR) << "DeriveFromPassword failed";
+-    return false;
+-  }
+-
+-  string buf = plain_text;
+-  if (!Encryptor::EncryptString(key, &buf)) {
+-    LOG(ERROR) << "Encryptor::EncryptString failed";
+-    return false;
+-  }
+-
+-  cipher_text->clear();
+-  *cipher_text += salt;
+-  *cipher_text += buf;
+-
+-  return true;
+-}
+-
+-// Use AES to emulate UnprotectData
+-bool Encryptor::UnprotectData(const string &cipher_text, string *plain_text) {
+-  if (cipher_text.size() < kSaltSize) {
+-    LOG(ERROR) << "encrypted message is too short";
+-    return false;
+-  }
+-
+-  string password;
+-  if (!PasswordManager::GetPassword(&password)) {
+-    LOG(ERROR) << "Cannot get password";
+-    return false;
+-  }
+-
+-  const string salt(cipher_text.data(), kSaltSize);
+-
+-  Encryptor::Key key;
+-  if (!key.DeriveFromPassword(password, salt)) {
+-    LOG(ERROR) << "DeriveFromPassword failed";
+-    return false;
+-  }
+-
+-  string buf(cipher_text.data() + kSaltSize,
+-             cipher_text.size() - kSaltSize);
+-
+-  if (!Encryptor::DecryptString(key, &buf)) {
+-    LOG(ERROR) << "Encryptor::DecryptString failed";
+-    return false;
+-  }
+-
+-  plain_text->clear();
+-  *plain_text += buf;
+-
+-  return true;
+-}
+-#endif  // OS_WIN
+-
+-}  // namespace mozc
+diff -uNr mozc-1.15.1785.102/build_mozc.py mozc-r217/build_mozc.py
+--- mozc-1.15.1785.102/build_mozc.py	2014-05-16 20:56:29.754134000 +0900
++++ mozc-r217/build_mozc.py	2014-05-30 01:54:17.136389000 +0900
+@@ -980,12 +980,10 @@
+   # Build targets in this order.
+   if IsWindows():
+     build_tools_targets = [
+-        'out_win/%s:primitive_tools' % options.configuration,
+         'out_win/%s:build_tools' % options.configuration,
+     ]
+   else:
+     gyp_files = [
+-        os.path.join(build_tools_dir, 'primitive_tools', 'primitive_tools.gyp'),
+         os.path.join(build_tools_dir, 'build_tools.gyp')
+     ]
+     build_tools_targets = []
+diff -uNr mozc-1.15.1785.102/build_tools/build_tools.gyp mozc-r217/build_tools/build_tools.gyp
+--- mozc-1.15.1785.102/build_tools/build_tools.gyp	2014-05-16 20:56:29.754134000 +0900
++++ mozc-r217/build_tools/build_tools.gyp	2014-05-30 01:54:17.136389000 +0900
+@@ -46,14 +46,40 @@
+ # target machine.
+ 
+ {
++  'variables': {
++    'relative_dir': 'build_tools',
++    'gen_out_dir': '<(SHARED_INTERMEDIATE_DIR)/<(relative_dir)',
++  },
+   'targets': [
+     {
+       'target_name': 'build_tools',
+       'type': 'none',
+       'toolsets': ['host'],
+-      'dependencies': [
+-        'primitive_tools/primitive_tools.gyp:primitive_tools',
+-        '../dictionary/dictionary.gyp:install_gen_system_dictionary_data_main',
++      'conditions': [
++        ['enable_two_pass_build==1', {
++          'dependencies': [
++            '../protobuf/protobuf.gyp:install_protoc',
++            '../dictionary/dictionary.gyp:install_gen_system_dictionary_data_main',
++          ],
++        }, {  # else
++          'actions': [
++            {
++              'action_name': 'show_message',
++              'inputs': [
++                'build_tools.gyp',
++              ],
++              'outputs': [
++                '<(gen_out_dir)/dummy_output_file',
++              ],
++              'action': [
++                'python',
++                '-c',
++                '"build_tools is deprecated!"',
++              ],
++              'message': 'build_tools is deprecated!',
++            },
++          ],
++        }],
+       ],
+     },
+   ],
+diff -uNr mozc-1.15.1785.102/build_tools/primitive_tools/primitive_tools.gyp mozc-r217/build_tools/primitive_tools/primitive_tools.gyp
+--- mozc-1.15.1785.102/build_tools/primitive_tools/primitive_tools.gyp	2014-01-06 16:15:27.288995000 +0900
++++ mozc-r217/build_tools/primitive_tools/primitive_tools.gyp	1970-01-01 09:00:00.000000000 +0900
+@@ -1,45 +0,0 @@
+-# Copyright 2010-2014, Google Inc.
+-# All rights reserved.
+-#
+-# Redistribution and use in source and binary forms, with or without
+-# modification, are permitted provided that the following conditions are
+-# met:
+-#
+-#     * Redistributions of source code must retain the above copyright
+-# notice, this list of conditions and the following disclaimer.
+-#     * Redistributions in binary form must reproduce the above
+-# copyright notice, this list of conditions and the following disclaimer
+-# in the documentation and/or other materials provided with the
+-# distribution.
+-#     * Neither the name of Google Inc. nor the names of its
+-# contributors may be used to endorse or promote products derived from
+-# this software without specific prior written permission.
+-#
+-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+-# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+-# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+-# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-
+-# The gyp file is used for pre-building code generation tools.
+-
+-{
+-  'targets': [
+-    {
+-      # The primitive_tools is a set of programs needed to
+-      # build mozc_build_tools defined in mozc_build_tools.gyp
+-      'target_name': 'primitive_tools',
+-      'type': 'none',
+-      'toolsets': ['host'],
+-      'dependencies': [
+-        '../../protobuf/protobuf.gyp:install_protoc',
+-      ],
+-    },
+-  ],
+-}
+diff -uNr mozc-1.15.1785.102/converter/candidate_filter.cc mozc-r217/converter/candidate_filter.cc
+--- mozc-1.15.1785.102/converter/candidate_filter.cc	2014-05-16 20:56:29.754134000 +0900
++++ mozc-r217/converter/candidate_filter.cc	2014-05-29 18:30:11.160823000 +0900
+@@ -297,14 +297,14 @@
+     return CandidateFilter::BAD_CANDIDATE;
+   }
+ 
+-  // don't drop personal names aggressivly.
+-  // We have to show personal names even if they are minor enough.
++  // Don't drop personal names aggressivly.
++  // We have to show personal names even if they are too minor.
+   // We basically ignores the cost threadshould. Filter candidate
+-  // only with StructureCost
++  // only by structure cost.
+   int cost_offset = kCostOffset;
+   if (candidate->lid == pos_matcher_->GetLastNameId() ||
+       candidate->lid == pos_matcher_->GetFirstNameId()) {
+-    cost_offset = INT_MAX;
++    cost_offset = INT_MAX - top_cost;
+   }
+ 
+   // Filters out candidates with higher cost.
+diff -uNr mozc-1.15.1785.102/data/emoji/emoji_data.tsv mozc-r217/data/emoji/emoji_data.tsv
+--- mozc-1.15.1785.102/data/emoji/emoji_data.tsv	2014-05-16 20:56:29.754134000 +0900
++++ mozc-r217/data/emoji/emoji_data.tsv	2014-06-05 01:30:00.013858000 +0900
+@@ -241,7 +241,7 @@
+ 1F3C1	🏁	FE7D7	E659	E132	E4B9	ふらぐ ちぇっかー ちぇっかーふらぐ れーす すぽーつ	CHEQUERED FLAG	チェッカーフラグ	モータースポーツ	チェッカーフラグ	チェッカーフラグ（モータースポーツ）	FOOD-047
+ 1F3C2	🏂	FE7D8	E712		E4B8	すのーぼーど すのぼ すぽーつ	SNOWBOARDER	スノボ	スノボ		スノーボード	FOOD-048
+ 1F3C3	🏃	FE7D9	E733	E115	E46B	まらそん すぽーつ らんなー	RUNNER	マラソン	走る人	走る人	マラソン	FOOD-049
+-1F3C4	🏄	FE7DA	>E712	E017	EB41	さーふぃん ふぁーふぁー すぽーつ	SURFER	サーファー		サーフィン	サーフィン	FOOD-050
++1F3C4	🏄	FE7DA	>E712	E017	EB41	さーふぃん さーふぁー すぽーつ	SURFER	サーファー		サーフィン	サーフィン	FOOD-050
+ 1F3C6	🏆	FE7DB		E131	E5D3	とろふぃー かっぷ	TROPHY	トロフィー		優勝カップ	トロフィー	FOOD-051
+ 1F3C8	🏈	FE7DD		E42B	E4BB	らぐびー らぐびーぼーる ぼーる すぽーつ あめふと	AMERICAN FOOTBALL	アメフト		フットボール	フットボール	FOOD-052
+ 1F3CA	🏊	FE7DE		E42D	EADE	すいまー すいえい すぽーつ	SWIMMER	水泳		水泳	水泳	FOOD-053
+diff -uNr mozc-1.15.1785.102/data/installer/credits_en.html mozc-r217/data/installer/credits_en.html
+--- mozc-1.15.1785.102/data/installer/credits_en.html	2014-05-16 20:56:29.754134000 +0900
++++ mozc-r217/data/installer/credits_en.html	2014-05-29 18:30:11.160823000 +0900
+@@ -785,142 +785,6 @@
+ </div>
+ </div>
+ <div class="product">
+-<span class="title">OpenSSL</span>
+-<span class="homepage">
+-<a href="http://openssl.org/source/">homepage</a></span>
+-<div class="licence">
+-<h3>OpenSSL is licensed as follows:</h3>
+-<pre>
+-
+-  LICENSE ISSUES
+-  ==============
+-
+-  The OpenSSL toolkit stays under a dual license, i.e. both the conditions of
+-  the OpenSSL License and the original SSLeay license apply to the toolkit.
+-  See below for the actual license texts. Actually both licenses are BSD-style
+-  Open Source licenses. In case of any license issues related to OpenSSL
+-  please contact openssl-core@openssl.org.
+-
+-  OpenSSL License
+-  ---------------
+-
+-/* ====================================================================
+- * Copyright (c) 1998-2011 The OpenSSL Project.  All rights reserved.
+- *
+- * Redistribution and use in source and binary forms, with or without
+- * modification, are permitted provided that the following conditions
+- * are met:
+- *
+- * 1. Redistributions of source code must retain the above copyright
+- *    notice, this list of conditions and the following disclaimer.
+- *
+- * 2. Redistributions in binary form must reproduce the above copyright
+- *    notice, this list of conditions and the following disclaimer in
+- *    the documentation and/or other materials provided with the
+- *    distribution.
+- *
+- * 3. All advertising materials mentioning features or use of this
+- *    software must display the following acknowledgment:
+- *    "This product includes software developed by the OpenSSL Project
+- *    for use in the OpenSSL Toolkit. (http://www.openssl.org/)"
+- *
+- * 4. The names "OpenSSL Toolkit" and "OpenSSL Project" must not be used to
+- *    endorse or promote products derived from this software without
+- *    prior written permission. For written permission, please contact
+- *    openssl-core@openssl.org.
+- *
+- * 5. Products derived from this software may not be called "OpenSSL"
+- *    nor may "OpenSSL" appear in their names without prior written
+- *    permission of the OpenSSL Project.
+- *
+- * 6. Redistributions of any form whatsoever must retain the following
+- *    acknowledgment:
+- *    "This product includes software developed by the OpenSSL Project
+- *    for use in the OpenSSL Toolkit (http://www.openssl.org/)"
+- *
+- * THIS SOFTWARE IS PROVIDED BY THE OpenSSL PROJECT ``AS IS'' AND ANY
+- * EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+- * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE OpenSSL PROJECT OR
+- * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+- * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+- * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+- * OF THE POSSIBILITY OF SUCH DAMAGE.
+- * ====================================================================
+- *
+- * This product includes cryptographic software written by Eric Young
+- * (eay@cryptsoft.com).  This product includes software written by Tim
+- * Hudson (tjh@cryptsoft.com).
+- *
+- */
+-
+- Original SSLeay License
+- -----------------------
+-
+-/* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
+- * All rights reserved.
+- *
+- * This package is an SSL implementation written
+- * by Eric Young (eay@cryptsoft.com).
+- * The implementation was written so as to conform with Netscapes SSL.
+- *
+- * This library is free for commercial and non-commercial use as long as
+- * the following conditions are aheared to.  The following conditions
+- * apply to all code found in this distribution, be it the RC4, RSA,
+- * lhash, DES, etc., code; not just the SSL code.  The SSL documentation
+- * included with this distribution is covered by the same copyright terms
+- * except that the holder is Tim Hudson (tjh@cryptsoft.com).
+- *
+- * Copyright remains Eric Young's, and as such any Copyright notices in
+- * the code are not to be removed.
+- * If this package is used in a product, Eric Young should be given attribution
+- * as the author of the parts of the library used.
+- * This can be in the form of a textual message at program startup or
+- * in documentation (online or textual) provided with the package.
+- *
+- * Redistribution and use in source and binary forms, with or without
+- * modification, are permitted provided that the following conditions
+- * are met:
+- * 1. Redistributions of source code must retain the copyright
+- *    notice, this list of conditions and the following disclaimer.
+- * 2. Redistributions in binary form must reproduce the above copyright
+- *    notice, this list of conditions and the following disclaimer in the
+- *    documentation and/or other materials provided with the distribution.
+- * 3. All advertising materials mentioning features or use of this software
+- *    must display the following acknowledgement:
+- *    "This product includes cryptographic software written by
+- *     Eric Young (eay@cryptsoft.com)"
+- *    The word 'cryptographic' can be left out if the rouines from the library
+- *    being used are not cryptographic related :-).
+- * 4. If you include any Windows specific code (or a derivative thereof) from
+- *    the apps directory (application code) you must include an acknowledgement:
+- *    "This product includes software written by Tim Hudson (tjh@cryptsoft.com)"
+- *
+- * THIS SOFTWARE IS PROVIDED BY ERIC YOUNG ``AS IS'' AND
+- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+- * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+- * SUCH DAMAGE.
+- *
+- * The licence and distribution terms for any publically available version or
+- * derivative of this code cannot be changed.  i.e. this code cannot simply be
+- * copied and put under another distribution licence
+- * [including the GNU Public Licence.]
+- */
+-</pre>
+-</div>
+-</div>
+-<div class="product">
+ <span class="title">Protocol Buffers</span>
+ <span class="homepage">
+ <a href="http://code.google.com/p/protobuf/">homepage</a></span>
+diff -uNr mozc-1.15.1785.102/data/installer/credits_ja.html mozc-r217/data/installer/credits_ja.html
+--- mozc-1.15.1785.102/data/installer/credits_ja.html	2014-05-16 20:56:29.754134000 +0900
++++ mozc-r217/data/installer/credits_ja.html	2014-05-29 18:30:11.160823000 +0900
+@@ -785,142 +785,6 @@
+ </div>
+ </div>
+ <div class="product">
+-<span class="title">OpenSSL</span>
+-<span class="homepage">
+-<a href="http://openssl.org/source/">ホームページ</a></span>
+-<div class="licence">
+-<h3>OpenSSL のライセンス:</h3>
+-<pre>
+-
+-  LICENSE ISSUES
+-  ==============
+-
+-  The OpenSSL toolkit stays under a dual license, i.e. both the conditions of
+-  the OpenSSL License and the original SSLeay license apply to the toolkit.
+-  See below for the actual license texts. Actually both licenses are BSD-style
+-  Open Source licenses. In case of any license issues related to OpenSSL
+-  please contact openssl-core@openssl.org.
+-
+-  OpenSSL License
+-  ---------------
+-
+-/* ====================================================================
+- * Copyright (c) 1998-2011 The OpenSSL Project.  All rights reserved.
+- *
+- * Redistribution and use in source and binary forms, with or without
+- * modification, are permitted provided that the following conditions
+- * are met:
+- *
+- * 1. Redistributions of source code must retain the above copyright
+- *    notice, this list of conditions and the following disclaimer.
+- *
+- * 2. Redistributions in binary form must reproduce the above copyright
+- *    notice, this list of conditions and the following disclaimer in
+- *    the documentation and/or other materials provided with the
+- *    distribution.
+- *
+- * 3. All advertising materials mentioning features or use of this
+- *    software must display the following acknowledgment:
+- *    "This product includes software developed by the OpenSSL Project
+- *    for use in the OpenSSL Toolkit. (http://www.openssl.org/)"
+- *
+- * 4. The names "OpenSSL Toolkit" and "OpenSSL Project" must not be used to
+- *    endorse or promote products derived from this software without
+- *    prior written permission. For written permission, please contact
+- *    openssl-core@openssl.org.
+- *
+- * 5. Products derived from this software may not be called "OpenSSL"
+- *    nor may "OpenSSL" appear in their names without prior written
+- *    permission of the OpenSSL Project.
+- *
+- * 6. Redistributions of any form whatsoever must retain the following
+- *    acknowledgment:
+- *    "This product includes software developed by the OpenSSL Project
+- *    for use in the OpenSSL Toolkit (http://www.openssl.org/)"
+- *
+- * THIS SOFTWARE IS PROVIDED BY THE OpenSSL PROJECT ``AS IS'' AND ANY
+- * EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+- * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE OpenSSL PROJECT OR
+- * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+- * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+- * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+- * OF THE POSSIBILITY OF SUCH DAMAGE.
+- * ====================================================================
+- *
+- * This product includes cryptographic software written by Eric Young
+- * (eay@cryptsoft.com).  This product includes software written by Tim
+- * Hudson (tjh@cryptsoft.com).
+- *
+- */
+-
+- Original SSLeay License
+- -----------------------
+-
+-/* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
+- * All rights reserved.
+- *
+- * This package is an SSL implementation written
+- * by Eric Young (eay@cryptsoft.com).
+- * The implementation was written so as to conform with Netscapes SSL.
+- *
+- * This library is free for commercial and non-commercial use as long as
+- * the following conditions are aheared to.  The following conditions
+- * apply to all code found in this distribution, be it the RC4, RSA,
+- * lhash, DES, etc., code; not just the SSL code.  The SSL documentation
+- * included with this distribution is covered by the same copyright terms
+- * except that the holder is Tim Hudson (tjh@cryptsoft.com).
+- *
+- * Copyright remains Eric Young's, and as such any Copyright notices in
+- * the code are not to be removed.
+- * If this package is used in a product, Eric Young should be given attribution
+- * as the author of the parts of the library used.
+- * This can be in the form of a textual message at program startup or
+- * in documentation (online or textual) provided with the package.
+- *
+- * Redistribution and use in source and binary forms, with or without
+- * modification, are permitted provided that the following conditions
+- * are met:
+- * 1. Redistributions of source code must retain the copyright
+- *    notice, this list of conditions and the following disclaimer.
+- * 2. Redistributions in binary form must reproduce the above copyright
+- *    notice, this list of conditions and the following disclaimer in the
+- *    documentation and/or other materials provided with the distribution.
+- * 3. All advertising materials mentioning features or use of this software
+- *    must display the following acknowledgement:
+- *    "This product includes cryptographic software written by
+- *     Eric Young (eay@cryptsoft.com)"
+- *    The word 'cryptographic' can be left out if the rouines from the library
+- *    being used are not cryptographic related :-).
+- * 4. If you include any Windows specific code (or a derivative thereof) from
+- *    the apps directory (application code) you must include an acknowledgement:
+- *    "This product includes software written by Tim Hudson (tjh@cryptsoft.com)"
+- *
+- * THIS SOFTWARE IS PROVIDED BY ERIC YOUNG ``AS IS'' AND
+- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+- * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+- * SUCH DAMAGE.
+- *
+- * The licence and distribution terms for any publically available version or
+- * derivative of this code cannot be changed.  i.e. this code cannot simply be
+- * copied and put under another distribution licence
+- * [including the GNU Public Licence.]
+- */
+-</pre>
+-</div>
+-</div>
+-<div class="product">
+ <span class="title">Protocol Buffers</span>
+ <span class="homepage">
+ <a href="http://code.google.com/p/protobuf/">ホームページ</a></span>
+diff -uNr mozc-1.15.1785.102/data_manager/data_manager.gypi mozc-r217/data_manager/data_manager.gypi
+--- mozc-1.15.1785.102/data_manager/data_manager.gypi	2014-05-16 20:56:29.754134000 +0900
++++ mozc-r217/data_manager/data_manager.gypi	2014-06-02 02:38:55.856478000 +0900
+@@ -245,39 +245,57 @@
+       'target_name': 'gen_embedded_dictionary_data_for_<(dataset_tag)',
+       'type': 'none',
+       'toolsets': ['host'],
++      'conditions': [
++        ['enable_two_pass_build==0', {
++          'dependencies': [
++            '<(DEPTH)/dictionary/dictionary.gyp:gen_system_dictionary_data_main#host',
++          ],
++        }],
++      ],
+       'actions': [
+         {
+           'action_name': 'gen_embedded_dictionary_data_for_<(dataset_tag)',
+           'variables': {
+             'input_files%': '<(dictionary_files)',
+             'gen_test_dictionary_flag': '<(gen_test_dictionary)',
++            'additional_inputs': [],
++            'additional_actions': [],
++            'conditions': [
++              ['enable_two_pass_build==0', {
++                'generator': '<(PRODUCT_DIR)/gen_system_dictionary_data_main<(EXECUTABLE_SUFFIX)',
++                'additional_inputs': ['<(PRODUCT_DIR)/gen_system_dictionary_data_main<(EXECUTABLE_SUFFIX)'],
++              }, {  # else
++                # Use the pre-built binariy when 2-pass build is enabled.
++                'generator': '<(mozc_build_tools_dir)/gen_system_dictionary_data_main<(EXECUTABLE_SUFFIX)',
++              }],
++              ['use_packed_dictionary==1', {
++                'additional_inputs': [
++                  '<(SHARED_INTERMEDIATE_DIR)/data_manager/packed/packed_data_light_<(dataset_tag)'
++                ],
++                'additional_actions': [
++                  '--dataset=<(SHARED_INTERMEDIATE_DIR)/data_manager/packed/packed_data_light_<(dataset_tag)',
++                ],
++              }],
++            ],
+           },
+           'inputs': [
+             '<@(input_files)',
++            '<@(additional_inputs)',
+           ],
+           'outputs': [
+             '<(gen_out_dir)/embedded_dictionary_data.h',
+           ],
+           'action': [
+             # Use the pre-built version. See comments in mozc.gyp for why.
+-            '<(mozc_build_tools_dir)/gen_system_dictionary_data_main',
++            '<(generator)',
+             '--input=<(input_files)',
+             '--make_header',
+             '--gen_test_dictionary=<(gen_test_dictionary_flag)',
+             '--output=<(gen_out_dir)/embedded_dictionary_data.h',
++            '<@(additional_actions)',
+           ],
+           'message': ('[<(dataset_tag)] Generating ' +
+                       '<(gen_out_dir)/embedded_dictionary_data.h.'),
+-          'conditions': [
+-            ['use_packed_dictionary==1', {
+-              'inputs': [
+-                '<(SHARED_INTERMEDIATE_DIR)/data_manager/packed/packed_data_light_<(dataset_tag)'
+-              ],
+-              'action': [
+-                '--dataset=<(SHARED_INTERMEDIATE_DIR)/data_manager/packed/packed_data_light_<(dataset_tag)',
+-              ],
+-            }],
+-          ],
+         },
+       ],
+     },
+@@ -333,6 +351,26 @@
+       'target_name': 'gen_separate_dictionary_data_for_<(dataset_tag)',
+       'type': 'none',
+       'toolsets': ['host'],
++      'conditions': [
++        ['enable_two_pass_build==0', {
++          'dependencies': [
++            '<(DEPTH)/dictionary/dictionary.gyp:gen_system_dictionary_data_main#host',
++          ],
++        }],
++      ],
++      'variables': {
++        'additional_inputs%': [],
++        'conditions': [
++          # Use the pre-built binariy when 2-pass build is enabled.
++          ['enable_two_pass_build==0', {
++            'generator': '<(PRODUCT_DIR)/gen_system_dictionary_data_main<(EXECUTABLE_SUFFIX)',
++            'additional_inputs': ['<(PRODUCT_DIR)/gen_system_dictionary_data_main<(EXECUTABLE_SUFFIX)'],
++          }, {  # else
++            # Use the pre-built binariy when 2-pass build is enabled.
++            'generator': '<(mozc_build_tools_dir)/gen_system_dictionary_data_main<(EXECUTABLE_SUFFIX)',
++          }],
++        ],
++      },
+       'actions': [
+         {
+           'action_name': 'gen_separate_dictionary_data',
+@@ -341,12 +379,13 @@
+           },
+           'inputs': [
+             '<@(input_files)',
++            '<@(additional_inputs)',
+           ],
+           'outputs': [
+             '<(gen_out_dir)/system.dictionary',
+           ],
+           'action': [
+-            '<(mozc_build_tools_dir)/gen_system_dictionary_data_main',
++            '<(generator)',
+             '--input=<(input_files)',
+             '--output=<(gen_out_dir)/system.dictionary',
+           ],
+diff -uNr mozc-1.15.1785.102/dictionary/gen_system_dictionary_data_main.cc mozc-r217/dictionary/gen_system_dictionary_data_main.cc
+--- mozc-1.15.1785.102/dictionary/gen_system_dictionary_data_main.cc	2014-01-06 16:15:27.288995000 +0900
++++ mozc-r217/dictionary/gen_system_dictionary_data_main.cc	2014-06-01 00:54:46.583272000 +0900
+@@ -54,7 +54,6 @@
+ DEFINE_bool(gen_test_dictionary, false,
+             "generate test dictionary (use mock POSManager)");
+ 
+-
+ namespace mozc {
+ namespace {
+ 
+diff -uNr mozc-1.15.1785.102/gyp/common.gypi mozc-r217/gyp/common.gypi
+--- mozc-1.15.1785.102/gyp/common.gypi	2014-05-16 20:56:29.754134000 +0900
++++ mozc-r217/gyp/common.gypi	2014-06-02 02:38:55.856478000 +0900
+@@ -34,6 +34,9 @@
+ # http://src.chromium.org/viewvc/chrome/trunk/src/build/common.gypi
+ {
+   'variables': {
++    # Set 1 when using two-pass build
++    'enable_two_pass_build%': 0,
++
+ 
+     # Top directory of third party libraries.
+     'third_party_dir': '<(DEPTH)/third_party',
+@@ -221,7 +224,10 @@
+ 
+     # Represents the directory where the source code of protobuf is
+     # extracted. This value is ignored when 'use_libprotobuf' is 1.
+-    'protobuf_root': '<(additional_third_party_dir)/protobuf',
++    'protobuf_root': '<(third_party_dir)/protobuf',
++
++    # For Android
++    'protobuf_java_root': '<(third_party_dir)/protobuf/java/src/main',
+ 
+     # use_libprotobuf represents if protobuf library is used or not.
+     # This option is only for Linux.
+@@ -245,9 +251,6 @@
+     # This option is only for Linux.
+     'use_libibus%': 0,
+ 
+-    # use the previous implementation of encryptor.
+-    'use_legacy_encryptor%': 0,
+-
+     # a flag whether the current build is dev-channel or not.
+     'channel_dev%': '0',
+ 
+@@ -374,9 +377,6 @@
+           ['enable_mode_indicator==1', {
+             'defines': ['MOZC_ENABLE_MODE_INDICATOR'],
+           }],
+-          ['use_legacy_encryptor==1', {
+-            'defines': ['MOZC_USE_LEGACY_ENCRYPTOR'],
+-          }],
+         ],
+       },
+       'x86_Base': {
+diff -uNr mozc-1.15.1785.102/mozc_version_template.txt mozc-r217/mozc_version_template.txt
+--- mozc-1.15.1785.102/mozc_version_template.txt	2014-05-16 20:56:29.754134000 +0900
++++ mozc-r217/mozc_version_template.txt	2014-06-05 01:30:00.013858000 +0900
+@@ -1,10 +1,10 @@
+ MAJOR=1
+ MINOR=15
+-BUILD=1785
++BUILD=1797
+ REVISION=102
+ # ANDROID_VERSION_CODE should be the number of update times.
+ # It must at least increase when the build updates.
+-ANDROID_VERSION_CODE=1785
++ANDROID_VERSION_CODE=1797
+ # NACL_DICTIONARY_VERSION is the target version of the system dictionary to be
+ # downloaded by NaCl Mozc.
+ NACL_DICTIONARY_VERSION=4
+diff -uNr mozc-1.15.1785.102/prediction/prediction.gyp mozc-r217/prediction/prediction.gyp
+--- mozc-1.15.1785.102/prediction/prediction.gyp	2014-01-06 16:15:27.288995000 +0900
++++ mozc-r217/prediction/prediction.gyp	2014-05-29 18:30:11.160823000 +0900
+@@ -55,7 +55,6 @@
+         '../rewriter/rewriter.gyp:rewriter',
+         '../session/session_base.gyp:request_test_util',
+         '../session/session_base.gyp:session_protocol',
+-        '../storage/storage.gyp:encrypted_string_storage',
+         '../storage/storage.gyp:storage',
+         '../usage_stats/usage_stats_base.gyp:usage_stats',
+         'gen_zero_query_number_data#host',
+diff -uNr mozc-1.15.1785.102/prediction/prediction_test.gyp mozc-r217/prediction/prediction_test.gyp
+--- mozc-1.15.1785.102/prediction/prediction_test.gyp	2014-01-06 16:15:27.288995000 +0900
++++ mozc-r217/prediction/prediction_test.gyp	2014-05-29 11:45:23.838355000 +0900
+@@ -66,16 +66,6 @@
+       'variables': {
+         'test_size': 'small',
+       },
+-      'conditions': [
+-        ['target_platform=="Android"', {
+-          'sources!': [
+-            # This test depends on encryptor depending on Java libaray on
+-            # Java, which is not available on native test.
+-            # I.e., we cannot run this on Android.
+-            'user_history_predictor_test.cc'
+-          ],
+-        }],
+-      ],
+     },
+     # Test cases meta target: this target is referred from gyp/tests.gyp
+     {
+diff -uNr mozc-1.15.1785.102/protobuf/genproto.gypi mozc-r217/protobuf/genproto.gypi
+--- mozc-1.15.1785.102/protobuf/genproto.gypi	2014-01-06 16:15:27.288995000 +0900
++++ mozc-r217/protobuf/genproto.gypi	2014-06-02 02:38:55.856478000 +0900
+@@ -32,23 +32,25 @@
+   'variables': {
+     'wrapper_path': '<(DEPTH)/build_tools/protoc_wrapper.py',
+     'protoc_command': 'protoc<(EXECUTABLE_SUFFIX)',
++    'conditions': [
++      ['use_libprotobuf==1', {
++        'protoc_wrapper_additional_options': [],
++        'additional_inputs': [],
++      }],
++      ['use_libprotobuf==0 and enable_two_pass_build==0', {
++        'protoc_wrapper_additional_options': ['--protoc_dir=<(PRODUCT_DIR)'],
++        'additional_inputs': ['<(PRODUCT_DIR)/protoc<(EXECUTABLE_SUFFIX)'],
++      }],
++      ['use_libprotobuf==0 and enable_two_pass_build==1', {
++        'protoc_wrapper_additional_options': ['--protoc_dir=<(mozc_build_tools_dir)'],
++        'additional_inputs': [],
++      }],
++    ],
+   },
+   'conditions': [
+-    ['target_platform!="Linux"', {
+-      'variables': {
+-        'protoc_wrapper_additional_options': ['--protoc_dir=<(mozc_build_tools_dir)'],
+-      },
+-    }, {  # else
+-      'conditions': [
+-        ['use_libprotobuf==0', {
+-          'variables': {
+-            'protoc_wrapper_additional_options': ['--protoc_dir=<(mozc_build_tools_dir)'],
+-          },
+-        }, {  # else
+-          'variables': {
+-            'protoc_wrapper_additional_options': [],
+-          },
+-        }],
++    ['use_libprotobuf==0 and enable_two_pass_build==0', {
++      'dependencies': [
++        '<(DEPTH)/protobuf/protobuf.gyp:protoc#host',
+       ],
+     }],
+   ],
+@@ -58,6 +60,7 @@
+       'extension': 'proto',
+       'inputs': [
+         '<(wrapper_path)',
++        '<@(additional_inputs)',
+       ],
+       'outputs': [
+         '<(proto_out_dir)/<(relative_dir)/<(RULE_INPUT_ROOT).pb.h',
+diff -uNr mozc-1.15.1785.102/protobuf/protobuf.gyp mozc-r217/protobuf/protobuf.gyp
+--- mozc-1.15.1785.102/protobuf/protobuf.gyp	2014-05-16 20:56:29.754134000 +0900
++++ mozc-r217/protobuf/protobuf.gyp	2014-06-01 00:54:46.583272000 +0900
+@@ -32,8 +32,7 @@
+     # We accept following warnings come from protobuf.
+     # This list should be revised when protobuf is updated.
+     'msvc_disabled_warnings_for_protoc': [
+-      # unary minus operator applied to unsigned type, result still
+-      # unsigned.
++      # unary minus operator applied to unsigned type, result still unsigned.
+       # http://msdn.microsoft.com/en-us/library/4kh09110.aspx
+       '4146',
+       # 'this' : used in base member initializer list
+diff -uNr mozc-1.15.1785.102/storage/storage.gyp mozc-r217/storage/storage.gyp
+--- mozc-1.15.1785.102/storage/storage.gyp	2014-01-06 16:15:27.288995000 +0900
++++ mozc-r217/storage/storage.gyp	2014-05-29 18:30:11.160823000 +0900
+@@ -34,6 +34,7 @@
+       'type': 'static_library',
+       'toolsets': ['target', 'host'],
+       'sources': [
++        'encrypted_string_storage.cc',
+         'existence_filter.cc',
+         'lru_storage.cc',
+         'memory_storage.cc',
+@@ -42,19 +43,6 @@
+       ],
+       'dependencies': [
+         '../base/base.gyp:base',
+-      ],
+-    },
+-    # For Android build, base.gyp:encryptor cannot be compiled for the host,
+-    # while storage is depended from some build tools. So it is necessary
+-    # to split the following rules from storage/storage_test.
+-    {
+-      'target_name': 'encrypted_string_storage',
+-      'type': 'static_library',
+-      'sources': [
+-        'encrypted_string_storage.cc'
+-      ],
+-      'dependencies': [
+-        '../base/base.gyp:base',
+         '../base/base.gyp:encryptor',
+       ],
+     },
+diff -uNr mozc-1.15.1785.102/storage/storage_test.gyp mozc-r217/storage/storage_test.gyp
+--- mozc-1.15.1785.102/storage/storage_test.gyp	2014-01-06 16:15:27.288995000 +0900
++++ mozc-r217/storage/storage_test.gyp	2014-05-29 11:45:23.838355000 +0900
+@@ -33,6 +33,7 @@
+       'target_name': 'storage_test',
+       'type': 'executable',
+       'sources': [
++        'encrypted_string_storage_test.cc',
+         'existence_filter_test.cc',
+         'lru_storage_test.cc',
+         'memory_storage_test.cc',
+@@ -47,26 +48,11 @@
+         'test_size': 'small',
+       },
+     },
+-    {
+-      'target_name': 'encrypted_string_storage_test',
+-      'type': 'executable',
+-      'sources': [
+-        'encrypted_string_storage_test.cc',
+-      ],
+-      'dependencies': [
+-        '../testing/testing.gyp:gtest_main',
+-        'storage.gyp:encrypted_string_storage',
+-      ],
+-      'variables': {
+-        'test_size': 'small',
+-      },
+-    },
+     # Test cases meta target: this target is referred from gyp/tests.gyp
+     {
+       'target_name': 'storage_all_test',
+       'type': 'none',
+       'dependencies': [
+-        'encrypted_string_storage_test',
+         'storage_test',
+       ],
+     },
+diff -uNr mozc-1.15.1785.102/unix/emacs/mozc.el mozc-r217/unix/emacs/mozc.el
+--- mozc-1.15.1785.102/unix/emacs/mozc.el	2014-05-16 20:56:29.754134000 +0900
++++ mozc-r217/unix/emacs/mozc.el	2014-06-05 01:24:00.941272000 +0900
+@@ -408,7 +408,7 @@
+                  ('kp-9 'numpad9)
+                  ('kp-delete 'delete)  ; .
+                  ('kp-insert 'insert)  ; 0
+-                 ('kp-end 'right)      ; 1
++                 ('kp-end 'end)        ; 1
+                  ('kp-down 'down)      ; 2
+                  ('kp-next 'pagedown)  ; 3
+                  ('kp-left 'left)      ; 4
+diff -uNr mozc-1.15.1785.102/unix/ibus/mozc_engine.cc mozc-r217/unix/ibus/mozc_engine.cc
+--- mozc-1.15.1785.102/unix/ibus/mozc_engine.cc	2014-01-06 16:15:27.288995000 +0900
++++ mozc-r217/unix/ibus/mozc_engine.cc	2014-06-05 00:52:20.683593000 +0900
+@@ -250,8 +250,6 @@
+ #ifdef ENABLE_GTK_RENDERER
+       gtk_candidate_window_handler_(new GtkCandidateWindowHandler(
+           new renderer::RendererClient())),
+-#else
+-      gtk_candidate_window_handler_(NULL),
+ #endif  // ENABLE_GTK_RENDERER
+       ibus_candidate_window_handler_(new IBusCandidateWindowHandler()),
+       preedit_method_(config::Config::ROMAN) {
+diff -uNr mozc-1.15.1785.102/usage_stats/usage_stats_test.gyp mozc-r217/usage_stats/usage_stats_test.gyp
+--- mozc-1.15.1785.102/usage_stats/usage_stats_test.gyp	2014-05-16 20:56:29.754134000 +0900
++++ mozc-r217/usage_stats/usage_stats_test.gyp	2014-05-29 11:45:23.838355000 +0900
+@@ -83,13 +83,6 @@
+       'variables': {
+         'test_size': 'small',
+       },
+-      'conditions': [
+-        ['use_legacy_encryptor==1 and target_platform=="Android"', {
+-          'dependencies': [
+-            '../base/base_test.gyp:android_jni_mock',
+-          ],
+-        }],
+-      ],
+     },
+     # Test cases meta target: this target is referred from gyp/tests.gyp
+     {
+diff -uNr mozc-1.15.1785.102/usage_stats/usage_stats_uploader_test.cc mozc-r217/usage_stats/usage_stats_uploader_test.cc
+--- mozc-1.15.1785.102/usage_stats/usage_stats_uploader_test.cc	2014-05-16 20:56:29.754134000 +0900
++++ mozc-r217/usage_stats/usage_stats_uploader_test.cc	2014-05-29 11:45:23.838355000 +0900
+@@ -40,9 +40,6 @@
+ #include <vector>
+ 
+ #include "base/port.h"
+-#ifdef OS_ANDROID
+-#include "base/scoped_ptr.h"
+-#endif  // OS_ANDROID
+ #include "base/singleton.h"
+ #include "base/system_util.h"
+ #include "base/util.h"
+@@ -161,7 +158,6 @@
+     *output = kTestClientId;
+   }
+ };
+-}  // namespace
+ 
+ class UsageStatsUploaderTest : public ::testing::Test {
+  protected:
+@@ -321,7 +317,6 @@
+   EXPECT_EQ(Version::GetMozcVersion(), recorded_version);
+ }
+ 
+-namespace {
+ class TestStorage: public storage::StorageInterface {
+  public:
+   bool Open(const string &filename) { return true; }
+@@ -335,7 +330,6 @@
+   TestStorage() {}
+   virtual ~TestStorage() {}
+ };
+-}  // namespace
+ 
+ TEST_F(UsageStatsUploaderTest, SaveMetadataFailTest) {
+   const uint32 current_sec = static_cast<uint32>(Util::GetTime());
+@@ -468,7 +462,6 @@
+   EXPECT_TRUE(TestableUsageStatsUploader::Send(NULL));
+ }
+ 
+-namespace {
+ void SetDoubleValueStats(
+     uint32 num, double total, double square_total,
+     usage_stats::Stats::DoubleValueStats *double_stats) {
+@@ -497,7 +490,6 @@
+   SetDoubleValueStats(tl_num, tl_total, tl_square_total,
+                       event_stats->mutable_time_length_stats());
+ }
+-}  // namespace
+ 
+ TEST_F(UsageStatsUploaderTest, UploadTouchEventStats) {
+   // save last_upload
+@@ -599,115 +591,7 @@
+   EXPECT_TRUE(TestableUsageStatsUploader::Send(NULL));
+ }
+ 
+-namespace {
+-#if defined(OS_ANDROID) && defined(MOZC_USE_LEGACY_ENCRYPTOR)
+-class ClientIdTestMockJavaEncryptor : public ::mozc::jni::MockJavaEncryptor {
+- public:
+-  explicit ClientIdTestMockJavaEncryptor(
+-      ::mozc::jni::MockJNIEnv *env) : env_(env) {
+-  }
+-
+-  virtual jbyteArray DeriveFromPassword(jbyteArray password, jbyteArray salt) {
+-    // Pseudo key generation.
+-    string password_str = env_->JByteArrayToString(password);
+-    string salt_str = env_->JByteArrayToString(salt);
+-
+-    KeyMap::iterator iter = key_map_.find(make_pair(password_str, salt_str));
+-    if (iter == key_map_.end()) {
+-      iter = key_map_.insert(make_pair(
+-          make_pair(password_str, salt_str),
+-          GetRandomAsciiSequence(
+-              ::mozc::jni::JavaEncryptorProxy::kKeySizeInBits / 8))).first;
+-    }
+-
+-    return env_->StringToJByteArray(iter->second);
+-  }
+-
+-  virtual jbyteArray Encrypt(jbyteArray data, jbyteArray key, jbyteArray iv) {
+-    // Pseudo encryption.
+-    vector<pair<string, string> >& encrypt_pair_list =
+-        GetEncryptPairList(key, iv);
+-
+-    string data_str = env_->JByteArrayToString(data);
+-    for (size_t i = 0; i < encrypt_pair_list.size(); ++i) {
+-      if (encrypt_pair_list[i].first == data_str) {
+-        return env_->StringToJByteArray(encrypt_pair_list[i].second);
+-      }
+-    }
+-
+-    string encrypted = GetRandomAsciiSequence(data_str.size());
+-    encrypt_pair_list.push_back(make_pair(data_str, encrypted));
+-    return env_->StringToJByteArray(encrypted);
+-  }
+-
+-  virtual jbyteArray Decrypt(jbyteArray data, jbyteArray key, jbyteArray iv) {
+-    // Pseudo decryption.
+-    vector<pair<string, string> >& encrypt_pair_list =
+-        GetEncryptPairList(key, iv);
+-
+-    string data_str = env_->JByteArrayToString(data);
+-    for (size_t i = 0; i < encrypt_pair_list.size(); ++i) {
+-      if (encrypt_pair_list[i].second == data_str) {
+-        return env_->StringToJByteArray(encrypt_pair_list[i].first);
+-      }
+-    }
+-
+-    return NULL;
+-  }
+-
+- private:
+-  ::mozc::jni::MockJNIEnv *env_;
+-
+-  typedef map<pair<string, string>, string> KeyMap;
+-  KeyMap key_map_;
+-  typedef map<pair<string, string>, vector<pair<string, string> > > EncryptMap;
+-  EncryptMap encrypt_map_;
+-
+-  vector<pair<string, string> > &GetEncryptPairList(
+-      jbyteArray key, jbyteArray iv) {
+-    string key_str = env_->JByteArrayToString(key);
+-    string iv_str = env_->JByteArrayToString(iv);
+-
+-    return encrypt_map_[make_pair(key_str, iv_str)];
+-  }
+-
+-  static string GetRandomAsciiSequence(size_t size) {
+-    scoped_ptr<char[]> buffer(new char[size]);
+-    Util::GetRandomAsciiSequence(buffer.get(), size);
+-    return string(buffer.get(), size);
+-  }
+-
+-  DISALLOW_COPY_AND_ASSIGN(ClientIdTestMockJavaEncryptor);
+-};
+-#endif  // OS_ANDROID && MOZC_USE_LEGACY_ENCRYPTOR
+-
+-class ClientIdTest : public ::testing::Test {
+- protected:
+-  virtual void SetUp() {
+-#if defined(OS_ANDROID) && defined(MOZC_USE_LEGACY_ENCRYPTOR)
+-    jvm_.reset(new ::mozc::jni::MockJavaVM);
+-    ::mozc::jni::MockJNIEnv *env = jvm_->mutable_env();
+-    env->RegisterMockJavaEncryptor(
+-        new ClientIdTestMockJavaEncryptor(env));
+-    ::mozc::jni::JavaEncryptorProxy::SetJavaVM(jvm_->mutable_jvm());
+-#endif  // OS_ANDROID && MOZC_USE_LEGACY_ENCRYPTOR
+-  }
+-
+-  virtual void TearDown() {
+-#if defined(OS_ANDROID) && defined(MOZC_USE_LEGACY_ENCRYPTOR)
+-    ::mozc::jni::JavaEncryptorProxy::SetJavaVM(NULL);
+-    jvm_.reset(NULL);
+-#endif  // OS_ANDROID && MOZC_USE_LEGACY_ENCRYPTOR
+-  }
+-
+- private:
+-#if defined(OS_ANDROID) && defined(MOZC_USE_LEGACY_ENCRYPTOR)
+-  scoped_ptr< ::mozc::jni::MockJavaVM> jvm_;
+-#endif  // OS_ANDROID && MOZC_USE_LEGACY_ENCRYPTOR
+-};
+-}  // namespace
+-
+-TEST_F(ClientIdTest, CreateClientIdTest) {
++TEST(ClientIdTest, CreateClientIdTest) {
+   // test default client id handler here
+   TestableUsageStatsUploader::SetClientIdHandler(NULL);
+   SystemUtil::SetUserProfileDirectory(FLAGS_test_tmpdir);
+@@ -728,7 +612,7 @@
+   EXPECT_NE(client_id_in_storage1, client_id_in_storage2);
+ }
+ 
+-TEST_F(ClientIdTest, GetClientIdTest) {
++TEST(ClientIdTest, GetClientIdTest) {
+   // test default client id handler here.
+   TestableUsageStatsUploader::SetClientIdHandler(NULL);
+   SystemUtil::SetUserProfileDirectory(FLAGS_test_tmpdir);
+@@ -747,7 +631,7 @@
+   EXPECT_NE(client_id1, client_id_in_storage);
+ }
+ 
+-TEST_F(ClientIdTest, GetClientIdFailTest) {
++TEST(ClientIdTest, GetClientIdFailTest) {
+   // test default client id handler here.
+   TestableUsageStatsUploader::SetClientIdHandler(NULL);
+   SystemUtil::SetUserProfileDirectory(FLAGS_test_tmpdir);
+@@ -764,5 +648,7 @@
+   // new id should be generated
+   EXPECT_NE(client_id1, client_id2);
+ }
++
++}  // namespace
+ }  // namespace usage_stats
+ }  // namespace mozc
