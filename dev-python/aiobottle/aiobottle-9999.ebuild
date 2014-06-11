@@ -6,16 +6,16 @@ EAPI=5
 
 PYTHON_COMPAT=( python3_3 python3_4 )
 
-EGIT_REPO_URI="https://github.com/KeepSafe/aiohttp.git"
+EGIT_REPO_URI="https://github.com/Lupino/aiobottle.git"
 
 inherit distutils-r1 git-2
 
-DESCRIPTION="http client/server for asyncio"
-HOMEPAGE="https://github.com/KeepSafe/aiohttp"
+DESCRIPTION="a warper bottle use aiohttp base on Asyncio (PEP-3156)"
+HOMEPAGE="https://github.com/Lupino/aiobottle"
 
-LICENSE="BSD"
+LICENSE="public-domain"
 SLOT="0"
 KEYWORDS="~amd64 ~x86"
 
-DEPEND="python_targets_python3_3? ( dev-python/asyncio[python_targets_python3_3] )"
+DEPEND="dev-python/aiohttp"
 RDEPEND="${DEPEND}"

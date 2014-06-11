@@ -7,17 +7,19 @@ PYTHON_COMPAT=( python{2_6,2_7,3_2,3_3,3_4} pypy pypy2_0 )
 
 EGIT_REPO_URI="https://github.com/benoitc/gunicorn.git"
 
-inherit distutils eutils git-2
+inherit distutils-r1 git-2
 
 DESCRIPTION="A WSGI HTTP Server for UNIX"
 HOMEPAGE="http://gunicorn.org http://pypi.python.org/pypi/gunicorn"
 
 LICENSE="MIT"
 SLOT="0"
-IUSE="doc test"
+IUSE="doc examples test"
 KEYWORDS="~amd64 ~x86"
 
-RDEPEND="dev-python/setproctitle"
+RDEPEND="python_targets_python3_3? ( dev-python/aiohttp[python_targets_python3_3] )
+	python_targets_python3_4? ( dev-python/aiohttp[python_targets_python3_4] )
+	dev-python/setproctitle"
 DEPEND="dev-python/setuptools
 	doc? ( dev-python/sphinx )
 	test? ( dev-python/pytest )"
