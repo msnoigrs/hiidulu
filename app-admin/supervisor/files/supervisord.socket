@@ -1,0 +1,10 @@
+[Unit]
+Description=Process Monitoring and Control Daemon
+
+[Socket]
+ListenStream=/run/supervisord.sock
+ListenStream=9001
+ListenStream=127.0.0.1:9001
+
+[Install]
+WantedBy=sockets.target

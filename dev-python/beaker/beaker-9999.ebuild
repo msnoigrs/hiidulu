@@ -33,6 +33,8 @@ python_prepare_all() {
 
 	#sed -i -e 's/KeyError, e/KeyError as e/' beaker/cache.py
 
+	epatch "${FILESDIR}/py3.patch"
+
 	mv tests t
 	distutils-r1_python_prepare_all
 }

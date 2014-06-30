@@ -1,0 +1,14 @@
+[Unit]
+Description=Process Monitoring and Control Daemon
+
+[Service]
+Type=forking
+PIDFile=/run/supervisord.pid
+EnvironmentFile=/etc/conf.d/supervisor.conf
+ExecStart=/usr/bin/supervisord $SUPD_OPTS
+ExecStop=/bin/kill -TERM $MAINPID
+ExecReload=/bin/kill -HUP $MAINPID
+
+[Install]
+Also=supervisord.socket
+WantedBy=multi-user.target
