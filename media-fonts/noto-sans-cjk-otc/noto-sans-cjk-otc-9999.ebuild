@@ -4,11 +4,12 @@
 
 EAPI="4"
 
-inherit font
+EGIT_REPO_URI="https://code.google.com/p/noto/"
+
+inherit font git-2
 
 DESCRIPTION="Noto Sans CJK in OTC"
 HOMEPAGE="http://www.google.com/get/noto/cjk.html"
-SRC_URI="https://noto.googlecode.com/archive/5331bd09edd0df8b4b0f105fd2cd77fcb6966f0d.zip"
 
 LICENSE="Apache-2.0"
 SLOT="0"
@@ -17,10 +18,10 @@ IUSE=""
 
 DEPEND="app-arch/unzip"
 
-S="${WORKDIR}/noto-5331bd09edd0/third_party/noto_cjk"
+#S="${WORKDIR}/third_party/noto_cjk"
 
 FONT_SUFFIX="ttc"
-FONT_S="${S}"
+FONT_S="${S}/third_party/noto_cjk"
 #FONT_CONF=( "${FILESDIR}/66-${PN}.conf" )
 FONTDIR="/usr/share/fonts/${PN}"
 
