@@ -26,8 +26,10 @@ FONTDIR="/usr/share/fonts/${PN}"
 # Only installs fonts
 RESTRICT="strip bincheckes"
 
-#src_unpack() {
+src_unpack() {
+	default
+	find ${S}/fonts -name '*.otf' -delete
 #	unpack ${A}
 #	mkdir "${S}"
 #	mv "${WORKDIR}"/*.ttc "${S}"
-#}
+}
