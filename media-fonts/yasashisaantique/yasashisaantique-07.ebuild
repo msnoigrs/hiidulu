@@ -21,7 +21,7 @@ DEPEND="app-arch/unzip"
 
 S="${WORKDIR}/YasashisaAntiqueFont"
 
-FONT_SUFFIX="ttf"
+FONT_SUFFIX="otf"
 FONT_S="${S}"
 #FONT_CONF=( "${FILESDIR}/66-${PN}.conf" )
 FONTDIR="/usr/share/fonts/${PN}"
@@ -30,7 +30,7 @@ FONTDIR="/usr/share/fonts/${PN}"
 # Only installs fonts
 RESTRICT="strip bincheckes"
 
-src_unpack() {
-	unpack ${A}
-	mv "${S}"/TrueType/07YasashisaAntique.ttf "${S}"/YasashisaAntique.ttf
-}
+#src_unpack() {
+#	unpack ${A}
+#	mv "${S}"/TrueType/07YasashisaAntique.otf "${S}"/YasashisaAntique.ttf
+#}

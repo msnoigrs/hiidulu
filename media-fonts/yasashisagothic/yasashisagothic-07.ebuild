@@ -19,9 +19,9 @@ IUSE=""
 
 DEPEND="app-arch/unzip"
 
-S="${WORKDIR}/${PV}Yasashisa"
+S="${WORKDIR}"
 
-FONT_SUFFIX="ttf"
+FONT_SUFFIX="otf"
 FONT_S="${S}"
 #FONT_CONF=( "${FILESDIR}/66-${PN}.conf" )
 FONTDIR="/usr/share/fonts/${PN}"
@@ -32,7 +32,6 @@ RESTRICT="strip bincheckes"
 
 src_unpack() {
 	unpack ${A}
-	rm "${S}"/*.ttf
-	mv "${S}"/*/unix/${PV}YasashisaGothic.ttf "${S}"
-	mv "${S}Bold"/*/Unix/YasashisaBold.ttf "${S}/07YasashisaGothic-bold.ttf"
+	mv 07Yasashisa/*/OpenType/YasashisaGothic.otf ${S}
+	mv 07YasashisaBold/*/OPENTYPE/YasashisaBold.otf ${S}
 }
