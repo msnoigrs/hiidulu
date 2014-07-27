@@ -5,8 +5,8 @@
 inherit font
 
 DESCRIPTION="Japanese TrueType font. Tanuki Magic"
-HOMEPAGE="http://tanukifont.sblo.jp/article/41432838.html"
-SRC_URI="http://tanukiweb.sakura.ne.jp/download/TanukiMagic_1_10.zip"
+HOMEPAGE="http://tanukifont.com/"
+SRC_URI="http://tanukifont.com/download/TanukiMagic_1_12.zip"
 
 LICENSE="freedist" # TODO
 SLOT="0"
@@ -15,7 +15,7 @@ IUSE=""
 
 DEPEND="app-arch/unzip"
 
-S="${WORKDIR}"
+S="${WORKDIR}/TanukiMagic_1_12"
 
 FONT_SUFFIX="ttf"
 FONT_S="${S}"
@@ -28,7 +28,6 @@ RESTRICT="strip bincheckes"
 
 src_unpack() {
 	unpack ${A}
-#	mv ${S}/*/*.ttf .
 	cd ${S}
 	iconv -f cp932 -t utf8 readme.txt > readme-utf8.txt
 }
