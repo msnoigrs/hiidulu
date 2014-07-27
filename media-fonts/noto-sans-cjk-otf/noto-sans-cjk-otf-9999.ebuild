@@ -6,7 +6,7 @@ EAPI="4"
 
 EGIT_REPO_URI="https://code.google.com/p/noto/"
 
-inherit font
+inherit font git-2
 
 DESCRIPTION="Noto Sans CJK Multilingual fonts in OTF"
 HOMEPAGE="http://www.google.com/get/noto/cjk.html"
