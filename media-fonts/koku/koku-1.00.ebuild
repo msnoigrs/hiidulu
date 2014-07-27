@@ -8,8 +8,8 @@ inherit font
 
 DESCRIPTION="Japanese TrueType font. Koku Mincho Gothic"
 HOMEPAGE="http://freefonts.jp/"
-SRC_URI="http://freefonts.jp/dl_c62xbza7jt/ki_kokumin.zip
-	http://freefonts.jp/dl_c62xbza7jt/ki_kokugo.zip"
+SRC_URI="http://freefonts.jp/dl_c62zbza7jt/ki_kokumin.zip
+	http://freefonts.jp/dl_c62zbza7jt/ki_kokugo.zip"
 # IPAMincho -> IPAfont
 LICENSE="IPAfont"
 SLOT="0"
