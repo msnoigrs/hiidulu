@@ -18,8 +18,6 @@ IUSE=""
 
 DEPEND="app-arch/unzip"
 
-S="${WORKDIR}/noto-5331bd09edd0/third_party/noto_cjk"
-
 FONT_SUFFIX="otf"
 FONT_S="${S}/third_party/noto_cjk"
 #FONT_CONF=( "${FILESDIR}/66-${PN}.conf" )
