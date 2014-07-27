@@ -8,7 +8,8 @@ inherit font
 
 DESCRIPTION="Japanese TrueType font. Logo Type Gothic"
 HOMEPAGE="http://www.fontna.com/blog/1226/"
-SRC_URI="http://www.fontna.com/font/LogoTypeGothic.zip"
+SRC_URI="http://flop.sakura.ne.jp/font/LogoTypeGothic.zip
+		http://flop.sakura.ne.jp/font/LogoTypeGothicCondense.zip"
 
 # M+ FONTS -> mplus-fonts
 # IPAGothic -> IPAfont
@@ -19,9 +20,9 @@ IUSE=""
 
 DEPEND="app-arch/unzip"
 
-S="${WORKDIR}/LogoTypeGothic"
+S="${WORKDIR}"
 
-FONT_SUFFIX="ttf"
+FONT_SUFFIX="otf"
 FONT_S="${S}"
 #FONT_CONF=( "${FILESDIR}/66-${PN}.conf" )
 FONTDIR="/usr/share/fonts/${PN}"
@@ -32,6 +33,6 @@ RESTRICT="strip bincheckes"
 
 src_unpack() {
 	unpack ${A}
-	rm "${S}"/*.ttf
-	mv "${S}"/*/07LogoTypeGothic7.ttf "${S}"/LogoTypeGothic.ttf
+	mv LogoTypeGothic/*.otf LogoTypeGothic.otf
+	mv LogoTypeGothicCondense/*.otf LogoTypeGothicCondense.otf
 }

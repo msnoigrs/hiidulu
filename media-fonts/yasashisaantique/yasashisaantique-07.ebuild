@@ -8,7 +8,7 @@ inherit font
 
 DESCRIPTION="Japanese TrueType font. Yasashisa Antique"
 HOMEPAGE="http://www.fontna.com/blog/1122/"
-SRC_URI="http://www.fontna.com/font/YasashisaAntiqueFont.zip"
+SRC_URI="http://flop.sakura.ne.jp/font/YasashisaAntiqueFont.zip"
 
 # M+ FONTS -> mplus-fonts
 # IPAGothic -> IPAfont
