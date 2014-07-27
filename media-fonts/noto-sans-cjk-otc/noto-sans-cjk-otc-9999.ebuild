@@ -16,10 +16,6 @@ SLOT="0"
 KEYWORDS="~alpha ~amd64 ~ia64 ~ppc ~ppc64 ~sparc ~x86 ~x86-fbsd"
 IUSE=""
 
-DEPEND="app-arch/unzip"
-
-#S="${WORKDIR}/third_party/noto_cjk"
-
 FONT_SUFFIX="ttc"
 FONT_S="${S}/third_party/noto_cjk"
 #FONT_CONF=( "${FILESDIR}/66-${PN}.conf" )
@@ -27,9 +23,3 @@ FONTDIR="/usr/share/fonts/${PN}"
 
 # Only installs fonts
 RESTRICT="strip bincheckes"
-
-#src_unpack() {
-#	unpack ${A}
-#	mkdir "${S}"
-#	mv "${WORKDIR}"/*.ttc "${S}"
-#}

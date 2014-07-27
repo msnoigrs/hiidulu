@@ -16,8 +16,6 @@ SLOT="0"
 KEYWORDS="~alpha ~amd64 ~ia64 ~ppc ~ppc64 ~sparc ~x86 ~x86-fbsd"
 IUSE=""
 
-DEPEND="app-arch/unzip"
-
 FONT_SUFFIX="otf"
 FONT_S="${S}/third_party/noto_cjk"
 #FONT_CONF=( "${FILESDIR}/66-${PN}.conf" )
@@ -27,9 +25,9 @@ FONTDIR="/usr/share/fonts/${PN}"
 RESTRICT="strip bincheckes"
 
 src_unpack() {
-	default
-	find ${S}/fonts -name '*.otf' -delete
-#	unpack ${A}
-#	mkdir "${S}"
-#	mv "${WORKDIR}"/*.ttc "${S}"
+	git-2_src_unpack
+	rm "${FONT_S}"/NotoSansHans*
+	rm "${FONT_S}"/NotoSansHant*
+	rm "${FONT_S}"/NotoSansJP*
+	rm "${FONT_S}"/NotoSansKR*
 }

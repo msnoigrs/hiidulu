@@ -4,21 +4,20 @@
 
 EAPI="4"
 
-inherit font
+EGIT_REPO_URI="https://code.google.com/p/noto/"
+
+inherit font git-2
 
 DESCRIPTION="Noto Sans CJK Language specific fonts"
 HOMEPAGE="http://www.google.com/get/noto/cjk.html"
-SRC_URI="http://www.google.com/get/noto/pkgs/NotoSansTChinese.zip"
 
 LICENSE="Apache-2.0"
 SLOT="0"
 KEYWORDS="~alpha ~amd64 ~ia64 ~ppc ~ppc64 ~sparc ~x86 ~x86-fbsd"
 IUSE=""
 
-DEPEND="app-arch/unzip"
-
 FONT_SUFFIX="otf"
-FONT_S="${S}"
+FONT_S="${S}/third_party/noto_cjk"
 #FONT_CONF=( "${FILESDIR}/66-${PN}.conf" )
 FONTDIR="/usr/share/fonts/${PN}"
 
@@ -26,7 +25,9 @@ FONTDIR="/usr/share/fonts/${PN}"
 RESTRICT="strip bincheckes"
 
 src_unpack() {
-	unpack ${A}
-	mkdir "${S}"
-	mv "${WORKDIR}"/*.otf "${S}"
+	git-2_src_unpack
+	rm "${FONT_S}"/NotoSansKR*
+	rm "${FONT_S}"/NotoSansHant*
+	rm "${FONT_S}"/NotoSansCJK*
+	rm "${FONT_S}"/NotoSansJP*
 }
