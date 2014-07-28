@@ -41,6 +41,7 @@ IUSE="emacs fcitx +ibus +qt4 renderer test"
 
 RDEPEND="dev-libs/glib:2
 	x11-libs/libxcb
+	dev-libs/protobuf
 	emacs? ( virtual/emacs )
 	fcitx? ( app-i18n/fcitx )
 	ibus? ( >=app-i18n/ibus-1.4.1 )
@@ -103,7 +104,7 @@ src_configure() {
 		export GYP_DEFINES="${GYP_DEFINES} enable_gtk_renderer=0"
 	fi
 
-	#export GYP_DEFINES="${GYP_DEFINES} use_libprotobuf=1"
+	export GYP_DEFINES="${GYP_DEFINES} use_libprotobuf=1"
 
 	"${PYTHON}" build_mozc.py gyp ${myconf} --gypdir="$(pwd)/third_party/gyp" || die "gyp failed"
 }
