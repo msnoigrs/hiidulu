@@ -128,7 +128,6 @@ src_compile() {
 	fi
 
 	#V=1 "${PYTHON}" build_mozc.py build_tools -c "${BUILDTYPE}" ${myjobs} || die
-	QTDIR="" V=1 "${PYTHON}" build_mozc.py gyp || die
 	V=1 "${PYTHON}" build_mozc.py build -c "${BUILDTYPE}" ${mytarget} ${myjobs} || die
 
 	if use emacs ; then
