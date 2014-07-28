@@ -103,7 +103,7 @@ src_configure() {
 		export GYP_DEFINES="${GYP_DEFINES} enable_gtk_renderer=0"
 	fi
 
-	export GYP_DEFINES="${GYP_DEFINES} use_libprotobuf=1"
+	#export GYP_DEFINES="${GYP_DEFINES} use_libprotobuf=1"
 
 	"${PYTHON}" build_mozc.py gyp ${myconf} --gypdir="$(pwd)/third_party/gyp" || die "gyp failed"
 }
