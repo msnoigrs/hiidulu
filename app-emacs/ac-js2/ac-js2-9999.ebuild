@@ -17,13 +17,14 @@ SLOT="0"
 KEYWORDS="~amd64 ~x86"
 
 DEPEND="app-emacs/js2-mode
-	app-emacs/skewer-mode"
+	app-emacs/skewer-mode
+	app-emacs/auto-complete"
 RDEPEND="${DEPEND}"
 
 #SITEFILES="50${PN}-gentoo.el"
 
 src_prepare() {
-	rm ac-js2-test.el
+	rm ac-js2-tests.el
 	sed -i -e "/etags/ a (require 'auto-complete)" ac-js2.el
 }
 
