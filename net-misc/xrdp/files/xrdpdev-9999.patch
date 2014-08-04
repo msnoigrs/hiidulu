@@ -1,0 +1,10 @@
+--- xorg/server/xrdpdev/xrdpdev.c.orig	2014-04-02 08:24:30.000000000 +0400
++++ xorg/server/xrdpdev/xrdpdev.c	2014-05-06 17:32:20.050014161 +0400
+@@ -449,7 +449,6 @@
+         LLOGLN(0, ("rdpScreenInit: fbScreenInit failed"));
+         return FALSE;
+     }
+-    miInitializeBackingStore(pScreen);
+ 
+ #if 0
+     /* XVideo */

@@ -1,0 +1,34 @@
+--- x11rdp_xorg71/xorg-server-X11R7.1-1.1.0/hw/rdp/rdpup.c	2010/01/08 09:17:13	1825
++++ x11rdp_xorg71/xorg-server-X11R7.1-1.1.0/hw/rdp/rdpup.c	2010/06/14 10:18:53	2691
+@@ -417,9 +417,29 @@
+     }
+     else
+     {
+-      rdpLog("rejecting connection, already got a connection\n");
++      rdpLog("resetting connection, already got a connection\n");
+       g_sleep(10);
+-      g_tcp_close(g_tcp_accept(g_listen_sck));
++      RemoveEnabledDevice(g_sck);
++      g_connected = 0;
++      g_tcp_close(g_sck);
++      g_sck = 0;
++      g_sck_closed = 1;
++
++      /* Retry connections */
++      g_sck = g_tcp_accept(g_listen_sck);
++      if (g_sck == -1)
++      {
++        g_sck = 0;
++      }
++      else
++      {
++        g_tcp_set_non_blocking(g_sck);
++        g_tcp_set_no_delay(g_sck);
++        g_connected = 1;
++        g_sck_closed = 0;
++        AddEnabledDevice(g_sck);
++      }
++
+     }
+   }
+   if (sel & 2)
