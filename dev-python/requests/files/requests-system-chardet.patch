@@ -1,5 +1,5 @@
---- requests-2.2.0/requests/compat.py
-+++ requests-2.2.0/requests/compat.py
+--- requests-9999.orig/requests/compat.py	2014-08-07 23:38:23.695107794 +0900
++++ requests-9999/requests/compat.py	2014-08-07 23:44:55.082092376 +0900
 @@ -4,7 +4,7 @@
  pythoncompat
  """
@@ -9,8 +9,8 @@
  
  import sys
  
---- requests-2.2.0/setup.py
-+++ requests-2.2.0/setup.py
+--- requests-9999.orig/setup.py	2014-08-07 23:38:23.716107794 +0900
++++ requests-9999/setup.py	2014-08-07 23:44:43.404092836 +0900
 @@ -17,7 +17,6 @@
  packages = [
      'requests',

@@ -31,8 +31,8 @@ DOCS=( README.rst HISTORY.rst )
 
 python_prepare_all() {
 	local PATCHES=(
-		"${FILESDIR}"/${PN}-1.2.0-system-cacerts.patch
-		"${FILESDIR}"/${PN}-2.2.0-system-chardet.patch
+		"${FILESDIR}"/${PN}-system-cacerts.patch
+		"${FILESDIR}"/${PN}-system-chardet.patch
 	)
 
 	# use system chardet
