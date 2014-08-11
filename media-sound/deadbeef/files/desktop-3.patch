@@ -1,0 +1,34 @@
+--- deadbeef.desktop.in.orig	2014-08-11 09:20:27.877632702 +0900
++++ deadbeef.desktop.in	2014-08-11 09:20:48.354622246 +0900
+@@ -16,31 +16,6 @@
+ 
+ X-Ayatana-Desktop-Shortcuts=Play;Pause;Stop;Next;Prev
+ 
+-[Play Shortcut Group]
+-Name=Play
+-Exec=deadbeef --play
+-TargetEnvironment=Unity
+-
+-[Pause Shortcut Group]
+-Name=Pause
+-Exec=deadbeef --pause
+-TargetEnvironment=Unity
+-
+-[Stop Shortcut Group]
+-Name=Stop
+-Exec=deadbeef --stop
+-TargetEnvironment=Unity
+-
+-[Next Shortcut Group]
+-Name=Next
+-Exec=deadbeef --next
+-TargetEnvironment=Unity
+-
+-[Prev Shortcut Group]
+-Name=Prev
+-Exec=deadbeef --prev
+-TargetEnvironment=Unity
+-
+ [Desktop Action Play]
+ Name=Play
+ Exec=deadbeef --play
