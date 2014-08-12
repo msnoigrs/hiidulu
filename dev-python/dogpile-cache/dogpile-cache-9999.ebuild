@@ -28,11 +28,11 @@ DEPEND="dev-python/setuptools[${PYTHON_USEDEP}]
 DISTUTILS_NO_PARALLEL_BUILD=1
 # This time half the doc files are missing; Do you want them? toss a coin
 
-python_prepare_all() {
-	epatch "${FILESDIR}/connection_pool.patch"
-
-	distutils-r1_python_prepare_all
-}
+#python_prepare_all() {
+#	epatch "${FILESDIR}/connection_pool.patch"
+#
+#	distutils-r1_python_prepare_all
+#}
 
 python_test() {
 	# crikey. testsuite written for py3, 5 tests fail under py2.7
