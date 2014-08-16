@@ -11,7 +11,7 @@ EGIT_REPO_URI="https://github.com/kvesteri/sqlalchemy-utils.git"
 inherit distutils-r1 git-2
 
 DESCRIPTION="Various utility functions and custom data types for SQLAlchemy"
-HOMEPAGE="http://webassets.readthedocs.org/"
+HOMEPAGE="https://github.com/kvesteri/sqlalchemy-utils"
 
 LICENSE="BSD"
 SLOT="0"
