@@ -34,6 +34,8 @@ DOCS=( CHANGES.txt COPYRIGHT.txt README.txt )
 python_prepare_all() {
 	sed -i -e '/zope.deprecation/ d' setup.py
 
+	epatch "${FILESDIR}/deform-FieldStorage.patch"
+
 	distutils-r1_python_prepare_all
 }
 

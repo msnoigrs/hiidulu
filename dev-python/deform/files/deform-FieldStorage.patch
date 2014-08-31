@@ -1,0 +1,11 @@
+--- deform-9999.orig/deform/widget.py	2014-09-01 07:33:44.036651962 +0900
++++ deform-9999/deform/widget.py	2014-09-01 07:35:26.781540311 +0900
+@@ -58,7 +58,7 @@
+ 
+ class _FieldStorage(SchemaType):
+     def deserialize(self, node, cstruct):
+-        if cstruct in (null, None, ''):
++        if cstruct in (null, None, '', b''):
+             return null
+         # weak attempt at duck-typing
+         if not hasattr(cstruct, 'file'):
