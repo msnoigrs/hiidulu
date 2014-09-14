@@ -1,10 +1,11 @@
-# Copyright 1999-2013 Gentoo Foundation
+# Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
 EAPI="4"
 
-inherit autotools rpm
+#inherit autotools rpm
+inherit autotools
 
 SRC_REV="1"   # Revision used by upstream.
 LSB_REV="3.2" # Revision of Linux Standard Base.
@@ -38,9 +39,9 @@ DEPEND="${REPEND}
 #}
 
 pkg_nofetch() {
-        einfo "Please download ${MY_PN}.tar.gz from:"
-        einfo "${EPSON_URI}"
-        einfo "and move it to ${DISTDIR}"
+		einfo "Please download ${MY_PN}.tar.gz from:"
+		einfo "${EPSON_URI}"
+		einfo "and move it to ${DISTDIR}"
 }
 
 src_prepare() {
