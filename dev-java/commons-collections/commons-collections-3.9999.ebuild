@@ -5,7 +5,7 @@
 EAPI="5"
 JAVA_PKG_IUSE="doc source test"
 
-ESVN_REPO_URI="https://svn.apache.org/repos/asf/commons/proper/collections/trunk"
+ESVN_REPO_URI="https://svn.apache.org/repos/asf/commons/proper/collections/branches/COLLECTIONS_3_2_BRANCH"
 
 inherit subversion java-pkg-2 java-ant-2 eutils
 
@@ -14,7 +14,7 @@ HOMEPAGE="http://commons.apache.org/collections/"
 SRC_URI=""
 
 LICENSE="Apache-2.0"
-SLOT="4"
+SLOT="0"
 KEYWORDS="~amd64 ~ia64 ~ppc ~ppc64 ~x86 ~x86-fbsd"
 IUSE="test-framework"
 

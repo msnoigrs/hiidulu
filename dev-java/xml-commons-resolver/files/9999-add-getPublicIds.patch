@@ -1,5 +1,5 @@
---- xml-commons-resolver-9999.orig/src/org/apache/xml/resolver/Catalog.java	2011-10-11 01:52:04.075962923 +0900
-+++ xml-commons-resolver-9999/src/org/apache/xml/resolver/Catalog.java	2011-10-11 01:55:18.296534832 +0900
+--- xml-commons-resolver-9999.orig/src/org/apache/xml/resolver/Catalog.java	2014-10-06 23:45:10.509920458 +0900
++++ xml-commons-resolver-9999/src/org/apache/xml/resolver/Catalog.java	2014-10-07 00:50:39.465592840 +0900
 @@ -31,6 +31,7 @@
  import java.util.Hashtable;
  import java.util.Locale;
@@ -9,26 +9,26 @@
  import javax.xml.parsers.SAXParserFactory;
  
 @@ -1165,6 +1166,23 @@
-   }
+     }
  
  
-+  /*
-+   * Return all registered public IDs.
-+   */
-+  public Iterator getPublicIDs() {
-+    Vector v = new Vector();
-+    Enumeration e = catalogEntries.elements();
++    /*
++     * Return all registered public IDs.
++     */
++    public Iterator getPublicIDs() {
++        Vector v = new Vector();
++        Enumeration e = catalogEntries.elements();
 +
-+    while (e.hasMoreElements()) {
-+      CatalogEntry entry = (CatalogEntry) e.nextElement();
-+	if (entry.getEntryType() == PUBLIC) {
-+	v.add(entry.getEntryArg(0));
-+      }
++        while (e.hasMoreElements()) {
++            CatalogEntry entry = (CatalogEntry) e.nextElement();
++            if (entry.getEntryType() == PUBLIC) {
++                v.add(entry.getEntryArg(0));
++            }
++        }
++        return v.iterator();
 +    }
-+    return v.iterator();
-+  }
 +
 +
-   /**
-    * Return the applicable DOCTYPE system identifier.
-    *
+     /**
+      * Return the applicable DOCTYPE system identifier.
+      *

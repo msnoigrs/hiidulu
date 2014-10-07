@@ -23,8 +23,8 @@ IUSE=""
 #	dev-java/lucene:2.4
 #>=dev-java/tika-core-0.10
 #	dev-java/bcmail:1.49
+#	dev-java/jempbox
 CDEPEND="dev-java/fontbox
-	dev-java/jempbox
 	dev-java/bcprov:1.49
 	dev-java/bcpkix:1.49
 	dev-java/jcl-over-slf4j
@@ -48,7 +48,7 @@ java_prepare() {
 	#epatch "${FILESDIR}/zuki-cjk.patch"
 	#epatch "${FILESDIR}/zuki-pdfbox-ucs4.patch"
 	#epatch "${FILESDIR}/zuki-315.patch"
-	epatch "${FILESDIR}/pdfbox-zuki.patch"
+	#epatch "${FILESDIR}/pdfbox-zuki.patch"
 
 	#sed -i -e 's/\(material.getPrivateKey()\), "BC"/new org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient((java.security.PrivateKey)\1).setProvider("BC")/' \
 	#	src/main/java/org/apache/pdfbox/pdmodel/encryption/PublicKeySecurityHandler.java

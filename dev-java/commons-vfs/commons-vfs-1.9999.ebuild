@@ -6,7 +6,7 @@ EAPI="5"
 
 JAVA_PKG_IUSE="doc source"
 
-inherit java-pkg-2 java-ant-2 subversion
+inherit subversion java-pkg-2 java-ant-2
 
 #ESVN_OPTIONS="-r${PV/*_pre}"
 ESVN_REPO_URI="http://svn.apache.org/repos/asf/commons/proper/vfs/branches/vfs-1-trunk"
@@ -23,7 +23,7 @@ KEYWORDS="~amd64 ~x86"
 COMMON_DEP="
 	dev-java/commons-net:0
 	dev-java/commons-httpclient:3
-	dev-java/commons-collections
+	dev-java/commons-collections:4
 	dev-java/jsch
 	dev-java/jcl-over-slf4j
 "
@@ -35,10 +35,14 @@ DEPEND=">=virtual/jdk-1.5
 	${COMMON_DEP}"
 
 java_prepare() {
-	sed -i -e 's/depends="get-deps"//' build.xml
+	sed -i -e 's/depends="get-deps"//g' build.xml
 
 	# see http://issues.apache.org/jira/browse/VFS-74
 	epatch ${FILESDIR}/${PN}-httpclient-compat.patch
+
+	sed -i -e 's/org.apache.commons.collections.map.AbstractLinkedMap/org.apache.commons.collections4.map.AbstractLinkedMap/' \
+		-e 's/org.apache.commons.collections.map.LRUMap/org.apache.commons.collections4.map.LRUMap/' \
+		core/src/main/java/org/apache/commons/vfs/cache/LRUFilesCache.java
 
 	java-ant_rewrite-classpath
 	java-ant_ignore-system-classes
@@ -51,7 +55,7 @@ java_prepare() {
 src_compile() {
 	local cp="$(java-pkg_getjar --build-only ant-core ant.jar)"
 	cp="${cp}:$(java-pkg_getjars commons-httpclient-3)"
-	cp="${cp}:$(java-pkg_getjars commons-collections)"
+	cp="${cp}:$(java-pkg_getjars commons-collections-4)"
 	cp="${cp}:$(java-pkg_getjars commons-net)"
 	cp="${cp}:$(java-pkg_getjars jsch)"
 	cp="${cp}:$(java-pkg_getjars jcl-over-slf4j)"

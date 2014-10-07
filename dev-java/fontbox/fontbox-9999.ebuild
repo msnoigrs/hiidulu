@@ -29,7 +29,7 @@ java_prepare() {
 	#epatch "${FILESDIR}/zuki-fontbox.patch"
 	#epatch "${FILESDIR}/zuki-fontbox-ucs4.patch"
 	#epatch "${FILESDIR}/zuki-fontbox-cmap.patch"
-	epatch "${FILESDIR}/fontbox-zuki.patch"
+	#epatch "${FILESDIR}/fontbox-zuki.patch"
 
 	mkdir lib || die
 	java-pkg_jar-from --into lib jcl-over-slf4j
