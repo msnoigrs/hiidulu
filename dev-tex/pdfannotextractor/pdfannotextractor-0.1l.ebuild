@@ -1,8 +1,8 @@
-# Copyright 1999-2013 Gentoo Foundation
+# Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI=3
+EAPI=5
 
 inherit latex-package java-utils-2 java-pkg-2 java-ant-2 eutils
 
@@ -34,9 +34,8 @@ JAVA_ANT_REWRITE_CLASSPATH="true"
 EANT_GENTOO_CLASSPATH="pdfbox fontbox"
 
 src_prepare() {
-	find -name '*.java' -exec sed -i -e 's/org.pdfbox/org.apache.pdfbox/g' {} \;
-
 	epatch "${FILESDIR}/javajars.patch"
+	epatch "${FILESDIR}/pdfbox.patch"
 	java-pkg-2_src_prepare
 }
 
@@ -46,7 +45,7 @@ src_compile() {
 }
 
 src_install() {
-	newbin scripts/pax/pdfannotextractor.pl pdfannotextractor || die
+	#newbin scripts/pax/pdfannotextractor.pl pdfannotextractor || die
 	java-pkg_dojar "${S}/source/latex/pax/pax.jar" || die
 
 	java-pkg_dolauncher ${PN} --main pax.PDFAnnotExtractor --jar pax.jar

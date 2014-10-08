@@ -25,10 +25,10 @@ IUSE=""
 #	dev-java/bcmail:1.49
 #	dev-java/jempbox
 CDEPEND="dev-java/fontbox
-	dev-java/bcprov:1.49
-	dev-java/bcpkix:1.49
+	dev-java/bcprov:0
+	dev-java/bcpkix:0
 	dev-java/jcl-over-slf4j
-	dev-java/icu4j:0"
+	dev-java/icu4j:49"
 RDEPEND=">=virtual/jre-1.6
 	dev-java/logback-core
 	dev-java/logback-classic
@@ -58,21 +58,22 @@ java_prepare() {
 
 #	cp "${FILESDIR}/gentoo-build.xml" build.xml
 	sed -i -e 's/depends="get.externallibs.pdfbox,/depends="/' build.xml
-	sed -i -e 's/depends="fontbox.package,jempbox.package,/depends="/' build.xml
+	sed -i -e 's/depends="get.externallibs.fontbox,/depends="/' build.xml
+	sed -i -e 's/depends="fontbox.package,/depends="/' build.xml
 
 	mkdir external || die
 	cd external
 #	java-pkg_jar-from tika-core tika-core.jar tika-core-0.10.jar
 	java-pkg_jar-from fontbox fontbox.jar
-	java-pkg_jar-from jempbox jempbox.jar
-	java-pkg_jar-from bcprov-1.49 bcprov.jar bcprov-jdk15on-1.48.jar
+	#java-pkg_jar-from jempbox jempbox.jar
+	java-pkg_jar-from bcprov bcprov.jar bcprov-jdk15on-1.50.jar
 #	java-pkg_jar-from bcmail-1.49 bcmail.jar bcmail-jdk15on-1.48.jar
-	java-pkg_jar-from bcpkix-1.49 bcpkix.jar bcpkix-jdk15on-1.48.jar
+	java-pkg_jar-from bcpkix bcpkix.jar bcpkix-jdk15on-1.50.jar
 #	java-pkg_jar-from lucene-2.4 lucene-core.jar lucene-core-2.4.1.jar
 #	java-pkg_jar-from lucene-2.4 lucene-demos.jar lucene-dmoes-2.4.1.jar
 #	java-pkg_jar-from --build-only ant-core ant.jar
 	java-pkg_jar-from --build-only junit junit.jar junit-4.8.1.jar
-	java-pkg_jar-from jcl-over-slf4j jcl-over-slf4j.jar commons-logging-1.1.1.jar
+	java-pkg_jar-from jcl-over-slf4j jcl-over-slf4j.jar commons-logging-1.1.3.jar
 	java-pkg_jar-from icu4j-49 icu4j.jar icu4j-3.8.jar
 
 	cd ${S}
@@ -82,7 +83,8 @@ java_prepare() {
 	rm -rf src/test/java/org
 }
 
-EANT_EXTRA_ARGS="-Dfontbox.jar=external/fontbox.jar -Djempbox.jar=external/jempbox.jar"
+#EANT_EXTRA_ARGS="-Dfontbox.jar=external/fontbox.jar -Djempbox.jar=external/jempbox.jar"
+EANT_EXTRA_ARGS="-Dfontbox.jar=external/fontbox.jar"
 EANT_BUILD_TARGET="pdfbox.package"
 
 #my_launcher() {
