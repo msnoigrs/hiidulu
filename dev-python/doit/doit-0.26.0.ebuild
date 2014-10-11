@@ -20,7 +20,6 @@ RDEPEND="dev-python/pyinotify[${PYTHON_USEDEP}]"
 
 python_prepare_all() {
 	use test && DISTUTILS_IN_SOURCE_BUILD=1
-	sed -e 's:from .conf:from conf:' -i tests/test_dependency.py || die
 	distutils-r1_python_prepare_all
 }
 
@@ -46,7 +45,5 @@ python_test() {
 src_install() {
 	distutils-r1_src_install
 
-	dodoc AUTHORS CHANGES README.rst TODO.txt dev_requirements.txt
-	dodoc -r doc
-	docompress -x /usr/share/doc/${PF}/doc
+	dodoc README.rst
 }
