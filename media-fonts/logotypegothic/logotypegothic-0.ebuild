@@ -7,9 +7,11 @@ EAPI="4"
 inherit font
 
 DESCRIPTION="Japanese TrueType font. Logo Type Gothic"
-HOMEPAGE="http://www.fontna.com/blog/1226/"
-SRC_URI="http://flop.sakura.ne.jp/font/LogoTypeGothic.zip
-		http://flop.sakura.ne.jp/font/LogoTypeGothicCondense.zip"
+HOMEPAGE="http://www.fontna.com/blog/1226/
+	http://www.fontna.com/blog/1345/"
+#SRC_URI="http://flop.sakura.ne.jp/font/LogoTypeGothic.zip
+#		http://flop.sakura.ne.jp/font/LogoTypeGothicCondense.zip"
+SRC_URI="LogoTypeGothic.zip LogoTypeGothicCondense.zip"
 
 # M+ FONTS -> mplus-fonts
 # IPAGothic -> IPAfont

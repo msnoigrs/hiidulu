@@ -25,7 +25,7 @@ IUSE="jinja markdown bbcode livereload pyphen"
 DEPEND="dev-python/docutils" # needs rst2man to build manpage
 RDEPEND="${DEPEND}
 	>=dev-python/doit-0.23.0
-	dev-python/pygments
+	>=dev-python/pygments-1.6
 	virtual/python-imaging
 	>=dev-python/mako-0.6
 	dev-python/unidecode
@@ -33,11 +33,11 @@ RDEPEND="${DEPEND}
 	dev-python/yapsy
 	dev-python/PyRSS2Gen
 	dev-python/pytz
-	dev-python/logbook
+	>=dev-python/logbook-0.7.0
 	dev-python/blinker
 	dev-python/colorama
 	dev-python/requests
-	dev-python/python-dateutil
+	>=dev-python/python-dateutil-2.2
 	dev-python/micawber
 	dev-python/pygal
 	dev-python/phpserialize
