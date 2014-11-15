@@ -12,7 +12,7 @@ MY_PN="Nikola"
 
 if [[ ${PV} == *9999* ]]; then
 	inherit git-2
-	EGIT_REPO_URI="git://github.com/getnikola/${PN}.git"
+	EGIT_REPO_URI="git://github.com/ralsina/${PN}.git"
 	KEYWORDS=""
 else
 	SRC_URI="mirror://pypi/${MY_PN:0:1}/${MY_PN}/${P}.tar.gz"
@@ -40,7 +40,6 @@ RDEPEND="${DEPEND}
 	>=dev-python/requests-2.2.0[${PYTHON_USEDEP}]
 	>=dev-python/unidecode-0.04.16[${PYTHON_USEDEP}]
 	>=dev-python/yapsy-1.10.423[${PYTHON_USEDEP}]
-	dev-python/docutils-htmlwriter[${PYTHON_USEDEP}]
 	virtual/python-imaging[${PYTHON_USEDEP}]
 	assets? ( >=dev-python/webassets-0.10.1[${PYTHON_USEDEP}] )
 	charts? ( >=dev-python/pygal-1.5.1[${PYTHON_USEDEP}] )
@@ -54,7 +53,7 @@ RDEPEND="${DEPEND}
 #	typogrify? ( >=dev-python/typogrify-2.0.4[${PYTHON_USEDEP}] )
 
 python_prepare_all() {
-	epatch "${FILESDIR}/htmlwriter.patch"
+	epatch "${FILESDIR}/nikola-ja-linebreak.patch"
 	distutils-r1_python_prepare_all
 }
 

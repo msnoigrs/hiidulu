@@ -1,0 +1,23 @@
+diff --git a/nikola/plugins/compile/rest/__init__.py b/nikola/plugins/compile/rest/__init__.py
+index 98c7151..29c7cc7 100644
+--- a/nikola/plugins/compile/rest/__init__.py
++++ b/nikola/plugins/compile/rest/__init__.py
+@@ -35,7 +35,7 @@ try:
+     import docutils.utils
+     import docutils.io
+     import docutils.readers.standalone
+-    import docutils.writers.html4css1
++    import htmlwriter
+     has_docutils = True
+ except ImportError:
+     has_docutils = False
+@@ -83,7 +83,8 @@ class CompileRest(PageCompiler):
+                         'syntax_highlight': 'short',
+                         'math_output': 'mathjax',
+                         'template': default_template_path,
+-                    }, logger=self.logger, source_path=source, l_add_ln=add_ln)
++                    }, logger=self.logger, source_path=source, l_add_ln=add_ln,
++                    writer=htmlwriter.Writer())
+                 out_file.write(output)
+             deps_path = dest + '.dep'
+             if deps.list:

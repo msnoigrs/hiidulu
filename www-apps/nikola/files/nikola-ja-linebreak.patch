@@ -1,0 +1,190 @@
+diff --git a/nikola/plugins/compile/rest/__init__.py b/nikola/plugins/compile/rest/__init__.py
+index 98c7151..2c075e5 100644
+--- a/nikola/plugins/compile/rest/__init__.py
++++ b/nikola/plugins/compile/rest/__init__.py
+@@ -34,6 +34,7 @@ try:
+     import docutils.nodes
+     import docutils.utils
+     import docutils.io
++    import docutils.readers.doctree
+     import docutils.readers.standalone
+     import docutils.writers.html4css1
+     has_docutils = True
+@@ -83,7 +84,8 @@ class CompileRest(PageCompiler):
+                         'syntax_highlight': 'short',
+                         'math_output': 'mathjax',
+                         'template': default_template_path,
+-                    }, logger=self.logger, source_path=source, l_add_ln=add_ln)
++                    }, logger=self.logger, source_path=source, l_add_ln=add_ln,
++                    writer = HTMLWriter())
+                 out_file.write(output)
+             deps_path = dest + '.dep'
+             if deps.list:
+@@ -168,6 +170,56 @@ class NikolaReader(docutils.readers.standalone.Reader):
+         return document
+ 
+ 
++class HTMLWriter(docutils.writers.html4css1.Writer):
++
++    def __init__(self):
++        docutils.writers.html4css1.Writer.__init__(self)
++        self.translator_class = NikolaHTMLTranslator
++
++
++class NikolaHTMLTranslator(docutils.writers.html4css1.HTMLTranslator):
++
++    def __init__(self, document):
++        docutils.writers.html4css1.HTMLTranslator.__init__(self, document)
++        self.protect_literal_text = False
++
++    def visit_Text(self, node):
++        text = node.astext()
++        encoded = self.encode(text)
++        if self.protect_literal_text:
++            # moved here from base class's visit_literal to support
++            # more formatting in literal nodes
++            for token in self.words_and_spaces.findall(encoded):
++                if token.strip():
++                    # protect literal text from line wrapping
++                    self.body.append('<span class="pre">%s</span>' % token)
++                elif token in ' \n':
++                    # allow breaks at whitespace
++                    self.body.append(token)
++                else:
++                    # protect runs of multiple spaces; the last one can wrap
++                    self.body.append('&nbsp;' * (len(token)-1) + ' ')
++        else:
++            if self.in_mailto and self.settings.cloak_email_addresses:
++                encoded = self.cloak_email(encoded)
++            self.body.append(encoded)
++
++    def visit_literal(self, node):
++        self.body.append(self.starttag(node, 'code', '',
++                                       CLASS='docutils literal'))
++        self.protect_literal_text = True
++
++    def depart_literal(self, node):
++        self.protect_literal_text = False
++        self.body.append('</code>')
++
++    def visit_line(self, node):
++        pass
++
++    def depart_line(self, node):
++        self.body.append('<br>')
++
++
+ def add_node(node, visit_function=None, depart_function=None):
+     """
+     Register a Docutils node class.
+@@ -203,9 +255,59 @@ def add_node(node, visit_function=None, depart_function=None):
+     """
+     docutils.nodes._add_node_class_names([node.__name__])
+     if visit_function:
+-        setattr(docutils.writers.html4css1.HTMLTranslator, 'visit_' + node.__name__, visit_function)
++        setattr(NikolaHTMLTranslator, 'visit_' + node.__name__, visit_function)
+     if depart_function:
+-        setattr(docutils.writers.html4css1.HTMLTranslator, 'depart_' + node.__name__, depart_function)
++        setattr(NikolaHTMLTranslator,
++                'depart_' + node.__name__, depart_function)
++
++
++# in order no to change literals, select only 'paragraph' nodes
++# via http://msiz.hatenablog.jp/entry/2014/02/10/005208
++#
++def get_para_list(dtree):
++    para_list = []
++    for node in dtree.traverse():
++        if isinstance(node, docutils.nodes.paragraph):
++            para_list.append(node)
++    return para_list
++
++
++def strip_spaces_between_uchars(para_list):
++    # non-ascii [\n\r\t] non-ascii
++    __RGX = re.compile(r'([^!-~])[\n\r\t]+([^!-~])')
++    # modify text inside Text node
++    for para in para_list:
++        for node in para.traverse():
++            if isinstance(node, docutils.nodes.Text):
++                newtext = node.astext()
++                newtext = __RGX.sub(r"\1\2", newtext)
++                node.parent.replace(node, docutils.nodes.Text(newtext))
++
++
++def strip_spaces_around_uchars_paragraph_children(para_list):
++    # non-ascii [\s]* <End-of-TEXT>
++    __RGX1 = re.compile(r'([^!-~])[\s]*$')
++    # <Beginning-of-TEXT> [\s]* non-ascii
++    __RGX2 = re.compile(r'^[\s]*([^!-~])')
++    # modify texts over 2 nodes
++    # (paragraph node can have childre of Inline (reference, etc) nodes)
++    for para in para_list:
++        prev_textnode = docutils.nodes.Text("")
++        for node in para.traverse():
++            new_textnode = None
++            if isinstance(node, docutils.nodes.Text):
++                prevtext = prev_textnode.astext()
++                newtext = node.astext()
++                if __RGX1.search(prevtext) and __RGX2.search(newtext):
++                    new_prev_textnode = docutils.nodes.Text(
++                        prev_textnode.astext().rstrip())
++                    new_textnode = Text(newtext.lstrip())
++                    prev_textnode.parent.replace(prev_textnode,
++                                                 new_prev_textnode)
++                    node.parent.replace(node, new_textnode)
++                    new_prev_textnode.parent = prev_textnode.parent
++                    new_textnode.parent = node.parent
++                prev_textnode = new_textnode if new_textnode else node
+ 
+ 
+ def rst2html(source, source_path=None, source_class=docutils.io.StringInput,
+@@ -240,15 +342,44 @@ def rst2html(source, source_path=None, source_class=docutils.io.StringInput,
+         reader.l_settings = {'logger': logger, 'source': source_path,
+                              'add_ln': l_add_ln}
+ 
+-    pub = docutils.core.Publisher(reader, parser, writer, settings=settings,
+-                                  source_class=source_class,
+-                                  destination_class=docutils.io.StringOutput)
+-    pub.set_components(None, parser_name, writer_name)
++    pub = docutils.core.Publisher(
++        reader=reader, parser=parser,
++        writer=None, settings=settings,
++        source_class=source_class,
++        destination_class=docutils.io.NullOutput)
++    pub.set_components(None, parser_name, 'null')
+     pub.process_programmatic_settings(
+         settings_spec, settings_overrides, config_section)
+     pub.set_source(source, None)
+     pub.settings._nikola_source_path = source_path
++    output = pub.publish(enable_exit_status=enable_exit_status)
++
++    dtree = pub.document
++    para_list = get_para_list(dtree)
++    strip_spaces_between_uchars(para_list)
++    strip_spaces_around_uchars_paragraph_children(para_list)
++
++    reader = docutils.readers.doctree.Reader(parser_name='null')
++    pub = docutils.core.Publisher(reader, None, writer, settings=settings,
++                                  source=docutils.io.DocTreeInput(dtree),
++                                  destination_class=docutils.io.StringOutput)
++    if not writer and writer_name:
++        pub.set_writer(writer_name)
++    pub.set_components(None, 'null', writer_name)
++    pub.process_programmatic_settings(
++        settings_spec, settings_overrides, config_section)
+     pub.set_destination(None, destination_path)
+     pub.publish(enable_exit_status=enable_exit_status)
+ 
++    #pub = docutils.core.Publisher(reader, parser, writer, settings=settings,
++    #                              source_class=source_class,
++    #                              destination_class=docutils.io.StringOutput)
++    #pub.set_components(None, parser_name, writer_name)
++    #pub.process_programmatic_settings(
++    #    settings_spec, settings_overrides, config_section)
++    #pub.set_source(source, None)
++    #pub.settings._nikola_source_path = source_path
++    #pub.set_destination(None, destination_path)
++    #pub.publish(enable_exit_status=enable_exit_status)
++
+     return pub.writer.parts['docinfo'] + pub.writer.parts['fragment'], pub.document.reporter.max_level, pub.settings.record_dependencies
