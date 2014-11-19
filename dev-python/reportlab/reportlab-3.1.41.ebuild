@@ -10,7 +10,7 @@ inherit distutils-r1 flag-o-matic prefix
 
 DESCRIPTION="Tools for generating printable PDF documents from any data source."
 HOMEPAGE="http://www.reportlab.com/"
-SRC_URI="mirror://pypi/${P:0:1}/${PN}/${P}.tar.gz
+SRC_URI="mirror://pypi/${P:0:1}/${PN}/${PN}-3.1.8.tar.gz
 	http://www.reportlab.com/ftp/fonts/pfbfer-20070710.zip"
 
 LICENSE="BSD"
@@ -29,12 +29,15 @@ DEPEND="${RDEPEND}
 DISTUTILS_NO_PARALLEL_BUILD=1
 
 src_unpack() {
-	unpack ${P}.tar.gz
+	unpack ${PN}-3.1.8.tar.gz
+	mv ${PN}-3.1.8 ${P}
 	cd ${P}/src/reportlab/fonts || die
 	unpack pfbfer-20070710.zip
 }
 
 python_prepare_all() {
+	epatch "${FILESDIR}/3.1.41.patch"
+
 	sed -i \
 		-e "s|/usr/lib/X11/fonts/TrueType/|${EPREFIX}/usr/share/fonts/ttf-bitstream-vera/|" \
 		-e 's|/usr/local/Acrobat|/opt/Acrobat|g' \

@@ -1,6 +1,21 @@
-diff -r f32cd7c4645a README.txt
---- a/README.txt	Tue Apr 22 12:43:10 2014 +0100
-+++ b/README.txt	Tue Aug 12 20:56:40 2014 +0900
+diff -uNr reportlab-3.1.8/PKG-INFO reportlab-3.1.41/PKG-INFO
+--- reportlab-3.1.8/PKG-INFO	2014-04-22 21:34:11.000000000 +0900
++++ reportlab-3.1.41/PKG-INFO	1970-01-01 09:00:00.000000000 +0900
+@@ -1,11 +0,0 @@
+-
+-Metadata-Version: 1.0
+-Name: reportlab
+-Version: 3.1.8
+-Summary: The ReportLab Toolkit
+-Home-page: http://www.reportlab.com/
+-Author: Andy Robinson, Robin Becker, the ReportLab team and the community
+-Author-email: reportlab-users@lists2.reportlab.com
+-License: BSD license (see license.txt for details), Copyright (c) 2000-2010, ReportLab Inc.
+-Description: The ReportLab Toolkit. An Open Source Python library for generating PDFs and graphics.
+-Platform: UNKNOWN
+diff -uNr reportlab-3.1.8/README.txt reportlab-3.1.41/README.txt
+--- reportlab-3.1.8/README.txt	2014-03-27 05:17:14.000000000 +0900
++++ reportlab-3.1.41/README.txt	2014-08-12 20:28:18.695110803 +0900
 @@ -54,31 +54,25 @@
  
  2.1 General prerequisites
@@ -19,10 +34,10 @@ diff -r f32cd7c4645a README.txt
 -    
 -Daily and release builds are available from ReportLab's
 -open download area::
+-
+-    http://www.reportlab.org/ftp/
 +    https://www.reportlab.com/pypi/
  
--    http://www.reportlab.org/ftp/
--
 -Daily builds will unzip/untar to produce a dated directory e.g. 
 -``reportlab-YYYYMMDD/`` but are otherwise structured just like the Mercurial
 -repository and release builds.
@@ -78,9 +93,9 @@ diff -r f32cd7c4645a README.txt
  is needed to include images other than JPG inside PDF files.
  
  The C extension are optional but anyone able to do so should
-diff -r f32cd7c4645a setup.py
---- a/setup.py	Tue Apr 22 12:43:10 2014 +0100
-+++ b/setup.py	Tue Aug 12 20:56:40 2014 +0900
+diff -uNr reportlab-3.1.8/setup.py reportlab-3.1.41/setup.py
+--- reportlab-3.1.8/setup.py	2014-04-03 18:38:20.000000000 +0900
++++ reportlab-3.1.41/setup.py	2014-08-12 20:28:18.696110802 +0900
 @@ -522,7 +522,7 @@
              ext_modules =   EXT_MODULES,
              
@@ -90,9 +105,9 @@ diff -r f32cd7c4645a setup.py
              )
          print()
          print('########## SUMMARY INFO #########')
-diff -r f32cd7c4645a src/reportlab/__init__.py
---- a/src/reportlab/__init__.py	Tue Apr 22 12:43:10 2014 +0100
-+++ b/src/reportlab/__init__.py	Tue Aug 12 20:56:40 2014 +0900
+diff -uNr reportlab-3.1.8/src/reportlab/__init__.py reportlab-3.1.41/src/reportlab/__init__.py
+--- reportlab-3.1.8/src/reportlab/__init__.py	2014-04-22 21:33:42.000000000 +0900
++++ reportlab-3.1.41/src/reportlab/__init__.py	2014-08-12 20:28:18.697110801 +0900
 @@ -3,7 +3,7 @@
  #history http://www.reportlab.co.uk/cgi-bin/viewcvs.cgi/public/reportlab/trunk/reportlab/__init__.py
  __version__=''' $Id$ '''
@@ -102,9 +117,9 @@ diff -r f32cd7c4645a src/reportlab/__init__.py
  
  import sys, os, imp
  
-diff -r f32cd7c4645a src/reportlab/graphics/barcode/qr.py
---- a/src/reportlab/graphics/barcode/qr.py	Tue Apr 22 12:43:10 2014 +0100
-+++ b/src/reportlab/graphics/barcode/qr.py	Tue Aug 12 20:56:40 2014 +0900
+diff -uNr reportlab-3.1.8/src/reportlab/graphics/barcode/qr.py reportlab-3.1.41/src/reportlab/graphics/barcode/qr.py
+--- reportlab-3.1.8/src/reportlab/graphics/barcode/qr.py	2014-03-27 05:17:14.000000000 +0900
++++ reportlab-3.1.41/src/reportlab/graphics/barcode/qr.py	2014-08-12 20:28:18.716110786 +0900
 @@ -1,60 +1,94 @@
 -# QRCode for Python
  #
@@ -121,11 +136,11 @@ diff -r f32cd7c4645a src/reportlab/graphics/barcode/qr.py
  # URL: http://www.d-project.com/
 +# http://d-project.googlecode.com/svn/trunk/misc/qrcode/js/qrcode.js
 +# qrcode.js is copyright (c) 2009 Kazuhiko Arase
++#
++# Original ReportLab module by German M. Bravo
  #
 -# Licensed under the MIT license:
 -#   http://www.opensource.org/licenses/mit-license.php
-+# Original ReportLab module by German M. Bravo
-+#
 +# modified and improved by Anders Hammarquist <iko@openend.se>
 +# and used with permission under the ReportLab License
  #
@@ -249,7 +264,7 @@ diff -r f32cd7c4645a src/reportlab/graphics/barcode/qr.py
 -    def wrap(self,aW,aH):
 -        return self.width,self.height
 +        ec_level = getattr(qrencoder.QRErrorCorrectLevel, self.barLevel)
- 
++
 +        self.__dict__['qr'] = qrencoder.QRCode(self.qrVersion, ec_level)
 +
 +        if isUnicode(self.value):
@@ -257,7 +272,7 @@ diff -r f32cd7c4645a src/reportlab/graphics/barcode/qr.py
 +        elif self.value:
 +            for v in self.value:
 +                self.addData(v)
-+
+ 
 +    def addData(self, value):
 +        self.qr.addData(value)
  
@@ -281,20 +296,14 @@ diff -r f32cd7c4645a src/reportlab/graphics/barcode/qr.py
 -        barStrokeWidth = self.barStrokeWidth
 -        barStrokeColor = self.barStrokeColor
 -        barBorder = self.barBorder
-+        g.add(SRect(x, y, width, height, fillColor=None))
- 
+-
 -        correctLevel = {
 -            'L': QRErrorCorrectLevel.L,
 -            'M': QRErrorCorrectLevel.M,
 -            'Q': QRErrorCorrectLevel.Q,
 -            'H': QRErrorCorrectLevel.H,
 -        }[self.barLevel]
-+        moduleCount = self.qr.getModuleCount()
-+        minwh = float(min(width, height))
-+        boxsize = minwh / (moduleCount + border * 2.0)
-+        offsetX = (width - minwh) / 2.0
-+        offsetY = (minwh - height) / 2.0
- 
+-
 -        qr = QRCode(None, correctLevel)
 -
 -        qr.addData(self.value)
@@ -312,6 +321,14 @@ diff -r f32cd7c4645a src/reportlab/graphics/barcode/qr.py
 -                    y = (r + barBorder+1) * boxsize
 -                    qrect = Rect(offsetX+x,offsetY+barHeight-y,boxsize,boxsize,fillColor=barFillColor,strokeWidth=barStrokeWidth,strokeColor=barStrokeColor)
 -                    gAdd(qrect)
++        g.add(SRect(x, y, width, height, fillColor=None))
++
++        moduleCount = self.qr.getModuleCount()
++        minwh = float(min(width, height))
++        boxsize = minwh / (moduleCount + border * 2.0)
++        offsetX = (width - minwh) / 2.0
++        offsetY = (minwh - height) / 2.0
++
 +        for r, row in enumerate(self.qr.modules):
 +            row = map(bool, row)
 +            c = 0
@@ -332,7 +349,7 @@ diff -r f32cd7c4645a src/reportlab/graphics/barcode/qr.py
 -    MODE_ALPHA_NUM = 1 << 1
 -    MODE_8BIT_BYTE = 1 << 2
 -    MODE_KANJI = 1 << 3
- 
+-
 -class QR:
 -    def __init__(self, data):
 -        if self.valid:
@@ -341,23 +358,13 @@ diff -r f32cd7c4645a src/reportlab/graphics/barcode/qr.py
 -        else:
 -            self.valid = ''.join(chr(c) for c in xrange(256))
 -        self.data = data
-+# Flowable version
- 
+-
 -    def getLength(self):
 -        return len(self.data)
-+class QrCode(Flowable):
-+    height = 32*mm
-+    width = 32*mm
-+    qrBorder = 4
-+    qrLevel = 'L'
-+    qrVersion = None
-+    value = None
- 
+-
 -    def __repr__(self):
 -        return self.data
-+    def __init__(self, value=None, **kw):
-+        self.value = isUnicodeOrQRList.normalize(value)
- 
+-
 -    def write(self, buffer):
 -        for g in zip_longest(*[iter(self.data)] * self.group):
 -            bits = 0
@@ -368,48 +375,35 @@ diff -r f32cd7c4645a src/reportlab/graphics/barcode/qr.py
 -                    n += self.valid.index(g[i])
 -                    bits += self.bits[i]
 -            buffer.put(n, bits)
-+        for k, v in kw.items():
-+            setattr(self, k, v)
- 
+-
 -class QRNumber(QR):
 -    valid = '0123456789'
 -    bits = (4,3,3)
 -    group = 3
 -    mode = QRMode.MODE_NUMBER
-+        ec_level = getattr(qrencoder.QRErrorCorrectLevel, self.qrLevel)
- 
+-
 -class QRAlphaNum(QR):
 -    valid = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:'
 -    bits = (6,5)
 -    group = 2
 -    mode = QRMode.MODE_ALPHA_NUM
-+        self.qr = qrencoder.QRCode(self.qrVersion, ec_level)
- 
+-
 -class QR8bitByte(QR):
 -    valid = None #''.join(chr(c) for c in xrange(256))
 -    bits = (8,)
 -    group = 1
 -    mode = QRMode.MODE_8BIT_BYTE
-+        if isUnicode(self.value):
-+            self.addData(self.value)
-+        elif self.value:
-+            for v in self.value:
-+                self.addData(v)
- 
+-
 -    def write(self, buffer):
 -        for c in self.data:
 -            buffer.put(ord(c), 8)
-+    def addData(self, value):
-+        self.qr.addData(value)
- 
+-
 -class QRKanji(QR):
 -    valid = None
 -    bits = (8,)
 -    group = 1
 -    mode = QRMode.MODE_KANJI
-+    def draw(self):
-+        self.qr.make()
- 
+-
 -class QRCode:
 -    def __init__(self, typeNumber, errorCorrectLevel):
 -        self.typeNumber = typeNumber
@@ -418,11 +412,7 @@ diff -r f32cd7c4645a src/reportlab/graphics/barcode/qr.py
 -        self.moduleCount = 0
 -        self.dataCache = None
 -        self.dataList = []
-+        moduleCount = self.qr.getModuleCount()
-+        border = self.qrBorder
-+        xsize = self.width / (moduleCount + border * 2.0)
-+        ysize = self.height / (moduleCount + border * 2.0)
- 
+-
 -    def addData(self, data):
 -        try :
 -            newData = QRNumber(data)
@@ -439,18 +429,7 @@ diff -r f32cd7c4645a src/reportlab/graphics/barcode/qr.py
 -                        raise
 -        self.dataList.append(newData)
 -        self.dataCache = None
-+        for r, row in enumerate(self.qr.modules):
-+            row = map(bool, row)
-+            c = 0
-+            for t, tt in itertools.groupby(row):
-+                isDark = t
-+                count = len(list(tt))
-+                if isDark:
-+                    x = (c + border) * xsize
-+                    y = self.height - (r + border + 1) * ysize
-+                    self.rect(x, y, count * xsize, ysize * 1.05)
-+                c += count
- 
+-
 -    def isDark(self, row, col):
 -        if (row < 0 or self.moduleCount <= row or col < 0 or self.moduleCount <= col):
 -            raise Exception("%s,%s - %s" % (row, col, self.moduleCount))
@@ -1248,11 +1227,61 @@ diff -r f32cd7c4645a src/reportlab/graphics/barcode/qr.py
 -        if bit:
 -            self.buffer[bufIndex] |= (0x80 >> (self.length % 8) )
 -        self.length += 1
++
++# Flowable version
++
++class QrCode(Flowable):
++    height = 32*mm
++    width = 32*mm
++    qrBorder = 4
++    qrLevel = 'L'
++    qrVersion = None
++    value = None
++
++    def __init__(self, value=None, **kw):
++        self.value = isUnicodeOrQRList.normalize(value)
++
++        for k, v in kw.items():
++            setattr(self, k, v)
++
++        ec_level = getattr(qrencoder.QRErrorCorrectLevel, self.qrLevel)
++
++        self.qr = qrencoder.QRCode(self.qrVersion, ec_level)
++
++        if isUnicode(self.value):
++            self.addData(self.value)
++        elif self.value:
++            for v in self.value:
++                self.addData(v)
++
++    def addData(self, value):
++        self.qr.addData(value)
++
++    def draw(self):
++        self.qr.make()
++
++        moduleCount = self.qr.getModuleCount()
++        border = self.qrBorder
++        xsize = self.width / (moduleCount + border * 2.0)
++        ysize = self.height / (moduleCount + border * 2.0)
++
++        for r, row in enumerate(self.qr.modules):
++            row = map(bool, row)
++            c = 0
++            for t, tt in itertools.groupby(row):
++                isDark = t
++                count = len(list(tt))
++                if isDark:
++                    x = (c + border) * xsize
++                    y = self.height - (r + border + 1) * ysize
++                    self.rect(x, y, count * xsize, ysize * 1.05)
++                c += count
++
 +    def rect(self, x, y, w, h):
 +        self.canv.rect(x, y, w, h, stroke=0, fill=1)
-diff -r f32cd7c4645a src/reportlab/graphics/barcode/qrencoder.py
---- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/src/reportlab/graphics/barcode/qrencoder.py	Tue Aug 12 20:56:40 2014 +0900
+diff -uNr reportlab-3.1.8/src/reportlab/graphics/barcode/qrencoder.py reportlab-3.1.41/src/reportlab/graphics/barcode/qrencoder.py
+--- reportlab-3.1.8/src/reportlab/graphics/barcode/qrencoder.py	1970-01-01 09:00:00.000000000 +0900
++++ reportlab-3.1.41/src/reportlab/graphics/barcode/qrencoder.py	2014-08-12 20:28:18.717110785 +0900
 @@ -0,0 +1,1130 @@
 +# QRCode for Python
 +#
@@ -2384,9 +2413,9 @@ diff -r f32cd7c4645a src/reportlab/graphics/barcode/qrencoder.py
 +        if bit:
 +            self.buffer[bufIndex] |= (0x80 >> (self.length % 8) )
 +        self.length += 1
-diff -r f32cd7c4645a src/reportlab/graphics/barcode/usps4s.py
---- a/src/reportlab/graphics/barcode/usps4s.py	Tue Apr 22 12:43:10 2014 +0100
-+++ b/src/reportlab/graphics/barcode/usps4s.py	Tue Aug 12 20:56:40 2014 +0900
+diff -uNr reportlab-3.1.8/src/reportlab/graphics/barcode/usps4s.py reportlab-3.1.41/src/reportlab/graphics/barcode/usps4s.py
+--- reportlab-3.1.8/src/reportlab/graphics/barcode/usps4s.py	2014-03-27 05:17:14.000000000 +0900
++++ reportlab-3.1.41/src/reportlab/graphics/barcode/usps4s.py	2014-08-12 20:28:18.718110784 +0900
 @@ -53,12 +53,12 @@
  
      def tracking(self,tracking):
@@ -2402,9 +2431,9 @@ diff -r f32cd7c4645a src/reportlab/graphics/barcode/usps4s.py
      routing = property(lambda self: self._routing,routing)
  
      def widthSize(self,value):
-diff -r f32cd7c4645a src/reportlab/graphics/charts/areas.py
---- a/src/reportlab/graphics/charts/areas.py	Tue Apr 22 12:43:10 2014 +0100
-+++ b/src/reportlab/graphics/charts/areas.py	Tue Aug 12 20:56:40 2014 +0900
+diff -uNr reportlab-3.1.8/src/reportlab/graphics/charts/areas.py reportlab-3.1.41/src/reportlab/graphics/charts/areas.py
+--- reportlab-3.1.8/src/reportlab/graphics/charts/areas.py	2013-03-14 20:30:08.000000000 +0900
++++ reportlab-3.1.41/src/reportlab/graphics/charts/areas.py	2014-08-12 20:28:18.719110784 +0900
 @@ -9,6 +9,7 @@
  from reportlab.graphics.widgetbase import Widget
  from reportlab.graphics.shapes import Rect, Group, Line, Polygon
@@ -2413,9 +2442,9 @@ diff -r f32cd7c4645a src/reportlab/graphics/charts/areas.py
  
  class PlotArea(Widget):
      "Abstract base class representing a chart's plot area, pretty unusable by itself."
-diff -r f32cd7c4645a src/reportlab/graphics/charts/utils.py
---- a/src/reportlab/graphics/charts/utils.py	Tue Apr 22 12:43:10 2014 +0100
-+++ b/src/reportlab/graphics/charts/utils.py	Tue Aug 12 20:56:40 2014 +0900
+diff -uNr reportlab-3.1.8/src/reportlab/graphics/charts/utils.py reportlab-3.1.41/src/reportlab/graphics/charts/utils.py
+--- reportlab-3.1.8/src/reportlab/graphics/charts/utils.py	2014-03-27 05:17:14.000000000 +0900
++++ reportlab-3.1.41/src/reportlab/graphics/charts/utils.py	2014-08-12 20:28:18.726110778 +0900
 @@ -7,7 +7,7 @@
  from time import mktime, gmtime, strftime
  from math import log10, pi, floor, sin, cos, sqrt, hypot
@@ -2425,9 +2454,9 @@ diff -r f32cd7c4645a src/reportlab/graphics/charts/utils.py
  from reportlab.lib.utils import flatten
  from reportlab.pdfbase.pdfmetrics import stringWidth
  
-diff -r f32cd7c4645a src/reportlab/graphics/renderPM.py
---- a/src/reportlab/graphics/renderPM.py	Tue Apr 22 12:43:10 2014 +0100
-+++ b/src/reportlab/graphics/renderPM.py	Tue Aug 12 20:56:40 2014 +0900
+diff -uNr reportlab-3.1.8/src/reportlab/graphics/renderPM.py reportlab-3.1.41/src/reportlab/graphics/renderPM.py
+--- reportlab-3.1.8/src/reportlab/graphics/renderPM.py	2014-04-04 22:45:37.000000000 +0900
++++ reportlab-3.1.41/src/reportlab/graphics/renderPM.py	2014-08-12 20:28:18.727110778 +0900
 @@ -137,7 +137,7 @@
          if dstH is None: dstH = srcH
          self._canvas._aapixbuf(
@@ -2446,9 +2475,9 @@ diff -r f32cd7c4645a src/reportlab/graphics/renderPM.py
      if not hasattr(fn,'write'):
          open(os.path.splitext(fn)[0]+'.'+fmt.lower(),'wb').write(s)
          if os.name=='mac':
-diff -r f32cd7c4645a src/reportlab/graphics/renderPS.py
---- a/src/reportlab/graphics/renderPS.py	Tue Apr 22 12:43:10 2014 +0100
-+++ b/src/reportlab/graphics/renderPS.py	Tue Aug 12 20:56:40 2014 +0900
+diff -uNr reportlab-3.1.8/src/reportlab/graphics/renderPS.py reportlab-3.1.41/src/reportlab/graphics/renderPS.py
+--- reportlab-3.1.8/src/reportlab/graphics/renderPS.py	2014-03-27 05:17:14.000000000 +0900
++++ reportlab-3.1.41/src/reportlab/graphics/renderPS.py	2014-08-12 20:28:18.728110777 +0900
 @@ -585,7 +585,7 @@
          # data source output--now we just need to deliver a hex encode
          # series of lines of the right overall size can follow
@@ -2467,9 +2496,9 @@ diff -r f32cd7c4645a src/reportlab/graphics/renderPS.py
          hex_encoded = self._AsciiHexEncode(rawimage)
  
          # write in blocks of 78 chars per line
-diff -r f32cd7c4645a src/reportlab/graphics/shapes.py
---- a/src/reportlab/graphics/shapes.py	Tue Apr 22 12:43:10 2014 +0100
-+++ b/src/reportlab/graphics/shapes.py	Tue Aug 12 20:56:40 2014 +0900
+diff -uNr reportlab-3.1.8/src/reportlab/graphics/shapes.py reportlab-3.1.41/src/reportlab/graphics/shapes.py
+--- reportlab-3.1.8/src/reportlab/graphics/shapes.py	2014-03-27 05:17:14.000000000 +0900
++++ reportlab-3.1.41/src/reportlab/graphics/shapes.py	2014-08-12 20:28:18.700110800 +0900
 @@ -120,7 +120,9 @@
      return (A[0]*v[0]+A[2]*v[1]+A[4],A[1]*v[0]+A[3]*v[1]+A[5])
  
@@ -2495,9 +2524,9 @@ diff -r f32cd7c4645a src/reportlab/graphics/shapes.py
      _attrMap.update(_xtraAttrMap)
  
      def __init__(self, width=400, height=200, *nodes, **keywords):
-diff -r f32cd7c4645a src/reportlab/lib/fonts.py
---- a/src/reportlab/lib/fonts.py	Tue Apr 22 12:43:10 2014 +0100
-+++ b/src/reportlab/lib/fonts.py	Tue Aug 12 20:56:40 2014 +0900
+diff -uNr reportlab-3.1.8/src/reportlab/lib/fonts.py reportlab-3.1.41/src/reportlab/lib/fonts.py
+--- reportlab-3.1.8/src/reportlab/lib/fonts.py	2014-03-27 05:17:14.000000000 +0900
++++ reportlab-3.1.41/src/reportlab/lib/fonts.py	2014-08-12 20:28:18.711110790 +0900
 @@ -63,9 +63,13 @@
              }
  
@@ -2515,9 +2544,9 @@ diff -r f32cd7c4645a src/reportlab/lib/fonts.py
  
  def ps2tt(psfn):
      'ps fontname to family name, bold, italic'
-diff -r f32cd7c4645a src/reportlab/lib/pdfencrypt.py
---- a/src/reportlab/lib/pdfencrypt.py	Tue Apr 22 12:43:10 2014 +0100
-+++ b/src/reportlab/lib/pdfencrypt.py	Tue Aug 12 20:56:40 2014 +0900
+diff -uNr reportlab-3.1.8/src/reportlab/lib/pdfencrypt.py reportlab-3.1.41/src/reportlab/lib/pdfencrypt.py
+--- reportlab-3.1.8/src/reportlab/lib/pdfencrypt.py	2014-03-27 05:17:14.000000000 +0900
++++ reportlab-3.1.41/src/reportlab/lib/pdfencrypt.py	2014-08-12 20:28:18.714110788 +0900
 @@ -384,7 +384,7 @@
          from rlextra.pageCatcher.pageCatcher import storeFormsInMemory, restoreFormsInMemory
      except ImportError:
@@ -2551,9 +2580,9 @@ diff -r f32cd7c4645a src/reportlab/lib/pdfencrypt.py
      else:
          print(usage)
  
-diff -r f32cd7c4645a src/reportlab/lib/rl_accel.py
---- a/src/reportlab/lib/rl_accel.py	Tue Apr 22 12:43:10 2014 +0100
-+++ b/src/reportlab/lib/rl_accel.py	Tue Aug 12 20:56:40 2014 +0900
+diff -uNr reportlab-3.1.8/src/reportlab/lib/rl_accel.py reportlab-3.1.41/src/reportlab/lib/rl_accel.py
+--- reportlab-3.1.8/src/reportlab/lib/rl_accel.py	2014-04-03 18:38:20.000000000 +0900
++++ reportlab-3.1.41/src/reportlab/lib/rl_accel.py	2014-08-12 20:28:18.715110787 +0900
 @@ -16,9 +16,9 @@
          add32
          hex32
@@ -2567,9 +2596,9 @@ diff -r f32cd7c4645a src/reportlab/lib/rl_accel.py
  
  for fn in __all__:
      try:
-diff -r f32cd7c4645a src/reportlab/lib/styles.py
---- a/src/reportlab/lib/styles.py	Tue Apr 22 12:43:10 2014 +0100
-+++ b/src/reportlab/lib/styles.py	Tue Aug 12 20:56:40 2014 +0900
+diff -uNr reportlab-3.1.8/src/reportlab/lib/styles.py reportlab-3.1.41/src/reportlab/lib/styles.py
+--- reportlab-3.1.8/src/reportlab/lib/styles.py	2014-03-27 05:17:15.000000000 +0900
++++ reportlab-3.1.41/src/reportlab/lib/styles.py	2014-08-12 20:28:18.718110784 +0900
 @@ -112,7 +112,10 @@
          #'bulletColor':black,
          'textColor': black,
@@ -2582,9 +2611,9 @@ diff -r f32cd7c4645a src/reportlab/lib/styles.py
          'borderWidth': 0,
          'borderPadding': 0,
          'borderColor': None,
-diff -r f32cd7c4645a src/reportlab/lib/testutils.py
---- a/src/reportlab/lib/testutils.py	Tue Apr 22 12:43:10 2014 +0100
-+++ b/src/reportlab/lib/testutils.py	Tue Aug 12 20:56:40 2014 +0900
+diff -uNr reportlab-3.1.8/src/reportlab/lib/testutils.py reportlab-3.1.41/src/reportlab/lib/testutils.py
+--- reportlab-3.1.8/src/reportlab/lib/testutils.py	2014-03-27 05:17:15.000000000 +0900
++++ reportlab-3.1.41/src/reportlab/lib/testutils.py	2014-08-12 20:28:18.718110784 +0900
 @@ -1,8 +1,8 @@
  #Copyright ReportLab Europe Ltd. 2000-2013
  #see license.txt for license details
@@ -2597,9 +2626,9 @@ diff -r f32cd7c4645a src/reportlab/lib/testutils.py
  __version__='''$Id$'''
  __doc__="""Provides support for the test suite.
  
-diff -r f32cd7c4645a src/reportlab/lib/utils.py
---- a/src/reportlab/lib/utils.py	Tue Apr 22 12:43:10 2014 +0100
-+++ b/src/reportlab/lib/utils.py	Tue Aug 12 20:56:40 2014 +0900
+diff -uNr reportlab-3.1.8/src/reportlab/lib/utils.py reportlab-3.1.41/src/reportlab/lib/utils.py
+--- reportlab-3.1.8/src/reportlab/lib/utils.py	2014-04-17 21:09:19.000000000 +0900
++++ reportlab-3.1.41/src/reportlab/lib/utils.py	2014-08-12 20:28:18.720110783 +0900
 @@ -608,27 +608,67 @@
          if 'b' not in mode and os.linesep!='\n': s = s.replace(os.linesep,'\n')
          return getBytesIO(s)
@@ -2697,9 +2726,9 @@ diff -r f32cd7c4645a src/reportlab/lib/utils.py
              return self._data
          except:
              annotateException('\nidentity=%s'%self.identity())
-diff -r f32cd7c4645a src/reportlab/pdfbase/cidfonts.py
---- a/src/reportlab/pdfbase/cidfonts.py	Tue Apr 22 12:43:10 2014 +0100
-+++ b/src/reportlab/pdfbase/cidfonts.py	Tue Aug 12 20:56:40 2014 +0900
+diff -uNr reportlab-3.1.8/src/reportlab/pdfbase/cidfonts.py reportlab-3.1.41/src/reportlab/pdfbase/cidfonts.py
+--- reportlab-3.1.8/src/reportlab/pdfbase/cidfonts.py	2014-03-27 05:17:15.000000000 +0900
++++ reportlab-3.1.41/src/reportlab/pdfbase/cidfonts.py	2014-08-12 20:28:18.703110796 +0900
 @@ -449,7 +449,7 @@
      import os
      files = os.listdir(cmapdir)
@@ -2709,9 +2738,9 @@ diff -r f32cd7c4645a src/reportlab/pdfbase/cidfonts.py
              continue
          try:
              enc = CIDEncoding(file)
-diff -r f32cd7c4645a src/reportlab/pdfbase/pdfdoc.py
---- a/src/reportlab/pdfbase/pdfdoc.py	Tue Apr 22 12:43:10 2014 +0100
-+++ b/src/reportlab/pdfbase/pdfdoc.py	Tue Aug 12 20:56:40 2014 +0900
+diff -uNr reportlab-3.1.8/src/reportlab/pdfbase/pdfdoc.py reportlab-3.1.41/src/reportlab/pdfbase/pdfdoc.py
+--- reportlab-3.1.8/src/reportlab/pdfbase/pdfdoc.py	2014-03-27 05:17:15.000000000 +0900
++++ reportlab-3.1.41/src/reportlab/pdfbase/pdfdoc.py	2014-08-12 20:28:18.705110795 +0900
 @@ -24,6 +24,7 @@
  
  from sys import platform
@@ -2747,9 +2776,9 @@ diff -r f32cd7c4645a src/reportlab/pdfbase/pdfdoc.py
              try:
                  [(Title, Dest)] = list(leafdict.items())
              except:
-diff -r f32cd7c4645a src/reportlab/pdfbase/ttfonts.py
---- a/src/reportlab/pdfbase/ttfonts.py	Tue Apr 22 12:43:10 2014 +0100
-+++ b/src/reportlab/pdfbase/ttfonts.py	Tue Aug 12 20:56:40 2014 +0900
+diff -uNr reportlab-3.1.8/src/reportlab/pdfbase/ttfonts.py reportlab-3.1.41/src/reportlab/pdfbase/ttfonts.py
+--- reportlab-3.1.8/src/reportlab/pdfbase/ttfonts.py	2014-03-27 05:17:15.000000000 +0900
++++ reportlab-3.1.41/src/reportlab/pdfbase/ttfonts.py	2014-08-12 20:28:18.710110791 +0900
 @@ -463,9 +463,9 @@
                      A = N.append
                      while length > 0:
@@ -2827,9 +2856,9 @@ diff -r f32cd7c4645a src/reportlab/pdfbase/ttfonts.py
          # glyf - Glyph data
          glyphData = self.get_table('glyf')
          offsets = []
-diff -r f32cd7c4645a src/reportlab/pdfgen/canvas.py
---- a/src/reportlab/pdfgen/canvas.py	Tue Apr 22 12:43:10 2014 +0100
-+++ b/src/reportlab/pdfgen/canvas.py	Tue Aug 12 20:56:40 2014 +0900
+diff -uNr reportlab-3.1.8/src/reportlab/pdfgen/canvas.py reportlab-3.1.41/src/reportlab/pdfgen/canvas.py
+--- reportlab-3.1.8/src/reportlab/pdfgen/canvas.py	2014-03-27 05:17:15.000000000 +0900
++++ reportlab-3.1.41/src/reportlab/pdfgen/canvas.py	2014-08-12 20:28:18.712110789 +0900
 @@ -272,6 +272,7 @@
          self._cropMarks = cropMarks
  
@@ -2866,9 +2895,9 @@ diff -r f32cd7c4645a src/reportlab/pdfgen/canvas.py
          self._setColorSpace(form)
          self._setExtGState(form)
          self._setXObjects(form)
-diff -r f32cd7c4645a src/reportlab/pdfgen/pdfimages.py
---- a/src/reportlab/pdfgen/pdfimages.py	Tue Apr 22 12:43:10 2014 +0100
-+++ b/src/reportlab/pdfgen/pdfimages.py	Tue Aug 12 20:56:40 2014 +0900
+diff -uNr reportlab-3.1.8/src/reportlab/pdfgen/pdfimages.py reportlab-3.1.41/src/reportlab/pdfgen/pdfimages.py
+--- reportlab-3.1.8/src/reportlab/pdfgen/pdfimages.py	2014-03-27 05:17:15.000000000 +0900
++++ reportlab-3.1.41/src/reportlab/pdfgen/pdfimages.py	2014-08-12 20:28:18.713110789 +0900
 @@ -122,8 +122,8 @@
          imagedata=['BI /W %d /H %d /BPC %d /CS /%s /F [%s/Fl] ID' % (imgwidth, imgheight, bpc, colorSpace, rl_config.useA85 and '/A85 ' or '')]
  
@@ -2880,9 +2909,9 @@ diff -r f32cd7c4645a src/reportlab/pdfgen/pdfimages.py
          assert len(raw) == rowstride*imgheight, "Wrong amount of data for image"
          data = zlib.compress(raw)    #this bit is very fast...
          if rl_config.useA85:
-diff -r f32cd7c4645a src/reportlab/pdfgen/textobject.py
---- a/src/reportlab/pdfgen/textobject.py	Tue Apr 22 12:43:10 2014 +0100
-+++ b/src/reportlab/pdfgen/textobject.py	Tue Aug 12 20:56:40 2014 +0900
+diff -uNr reportlab-3.1.8/src/reportlab/pdfgen/textobject.py reportlab-3.1.41/src/reportlab/pdfgen/textobject.py
+--- reportlab-3.1.8/src/reportlab/pdfgen/textobject.py	2014-03-27 05:17:15.000000000 +0900
++++ reportlab-3.1.41/src/reportlab/pdfgen/textobject.py	2014-08-12 20:28:18.714110788 +0900
 @@ -15,6 +15,16 @@
  from reportlab.lib.utils import isBytes, isStr, asUnicode
  from reportlab.lib.rl_accel import fp_str
@@ -2944,9 +2973,9 @@ diff -r f32cd7c4645a src/reportlab/pdfgen/textobject.py
              if trim==1:
                  lines = [s.strip() for s in lines]
          elif isinstance(stuff,(tuple,list)):
-diff -r f32cd7c4645a src/reportlab/platypus/doctemplate.py
---- a/src/reportlab/platypus/doctemplate.py	Tue Apr 22 12:43:10 2014 +0100
-+++ b/src/reportlab/platypus/doctemplate.py	Tue Aug 12 20:56:40 2014 +0900
+diff -uNr reportlab-3.1.8/src/reportlab/platypus/doctemplate.py reportlab-3.1.41/src/reportlab/platypus/doctemplate.py
+--- reportlab-3.1.8/src/reportlab/platypus/doctemplate.py	2014-03-27 05:17:15.000000000 +0900
++++ reportlab-3.1.41/src/reportlab/platypus/doctemplate.py	2014-08-12 20:28:18.716110786 +0900
 @@ -291,7 +291,7 @@
  
  def _addGeneratedContent(flowables,frame):
@@ -3017,9 +3046,9 @@ diff -r f32cd7c4645a src/reportlab/platypus/doctemplate.py
      #these are pure virtuals override in derived classes
      #NB these get called at suitable places by the base class
      #so if you derive and override the handle_xxx methods
-diff -r f32cd7c4645a src/reportlab/platypus/flowables.py
---- a/src/reportlab/platypus/flowables.py	Tue Apr 22 12:43:10 2014 +0100
-+++ b/src/reportlab/platypus/flowables.py	Tue Aug 12 20:56:40 2014 +0900
+diff -uNr reportlab-3.1.8/src/reportlab/platypus/flowables.py reportlab-3.1.41/src/reportlab/platypus/flowables.py
+--- reportlab-3.1.8/src/reportlab/platypus/flowables.py	2014-03-27 05:17:15.000000000 +0900
++++ reportlab-3.1.41/src/reportlab/platypus/flowables.py	2014-08-12 20:28:18.718110784 +0900
 @@ -30,9 +30,10 @@
  from reportlab.lib.rl_accel import fp_str
  from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT, TA_JUSTIFY
@@ -3140,9 +3169,9 @@ diff -r f32cd7c4645a src/reportlab/platypus/flowables.py
                  W, H = func(s1)
                  if H<=maxHeight+_FUZZ:
                      self.width = W-_FUZZ
-diff -r f32cd7c4645a src/reportlab/platypus/frames.py
---- a/src/reportlab/platypus/frames.py	Tue Apr 22 12:43:10 2014 +0100
-+++ b/src/reportlab/platypus/frames.py	Tue Aug 12 20:56:40 2014 +0900
+diff -uNr reportlab-3.1.8/src/reportlab/platypus/frames.py reportlab-3.1.41/src/reportlab/platypus/frames.py
+--- reportlab-3.1.8/src/reportlab/platypus/frames.py	2014-03-27 05:17:15.000000000 +0900
++++ reportlab-3.1.41/src/reportlab/platypus/frames.py	2014-08-12 20:28:18.718110784 +0900
 @@ -11,7 +11,7 @@
  logger = logging.getLogger('reportlab.platypus')
  
@@ -3168,9 +3197,9 @@ diff -r f32cd7c4645a src/reportlab/platypus/frames.py
  
  class Frame:
      '''
-diff -r f32cd7c4645a src/reportlab/platypus/para.py
---- a/src/reportlab/platypus/para.py	Tue Apr 22 12:43:10 2014 +0100
-+++ b/src/reportlab/platypus/para.py	Tue Aug 12 20:56:40 2014 +0900
+diff -uNr reportlab-3.1.8/src/reportlab/platypus/para.py reportlab-3.1.41/src/reportlab/platypus/para.py
+--- reportlab-3.1.8/src/reportlab/platypus/para.py	2014-03-27 05:17:15.000000000 +0900
++++ reportlab-3.1.41/src/reportlab/platypus/para.py	2014-08-12 20:28:18.720110783 +0900
 @@ -634,7 +634,7 @@
                     hasattr(this,'width') or hasattr(next,'width'):
                      doswap = 0
@@ -3198,9 +3227,9 @@ diff -r f32cd7c4645a src/reportlab/platypus/para.py
  
          return number * multiplier
  
-diff -r f32cd7c4645a src/reportlab/platypus/paragraph.py
---- a/src/reportlab/platypus/paragraph.py	Tue Apr 22 12:43:10 2014 +0100
-+++ b/src/reportlab/platypus/paragraph.py	Tue Aug 12 20:56:40 2014 +0900
+diff -uNr reportlab-3.1.8/src/reportlab/platypus/paragraph.py reportlab-3.1.41/src/reportlab/platypus/paragraph.py
+--- reportlab-3.1.8/src/reportlab/platypus/paragraph.py	2014-03-27 05:17:15.000000000 +0900
++++ reportlab-3.1.41/src/reportlab/platypus/paragraph.py	2014-08-12 20:28:18.722110781 +0900
 @@ -585,9 +585,16 @@
                  elif g.text[-1]!=' ': g.text += ' '
      return f
@@ -3328,9 +3357,9 @@ diff -r f32cd7c4645a src/reportlab/platypus/paragraph.py
                      f = lines[i]
                      dpl( tx, _offsets[i], f, noJustifyLast and i==lim)
                      _do_post_text(tx)
-diff -r f32cd7c4645a src/reportlab/platypus/paraparser.py
---- a/src/reportlab/platypus/paraparser.py	Tue Apr 22 12:43:10 2014 +0100
-+++ b/src/reportlab/platypus/paraparser.py	Tue Aug 12 20:56:40 2014 +0900
+diff -uNr reportlab-3.1.8/src/reportlab/platypus/paraparser.py reportlab-3.1.41/src/reportlab/platypus/paraparser.py
+--- reportlab-3.1.8/src/reportlab/platypus/paraparser.py	2014-04-22 21:33:42.000000000 +0900
++++ reportlab-3.1.41/src/reportlab/platypus/paraparser.py	2014-08-12 20:28:18.723110780 +0900
 @@ -596,52 +596,51 @@
  
      #### bold
@@ -3457,12 +3486,12 @@ diff -r f32cd7c4645a src/reportlab/platypus/paraparser.py
      def end_super( self ):
 -        self._pop(super=1)
 +        self._pop('super')
++
++    def start_sup( self, attributes ):
++        self._push('sup',super=1)
  
 -    start_sup = start_super
 -    end_sup = end_super
-+    def start_sup( self, attributes ):
-+        self._push('sup',super=1)
-+
 +    def end_sup( self ):
 +        self._pop('sup')
  
@@ -3638,9 +3667,9 @@ diff -r f32cd7c4645a src/reportlab/platypus/paraparser.py
          return self._complete_parse()
  
      def handle_starttag(self, tag, attrs):
-diff -r f32cd7c4645a src/reportlab/platypus/tableofcontents.py
---- a/src/reportlab/platypus/tableofcontents.py	Tue Apr 22 12:43:10 2014 +0100
-+++ b/src/reportlab/platypus/tableofcontents.py	Tue Aug 12 20:56:40 2014 +0900
+diff -uNr reportlab-3.1.8/src/reportlab/platypus/tableofcontents.py reportlab-3.1.41/src/reportlab/platypus/tableofcontents.py
+--- reportlab-3.1.8/src/reportlab/platypus/tableofcontents.py	2014-03-27 05:17:15.000000000 +0900
++++ reportlab-3.1.41/src/reportlab/platypus/tableofcontents.py	2014-08-12 20:28:18.724110780 +0900
 @@ -74,13 +74,12 @@
      If dot is a string, pagestr is drawn right-aligned. If the string is not empty,
      the gap is filled with it.
@@ -3763,9 +3792,9 @@ diff -r f32cd7c4645a src/reportlab/platypus/tableofcontents.py
          self._para.drawOn(canvas, x, y, _sW)
 -
 -
-diff -r f32cd7c4645a src/reportlab/platypus/xpreformatted.py
---- a/src/reportlab/platypus/xpreformatted.py	Tue Apr 22 12:43:10 2014 +0100
-+++ b/src/reportlab/platypus/xpreformatted.py	Tue Aug 12 20:56:40 2014 +0900
+diff -uNr reportlab-3.1.8/src/reportlab/platypus/xpreformatted.py reportlab-3.1.41/src/reportlab/platypus/xpreformatted.py
+--- reportlab-3.1.8/src/reportlab/platypus/xpreformatted.py	2014-03-27 05:17:15.000000000 +0900
++++ reportlab-3.1.41/src/reportlab/platypus/xpreformatted.py	2014-08-12 20:28:18.726110778 +0900
 @@ -247,6 +247,7 @@
          return fontifiedCode
  
@@ -3774,9 +3803,9 @@ diff -r f32cd7c4645a src/reportlab/platypus/xpreformatted.py
      def dumpXPreformattedLines(P):
          print('\n############dumpXPreforemattedLines(%s)' % str(P))
          lines = P.blPara.lines
-diff -r f32cd7c4645a src/reportlab/rl_config.py
---- a/src/reportlab/rl_config.py	Tue Apr 22 12:43:10 2014 +0100
-+++ b/src/reportlab/rl_config.py	Tue Aug 12 20:56:40 2014 +0900
+diff -uNr reportlab-3.1.8/src/reportlab/rl_config.py reportlab-3.1.41/src/reportlab/rl_config.py
+--- reportlab-3.1.8/src/reportlab/rl_config.py	2014-03-27 05:17:15.000000000 +0900
++++ reportlab-3.1.41/src/reportlab/rl_config.py	2014-08-12 20:28:18.727110778 +0900
 @@ -30,9 +30,14 @@
      except ImportError:
          _overrides=_DEFAULTS.copy()
@@ -3808,9 +3837,9 @@ diff -r f32cd7c4645a src/reportlab/rl_config.py
                  if rl_isdir(d): P.append(d)
              _setOpt(k,os.pathsep.join(P),lambda x:x.split(os.pathsep))
              globals()[k] = list(filter(rl_isdir,globals()[k]))
-diff -r f32cd7c4645a src/reportlab/rl_settings.py
---- a/src/reportlab/rl_settings.py	Tue Apr 22 12:43:10 2014 +0100
-+++ b/src/reportlab/rl_settings.py	Tue Aug 12 20:56:40 2014 +0900
+diff -uNr reportlab-3.1.8/src/reportlab/rl_settings.py reportlab-3.1.41/src/reportlab/rl_settings.py
+--- reportlab-3.1.8/src/reportlab/rl_settings.py	2014-03-27 05:17:15.000000000 +0900
++++ reportlab-3.1.41/src/reportlab/rl_settings.py	2014-08-12 20:28:18.727110778 +0900
 @@ -43,6 +43,8 @@
  pdfMultiLine
  pdfComments
@@ -3847,9 +3876,9 @@ diff -r f32cd7c4645a src/reportlab/rl_settings.py
                  '%(REPORTLAB_DIR)s/fonts',      #special
                  '%(REPORTLAB_DIR)s/../fonts',   #special
                  '%(REPORTLAB_DIR)s/../../fonts',#special
-diff -r f32cd7c4645a src/rl_addons/renderPM/_renderPM.c
---- a/src/rl_addons/renderPM/_renderPM.c	Tue Apr 22 12:43:10 2014 +0100
-+++ b/src/rl_addons/renderPM/_renderPM.c	Tue Aug 12 20:56:40 2014 +0900
+diff -uNr reportlab-3.1.8/src/rl_addons/renderPM/_renderPM.c reportlab-3.1.41/src/rl_addons/renderPM/_renderPM.c
+--- reportlab-3.1.8/src/rl_addons/renderPM/_renderPM.c	2014-03-27 05:17:15.000000000 +0900
++++ reportlab-3.1.41/src/rl_addons/renderPM/_renderPM.c	2014-08-12 20:28:18.728110777 +0900
 @@ -18,7 +18,7 @@
  #endif
  
@@ -3884,15 +3913,12 @@ diff -r f32cd7c4645a src/rl_addons/renderPM/_renderPM.c
  	ctm[4] = dstX;
  	ctm[5] = dstY+dstH;
  	art_affine_multiply(ctm,ctm,self->ctm);
-diff -r f32cd7c4645a tests/test-cross.tiff
-Binary file tests/test-cross.tiff has changed
-diff -r f32cd7c4645a tests/test-indexed.png
-Binary file tests/test-indexed.png has changed
-diff -r f32cd7c4645a tests/test-rgba.png
-Binary file tests/test-rgba.png has changed
-diff -r f32cd7c4645a tests/test_graphics_barcode.py
---- a/tests/test_graphics_barcode.py	Tue Apr 22 12:43:10 2014 +0100
-+++ b/tests/test_graphics_barcode.py	Tue Aug 12 20:56:40 2014 +0900
+バイナリーファイル reportlab-3.1.8/tests/test-cross.tiff とreportlab-3.1.41/tests/test-cross.tiff は異なります
+バイナリーファイル reportlab-3.1.8/tests/test-indexed.png とreportlab-3.1.41/tests/test-indexed.png は異なります
+バイナリーファイル reportlab-3.1.8/tests/test-rgba.png とreportlab-3.1.41/tests/test-rgba.png は異なります
+diff -uNr reportlab-3.1.8/tests/test_graphics_barcode.py reportlab-3.1.41/tests/test_graphics_barcode.py
+--- reportlab-3.1.8/tests/test_graphics_barcode.py	2014-03-27 05:17:15.000000000 +0900
++++ reportlab-3.1.41/tests/test_graphics_barcode.py	2014-08-12 20:28:18.704110795 +0900
 @@ -28,7 +28,8 @@
          CN = list(getCodes().items())
          for name,C in CN:
@@ -3903,9 +3929,9 @@ diff -r f32cd7c4645a tests/test_graphics_barcode.py
              D.add(i)
              D.save(formats=formats,outDir=outDir,fnRoot=name)
              a('<h2>%s</h2><img src="%s.gif"><br>' % (name, name))
-diff -r f32cd7c4645a tests/test_lib_utils.py
---- a/tests/test_lib_utils.py	Tue Apr 22 12:43:10 2014 +0100
-+++ b/tests/test_lib_utils.py	Tue Aug 12 20:56:40 2014 +0900
+diff -uNr reportlab-3.1.8/tests/test_lib_utils.py reportlab-3.1.41/tests/test_lib_utils.py
+--- reportlab-3.1.8/tests/test_lib_utils.py	2014-03-27 05:17:15.000000000 +0900
++++ reportlab-3.1.41/tests/test_lib_utils.py	2014-08-12 20:28:18.709110792 +0900
 @@ -122,6 +122,15 @@
          b = getBytesIO(_rel_open_and_read('../docs/images/Edit_Prefs.gif'))
          b = open_and_read(b)
@@ -3922,9 +3948,9 @@ diff -r f32cd7c4645a tests/test_lib_utils.py
  
      def testRecursiveImportErrors(self):
          "check we get useful error messages"
-diff -r f32cd7c4645a tests/test_paragraphs.py
---- a/tests/test_paragraphs.py	Tue Apr 22 12:43:10 2014 +0100
-+++ b/tests/test_paragraphs.py	Tue Aug 12 20:56:40 2014 +0900
+diff -uNr reportlab-3.1.8/tests/test_paragraphs.py reportlab-3.1.41/tests/test_paragraphs.py
+--- reportlab-3.1.8/tests/test_paragraphs.py	2014-03-27 05:17:15.000000000 +0900
++++ reportlab-3.1.41/tests/test_paragraphs.py	2014-08-12 20:28:18.712110789 +0900
 @@ -5,14 +5,17 @@
  from reportlab.lib.testutils import setOutDir,makeSuiteForClasses, outputfile, printLocation
  setOutDir(__name__)
@@ -3999,11 +4025,12 @@ diff -r f32cd7c4645a tests/test_paragraphs.py
                                       showBoundary=1)
          template.build(story,
              onFirstPage=myFirstPage, onLaterPages=myLaterPages)
+-
 +    
 +    if rtlSupport:
 +        def testBidi(self):
 +            fontName = getAFont()
- 
++
 +            # create styles based on the registered font
 +            stySTD = ParagraphStyle('STD', fontName = fontName)
 +            styRJ = ParagraphStyle('RJ', parent=stySTD, alignment=TA_RIGHT)
@@ -4189,9 +4216,9 @@ diff -r f32cd7c4645a tests/test_paragraphs.py
  #noruntests
  if __name__ == "__main__":
      unittest.TextTestRunner().run(makeSuite())
-diff -r f32cd7c4645a tests/test_pdfgen_general.py
---- a/tests/test_pdfgen_general.py	Tue Apr 22 12:43:10 2014 +0100
-+++ b/tests/test_pdfgen_general.py	Tue Aug 12 20:56:40 2014 +0900
+diff -uNr reportlab-3.1.8/tests/test_pdfgen_general.py reportlab-3.1.41/tests/test_pdfgen_general.py
+--- reportlab-3.1.8/tests/test_pdfgen_general.py	2014-03-27 05:17:15.000000000 +0900
++++ reportlab-3.1.41/tests/test_pdfgen_general.py	2014-08-12 20:28:18.716110786 +0900
 @@ -680,6 +680,11 @@
          gif = os.path.join(testsFolder,'pythonpowered.gif')
          c.drawInlineImage(gif,2*inch, 7*inch)
@@ -4245,9 +4272,9 @@ diff -r f32cd7c4645a tests/test_pdfgen_general.py
      def testMultipleSavesOk(self):
          c=canvas.Canvas(outputfile('test_pdfgen_savetwice.pdf'))
          c.drawString(100, 700, 'Hello. This was saved twice')
-diff -r f32cd7c4645a tests/test_platypus_general.py
---- a/tests/test_platypus_general.py	Tue Apr 22 12:43:10 2014 +0100
-+++ b/tests/test_platypus_general.py	Tue Aug 12 20:56:40 2014 +0900
+diff -uNr reportlab-3.1.8/tests/test_platypus_general.py reportlab-3.1.41/tests/test_platypus_general.py
+--- reportlab-3.1.8/tests/test_platypus_general.py	2014-03-27 05:17:15.000000000 +0900
++++ reportlab-3.1.41/tests/test_platypus_general.py	2014-08-12 20:28:18.719110784 +0900
 @@ -560,7 +560,6 @@
  
  
@@ -4273,9 +4300,9 @@ diff -r f32cd7c4645a tests/test_platypus_general.py
  def makeSuite():
      return makeSuiteForClasses(PlatypusTestCase)
  
-diff -r f32cd7c4645a tests/test_platypus_paraparser.py
---- a/tests/test_platypus_paraparser.py	Tue Apr 22 12:43:10 2014 +0100
-+++ b/tests/test_platypus_paraparser.py	Tue Aug 12 20:56:40 2014 +0900
+diff -uNr reportlab-3.1.8/tests/test_platypus_paraparser.py reportlab-3.1.41/tests/test_platypus_paraparser.py
+--- reportlab-3.1.8/tests/test_platypus_paraparser.py	2014-03-27 05:17:15.000000000 +0900
++++ reportlab-3.1.41/tests/test_platypus_paraparser.py	2014-08-12 20:28:18.702110797 +0900
 @@ -104,6 +104,16 @@
          self.assertEquals([x.text for x in fragList], ['Hello ','',' World'])
          self.assertEquals(fragList[1].lineBreak, True)

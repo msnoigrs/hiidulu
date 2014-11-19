@@ -4,12 +4,12 @@
 
 EAPI=5
 
-PYTHON_COMPAT=( python{2_6,2_7,3_1,3_2,3_3,3_4} )
+PYTHON_COMPAT=( python{2_6,2_7,3_2,3_3,3_4} )
 
 inherit distutils-r1
 
 DESCRIPTION="Natural Language Toolkit"
-SRC_URI="http://nltk.org/nltk3-alpha/nltk-3.0a4.tar.gz"
+SRC_URI="mirror://pypi/${PN::1}/${PN}/${P}.tar.gz"
 HOMEPAGE="http://nltk.org/"
 
 LICENSE="Apache-2.0"
@@ -21,5 +21,3 @@ RDEPEND="dev-python/numpy
 	dev-python/pyyaml"
 DEPEND="${RDEPEND}
 	app-arch/unzip"
-
-S="${WORKDIR}/nltk-3.0a4"
