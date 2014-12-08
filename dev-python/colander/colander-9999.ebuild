@@ -4,7 +4,7 @@
 
 EAPI=5
 
-PYTHON_COMPAT=( python{2_6,2_7,3_2,3_3,3_4} pypy2_0 )
+PYTHON_COMPAT=( python{2_6,2_7,3_2,3_3,3_4} )
 
 EGIT_REPO_URI="https://github.com/Pylons/colander.git"
 
@@ -20,14 +20,15 @@ KEYWORDS="~amd64 ~x86"
 IUSE="doc"
 
 # Depend on an ebuild of translationstring with Python 3 support.
-RDEPEND=">=dev-python/translationstring-1.1[${PYTHON_USEDEP}]"
+RDEPEND=">=dev-python/translationstring-1.1[${PYTHON_USEDEP}]
+	dev-python/iso8601[${PYTHON_USEDEP}]"
 
 DEPEND="${RDEPEND}
 	dev-python/setuptools[${PYTHON_USEDEP}]
 	doc? ( dev-python/sphinx[${PYTHON_USEDEP}] )"
 
 # Include COPYRIGHT.txt because the license seems to require it.
-DOCS=( CHANGES.txt COPYRIGHT.txt README.txt )
+DOCS=( CHANGES.rst COPYRIGHT.txt README.rst )
 
 python_prepare_all() {
 	# Remove pylons theme since it's not included in source

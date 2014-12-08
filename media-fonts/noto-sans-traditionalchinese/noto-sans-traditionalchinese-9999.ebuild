@@ -27,8 +27,8 @@ RESTRICT="strip bincheckes"
 src_unpack() {
 	git-2_src_unpack
 	rm "${FONT_S}"/NotoSans*-Windows.otf
-	rm "${FONT_S}"/NotoSansHans*
+	rm "${FONT_S}"/NotoSansSC*
 	rm "${FONT_S}"/NotoSansKR*
-	rm "${FONT_S}"/NotoSansCJK*
 	rm "${FONT_S}"/NotoSansJP*
+	rm "${FONT_S}"/NotoSansCJK*
 }

@@ -60,8 +60,6 @@ python_compile_all() {
 python_install_all() {
 	distutils-r1_python_install_all
 
-	dodoc doc/{HACKING,SUCCESS}
-
 	if use doc; then
 		dodoc doc/psycopg2.txt
 		dohtml -r doc/html/.
