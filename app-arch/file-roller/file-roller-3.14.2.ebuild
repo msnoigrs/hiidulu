@@ -1,4 +1,4 @@
-# Copyright 1999-2013 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -9,7 +9,7 @@ GNOME2_LA_PUNT="yes"
 inherit eutils gnome2 readme.gentoo
 
 DESCRIPTION="Archive manager for GNOME"
-HOMEPAGE="http://fileroller.sourceforge.net/"
+HOMEPAGE="http://fileroller.sourceforge.net/ https://wiki.gnome.org/Apps/FileRoller"
 
 LICENSE="GPL-2+ CC-BY-SA-3.0"
 SLOT="0"
@@ -23,7 +23,7 @@ RDEPEND="
 	>=app-arch/libarchive-3:=
 	>=dev-libs/glib-2.36:2
 	>=dev-libs/json-glib-0.14
-	>=x11-libs/gtk+-3.9.3:3
+	>=x11-libs/gtk+-3.13.2:3
 	>=x11-libs/libnotify-0.4.3:=
 	sys-apps/file
 	x11-libs/cairo
@@ -46,7 +46,7 @@ DEPEND="${RDEPEND}
 DISABLE_AUTOFORMATTING="yes"
 DOC_CONTENTS="
 ${PN} is a frontend for several archiving utilities. If you want a
-particular achive format support, see ${HOMEPAGE}
+particular archive format support, see ${HOMEPAGE}
 and install the relevant package. For example:
 7-zip   - app-arch/p7zip
 ace     - app-arch/unace

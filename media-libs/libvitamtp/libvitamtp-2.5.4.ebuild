@@ -1,4 +1,4 @@
-# Copyright 1999-2014 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -11,8 +11,8 @@ if [[ ${PV} == *9999* ]]; then
 	inherit git-2
 else
 	KEYWORDS="amd64 ~arm hppa ia64 ppc ppc64 x86 ~amd64-fbsd"
-	SRC_URI="https://github.com/codestation/VitaMTP/archive/v${PV}.tar.gz -> ${P}.tar.gz"
-	S="${WORKDIR}/VitaMTP-${PV}"
+	SRC_URI="https://github.com/codestation/vitamtp/archive/v${PV}.tar.gz -> ${P}.tar.gz"
+	S="${WORKDIR}/vitamtp-${PV}"
 fi
 
 DESCRIPTION="Library to interact with Vita's USB MTP protocol"

@@ -1,0 +1,95 @@
+diff --git a/src/ifo_read.c b/src/ifo_read.c
+index 807ebac..1e49a3b 100644
+--- a/src/ifo_read.c
++++ b/src/ifo_read.c
+@@ -748,6 +748,7 @@ static int ifoRead_PGC_COMMAND_TBL(ifo_handle_t *ifofile,
+ 
+     if(!(DVDReadBytes(ifofile->file, cmd_tbl->pre_cmds, pre_cmds_size))) {
+       free(cmd_tbl->pre_cmds);
++      cmd_tbl->pre_cmds = NULL;
+       return 0;
+     }
+   }
+@@ -756,14 +757,14 @@ static int ifoRead_PGC_COMMAND_TBL(ifo_handle_t *ifofile,
+     unsigned int post_cmds_size = cmd_tbl->nr_of_post * COMMAND_DATA_SIZE;
+     cmd_tbl->post_cmds = malloc(post_cmds_size);
+     if(!cmd_tbl->post_cmds) {
+-      if(cmd_tbl->pre_cmds)
+-        free(cmd_tbl->pre_cmds);
++      free(cmd_tbl->pre_cmds);
++      cmd_tbl->pre_cmds = NULL;
+       return 0;
+     }
+     if(!(DVDReadBytes(ifofile->file, cmd_tbl->post_cmds, post_cmds_size))) {
+-      if(cmd_tbl->pre_cmds)
+-        free(cmd_tbl->pre_cmds);
++      free(cmd_tbl->pre_cmds);
+       free(cmd_tbl->post_cmds);
++      cmd_tbl->pre_cmds = cmd_tbl->post_cmds = NULL;
+       return 0;
+     }
+   }
+@@ -772,18 +773,16 @@ static int ifoRead_PGC_COMMAND_TBL(ifo_handle_t *ifofile,
+     unsigned int cell_cmds_size = cmd_tbl->nr_of_cell * COMMAND_DATA_SIZE;
+     cmd_tbl->cell_cmds = malloc(cell_cmds_size);
+     if(!cmd_tbl->cell_cmds) {
+-      if(cmd_tbl->pre_cmds)
+-        free(cmd_tbl->pre_cmds);
+-      if(cmd_tbl->post_cmds)
+-        free(cmd_tbl->post_cmds);
++      free(cmd_tbl->pre_cmds);
++      free(cmd_tbl->post_cmds);
++      cmd_tbl->pre_cmds = cmd_tbl->post_cmds = NULL;
+       return 0;
+     }
+     if(!(DVDReadBytes(ifofile->file, cmd_tbl->cell_cmds, cell_cmds_size))) {
+-      if(cmd_tbl->pre_cmds)
+-        free(cmd_tbl->pre_cmds);
+-      if(cmd_tbl->post_cmds)
+-        free(cmd_tbl->post_cmds);
++      free(cmd_tbl->pre_cmds);
++      free(cmd_tbl->post_cmds);
+       free(cmd_tbl->cell_cmds);
++      cmd_tbl->pre_cmds = cmd_tbl->post_cmds = cmd_tbl->cell_cmds = NULL;
+       return 0;
+     }
+   }
+@@ -797,11 +796,11 @@ static int ifoRead_PGC_COMMAND_TBL(ifo_handle_t *ifofile,
+ 
+ static void ifoFree_PGC_COMMAND_TBL(pgc_command_tbl_t *cmd_tbl) {
+   if(cmd_tbl) {
+-    if(cmd_tbl->nr_of_pre && cmd_tbl->pre_cmds)
++    if(cmd_tbl->nr_of_pre)
+       free(cmd_tbl->pre_cmds);
+-    if(cmd_tbl->nr_of_post && cmd_tbl->post_cmds)
++    if(cmd_tbl->nr_of_post)
+       free(cmd_tbl->post_cmds);
+-    if(cmd_tbl->nr_of_cell && cmd_tbl->cell_cmds)
++    if(cmd_tbl->nr_of_cell)
+       free(cmd_tbl->cell_cmds);
+     free(cmd_tbl);
+   }
+@@ -1002,12 +1001,9 @@ int ifoRead_FP_PGC(ifo_handle_t *ifofile) {
+ static void ifoFree_PGC(pgc_t **pgc) {
+   if(pgc && *pgc && (--(*pgc)->ref_count) <= 0) {
+     ifoFree_PGC_COMMAND_TBL((*pgc)->command_tbl);
+-    if((*pgc)->program_map)
+-      free((*pgc)->program_map);
+-    if((*pgc)->cell_playback)
+-      free((*pgc)->cell_playback);
+-    if((*pgc)->cell_position)
+-      free((*pgc)->cell_position);
++    free((*pgc)->program_map);
++    free((*pgc)->cell_playback);
++    free((*pgc)->cell_position);
+     free(*pgc);
+   }
+   if (pgc) {
+@@ -1944,6 +1940,7 @@ static int ifoRead_PGCIT_internal(ifo_handle_t *ifofile, pgcit_t *pgcit,
+ fail:
+   free(pgcit->pgci_srp);
+   pgcit->pgci_srp = NULL;
++  pgcit->nr_of_pgci_srp = 0;
+   return 0;
+ }
+ 
