@@ -1,8 +1,8 @@
-# Copyright 1999-2012 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header:  $
 
-EAPI="2"
+EAPI=5
 ESVN_REPO_URI="dummy"
 #ESVN_REPO_URI="http://svn.apache.org/repos/asf/commons/proper/dbcp/trunk"
 COMMONS_POOL_VER="1.6"
