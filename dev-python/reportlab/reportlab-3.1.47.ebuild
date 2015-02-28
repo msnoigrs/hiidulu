@@ -1,4 +1,4 @@
-# Copyright 1999-2014 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -8,9 +8,9 @@ PYTHON_COMPAT=( python{2_7,3_3,3_4} )
 
 inherit distutils-r1 flag-o-matic prefix
 
-DESCRIPTION="Tools for generating printable PDF documents from any data source."
+DESCRIPTION="Tools for generating printable PDF documents from any data source"
 HOMEPAGE="http://www.reportlab.com/"
-SRC_URI="mirror://pypi/${P:0:1}/${PN}/${PN}-3.1.8.tar.gz
+SRC_URI="mirror://pypi/${P:0:1}/${PN}/${PN}-3.1.44.tar.gz
 	http://www.reportlab.com/ftp/fonts/pfbfer-20070710.zip"
 
 LICENSE="BSD"
@@ -20,26 +20,30 @@ IUSE="doc examples"
 
 RDEPEND="
 	virtual/python-imaging[${PYTHON_USEDEP}]
-	media-fonts/ttf-bitstream-vera
+	>=dev-python/pip-1.4.1[${PYTHON_USEDEP}]
+	>=dev-python/setuptools-2.2[${PYTHON_USEDEP}]
+	media-fonts/dejavu
 	media-libs/libart_lgpl
-	sys-libs/zlib"
+	sys-libs/zlib
+"
 DEPEND="${RDEPEND}
-	app-arch/unzip"
+	app-arch/unzip
+"
 
 DISTUTILS_NO_PARALLEL_BUILD=1
 
 src_unpack() {
-	unpack ${PN}-3.1.8.tar.gz
-	mv ${PN}-3.1.8 ${P}
+	unpack ${PN}-3.1.44.tar.gz
+	mv ${PN}-3.1.44 ${P}
 	cd ${P}/src/reportlab/fonts || die
 	unpack pfbfer-20070710.zip
 }
 
 python_prepare_all() {
-	epatch "${FILESDIR}/3.1.41.patch"
+	epatch "${FILESDIR}/3.1.47.patch"
 
 	sed -i \
-		-e "s|/usr/lib/X11/fonts/TrueType/|${EPREFIX}/usr/share/fonts/ttf-bitstream-vera/|" \
+		-e "s|/usr/lib/X11/fonts/TrueType/|${EPREFIX}/usr/share/fonts/dejavu/|" \
 		-e 's|/usr/local/Acrobat|/opt/Acrobat|g' \
 		-e 's|%(HOME)s/fonts|%(HOME)s/.fonts|g' \
 		src/reportlab/rl_config.py || die

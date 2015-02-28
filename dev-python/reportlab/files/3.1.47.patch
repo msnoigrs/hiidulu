@@ -1,0 +1,151 @@
+diff -r fe6f18588782 docs/userguide/ch5_paragraphs.py
+--- a/docs/userguide/ch5_paragraphs.py	Fri Dec 12 11:29:06 2014 +0000
++++ b/docs/userguide/ch5_paragraphs.py	Sun Mar 01 01:31:52 2015 +0900
+@@ -225,7 +225,7 @@
+ 
+ 
+ heading2("Intra-paragraph markup")
+-disc("""'<![CDATA[Within each paragraph, we use a basic set of XML tags
++disc("""<![CDATA[Within each paragraph, we use a basic set of XML tags
+ to provide markup.  The most basic of these are bold (<b>...</b>),
+ italic (<i>...</i>) and underline (<u>...</u>).
+ Other tags which are allowed are strong (<strong>...</strong>), and strike through (<strike>...</strike>). The <link> and <a> tags
+diff -r fe6f18588782 src/reportlab/__init__.py
+--- a/src/reportlab/__init__.py	Fri Dec 12 11:29:06 2014 +0000
++++ b/src/reportlab/__init__.py	Sun Mar 01 01:31:52 2015 +0900
+@@ -3,7 +3,7 @@
+ #history http://www.reportlab.co.uk/cgi-bin/viewcvs.cgi/public/reportlab/trunk/reportlab/__init__.py
+ __version__=''' $Id$ '''
+ __doc__="""The Reportlab PDF generation library."""
+-Version = "3.1.44"
++Version = "3.1.47"
+ 
+ import sys, os, imp
+ 
+diff -r fe6f18588782 src/reportlab/graphics/charts/lineplots.py
+--- a/src/reportlab/graphics/charts/lineplots.py	Fri Dec 12 11:29:06 2014 +0000
++++ b/src/reportlab/graphics/charts/lineplots.py	Sun Mar 01 01:31:52 2015 +0900
+@@ -33,6 +33,12 @@
+         inFill = AttrMapValue(isBoolean, desc='If true flood fill to x axis',advancedUsage=1),
+         )
+ 
++class InFillValue(int):
++    def __new__(cls,v,yValue=None):
++        self = int.__new__(cls,v)
++        self.yValue = yValue
++        return self
++
+ class Shader(_SetKeyWordArgs):
+     _attrMap = AttrMap(BASE=PlotArea,
+         vertical = AttrMapValue(isBoolean, desc='If true shade to x axis'),
+@@ -240,10 +246,10 @@
+ 
+     def makeLines(self):
+         g = Group()
++        yA = self.yValueAxis
++        xA = self.xValueAxis
+         bubblePlot = getattr(self,'_bubblePlot',None)
+         if bubblePlot:
+-            yA = self.yValueAxis
+-            xA = self.xValueAxis
+             bubbleR = min(yA._bubbleRadius,xA._bubbleRadius)
+             bubbleMax = xA._bubbleMax
+ 
+@@ -254,9 +260,13 @@
+         inFill = getattr(self,'_inFill',None)
+         styleCount = len(self.lines)
+         if inFill or [rowNo for rowNo in P if getattr(self.lines[rowNo%styleCount],'inFill',False)]:
+-            inFillY = self.xValueAxis._y
+-            inFillX0 = self.yValueAxis._x
+-            inFillX1 = inFillX0 + self.xValueAxis._length
++            inFillY = getattr(inFill,'yValue',None)
++            if inFillY is None:
++                inFillY = xA._y
++            else:
++                inFillY = yA.scale(inFillY)
++            inFillX0 = yA._x
++            inFillX1 = inFillX0 + xA._length
+             inFillG = getattr(self,'_inFillG',g)
+         lG = getattr(self,'_lineG',g)
+         # Iterate over data rows.
+diff -r fe6f18588782 src/reportlab/lib/normalDate.py
+--- a/src/reportlab/lib/normalDate.py	Fri Dec 12 11:29:06 2014 +0000
++++ b/src/reportlab/lib/normalDate.py	Sun Mar 01 01:31:52 2015 +0900
+@@ -523,7 +523,7 @@
+     if m == 1 or m == 2:
+         m = m + 12
+         y = y - 1
+-    return (d + 2*m + 3*(m+1)/5 + y + y/4 - y/100 + y/400) % 7
++    return (d + 2*m + 3*(m+1)//5 + y + y//4 - y//100 + y//400) % 7
+ 
+ def firstDayOfYear(year):
+     """number of days to the first of the year, relative to Jan 1, 1900"""
+@@ -585,13 +585,13 @@
+ 
+     def normalize(self, i):
+         i = int(i)
+-        NormalDate.normalize(self,(i/5)*7+i%5+BDEpochScalar)
++        NormalDate.normalize(self,(i//5)*7+i%5+BDEpochScalar)
+ 
+     def scalar(self):
+         d = self.asNormalDate()
+         i = d - BDEpoch     #luckily BDEpoch is a Monday so we don't have a problem
+                             #concerning the relative weekday
+-        return 5*(i/7) + i%7
++        return 5*(i//7) + i%7
+ 
+     def setNormalDate(self, normalDate):
+         NormalDate.setNormalDate(self,normalDate)
+diff -r fe6f18588782 src/reportlab/platypus/tables.py
+--- a/src/reportlab/platypus/tables.py	Fri Dec 12 11:29:06 2014 +0000
++++ b/src/reportlab/platypus/tables.py	Sun Mar 01 01:31:52 2015 +0900
+@@ -1114,10 +1114,10 @@
+         self._drawVLines((sc+1, sr), (ec, er), weight, color, count, space)
+ 
+     def _prepLine(self, weight, color):
+-        if color != self._curcolor:
++        if color and color!=self._curcolor:
+             self.canv.setStrokeColor(color)
+             self._curcolor = color
+-        if weight != self._curweight:
++        if weight and weight!=self._curweight:
+             self.canv.setLineWidth(weight)
+             self._curweight = weight
+ 
+diff -r fe6f18588782 tools/docco/rl_doc_utils.py
+--- a/tools/docco/rl_doc_utils.py	Fri Dec 12 11:29:06 2014 +0000
++++ b/tools/docco/rl_doc_utils.py	Sun Mar 01 01:31:52 2015 +0900
+@@ -28,6 +28,7 @@
+ from reportlab.lib.styles import ParagraphStyle
+ from reportlab.lib import colors
+ from reportlab.lib.sequencer import getSequencer
++from xml.sax.saxutils import escape as xmlEscape
+ 
+ from . import examples
+ 
+@@ -39,7 +40,6 @@
+ codesubst = "%s<font name=Courier>%s</font>"
+ QFsubst = "%s<font name=Courier><i>%s</i></font>"
+ 
+-
+ def quickfix(text):
+     """inside text find any subsequence of form $subsequence$.
+        Format the subsequence as code.  If similarly if text contains ^arg^
+@@ -68,8 +68,6 @@
+     return text
+ #print quickfix("$testing$ testing $one$ ^two^ $three(^four^)$")
+ 
+-
+-
+ H1 = styleSheet['Heading1']
+ H2 = styleSheet['Heading2']
+ H3 = styleSheet['Heading3']
+@@ -362,7 +360,7 @@
+                                 leading=9.6)
+         textStyle = B
+         self.text = text
+-        self.left = Paragraph('<![CDATA[' + text + ']]>', descrStyle)
++        self.left = Paragraph(xmlEscape(text), descrStyle)
+         self.right = Paragraph(text, B)
+ 
+ 
