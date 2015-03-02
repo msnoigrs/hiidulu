@@ -1,0 +1,37 @@
+--- jsch-agent-proxy.orig/jsch-agent-proxy-connector-factory/src/main/java/com/jcraft/jsch/agentproxy/ConnectorFactory.java	2015-03-03 06:17:21.847536625 +0900
++++ jsch-agent-proxy/jsch-agent-proxy-connector-factory/src/main/java/com/jcraft/jsch/agentproxy/ConnectorFactory.java	2015-03-03 06:21:01.664214567 +0900
+@@ -33,14 +33,13 @@
+ import com.jcraft.jsch.agentproxy.AgentProxyException;
+ import com.jcraft.jsch.agentproxy.USocketFactory;
+ import com.jcraft.jsch.agentproxy.connector.SSHAgentConnector;
+-import com.jcraft.jsch.agentproxy.connector.PageantConnector;
+ import com.jcraft.jsch.agentproxy.usocket.NCUSocketFactory;
+ import com.jcraft.jsch.agentproxy.usocket.JNAUSocketFactory;
+ import java.util.ArrayList;
+ 
+ public abstract class ConnectorFactory {
+ 
+-  protected String connectors = "pageant,ssh-agent";
++  protected String connectors = "ssh-agent";
+   protected String usocketFactories = "nc,jna";
+   protected String usocketPath = null;
+ 
+@@ -73,17 +72,7 @@
+ 
+     String[] _connectors = connectors.split(",");
+     for(int i = 0; i < _connectors.length; i++) {
+-      if(_connectors[i].trim().equals("pageant")) {
+-        if(PageantConnector.isConnectorAvailable()) {
+-          try {
+-            return new PageantConnector();
+-          }
+-          catch(AgentProxyException e){
+-            trials.add("pageant");
+-          }
+-        }
+-      }
+-      else if(_connectors[i].trim().equals("ssh-agent")) {
++      if(_connectors[i].trim().equals("ssh-agent")) {
+         if(!SSHAgentConnector.isConnectorAvailable(usocketPath))
+           continue;
+ 

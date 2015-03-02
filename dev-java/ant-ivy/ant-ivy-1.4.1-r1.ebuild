@@ -1,4 +1,4 @@
-# Copyright 1999-2013 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -28,11 +28,11 @@ COMMON_DEP="
 	dev-java/jakarta-oro:2.0
 	dev-java/jsch"
 DEPEND="
-	>=virtual/jdk-1.5
+	>=virtual/jdk-1.6
 	app-arch/unzip
 	test? ( dev-java/ant-junit )
 	${COMMON_DEP}"
-RDEPEND=">=virtual/jre-1.5
+RDEPEND=">=virtual/jre-1.6
 	${COMMON_DEP}"
 
 S="${WORKDIR}/${MY_P}"
