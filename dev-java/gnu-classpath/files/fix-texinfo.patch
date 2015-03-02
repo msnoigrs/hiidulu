@@ -1,0 +1,11 @@
+--- doc/cp-tools.texinfo.orig	2015-03-02 13:17:01.307397409 +0900
++++ doc/cp-tools.texinfo	2015-03-02 13:43:15.459020544 +0900
+@@ -2025,7 +2025,7 @@
+ 
+ @item Virtual Machine Options
+ @xref{Virtual Machine Options,,Options Controlling Gjdoc Behavior}.
+-@gccoptlist{-classpath}  @gccoptlist{-bootclasspath}  @gccoptlist{-J}@var{vmopt}
++@gccoptlist{-classpath  -bootclasspath  -J@var{vmopt}}
+ 
+ @end table
+ 
