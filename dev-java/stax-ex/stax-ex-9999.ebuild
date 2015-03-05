@@ -1,4 +1,4 @@
-# Copyright 1999-2012 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -21,13 +21,15 @@ IUSE=""
 
 COMMON_DEPEND="java-virtuals/jaf
 	java-virtuals/stax-api"
-RDEPEND=">=virtual/jre-1.5
+RDEPEND=">=virtual/jre-1.6
 	${COMMON_DEPEND}"
-DEPEND=">=virtual/jdk-1.5
+DEPEND=">=virtual/jdk-1.6
 	${COMMON_DEPEND}"
 
 java_prepare() {
 	find -name '*.jar' -print -delete
+
+	find -name '*Test.java' -print -delete
 
 	# build.xml is from maven-1 and tries to download jars to /root/.maven/
 	rm -f build.xml || die

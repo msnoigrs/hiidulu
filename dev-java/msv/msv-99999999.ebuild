@@ -1,8 +1,8 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI="2"
+EAPI="5"
 JAVA_PKG_IUSE="doc source"
 
 ESVN_REPO_URI="https://svn.java.net/svn/msv~svn/trunk/msv"
@@ -31,6 +31,8 @@ DEPEND=">=virtual/jdk-1.5
 
 java_prepare() {
 	cp "${FILESDIR}/build.xml" build.xml || die
+
+	sed -i -e 's/com.sun.org.apache.xml.internal/org.apache.xml/g' src/com/sun/msv/driver/textui/Driver.java
 
 	mkdir lib && cd lib
 	local pkg

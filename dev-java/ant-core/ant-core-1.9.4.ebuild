@@ -39,6 +39,7 @@ src_prepare() {
 
 	# use our split-ant build.xml.
 	mv -f "${WORKDIR}/build.xml" . || die
+	sed -i -e 's/1.9.1/'"${PV}"'/g' build.xml
 
 	# See bug #196080 for more details.
 	java-ant_bsfix_one build.xml

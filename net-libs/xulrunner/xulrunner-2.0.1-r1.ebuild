@@ -1,13 +1,13 @@
-# Copyright 1999-2013 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
 EAPI="5"
 WANT_AUTOCONF="2.1"
 
-PYTHON_COMPAT=( python{2_7,3_1,3_2,3_3} )
+PYTHON_COMPAT=( python{2_7,3_3,3_4} )
 
-inherit flag-o-matic toolchain-funcs eutils mozconfig-3 makeedit multilib autotools versionator pax-utils prefix
+inherit flag-o-matic toolchain-funcs eutils mozconfig-3 makeedit multilib autotools versionator pax-utils prefix python-utils-r1
 
 MAJ_XUL_PV="$(get_version_component_range 1-2)" # from mozilla-* branch name
 MAJ_FF_PV="4.0"
@@ -82,6 +82,18 @@ src_prepare() {
 
 	# Allow to build without alsa USE-flag,bug #360163
 	epatch "${FILESDIR}/bug-626229.patch"
+
+	# http://pkgsrc.se/files.php?messageId=20140427075401.C901F96@cvs.netbsd.org
+	#http://www.mirrorservice.org/pub/pkgsrc/stable/pkgsrc/devel/xulrunner192/patches/
+	epatch "${FILESDIR}/gfx_ots_src_os2.cc.patch"
+	epatch "${FILESDIR}/nsSVGFilters.cpp.patch"
+	epatch "${FILESDIR}/nsSVGFilters.h.patch"
+	epatch "${FILESDIR}/nsDOMWorkerEvents.cpp.patch"
+	epatch "${FILESDIR}/nsDOMWorkerEvents.h.patch"
+	epatch "${FILESDIR}/make-system-wrappers.pl.patch"
+
+	#http://www.linuxfromscratch.org/pipermail/blfs-dev/2013-November/026134.html
+	epatch "${FILESDIR}/system-headers.patch"
 
 	# Allow user to apply any additional patches without modifing ebuild
 	epatch_user
@@ -191,7 +203,7 @@ src_configure() {
 	# support tls, (probably will only hit this condition with Gentoo Prefix)
 	tc-has-tls -l || export ac_cv_thread_keyword=no
 
-	CC="$(tc-getCC)" CXX="$(tc-getCXX)" LD="$(tc-getLD)" PYTHON="$(PYTHON)" econf
+	CC="$(tc-getCC)" CXX="$(tc-getCXX)" LD="$(tc-getLD)" PYTHON="${PYTHON}" econf
 }
 
 src_install() {

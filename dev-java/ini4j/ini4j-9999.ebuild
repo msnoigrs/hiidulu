@@ -1,4 +1,4 @@
-# Copyright 1999-2014 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -29,6 +29,8 @@ DEPEND=">=virtual/jdk-1.6
 JAVA_ANT_ENCODING="utf-8"
 
 java_prepare() {
+	epatch "${FILESDIR}/java8-map.patch"
+
 	cp ${FILESDIR}/build.xml build.xml
 	mkdir -p lib || die
 	java-pkg_jar-from --build-only --into lib --virtual servlet-api-3.0 servlet-api.jar

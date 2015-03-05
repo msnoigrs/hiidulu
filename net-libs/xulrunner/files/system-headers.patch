@@ -1,0 +1,44 @@
+--- mozilla-2.0/config/system-headers.orig	2015-03-04 02:44:11.356557653 +0900
++++ mozilla-2.0/config/system-headers	2015-03-04 02:44:57.883701149 +0900
+@@ -276,6 +276,19 @@
+ freetype/ttnameid.h
+ freetype/tttables.h
+ freetype/t1tables.h
++freetype.h
++ftcache.h
++ftglyph.h
++ftsynth.h
++ftoutln.h
++ttnameid.h
++tttables.h
++t1tables.h
++ftlcdfil.h
++ftsizes.h
++ftadvanc.h
++ftbitmap.h
++ftxf86.h
+ fribidi/fribidi.h
+ FSp_fopen.h
+ fstream
+--- mozilla-2.0/js/src/config/system-headers.orig	2015-03-04 02:45:53.084871397 +0900
++++ mozilla-2.0/js/src/config/system-headers	2015-03-04 02:46:24.235967470 +0900
+@@ -276,6 +276,19 @@
+ freetype/ttnameid.h
+ freetype/tttables.h
+ freetype/t1tables.h
++freetype.h
++ftcache.h
++ftglyph.h
++ftsynth.h
++ftoutln.h
++ttnameid.h
++tttables.h
++t1tables.h
++ftlcdfil.h
++ftsizes.h
++ftadvanc.h
++ftbitmap.h
++ftxf86.h
+ fribidi/fribidi.h
+ FSp_fopen.h
+ fstream

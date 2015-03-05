@@ -1,4 +1,4 @@
-# Copyright 1999-2012 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -27,9 +27,9 @@ COMMON_DEPEND="
 	dev-java/xml-commons-resolver"
 #	dev-java/relaxng-datatype
 #	dev-java/saxon:9
-RDEPEND=">=virtual/jre-1.5
+RDEPEND=">=virtual/jre-1.6
 	${COMMON_DEPEND}"
-DEPEND=">=virtual/jdk-1.5
+DEPEND=">=virtual/jdk-1.6
 	dev-java/ant-core
 	dev-java/javacc
 	${COMMON_DEPEND}"
@@ -55,6 +55,7 @@ JAVA_PKG_BSFIX="off"
 #	rm -v *.jar || die
 java_prepare() {
 	#epatch "${FILESDIR}"/schematron-warnings.patch
+	epatch "${FILESDIR}/jing-trang-java8.patch"
 
 	find -type f -exec sed -i -e 's/com.icl.saxon/net.sf.saxon/g' {} \;
 

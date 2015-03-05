@@ -1,0 +1,11 @@
+--- mozilla-2.0/content/svg/content/src/nsSVGFilters.cpp.orig	2015-03-04 01:59:39.802318243 +0900
++++ mozilla-2.0/content/svg/content/src/nsSVGFilters.cpp	2015-03-04 02:00:40.362505018 +0900
+@@ -121,7 +121,7 @@
+ NS_IMPL_ADDREF_INHERITED(nsSVGFE,nsSVGFEBase)
+ NS_IMPL_RELEASE_INHERITED(nsSVGFE,nsSVGFEBase)
+ 
+-NS_DEFINE_STATIC_IID_ACCESSOR(nsSVGFE, NS_SVG_FE_CID)
++//NS_DEFINE_STATIC_IID_ACCESSOR(nsSVGFE, NS_SVG_FE_CID)
+ 
+ NS_INTERFACE_MAP_BEGIN(nsSVGFE)
+    // nsISupports is an ambiguous base of nsSVGFE so we have to work

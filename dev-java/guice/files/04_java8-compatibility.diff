@@ -1,0 +1,18 @@
+Description: Java 8 is more restrictive about generic type inference in situations
+ involving raw types, which prevents guice from compiling. This change
+ allows guice to be compiled with javac 8.
+Origin: backport, https://github.com/google/guice/commit/3382133
+--- a/core/src/com/google/inject/spi/DefaultBindingTargetVisitor.java
++++ b/core/src/com/google/inject/spi/DefaultBindingTargetVisitor.java
+@@ -69,9 +69,9 @@
+     return visitOther(convertedConstantBinding);
+   }
+ 
+-   // javac says it's an error to cast ProviderBinding<? extends T> to Binding<? extends T>
+   @SuppressWarnings("unchecked")
+   public V visit(ProviderBinding<? extends T> providerBinding) {
+-    return visitOther((Binding) providerBinding);
++    // TODO(cushon): remove raw (Binding) cast when we don't care about javac 6 anymore
++    return visitOther((Binding<? extends T>) (Binding) providerBinding);
+   }
+ }

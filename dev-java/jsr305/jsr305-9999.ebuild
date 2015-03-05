@@ -1,8 +1,8 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI="2"
+EAPI="5"
 JAVA_PKG_IUSE="doc source"
 
 ESVN_REPO_URI="http://jsr-305.googlecode.com/svn/trunk"
@@ -17,8 +17,8 @@ KEYWORDS="~amd64 ~x86"
 IUSE="examples"
 SLOT="0"
 
-RDEPEND=">=virtual/jre-1.5"
-DEPEND=">=virtual/jdk-1.5"
+RDEPEND=">=virtual/jre-1.6"
+DEPEND=">=virtual/jdk-1.6"
 
 JAVA_PKG_BSFIX_ALL="yes"
 

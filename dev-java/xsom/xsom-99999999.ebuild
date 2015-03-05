@@ -21,14 +21,16 @@ SLOT="0"
 KEYWORDS="~amd64 ~ppc ~x86 ~x86-fbsd"
 
 COMMON_DEP="dev-java/relaxng-datatype"
-RDEPEND=">=virtual/jre-1.5
+RDEPEND=">=virtual/jre-1.6
 	${COMMON_DEP}"
-DEPEND=">=virtual/jdk-1.5
+DEPEND=">=virtual/jdk-1.6
 	dev-java/javacc
 	${COMMON_DEP}"
 
 java_prepare() {
-	cp "${FILESDIR}"/build.xml build.xml
+	cp "${FILESDIR}/build.xml" build.xml
+
+	mkdir -p build/src
 
 	java-pkg_jar-from --into lib relaxng-datatype
 	java-pkg_jar-from --into lib --build-only javacc

@@ -1,8 +1,8 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI="2"
+EAPI="4"
 
 ESVN_REPO_URI="https://svn.java.net/svn/jaxb~version1/trunk/jaxb-ri"
 
@@ -33,11 +33,11 @@ COMMON_DEP="
 	dev-java/xml-commons-resolver
 	dev-java/xsdlib
 	dev-java/xsom"
-DEPEND=">=virtual/jdk-1.5
+DEPEND=">=virtual/jdk-1.6
 	dev-java/ant-core
 	dev-java/relaxngcc
 	${COMMON_DEP}"
-RDEPEND=">=virtual/jre-1.5
+RDEPEND=">=virtual/jre-1.6
 	${COMMON_DEP}"
 
 #S="${WORKDIR}/jaxb-ri-${PV}"

@@ -1,0 +1,9 @@
+--- mozilla-2.0/content/svg/content/src/nsSVGFilters.h.orig	2015-03-04 02:01:49.241717450 +0900
++++ mozilla-2.0/content/svg/content/src/nsSVGFilters.h	2015-03-04 02:02:28.745839286 +0900
+@@ -231,4 +231,6 @@
+   static LengthInfo sLengthInfo[4];
+ };
+ 
++NS_DEFINE_STATIC_IID_ACCESSOR(nsSVGFE, NS_SVG_FE_CID)
++
+ #endif

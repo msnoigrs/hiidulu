@@ -1,43 +1,44 @@
-# Copyright 1999-2013 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
 EAPI="4"
 JAVA_PKG_IUSE="source"
 
-ESVN_REPO_URI="https://svn.java.net/svn/istack-commons~svn/trunk/istack-commons"
-
-inherit subversion java-pkg-2 java-ant-2
+inherit java-pkg-2 java-ant-2
 
 DESCRIPTION="istack-commons"
 HOMEPAGE="https://istack-commons.dev.java.net/"
-#SRC_URI="mirror://gentoo/istack-commons-${PV}.tar.bz2"
-SRC_URI=""
+SRC_URI="http://dev.gentoo.gr.jp/~igarashi/distfiles/istack-commons-${PV}.tar.gz"
 
 LICENSE="|| ( CDDL GPL-2 )"
 SLOT="0"
-#KEYWORDS="~amd64 ~ppc ~x86 ~x86-fbsd"
-KEYWORDS=""
+KEYWORDS="~amd64 ~ppc ~x86 ~x86-fbsd"
 IUSE=""
 
 COMMON_DEP="java-virtuals/jaf"
 
-DEPEND=">=virtual/jdk-1.5
+DEPEND=">=virtual/jdk-1.6
 	dev-java/ant-core
 	${COMMON_DEP}"
-RDEPEND=">=virtual/jre-1.5
+RDEPEND=">=virtual/jre-1.6
 	${COMMON_DEP}"
 
 java_prepare() {
+	cp "${FILESDIR}/build-common.xml" "${S}"
+	cp "${FILESDIR}/tools-build.xml" "${S}/tools/build.xml"
 	java-ant_bsfix_one build-common.xml
 
 	rm -v runtime/lib/*.jar
-	rm -v lib/*.jar
+
+	rm -rv runtime/src/test
+	rm -rv tools/src/test
+
 	java-pkg_jar-from --into runtime/lib --virtual jaf
 
 	cp ${S}/tools/src14/com/sun/istack/tools/ProtectedTask.java \
 		${S}/tools/src/main/java/com/sun/istack/tools
-	sed -i -e 's/srcdir="src14"/srcdir="src"/' ${S}/tools/build.xml
+	#sed -i -e 's/srcdir="src14"/srcdir="src"/' ${S}/tools/build.xml
 	mkdir -p "${S}/tools/lib" || die
 	ln -s $(java-config --tools) "${S}/tools/lib" || die
 	java-pkg_jar-from --into ${S}/tools/lib --build-only ant-core ant.jar

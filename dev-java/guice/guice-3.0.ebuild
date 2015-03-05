@@ -1,4 +1,4 @@
-# Copyright 1999-2013 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -10,7 +10,7 @@ inherit eutils java-pkg-2 java-ant-2
 
 DESCRIPTION="Guice (pronounced'juice') is a lightweight dependency injection framework for Java 5"
 HOMEPAGE="http://code.google.com/p/google-guice/"
-SRC_URI="http://google-guice.googlecode.com/files/${P}-src.zip"
+SRC_URI="https://github.com/google/guice/archive/3.0.zip -> ${P}-src.zip"
 LICENSE="Apache-2.0"
 SLOT="3"
 KEYWORDS=""
@@ -39,6 +39,8 @@ java_prepare() {
 	epatch "${FILESDIR}"/3-typeliteral.patch
 	# http://code.google.com/p/google-guice/issues/detail?id=288
 	epatch "${FILESDIR}"/GUICE_ISSUE_288_20110119.patch
+
+	epatch "${FILESDIR}/04_java8-compatibility.diff"
 
 	# workaround jarjar's missing class problem on java6
 	sed -i -e '/keep/d' common.xml

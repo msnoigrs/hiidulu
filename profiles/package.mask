@@ -1,1 +1,6 @@
 >=dev-java/tomcat-dbcp-9999
+=dev-java/libg-2.2.0
+=dev-java/libg-2.4.0
+=dev-java/bndlib-2.4.0
+=dev-java/jaxb-2.2.7
+=dev-java/guice-4.0_beta5

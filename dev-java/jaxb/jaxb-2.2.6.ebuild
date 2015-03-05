@@ -1,4 +1,4 @@
-# Copyright 1999-2012 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -41,7 +41,7 @@ COMMON_DEP="java-virtuals/stax-api
 	dev-java/xml-commons-external:1.4
 	dev-java/xerces:2
 	dev-java/xml-commons-resolver"
-DEPEND=">=virtual/jdk-1.5
+DEPEND=">=virtual/jdk-1.6
 	dev-java/codemodel-annotation-compiler
 	dev-java/relaxngcc
 	dev-java/jaxb:1
@@ -49,7 +49,7 @@ DEPEND=">=virtual/jdk-1.5
 	dev-java/junit:0
 	${COMMON_DEP}"
 #	dev-java/aptmirrorapi
-RDEPEND=">=virtual/jre-1.5
+RDEPEND=">=virtual/jre-1.6
 	${COMMON_DEP}"
 
 #JAVA_PKG_NV_DEPEND="=virtual/jdk-1.5*"
@@ -70,6 +70,8 @@ java_prepare() {
 #	jaxb_unpack_subpkg resolver tools/lib/src/resolver-src.zip
 
 	cd ${S}
+
+	cp "${FILESDIR}/ApNavigator.java" xjc/src/com/sun/tools/jxc/model/nav
 
 	mv tools/lib/util/bnd-0.0.249.jar ${T}
 #	epatch "${FILESDIR}"/2.1.9-no-package-rename.patch

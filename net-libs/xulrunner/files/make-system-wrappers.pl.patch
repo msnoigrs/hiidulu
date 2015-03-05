@@ -1,0 +1,16 @@
+--- mozilla-2.0/nsprpub/config/make-system-wrappers.pl.orig	2015-03-04 02:22:23.448523900 +0900
++++ mozilla-2.0/nsprpub/config/make-system-wrappers.pl	2015-03-04 02:23:24.182711212 +0900
+@@ -52,7 +52,12 @@
+     open OUT, ">$output_dir/$_";
+     print OUT "#pragma GCC system_header\n";  # suppress include_next warning
+     print OUT "#pragma GCC visibility push(default)\n";
+-    print OUT "#include_next \<$_\>\n";
++	if ($_ =~ "freetype/tttables.h") {
++    	print OUT "#include \<ft2build.h\>\n";
++    	print OUT "#include_next FT_TRUETYPE_TABLES_H\n";
++	} else {
++    	print OUT "#include_next \<$_\>\n";
++	}
+     print OUT "#pragma GCC visibility pop\n";
+     close OUT;
+ }

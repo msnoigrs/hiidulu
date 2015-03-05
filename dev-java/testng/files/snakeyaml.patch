@@ -1,0 +1,21 @@
+--- testng-9999/src/main/java/org/testng/internal/Yaml.java.orig	2015-03-04 15:01:55.500073866 +0900
++++ testng-9999/src/main/java/org/testng/internal/Yaml.java	2015-03-04 15:02:41.699216350 +0900
+@@ -7,7 +7,6 @@
+ import org.testng.xml.XmlSuite;
+ import org.testng.xml.XmlTest;
+ import org.xml.sax.SAXException;
+-import org.yaml.snakeyaml.Loader;
+ import org.yaml.snakeyaml.TypeDescription;
+ import org.yaml.snakeyaml.constructor.Constructor;
+ 
+@@ -49,9 +48,7 @@
+       constructor.addTypeDescription(testDescription);
+     }
+ 
+-    Loader loader = new Loader(constructor);
+-
+-    org.yaml.snakeyaml.Yaml y = new org.yaml.snakeyaml.Yaml(loader);
++    org.yaml.snakeyaml.Yaml y = new org.yaml.snakeyaml.Yaml(constructor);
+     if (is == null) is = new FileInputStream(new File(filePath));
+     XmlSuite result = (XmlSuite) y.load(is);
+ 

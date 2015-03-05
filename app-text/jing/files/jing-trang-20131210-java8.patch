@@ -1,0 +1,11 @@
+--- jing-trang-20131210/mod/rng-parse/src/main/com/thaiopensource/relaxng/parse/compact/CompactSyntax.jj~	2008-12-06 11:19:57.000000000 +0000
++++ jing-trang-20131210/mod/rng-parse/src/main/com/thaiopensource/relaxng/parse/compact/CompactSyntax.jj	2015-01-14 21:57:18.985625127 +0000
+@@ -990,7 +990,7 @@
+   Token t;
+   String href;
+   String ns;
+-  Include include = section.makeInclude();
++  Include<Pattern, Location, ElementAnnotation, CommentListImpl, AnnotationsImpl> include = section.makeInclude();
+ }
+ {
+   t = "include" href = Literal()

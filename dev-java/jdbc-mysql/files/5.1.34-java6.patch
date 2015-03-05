@@ -1,0 +1,29 @@
+--- mysql-connector-java-5.1.34.orig/build.xml	2015-03-01 21:18:36.317979900 +0900
++++ mysql-connector-java-5.1.34/build.xml	2015-03-01 21:22:49.045882687 +0900
+@@ -352,7 +352,7 @@
+ 
+ 
+     <!-- Prepares files and settings for compiling driver. -->
+-    <target name="init" depends="-compiler-check, -init-copy, -init-filter-license, -init-no-crypto">
++    <target name="init" depends="-init-copy, -init-filter-license, -init-no-crypto">
+         <!-- The following is needed for source distributions as the classpath can't be dynamically altered, and not having this directory present causes the
+              build to fail. -->
+         <available file="${com.mysql.jdbc.docs.sourceDir}" property="com.mysql.jdbc.docs.sourcesPresent" />
+@@ -765,6 +765,7 @@
+                destdir="${compiler.output}"
+                deprecation="off"
+                debug="${debug.enable}"
++               bootclasspath="${gentoo.bootclasspath}"
+                fork="yes"
+                executable="${com.mysql.jdbc.jdk5.javac}"
+                compiler="modern"
+@@ -791,9 +792,6 @@
+                destdir="${compiler.output}"
+                deprecation="off"
+                debug="${debug.enable}"
+-               fork="yes"
+-               executable="${com.mysql.jdbc.jdk6.javac}"
+-               compiler="modern"
+                includeantruntime="false">
+             <include name="**/FabricMultiTenantConnectionProvider.java" />
+             <include name="**/HibernateFabric.java" />

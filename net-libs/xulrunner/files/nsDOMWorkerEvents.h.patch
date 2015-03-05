@@ -1,0 +1,12 @@
+--- mozilla-2.0/dom/src/threads/nsDOMWorkerEvents.h.orig	2015-03-04 02:04:32.011219452 +0900
++++ mozilla-2.0/dom/src/threads/nsDOMWorkerEvents.h	2015-03-04 02:06:49.170642469 +0900
+@@ -75,6 +75,9 @@
+   virtual PRBool PreventDefaultCalled() = 0;
+ };
+ 
++NS_DEFINE_STATIC_IID_ACCESSOR(nsIDOMWorkerPrivateEvent,
++                              NS_IDOMWORKERPRIVATEEVENT_IID)
++
+ #define NS_FORWARD_NSIDOMEVENT_SPECIAL                                        \
+   NS_IMETHOD GetType(nsAString& aType)                                        \
+     { return mEvent->GetType(aType); }                                        \

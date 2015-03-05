@@ -1,0 +1,16 @@
+--- jdic-9999/jdic/src/unix/classes/org/jdesktop/jdic/tray/internal/impl/GnomeTrayAppletService.java.orig	2015-03-04 10:04:51.805103338 +0900
++++ jdic-9999/jdic/src/unix/classes/org/jdesktop/jdic/tray/internal/impl/GnomeTrayAppletService.java	2015-03-04 10:05:18.861186783 +0900
+@@ -78,12 +78,7 @@
+         EmbeddedFrame frame = null;
+         Toolkit toolkit = Toolkit.getDefaultToolkit();
+         
+-        if(toolkit instanceof sun.awt.motif.MToolkit){
+-            w = getWidget(window, 400, 400, 0, 0);
+-            className = "sun.awt.motif.MEmbeddedFrame";
+-        }else{ // sun.awt.X11.XToolkit
+-            className = "sun.awt.X11.XEmbeddedFrame";
+-        }
++        className = "sun.awt.X11.XEmbeddedFrame";
+         try {
+             clazz = Class.forName(className);
+             constructor = clazz.getConstructor(new Class[]{long.class});

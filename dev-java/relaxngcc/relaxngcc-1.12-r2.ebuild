@@ -1,8 +1,8 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI="2"
+EAPI="4"
 JAVA_PKG_IUSE="doc source"
 
 JAVA_ANT_ENCODING="iso-8859-1"
@@ -20,13 +20,14 @@ SLOT="0"
 KEYWORDS="amd64 ppc x86 ~x86-fbsd"
 IUSE=""
 
-RDEPEND=">=virtual/jre-1.5
+COMMON_DEP="dev-java/iso-relax
 	dev-java/relaxng-datatype
 	dev-java/msv
 	dev-java/xsdlib"
-DEPEND=">=virtual/jdk-1.5
-	dev-java/ant-core
-	${RDEPEND}"
+RDEPEND=">=virtual/jre-1.6
+	${COMMON_DEP}"
+DEPEND=">=virtual/jdk-1.6
+	${COMMON_DEP}"
 
 S="${WORKDIR}/${PN}-${MY_DATE}"
 
@@ -42,6 +43,7 @@ java_prepare() {
 	java-pkg_jar-from --into lib relaxng-datatype
 	java-pkg_jar-from --into lib msv
 	java-pkg_jar-from --into lib xsdlib
+	java-pkg_jar-from --into lib iso-relax
 	java-pkg_jar-from --into lib --build-only ant-core ant.jar
 
 	cp "${FILESDIR}/build.xml-1.12-r1" build.xml || die "cp failed"

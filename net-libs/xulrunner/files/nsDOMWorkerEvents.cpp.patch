@@ -1,0 +1,13 @@
+--- mozilla-2.0/dom/src/threads/nsDOMWorkerEvents.cpp.orig	2015-03-04 02:03:26.515017453 +0900
++++ mozilla-2.0/dom/src/threads/nsDOMWorkerEvents.cpp	2015-03-04 02:03:52.762098403 +0900
+@@ -51,8 +51,8 @@
+ #include "nsDOMWorkerXHR.h"
+ #include "nsDOMWorkerXHRProxy.h"
+ 
+-NS_DEFINE_STATIC_IID_ACCESSOR(nsIDOMWorkerPrivateEvent,
+-                              NS_IDOMWORKERPRIVATEEVENT_IID)
++//NS_DEFINE_STATIC_IID_ACCESSOR(nsIDOMWorkerPrivateEvent,
++//                              NS_IDOMWORKERPRIVATEEVENT_IID)
+ 
+ nsDOMWorkerPrivateEvent::nsDOMWorkerPrivateEvent(nsIDOMEvent* aEvent)
+ : mEvent(aEvent),

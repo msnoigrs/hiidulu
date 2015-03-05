@@ -1,4 +1,4 @@
-# Copyright 1999-2014 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -20,6 +20,7 @@ IUSE=""
 
 DEPEND="
 	>=virtual/jdk-1.6
+	dev-java/jna
 	doc? (
 		dev-libs/libxslt
 		app-text/docbook-xsl-stylesheets
@@ -35,7 +36,13 @@ S="${WORKDIR}/pgjdbc"
 RESTRICT="test"
 
 java_prepare() {
-	epatch "${FILESDIR}/remove-maven.patch"
+	#epatch "${FILESDIR}/remove-maven.patch"
+	epatch "${FILESDIR}/rmmaven.patch"
+	epatch "${FILESDIR}/sspi.patch"
+
+	rm -rv org/postgresql/osgi
+	rm -v org/postgresql/sspi/NTDSAPI.java
+	rm -v org/postgresql/sspi/NTDSAPIWrapper.java
 
 	java-ant_rewrite-classpath
 }
@@ -66,7 +73,7 @@ src_test() {
 }
 
 src_install() {
-	java-pkg_newjar jars/postgresql*.jar jdbc-postgresql.jar
+	java-pkg_newjar build/jars/postgresql*.jar jdbc-postgresql.jar
 
 	if use doc ; then
 		java-pkg_dojavadoc build/publicapi

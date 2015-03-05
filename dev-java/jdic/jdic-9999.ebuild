@@ -1,8 +1,8 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI="2"
+EAPI="4"
 JAVA_PKG_IUSE="doc source examples"
 
 ESVN_REPO_URI="https://svn.java.net/svn/jdic~svn/trunk/src"
@@ -22,10 +22,10 @@ IUSE=""
 COMMON_DEP="net-libs/xulrunner
 	gnome-base/gconf
 	dev-libs/nspr"
-DEPEND=">=virtual/jdk-1.5
+DEPEND=">=virtual/jdk-1.6
 	${COMMON_DEP}
 	dev-util/pkgconfig"
-RDEPEND=">=virtual/jre-1.5
+RDEPEND=">=virtual/jre-1.6
 		${COMMON_DEP}"
 #	gnome-base/gnome-vfs
 #	gnome-base/orbit
@@ -45,7 +45,7 @@ java_prepare() {
 #	epatch "${FILESDIR}/0.9.5-load_native_library.patch"
 	epatch "${FILESDIR}/9999-mozilla_to_firefox.patch"
 	epatch "${FILESDIR}/9999-jdic-gnome3.patch"
-
+	epatch "${FILESDIR}/java8.patch"
 
 	sed -i -e 's/Desktop/org.jdesktop.jdic.desktop.Desktop/g' jdic/demo/FileChooser/FileChooser.java
 	sed -i -e 's/Desktop\./org.jdesktop.jdic.desktop.Desktop./g' jdic/demo/FileExplorer/FileExplorer.java

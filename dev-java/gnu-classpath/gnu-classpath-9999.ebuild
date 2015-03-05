@@ -70,6 +70,7 @@ S=${WORKDIR}/${MY_PN}
 
 java_prepare() {
 	epatch "${FILESDIR}/fix-texinfo.patch"
+	epatch "${FILESDIR}/dummy.patch"
 	sed -i -e 's#freetype/#freetype2/#g' native/jni/gtk-peer/gnu_java_awt_peer_gtk_FreetypeGlyphVector.c
 	sed -i -e 's#freetype/#freetype2/#g' native/jni/gtk-peer/gnu_java_awt_peer_gtk_GdkFontPeer.c
 	eautoreconf
