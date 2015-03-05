@@ -4,3 +4,4 @@
 =dev-java/bndlib-2.4.0
 =dev-java/jaxb-2.2.7
 =dev-java/guice-4.0_beta5
+=dev-java/jsr305-9999
