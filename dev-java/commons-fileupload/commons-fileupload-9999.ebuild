@@ -1,4 +1,4 @@
-# Copyright 1999-2014 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -12,7 +12,7 @@ DESCRIPTION="A Java library for adding robust, high-performance, file upload cap
 HOMEPAGE="http://commons.apache.org/fileupload/"
 SRC_URI=""
 COMMON_DEPEND="dev-java/commons-io:1"
-DEPEND=">=virtual/jdk-1.5
+DEPEND=">=virtual/jdk-1.6
 	java-virtuals/servlet-api:3.0
 	dev-java/portletapi:2
 	test? (
@@ -20,7 +20,7 @@ DEPEND=">=virtual/jdk-1.5
 		=dev-java/junit-3.8*
 	)
 	${COMMON_DEPEND}"
-RDEPEND=">=virtual/jre-1.5
+RDEPEND=">=virtual/jre-1.6
 	${COMMON_DEPEND}"
 LICENSE="Apache-2.0"
 

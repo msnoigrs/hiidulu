@@ -1,0 +1,18 @@
+--- cglib-3.1.1-e10bc3d/cglib/build.xml.orig	2015-03-09 16:53:34.996993711 +0900
++++ cglib-3.1.1-e10bc3d/cglib/build.xml	2015-03-09 16:54:12.198101621 +0900
+@@ -122,6 +122,7 @@
+       <exclude name="samples/**" />
+     </jar>
+ 
++<!--
+     <taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask" classpathref="compile.classpath"/>
+     <jarjar basedir="${build.home}/classes" jarfile="${dist.home}/${component.name}-nodep-${component.version}.jar" >
+       <zipfileset dir="lib" includes="asm*.txt"/>
+@@ -134,6 +135,7 @@
+       <include name="**/*"/>
+       <exclude name="samples/**"/>
+     </jarjar>
++-->
+   </target>
+ 
+   <target depends="compile,javadoc" description="Create docs and source distribution" name="srcjar">

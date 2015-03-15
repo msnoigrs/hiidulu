@@ -1,0 +1,45 @@
+From e1cc5f8e84ab071654d31a55f11db207188c7567 Mon Sep 17 00:00:00 2001
+From: Mikolaj Izdebski <mizdebsk@redhat.com>
+Date: Fri, 20 Jun 2014 09:29:44 +0200
+Subject: [PATCH] Implement reflection methods required by Java 8
+
+---
+ guava/src/com/google/common/reflect/Types.java | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
+
+diff --git a/guava/src/com/google/common/reflect/Types.java b/guava/src/com/google/common/reflect/Types.java
+index 0f05f78..d5bd950 100644
+--- a/guava/src/com/google/common/reflect/Types.java
++++ b/guava/src/com/google/common/reflect/Types.java
+@@ -29,6 +29,8 @@ import com.google.common.collect.ImmutableList;
+ import com.google.common.collect.Iterables;
+ 
+ import java.io.Serializable;
++import java.lang.annotation.Annotation;
++import java.lang.reflect.AnnotatedType;
+ import java.lang.reflect.AnnotatedElement;
+ import java.lang.reflect.Array;
+ import java.lang.reflect.GenericArrayType;
+@@ -371,6 +373,22 @@ final class Types {
+         return false;
+       }
+     }
++
++    @Override public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
++      return null;
++    }
++
++    @Override public Annotation[] getAnnotations() {
++      return new Annotation[0];
++    }
++
++    @Override public Annotation[] getDeclaredAnnotations() {
++      return new Annotation[0];
++    }
++
++    @Override public AnnotatedType[] getAnnotatedBounds() {
++      return new AnnotatedType[0];
++    }
+   }
+ 
+   static final class WildcardTypeImpl implements WildcardType, Serializable {

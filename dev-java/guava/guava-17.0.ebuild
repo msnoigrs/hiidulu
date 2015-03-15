@@ -1,4 +1,4 @@
-# Copyright 1999-2014 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -22,6 +22,6 @@ RDEPEND="${COMMON_DEP}
 	>=virtual/jre-1.6"
 DEPEND="${COMMON_DEP}
 	app-arch/unzip
-	>=virtual/jdk-1.7" # http://code.google.com/p/guava-libraries/issues/detail?id=635
+	virtual/jdk:1.7" # http://code.google.com/p/guava-libraries/issues/detail?id=635
 
 JAVA_GENTOO_CLASSPATH="jsr305,javax-inject"

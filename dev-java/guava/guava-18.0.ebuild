@@ -1,4 +1,4 @@
-# Copyright 1999-2014 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -12,7 +12,7 @@ HOMEPAGE="http://code.google.com/p/guava-libraries/"
 SRC_URI="http://search.maven.org/remotecontent?filepath=com/google/${PN}/${PN}/${PV}/${P}-sources.jar"
 
 LICENSE="Apache-2.0"
-SLOT="16"
+SLOT="18"
 KEYWORDS="~amd64 ~x86 ~amd64-linux ~x86-linux ~x64-macos ~x86-macos"
 
 COMMON_DEP="
@@ -22,6 +22,10 @@ RDEPEND="${COMMON_DEP}
 	>=virtual/jre-1.6"
 DEPEND="${COMMON_DEP}
 	app-arch/unzip
-	virtual/jdk:1.7" # http://code.google.com/p/guava-libraries/issues/detail?id=635
+	>=virtual/jdk-1.7" # http://code.google.com/p/guava-libraries/issues/detail?id=635
+
+java_prepare() {
+	epatch "${FILESDIR}/guava-java8.patch"
+}
 
 JAVA_GENTOO_CLASSPATH="jsr305,javax-inject"

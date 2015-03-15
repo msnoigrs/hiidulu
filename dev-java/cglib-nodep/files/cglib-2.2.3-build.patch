@@ -1,11 +1,11 @@
---- build.xml.orig	2012-07-27 19:21:58.000000000 +0900
-+++ build.xml	2013-05-02 12:51:47.998242312 +0900
+--- cglib-Root_RELEASE_2_2_3/build.xml.orig	2015-03-09 16:37:05.583123696 +0900
++++ cglib-Root_RELEASE_2_2_3/build.xml	2015-03-09 16:37:37.667216763 +0900
 @@ -127,7 +127,12 @@
      <taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask" classpathref="compile.classpath"/>
      <jarjar basedir="${build.home}/classes" jarfile="${dist.home}/${component.name}-nodep-${component.version}.jar" >
        <zipfileset dir="lib" includes="asm*.txt"/>
 -      <zipfileset src="lib/asm-3.1.jar" excludes="META-INF"/>
-+      <zipfileset src="lib/asm-3.3.1.jar" excludes="META-INF"/>
++      <zipfileset src="lib/asm.jar" excludes="META-INF"/>
 +      <zipfileset src="lib/asm-analysis.jar" excludes="META-INF"/>
 +      <zipfileset src="lib/asm-tree.jar" excludes="META-INF"/>
 +      <zipfileset src="lib/asm-xml.jar" excludes="META-INF"/>

@@ -20,8 +20,8 @@ COMMON_DEP="dev-java/aopalliance:1
 	dev-java/geronimo-spec-jpa
 	dev-java/javax-inject
 	dev-java/asm:5
-	dev-java/cglib:2.2
-	dev-java/guava:16
+	dev-java/cglib:3
+	dev-java/guava:18
 	servletapi? ( dev-java/tomcat-servlet-api:3.0 )"
 DEPEND=">=virtual/jdk-1.6
 	${COMMON_DEP}"
@@ -80,15 +80,18 @@ java_prepare() {
 	cd ${S}/lib
 	java-pkg_jar-from aopalliance-1 aopalliance.jar
 	java-pkg_jar-from javax-inject javax.inject.jar
+	java-pkg_jar-from guava-18 guava.jar guava-16.0.1.jar
 
 	cd ${S}/lib/build
-	java-pkg_jar-from --build-only cglib-2.2 cglib.jar cglib-2.2.1-snapshot.jar
-	java-pkg_jar-from --build-only jarjar-1 jarjar.jar jarjar-snapshot.jar
+	java-pkg_jar-from --build-only cglib-3 cglib.jar cglib-3.1.jar
+	java-pkg_jar-from --build-only jarjar-1 jarjar.jar jarjar-1.1.jar
 	java-pkg_jar-from --build-only asm-5 asm.jar asm-5.0.3.jar
 
 	cd ${S}/extensions/persist/lib
-	java-pkg_jar-from tomcat-servlet-api-3.0 servlet-api.jar servlet-api-2.5.jar
 	java-pkg_jar-from geronimo-spec-jpa geronimo-spec-jpa.jar ejb3-persistence.jar
+
+	cd ${S}/extensions/persist/build/lib
+	java-pkg_jar-from tomcat-servlet-api-3.0 servlet-api.jar servlet-api-2.5.jar
 }
 
 src_compile() {

@@ -1,4 +1,4 @@
-# Copyright 1999-2013 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -18,7 +18,8 @@ KEYWORDS="amd64 x86"
 
 IUSE=""
 
-DEPEND="dev-tex/luatex"
+DEPEND="|| ( >=app-text/texlive-core-2014-r2
+			dev-tex/luatex )"
 RDEPEND="${DEPEND}"
 
 src_install() {
