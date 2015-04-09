@@ -1,4 +1,4 @@
-# Copyright 1999-2014 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -21,7 +21,7 @@ RESTRICT="mirror strip"
 
 DEPEND="net-print/cups"
 RDEPEND="${DEPEND}
-	amd64? ( app-emulation/emul-linux-x86-baselibs )"
+	amd64? ( net-print/cups[abi_x86_32] )"
 
 S="${WORKDIR}"
 
