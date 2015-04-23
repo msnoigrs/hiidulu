@@ -1,4 +1,4 @@
-# Copyright 1999-2013 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -40,20 +40,8 @@ IUSE="amd64
 	mp560
 	ip4700
 	mp640"
-DEPEND="app-text/ghostscript-gpl
-	>=net-print/cups-1.1.14
-	!amd64? ( sys-libs/glibc
-		>=dev-libs/popt-1.6
-		>=media-libs/tiff-3.4
-		>=media-libs/libpng-1.0.9 )
-	amd64? ( >=app-emulation/emul-linux-x86-bjdeps-0.1
-		app-emulation/emul-linux-x86-compat
-		app-emulation/emul-linux-x86-baselibs )
-	servicetools? ( !amd64? ( >=gnome-base/libglade-0.6
-			>=dev-libs/libxml2-2.7.3-r2
-			=x11-libs/gtk+-1.2* )
-		amd64? ( >=app-emulation/emul-linux-x86-bjdeps-0.1
-			app-emulation/emul-linux-x86-gtklibs ) )"
+DEPEND="net-print/cups
+	amd64? ( net-print/cups[abi_x86_32] )"
 
 S="${WORKDIR}/${MY_P}"
 
@@ -169,12 +157,11 @@ src_prepare() {
 	./autogen.sh --prefix=${_prefix} || die "Error: libs/autoconf.sh failed"
 
 	cd ../pstocanonij || die
-	./autogen.sh --prefix=${_prefix} --enable-progpath=${_bindir} || die "Error: pstocanonij/autoconf.sh failed"
+	#./autogen.sh --prefix=${_prefix} --enable-progpath=${_bindir} || die "Error: pstocanonij/autoconf.sh failed"
+	./autogen.sh --prefix=/usr --enable-progpath=${_bindir} || die "Error: pstocanonij/autoconf.sh failed"
 
-	#if use net; then
-		cd ../backendnet || die
-		./autogen.sh --prefix=${_prefix} --enable-progpath=${_bindir} || die "Error: backendnet/autoconf.sh failed"
-	#fi
+#	cd ../backendnet || die
+#	./autogen.sh --prefix=${_prefix} --enable-progpath=${_bindir} || die "Error: backendnet/autoconf.sh failed"
 
 	if use servicetools; then
 		cd ../cngpij || die
@@ -183,6 +170,8 @@ src_prepare() {
 		cd ../cngpijmon || die
 		./autogen.sh --prefix=${_prefix} || die "Error: cngpijmon/autoconf.sh failed"
 	fi
+
+
 }
 
 src_compile() {
@@ -192,10 +181,8 @@ src_compile() {
 	cd ../pstocanonij || die
 	make || die "Couldn't make pstocanonij"
 
-	#if use net; then
-		cd ../backendnet || die
-		make || die "Couldn't make backendnet"
-	#fi
+#	cd ../backendnet || die
+#	make || die "Couldn't make backendnet"
 
 	if use servicetools; then
 		cd ../cngpij || die
@@ -210,7 +197,7 @@ src_compile() {
 	for i in `seq 0 ${_max}`; do
 		if use ${_pruse[$i]} || ${_autochoose}; then
 			_pr=${_prname[$i]} _prid=${_prid[$i]}
-			#use amd64 && append-ldflags -L../../
+			use amd64 && append-ldflags -L../../
 			src_compile_pr;
 		fi
 	done
@@ -219,6 +206,7 @@ src_compile() {
 src_install() {
 	mkdir -p ${D}${_bindir} || die
 	mkdir -p ${D}${_libdir}/cups/filter || die
+#	mkdir -p ${D}${_libdir}/cups/backend || die
 	mkdir -p ${D}${_ppddir} || die
 	mkdir -p ${D}${_libdir}/cnijlib || die
 
@@ -227,6 +215,20 @@ src_install() {
 
 	cd ../pstocanonij || die
 	make DESTDIR=${D} install || die "Couldn't make install pstocanoncnij"
+
+#	cd ../backendnet || die
+#	make DESTDIR=${D} install || die "Couldn't make install backendnet"
+
+	cd ../com || die
+
+	if use amd64; then
+		cd libs_bin64 || die
+	else
+		cd libs_bin32 || die
+	fi
+
+	dolib.so libcnnet.so.* || die "Couldn't install libcnnet.so"
+	cd .. || die
 
 	if use servicetools; then
 		cd ../cngpij || die
@@ -281,8 +283,10 @@ src_compile_pr()
 
 	sleep 10
 	cd ${_pr}/cnijfilter || die
+	append-ldflags "-L../../${_prid}/libs_bin32"
 	./autogen.sh --prefix=${_prefix} --program-suffix=${_pr} --enable-libpath=${_libdir}/cnijlib --enable-binpath=${_bindir} || die
 	make || die "Couldn't make ${_pr}/cnijfilter"
+	filter-ldflags "-L../../${_prid}/libs_bin32"
 
 	if use servicetools; then
 		cd ../printui || die
@@ -312,6 +316,11 @@ src_install_pr()
 
 	cd ../..
 	cp -a ${_prid}/libs_bin/* ${D}${_libdir} || die
+	if [ -d "/usr/lib64" ]
+	then
+		mkdir ${D}/usr/lib64 || die
+		cp -a ${_prid}/libs_bin64/* ${D}/usr/lib64/ || die
+	fi
 	cp -a ${_prid}/database/* ${D}${_libdir}/cnijlib || die
 	cp -a ppd/canon${_pr}.ppd ${D}${_ppddir} || die
 }

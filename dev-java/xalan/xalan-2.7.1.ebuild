@@ -1,8 +1,8 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI="2"
+EAPI=4
 JAVA_PKG_IUSE="doc source"
 
 inherit java-pkg-2 java-ant-2 eutils versionator
@@ -25,10 +25,10 @@ COMMON_DEP="
 	dev-java/bcel:0
 	dev-java/xerces:2
 	dev-java/xml-commons-external:1.4
-	~dev-java/xalan-serializer-${PV}"
-RDEPEND=">=virtual/jre-1.5
+	~dev-java/xalan-serializer-${PV}:0"
+RDEPEND=">=virtual/jre-1.7
 	${COMMON_DEP}"
-DEPEND=">=virtual/jdk-1.5
+DEPEND=">=virtual/jdk-1.7
 	doc? ( app-arch/unzip )
 	${COMMON_DEP}"
 
@@ -75,7 +75,7 @@ src_compile() {
 src_install() {
 	java-pkg_dojar build/${PN}.jar
 	# installs symlinks to the file in /usr/share/xalan-serializer
-	java-pkg_dojar build/serializer.jar
+	#java-pkg_dojar build/serializer.jar
 	# and records it to package.env as if it belongs to this one's
 	# classpath, for maximum possible backward compatibility
 	java-pkg_regjar $(java-pkg_getjar xalan-serializer serializer.jar)
