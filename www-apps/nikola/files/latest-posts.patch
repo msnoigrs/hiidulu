@@ -1,0 +1,519 @@
+diff --git a/nikola/conf.py.in b/nikola/conf.py.in
+index 1dfd9e3..793a469 100644
+--- a/nikola/conf.py.in
++++ b/nikola/conf.py.in
+@@ -604,6 +604,9 @@ COMMENT_SYSTEM_ID = ${COMMENT_SYSTEM_ID}
+ # Enable comments on picture gallery pages?
+ # COMMENTS_IN_GALLERIES = False
+ 
++# Number of Latest posts in pages
++# PAGES_LATEST_POSTS_COUNT = 10
++
+ # What file should be used for directory indexes?
+ # Defaults to index.html
+ # Common other alternatives: default.html for IIS, index.php
+diff --git a/nikola/data/themes/base-jinja/templates/post.tmpl b/nikola/data/themes/base-jinja/templates/post.tmpl
+index 5fc9142..df6a437 100644
+--- a/nikola/data/themes/base-jinja/templates/post.tmpl
++++ b/nikola/data/themes/base-jinja/templates/post.tmpl
+@@ -45,6 +45,14 @@
+         {{ comments.comment_form(post.permalink(absolute=True), post.title(), post._base_path) }}
+         </section>
+     {% endif %}
++    {% if len(latest_posts) > 0 %}
++        <h2>{{ messages("Latest posts") }}</h2>
++        <ul>
++            {% for latest_post in latest_posts %}
++            <li class="latest"><a href="{{ latest_post.permalink() }}" rel="bookmark">{{ latest_post.title()|e }}</a></li>
++            {% endfor %}
++        </ul>
++    {% endif %}
+     {{ helper.mathjax_script(post) }}
+ </article>
+ {{ comments.comment_link_script() }}
+diff --git a/nikola/data/themes/base/messages/messages_ar.py b/nikola/data/themes/base/messages/messages_ar.py
+index 61a2abf..98b1455 100644
+--- a/nikola/data/themes/base/messages/messages_ar.py
++++ b/nikola/data/themes/base/messages/messages_ar.py
+@@ -32,4 +32,5 @@ MESSAGES = {
+     "Tags": "تصنيفات",
+     "old posts, page %d": "مقالات قديمة, صفحة d%",
+     "page %d": "صفحة d%",
++    "Latest posts": "آخر المشاركات",
+ }
+diff --git a/nikola/data/themes/base/messages/messages_bg.py b/nikola/data/themes/base/messages/messages_bg.py
+index ab7bd27..78895b2 100644
+--- a/nikola/data/themes/base/messages/messages_bg.py
++++ b/nikola/data/themes/base/messages/messages_bg.py
+@@ -32,4 +32,5 @@ MESSAGES = {
+     "Tags": "Тагове",
+     "old posts, page %d": "стари публикации, страница %d",
+     "page %d": "страница %d",
++    "Latest posts": "Последните мнения",
+ }
+diff --git a/nikola/data/themes/base/messages/messages_ca.py b/nikola/data/themes/base/messages/messages_ca.py
+index c39c33c..e8c77f0 100644
+--- a/nikola/data/themes/base/messages/messages_ca.py
++++ b/nikola/data/themes/base/messages/messages_ca.py
+@@ -32,4 +32,5 @@ MESSAGES = {
+     "Tags": "Etiquetes",
+     "old posts, page %d": "entrades antigues, pàgina %d",
+     "page %d": "pàgina %d",
++    "Latest posts": "últimes publicacions",
+ }
+diff --git a/nikola/data/themes/base/messages/messages_cs.py b/nikola/data/themes/base/messages/messages_cs.py
+index 52d1984..4c9d9e2 100644
+--- a/nikola/data/themes/base/messages/messages_cs.py
++++ b/nikola/data/themes/base/messages/messages_cs.py
+@@ -32,4 +32,5 @@ MESSAGES = {
+     "Tags": "Štítky",
+     "old posts, page %d": "staré příspěvky, strana %d",
+     "page %d": "strana %d",
++    "Latest posts": "poslední příspěvky",
+ }
+diff --git a/nikola/data/themes/base/messages/messages_da.py b/nikola/data/themes/base/messages/messages_da.py
+index 688ac7f..ef20044 100644
+--- a/nikola/data/themes/base/messages/messages_da.py
++++ b/nikola/data/themes/base/messages/messages_da.py
+@@ -32,4 +32,5 @@ MESSAGES = {
+     "Tags": "Nøgleord",
+     "old posts, page %d": "gamle indlæg, side %d",
+     "page %d": "side %d",
++    "Latest posts": "nyeste indlæg",
+ }
+diff --git a/nikola/data/themes/base/messages/messages_de.py b/nikola/data/themes/base/messages/messages_de.py
+index 13b61bb..1288aa9 100644
+--- a/nikola/data/themes/base/messages/messages_de.py
++++ b/nikola/data/themes/base/messages/messages_de.py
+@@ -32,4 +32,5 @@ MESSAGES = {
+     "Tags": "Tags",
+     "old posts, page %d": "Ältere Einträge, Seite %d",
+     "page %d": "Seite %d",
++    "Latest posts": "Neueste Artikel",
+ }
+diff --git a/nikola/data/themes/base/messages/messages_el.py b/nikola/data/themes/base/messages/messages_el.py
+index 298abf4..2e13ed2 100644
+--- a/nikola/data/themes/base/messages/messages_el.py
++++ b/nikola/data/themes/base/messages/messages_el.py
+@@ -32,4 +32,5 @@ MESSAGES = {
+     "Tags": "Ετικέτες",
+     "old posts, page %d": "σελίδα παλαιότερων αναρτήσεων %d",
+     "page %d": "σελίδα %d",
++    "Latest posts": "Τελευταίες δημοσιεύσεις",
+ }
+diff --git a/nikola/data/themes/base/messages/messages_en.py b/nikola/data/themes/base/messages/messages_en.py
+index 70abc88..b1e15a6 100644
+--- a/nikola/data/themes/base/messages/messages_en.py
++++ b/nikola/data/themes/base/messages/messages_en.py
+@@ -32,4 +32,5 @@ MESSAGES = {
+     "Tags": "Tags",
+     "old posts, page %d": "old posts, page %d",
+     "page %d": "page %d",
++    "Latest posts": "Latest posts",
+ }
+diff --git a/nikola/data/themes/base/messages/messages_eo.py b/nikola/data/themes/base/messages/messages_eo.py
+index 9158d09..3144717 100644
+--- a/nikola/data/themes/base/messages/messages_eo.py
++++ b/nikola/data/themes/base/messages/messages_eo.py
+@@ -32,4 +32,5 @@ MESSAGES = {
+     "Tags": "Etikedoj",
+     "old posts, page %d": "paĝo de malnovaj artikoloj %d",
+     "page %d": "paĝo %d",
++    "Latest posts": "Novaj artikoloj",
+ }
+diff --git a/nikola/data/themes/base/messages/messages_es.py b/nikola/data/themes/base/messages/messages_es.py
+index f85d17e..d4d72e0 100644
+--- a/nikola/data/themes/base/messages/messages_es.py
++++ b/nikola/data/themes/base/messages/messages_es.py
+@@ -32,4 +32,5 @@ MESSAGES = {
+     "Tags": "Etiquetas",
+     "old posts, page %d": "publicaciones antiguas, página %d",
+     "page %d": "página %d",
++    "Latest posts": "Últimas publicaciones",
+ }
+diff --git a/nikola/data/themes/base/messages/messages_et.py b/nikola/data/themes/base/messages/messages_et.py
+index 322aeff..704ee4f 100644
+--- a/nikola/data/themes/base/messages/messages_et.py
++++ b/nikola/data/themes/base/messages/messages_et.py
+@@ -32,4 +32,5 @@ MESSAGES = {
+     "Tags": "Märksõnad",
+     "old posts, page %d": "vanade postituste, leht %d",
+     "page %d": "leht %d",
++    "Latest posts": "Viimased postitused",
+ }
+diff --git a/nikola/data/themes/base/messages/messages_eu.py b/nikola/data/themes/base/messages/messages_eu.py
+index f2e9201..3114eb4 100644
+--- a/nikola/data/themes/base/messages/messages_eu.py
++++ b/nikola/data/themes/base/messages/messages_eu.py
+@@ -32,4 +32,5 @@ MESSAGES = {
+     "Tags": "Etiketak",
+     "old posts, page %d": "Post zaharren, orria %d",
+     "page %d": "orria %d",
++    "Latest posts": "Azken argitalpenak",
+ }
+diff --git a/nikola/data/themes/base/messages/messages_fa.py b/nikola/data/themes/base/messages/messages_fa.py
+index 4961bb4..b307262 100644
+--- a/nikola/data/themes/base/messages/messages_fa.py
++++ b/nikola/data/themes/base/messages/messages_fa.py
+@@ -32,4 +32,5 @@ MESSAGES = {
+     "Tags": "برچسب‌ها",
+     "old posts, page %d": "صفحهٔ ارسال‌های قدیمی %d",
+     "page %d": "برگه %d",
++    "Latest posts": "واپسین نوشته‌ها",
+ }
+diff --git a/nikola/data/themes/base/messages/messages_fi.py b/nikola/data/themes/base/messages/messages_fi.py
+index 5730c98..5c095e1 100644
+--- a/nikola/data/themes/base/messages/messages_fi.py
++++ b/nikola/data/themes/base/messages/messages_fi.py
+@@ -32,4 +32,5 @@ MESSAGES = {
+     "Tags": "Tagit",
+     "old posts, page %d": "vanhoja postauksia, sivu %d",
+     "page %d": "sivu %d",
++    "Latest posts": "Uusimmat artikkelit",
+ }
+diff --git a/nikola/data/themes/base/messages/messages_fr.py b/nikola/data/themes/base/messages/messages_fr.py
+index 9dec74f..bb3dbe5 100644
+--- a/nikola/data/themes/base/messages/messages_fr.py
++++ b/nikola/data/themes/base/messages/messages_fr.py
+@@ -32,4 +32,5 @@ MESSAGES = {
+     "Tags": "Étiquettes",
+     "old posts, page %d": "anciens articles, page %d",
+     "page %d": "page %d",
++    "Latest posts": "Derniers articles",
+ }
+diff --git a/nikola/data/themes/base/messages/messages_gl.py b/nikola/data/themes/base/messages/messages_gl.py
+index 43a6bba..64ca293 100644
+--- a/nikola/data/themes/base/messages/messages_gl.py
++++ b/nikola/data/themes/base/messages/messages_gl.py
+@@ -32,4 +32,5 @@ MESSAGES = {
+     "Tags": "",
+     "old posts, page %d": "",
+     "page %d": "",
++    "Latest posts": "Últimos Artigos",
+ }
+diff --git a/nikola/data/themes/base/messages/messages_hi.py b/nikola/data/themes/base/messages/messages_hi.py
+index 8255054..d181461 100644
+--- a/nikola/data/themes/base/messages/messages_hi.py
++++ b/nikola/data/themes/base/messages/messages_hi.py
+@@ -32,4 +32,5 @@ MESSAGES = {
+     "Tags": "टैग्स",
+     "old posts, page %d": "पुरानी पोस्टें, पृष्‍ठ %d",
+     "page %d": "पृष्‍ठ %d",
++    "Latest posts": "नवीनतम पोस्ट",
+ }
+diff --git a/nikola/data/themes/base/messages/messages_hr.py b/nikola/data/themes/base/messages/messages_hr.py
+index 60a671f..39cc3a1 100644
+--- a/nikola/data/themes/base/messages/messages_hr.py
++++ b/nikola/data/themes/base/messages/messages_hr.py
+@@ -32,4 +32,5 @@ MESSAGES = {
+     "Tags": "Tagovi",
+     "old posts, page %d": "stari postovi, stranice %d",
+     "page %d": "stranice %d",
++    "Latest posts": "Najnovije postove",
+ }
+diff --git a/nikola/data/themes/base/messages/messages_id.py b/nikola/data/themes/base/messages/messages_id.py
+index 8ef526c..9d2a5f3 100644
+--- a/nikola/data/themes/base/messages/messages_id.py
++++ b/nikola/data/themes/base/messages/messages_id.py
+@@ -32,4 +32,5 @@ MESSAGES = {
+     "Tags": "Tag",
+     "old posts, page %d": "tulisan lama, halaman %d",
+     "page %d": "halaman %d",
++    "Latest posts": "Pos-pos terbaru",
+ }
+diff --git a/nikola/data/themes/base/messages/messages_it.py b/nikola/data/themes/base/messages/messages_it.py
+index 0ab1f35..da22dc8 100644
+--- a/nikola/data/themes/base/messages/messages_it.py
++++ b/nikola/data/themes/base/messages/messages_it.py
+@@ -32,4 +32,5 @@ MESSAGES = {
+     "Tags": "Tags",
+     "old posts, page %d": "pagina dei vecchi articoli %d",
+     "page %d": "pagina %d",
++    "Latest posts": "Ultimi post",
+ }
+diff --git a/nikola/data/themes/base/messages/messages_ja.py b/nikola/data/themes/base/messages/messages_ja.py
+index 9865ada..f954548 100644
+--- a/nikola/data/themes/base/messages/messages_ja.py
++++ b/nikola/data/themes/base/messages/messages_ja.py
+@@ -32,4 +32,5 @@ MESSAGES = {
+     "Tags": "タグ",
+     "old posts, page %d": "前の記事 %dページ目",
+     "page %d": "ページ %d",
++    "Latest posts": "最新の投稿",
+ }
+diff --git a/nikola/data/themes/base/messages/messages_ko.py b/nikola/data/themes/base/messages/messages_ko.py
+index 724630f..8bdaf6d 100644
+--- a/nikola/data/themes/base/messages/messages_ko.py
++++ b/nikola/data/themes/base/messages/messages_ko.py
+@@ -32,4 +32,5 @@ MESSAGES = {
+     "Tags": "태그",
+     "old posts, page %d": "이전 포스트, 페이지 %d",
+     "page %d": "페이지 %d",
++    "Latest posts": "최신 글",
+ }
+diff --git a/nikola/data/themes/base/messages/messages_nb.py b/nikola/data/themes/base/messages/messages_nb.py
+index a55636c..f1137b0 100644
+--- a/nikola/data/themes/base/messages/messages_nb.py
++++ b/nikola/data/themes/base/messages/messages_nb.py
+@@ -32,4 +32,5 @@ MESSAGES = {
+     "Tags": "Merker",
+     "old posts, page %d": "eldre innlegg, side %d",
+     "page %d": "side %d",
++    "Latest posts": "Nye innlegg",
+ }
+diff --git a/nikola/data/themes/base/messages/messages_nl.py b/nikola/data/themes/base/messages/messages_nl.py
+index fc4c168..49d2983 100644
+--- a/nikola/data/themes/base/messages/messages_nl.py
++++ b/nikola/data/themes/base/messages/messages_nl.py
+@@ -32,4 +32,5 @@ MESSAGES = {
+     "Tags": "Tags",
+     "old posts, page %d": "oude berichten, pagina %d",
+     "page %d": "pagina %d",
++    "Latest posts": "Laatste posts",
+ }
+diff --git a/nikola/data/themes/base/messages/messages_pl.py b/nikola/data/themes/base/messages/messages_pl.py
+index 10d6dd7..24eab9d 100644
+--- a/nikola/data/themes/base/messages/messages_pl.py
++++ b/nikola/data/themes/base/messages/messages_pl.py
+@@ -32,4 +32,5 @@ MESSAGES = {
+     "Tags": "Tagi",
+     "old posts, page %d": "stare posty, strona %d",
+     "page %d": "strona %d",
++    "Latest posts": "Ostatnie wpisy",
+ }
+diff --git a/nikola/data/themes/base/messages/messages_pt.py b/nikola/data/themes/base/messages/messages_pt.py
+index 43a6bba..64ca293 100644
+--- a/nikola/data/themes/base/messages/messages_pt.py
++++ b/nikola/data/themes/base/messages/messages_pt.py
+@@ -32,4 +32,5 @@ MESSAGES = {
+     "Tags": "",
+     "old posts, page %d": "",
+     "page %d": "",
++    "Latest posts": "Últimos Artigos",
+ }
+diff --git a/nikola/data/themes/base/messages/messages_pt_br.py b/nikola/data/themes/base/messages/messages_pt_br.py
+index 6ad30e4..d1b4cb3 100644
+--- a/nikola/data/themes/base/messages/messages_pt_br.py
++++ b/nikola/data/themes/base/messages/messages_pt_br.py
+@@ -32,4 +32,5 @@ MESSAGES = {
+     "Tags": "Tags",
+     "old posts, page %d": "Posts antigos, página %d",
+     "page %d": "página %d",
++    "Latest posts": "Últimos posts",
+ }
+diff --git a/nikola/data/themes/base/messages/messages_ru.py b/nikola/data/themes/base/messages/messages_ru.py
+index 35f7dea..1fc6cbb 100644
+--- a/nikola/data/themes/base/messages/messages_ru.py
++++ b/nikola/data/themes/base/messages/messages_ru.py
+@@ -32,4 +32,5 @@ MESSAGES = {
+     "Tags": "Тэги",
+     "old posts, page %d": "%d страница со старыми записями",
+     "page %d": "%d страница",
++    "Latest posts": "Последние записи",
+ }
+diff --git a/nikola/data/themes/base/messages/messages_si_lk.py b/nikola/data/themes/base/messages/messages_si_lk.py
+index 43a6bba..ecbebbb 100644
+--- a/nikola/data/themes/base/messages/messages_si_lk.py
++++ b/nikola/data/themes/base/messages/messages_si_lk.py
+@@ -32,4 +32,5 @@ MESSAGES = {
+     "Tags": "",
+     "old posts, page %d": "",
+     "page %d": "",
++    "Latest posts": "නවතම ලිපි",
+ }
+diff --git a/nikola/data/themes/base/messages/messages_sk.py b/nikola/data/themes/base/messages/messages_sk.py
+index 94b0d84..d88ca59 100644
+--- a/nikola/data/themes/base/messages/messages_sk.py
++++ b/nikola/data/themes/base/messages/messages_sk.py
+@@ -32,4 +32,5 @@ MESSAGES = {
+     "Tags": "Štítky",
+     "old posts, page %d": "staré príspevky, strana %d",
+     "page %d": "stránka %d",
++    "Latest posts": "Najnovšie príspevky",
+ }
+diff --git a/nikola/data/themes/base/messages/messages_sl.py b/nikola/data/themes/base/messages/messages_sl.py
+index ca31130..fe80425 100644
+--- a/nikola/data/themes/base/messages/messages_sl.py
++++ b/nikola/data/themes/base/messages/messages_sl.py
+@@ -32,4 +32,5 @@ MESSAGES = {
+     "Tags": "Značke",
+     "old posts, page %d": "stare objave, stran %d",
+     "page %d": "stran %d",
++    "Latest posts": "Zadnje objave",
+ }
+diff --git a/nikola/data/themes/base/messages/messages_sr.py b/nikola/data/themes/base/messages/messages_sr.py
+index 4c17374..e937597 100644
+--- a/nikola/data/themes/base/messages/messages_sr.py
++++ b/nikola/data/themes/base/messages/messages_sr.py
+@@ -32,4 +32,5 @@ MESSAGES = {
+     "Tags": "Тагови",
+     "old posts, page %d": "стари постови, страна %d",
+     "page %d": "страна %d",
++    "Latest posts": "Последњи чланци",
+ }
+diff --git a/nikola/data/themes/base/messages/messages_sv.py b/nikola/data/themes/base/messages/messages_sv.py
+index 8280652..ec20052 100644
+--- a/nikola/data/themes/base/messages/messages_sv.py
++++ b/nikola/data/themes/base/messages/messages_sv.py
+@@ -32,4 +32,5 @@ MESSAGES = {
+     "Tags": "Taggar",
+     "old posts, page %d": "gamla inlägg, sida %d",
+     "page %d": "sida %d",
++    "Latest posts": "Senaste inläggen",
+ }
+diff --git a/nikola/data/themes/base/messages/messages_tr.py b/nikola/data/themes/base/messages/messages_tr.py
+index 4e3988e..0ced35d 100644
+--- a/nikola/data/themes/base/messages/messages_tr.py
++++ b/nikola/data/themes/base/messages/messages_tr.py
+@@ -32,4 +32,5 @@ MESSAGES = {
+     "Tags": "Etiketler",
+     "old posts, page %d": "eski yazılar, sayfa %d",
+     "page %d": "sayfa %d",
++    "Latest posts": "Son Yazılar",
+ }
+diff --git a/nikola/data/themes/base/messages/messages_ur.py b/nikola/data/themes/base/messages/messages_ur.py
+index c8e9723..069418f 100644
+--- a/nikola/data/themes/base/messages/messages_ur.py
++++ b/nikola/data/themes/base/messages/messages_ur.py
+@@ -32,4 +32,5 @@ MESSAGES = {
+     "Tags": "ٹیگز",
+     "old posts, page %d": "پرانی تحاریر صفحہ %d",
+     "page %d": "صفحہ %d",
++    "Latest posts": "تازہ ترین مراسلہ",
+ }
+diff --git a/nikola/data/themes/base/messages/messages_zh_cn.py b/nikola/data/themes/base/messages/messages_zh_cn.py
+index 9c23c19..70919de 100644
+--- a/nikola/data/themes/base/messages/messages_zh_cn.py
++++ b/nikola/data/themes/base/messages/messages_zh_cn.py
+@@ -32,4 +32,5 @@ MESSAGES = {
+     "Tags": "标签",
+     "old posts, page %d": "旧文章页 %d",
+     "page %d": "",
++    "Latest posts": "最新的文章",
+ }
+diff --git a/nikola/data/themes/base/templates/post.tmpl b/nikola/data/themes/base/templates/post.tmpl
+index 7d71f86..d14a8bd 100644
+--- a/nikola/data/themes/base/templates/post.tmpl
++++ b/nikola/data/themes/base/templates/post.tmpl
+@@ -45,6 +45,14 @@
+         ${comments.comment_form(post.permalink(absolute=True), post.title(), post._base_path)}
+         </section>
+     % endif
++    % if len(latest_posts) > 0:
++        <h2>${messages("Latest posts")}</h2>
++        <ul>
++            % for latest_post in latest_posts:
++            <li class="latest"><a href="${latest_post.permalink()}" rel="bookmark">${latest_post.title()|h}</a></li>
++            % endfor
++        </ul>
++    % endif
+     ${helper.mathjax_script(post)}
+ </article>
+ ${comments.comment_link_script()}
+diff --git a/nikola/data/themes/bootstrap-jinja/templates/post.tmpl b/nikola/data/themes/bootstrap-jinja/templates/post.tmpl
+index e815e31..a2e6a60 100644
+--- a/nikola/data/themes/bootstrap-jinja/templates/post.tmpl
++++ b/nikola/data/themes/bootstrap-jinja/templates/post.tmpl
+@@ -45,6 +45,14 @@
+         {{ comments.comment_form(post.permalink(absolute=True), post.title(), post._base_path) }}
+         </section>
+     {% endif %}
++    {% if len(latest_posts) > 0 %}
++        <h2>{{ messages("Latest posts") }}</h2>
++        <ul>
++            {% for latest_post in latest_posts %}
++            <li class="latest"><a href="{{ latest_post.permalink() }}" rel="bookmark">{{ latest_post.title()|e }}</a></li>
++            {% endfor %}
++        </ul>
++    {% endif %}
+     {{ helper.mathjax_script(post) }}
+ </article>
+ {{ comments.comment_link_script() }}
+diff --git a/nikola/data/themes/bootstrap/templates/post.tmpl b/nikola/data/themes/bootstrap/templates/post.tmpl
+index 198c58e..7d9c223 100644
+--- a/nikola/data/themes/bootstrap/templates/post.tmpl
++++ b/nikola/data/themes/bootstrap/templates/post.tmpl
+@@ -45,6 +45,14 @@
+         ${comments.comment_form(post.permalink(absolute=True), post.title(), post._base_path)}
+         </section>
+     % endif
++    % if len(latest_posts) > 0:
++        <h2>${messages("Latest posts")}</h2>
++        <ul>
++            % for latest_post in latest_posts:
++            <li class="latest"><a href="${latest_post.permalink()}" rel="bookmark">${latest_post.title()|h}</a></li>
++            % endfor
++        </ul>
++    % endif
+     ${helper.mathjax_script(post)}
+ </article>
+ ${comments.comment_link_script()}
+diff --git a/nikola/nikola.py b/nikola/nikola.py
+index 1ea265b..128dae7 100644
+--- a/nikola/nikola.py
++++ b/nikola/nikola.py
+@@ -381,6 +381,7 @@ class Nikola(object):
+             'OUTPUT_FOLDER': 'output',
+             'POSTS': (("posts/*.txt", "posts", "post.tmpl"),),
+             'PAGES': (("stories/*.txt", "stories", "story.tmpl"),),
++            'PAGES_LATEST_POSTS_COUNT': 10,
+             'PANDOC_OPTIONS': [],
+             'PRETTY_URLS': False,
+             'FUTURE_IS_NOW': False,
+@@ -769,6 +770,8 @@ class Nikola(object):
+         self._GLOBAL_CONTEXT['hidden_tags'] = self.config.get('HIDDEN_TAGS')
+         self._GLOBAL_CONTEXT['hidden_categories'] = self.config.get('HIDDEN_CATEGORIES')
+         self._GLOBAL_CONTEXT['url_replacer'] = self.url_replacer
++        self._GLOBAL_CONTEXT['pages_latest_posts_count'] = self.config[
++            'PAGES_LATEST_POSTS_COUNT']
+ 
+         self._GLOBAL_CONTEXT.update(self.config.get('GLOBAL_CONTEXT', {}))
+ 
+@@ -1432,7 +1435,7 @@ class Nikola(object):
+         if quit and not ignore_quit:
+             sys.exit(1)
+ 
+-    def generic_page_renderer(self, lang, post, filters):
++    def generic_page_renderer(self, lang, post, filters, latest_posts):
+         """Render post fragments to final HTML pages."""
+         context = {}
+         deps = post.deps(lang) + \
+@@ -1448,6 +1451,7 @@ class Nikola(object):
+             context['enable_comments'] = True
+         else:
+             context['enable_comments'] = self.config['COMMENTS_IN_STORIES']
++        context['latest_posts'] = latest_posts
+         extension = self.get_compiler(post.source_path).extension()
+         output_name = os.path.join(self.config['OUTPUT_FOLDER'],
+                                    post.destination_path(lang, extension))
+diff --git a/nikola/plugins/task/pages.py b/nikola/plugins/task/pages.py
+index d0edb56..82120dd 100644
+--- a/nikola/plugins/task/pages.py
++++ b/nikola/plugins/task/pages.py
+@@ -42,15 +42,24 @@ class RenderPages(Task):
+             "filters": self.site.config["FILTERS"],
+             "show_untranslated_posts": self.site.config['SHOW_UNTRANSLATED_POSTS'],
+             "demote_headers": self.site.config['DEMOTE_HEADERS'],
++            "pages_latest_posts_count": self.site.config[
++                'PAGES_LATEST_POSTS_COUNT'],
+         }
+         self.site.scan_posts()
+         yield self.group_task()
++        posts = self.site.posts
+         for lang in kw["translations"]:
++            if kw["show_untranslated_posts"]:
++                filtered_posts = posts[:kw["pages_latest_posts_count"]]
++            else:
++                filtered_posts = [x for x in posts
++                                  if x.is_translation_available(lang)][
++                                          :kw["pages_latest_posts_count"]]
+             for post in self.site.timeline:
+                 if not kw["show_untranslated_posts"] and not post.is_translation_available(lang):
+                     continue
+-                for task in self.site.generic_page_renderer(lang, post,
+-                                                            kw["filters"]):
++                for task in self.site.generic_page_renderer(
++                        lang, post, kw["filters"], filtered_posts):
+                     task['uptodate'] = task['uptodate'] + [config_changed(kw, 'nikola.plugins.task.pages')]
+                     task['basename'] = self.name
+                     task['task_dep'] = ['render_posts']

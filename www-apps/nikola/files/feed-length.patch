@@ -1,0 +1,16 @@
+diff --git a/nikola/plugins/task/rss.py b/nikola/plugins/task/rss.py
+index 59a948e..ece53b4 100644
+--- a/nikola/plugins/task/rss.py
++++ b/nikola/plugins/task/rss.py
+@@ -75,9 +75,9 @@ class GenerateRSS(Task):
+             deps = []
+             deps_uptodate = []
+             if kw["show_untranslated_posts"]:
+-                posts = self.site.posts[:10]
++                posts = self.site.posts
+             else:
+-                posts = [x for x in self.site.posts if x.is_translation_available(lang)][:10]
++                posts = [x for x in self.site.posts if x.is_translation_available(lang)]
+             for post in posts:
+                 deps += post.deps(lang)
+                 deps_uptodate += post.deps_uptodate(lang)

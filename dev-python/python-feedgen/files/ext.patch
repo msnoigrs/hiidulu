@@ -1,0 +1,1454 @@
+diff --git a/feedgen/compat.py b/feedgen/compat.py
+new file mode 100644
+index 0000000..dc9127e
+--- /dev/null
++++ b/feedgen/compat.py
+@@ -0,0 +1,7 @@
++# -*- coding: utf-8 -*-
++
++import sys
++if sys.version_info[0] >= 3:
++	string_types = str
++else:
++	string_types = basestring
+diff --git a/feedgen/entry.py b/feedgen/entry.py
+index 09ad9bd..501705c 100644
+--- a/feedgen/entry.py
++++ b/feedgen/entry.py
+@@ -12,8 +12,8 @@ from lxml import etree
+ from datetime import datetime
+ import dateutil.parser
+ import dateutil.tz
+-from feedgen.util import ensure_format
+-from six import string_types
++from feedgen.util import ensure_format, atom_content, atom_text_construct
++from feedgen.compat import string_types
+ 
+ 
+ class FeedEntry(object):
+@@ -25,21 +25,21 @@ class FeedEntry(object):
+ 		# ATOM
+ 		# required
+ 		self.__atom_id      = None
+-		self.__atom_title   = None
++		self.__atom_title   = None # atomTextConstruct
+ 		self.__atom_updated = datetime.now(dateutil.tz.tzutc())
+ 
+ 		# recommended
+ 		self.__atom_author  = None
+ 		self.__atom_content = None
+ 		self.__atom_link    = None
+-		self.__atom_summary = None
++		self.__atom_summary = None # atomTextConstruct
+ 
+ 		# optional
+ 		self.__atom_category    = None
+ 		self.__atom_contributor = None
+ 		self.__atom_published   = None
+ 		self.__atom_source      = None
+-		self.__atom_rights      = None
++		self.__atom_rights      = None # atomTextConstruct
+ 
+ 		# RSS
+ 		self.__rss_author      = None
+@@ -63,10 +63,12 @@ class FeedEntry(object):
+ 		entry = etree.Element('entry')
+ 		if not ( self.__atom_id and self.__atom_title and self.__atom_updated ):
+ 			raise ValueError('Required fields not set')
+-		id      = etree.SubElement(entry, 'id')
++		id = etree.SubElement(entry, 'id')
+ 		id.text = self.__atom_id
+-		title   = etree.SubElement(entry, 'title')
+-		title.text = self.__atom_title
++		title = etree.SubElement(entry, 'title')
++		atom_text_construct(title, self.__atom_title['title'],
++							self.__atom_title.get('type'),
++							self.__atom_title['CDATA'])
+ 		updated   = etree.SubElement(entry, 'updated')
+ 		updated.text = self.__atom_updated.isoformat()
+ 
+@@ -94,30 +96,12 @@ class FeedEntry(object):
+ 
+ 		if self.__atom_content:
+ 			content = etree.SubElement(entry, 'content')
+-			type = self.__atom_content.get('type')
++			typ = self.__atom_content.get('type')
+ 			if self.__atom_content.get('src'):
+ 				content.attrib['src'] = self.__atom_content['src']
+ 			elif self.__atom_content.get('content'):
+-				# Surround xhtml with a div tag, parse it and embed it
+-				if type == 'xhtml':
+-					content.append(etree.fromstring('''<div
+-							xmlns="http://www.w3.org/1999/xhtml">%s</div>''' % \
+-							self.__atom_content.get('content')))
+-				elif type == 'CDATA':
+-					content.text = etree.CDATA(self.__atom_content)
+-				# Emed the text in escaped form
+-				elif not type or type.startswith('text') or type == 'html':
+-					content.text = self.__atom_content.get('content')
+-				# Parse XML and embed it
+-				elif type.endswith('/xml') or type.endswith('+xml'):
+-					content.append(etree.fromstring(self.__atom_content['content']))
+-				# Everything else should be included base64 encoded
+-				else:
+-					raise ValueError('base64 encoded content is not supported at the moment.'
+-							+ 'If you are interested , please file a bug report.')
+-			# Add type description of the content
+-			if type:
+-				content.attrib['type'] = type
++				atom_content(content, self.__atom_content['content'],
++							 typ, self.__atom_content['CDATA'])
+ 
+ 		for l in self.__atom_link or []:
+ 			link = etree.SubElement(entry, 'link', href=l['href'])
+@@ -134,16 +118,18 @@ class FeedEntry(object):
+ 
+ 		if self.__atom_summary:
+ 			summary = etree.SubElement(entry, 'summary')
+-			summary.text = self.__atom_summary
++			atom_text_construct(summary, self.__atom_summary['summary'],
++								self.__atom_summary.get('type'),
++								self.__atom_summary['CDATA'])
+ 
+ 		for c in self.__atom_category or []:
+ 			cat = etree.SubElement(entry, 'category', term=c['term'])
+-			if c.get('schema'):
+-				cat.attrib['schema'] = c['schema']
++			if c.get('scheme'):
++				cat.attrib['scheme'] = c['scheme']
+ 			if c.get('label'):
+ 				cat.attrib['label'] = c['label']
+ 
+-		# Add author elements
++		# Add contributor elements
+ 		for c in self.__atom_contributor or []:
+ 			# Atom requires a name. Skip elements without.
+ 			if not c.get('name'):
+@@ -164,7 +150,9 @@ class FeedEntry(object):
+ 
+ 		if self.__atom_rights:
+ 			rights = etree.SubElement(feed, 'rights')
+-			rights.text = self.__atom_rights
++			atom_text_construct(rights, self.__atom_rights['rights'],
++								self.__atom_rights.get('type'),
++								self.__atom_rights['CDATA'])
+ 
+ 		if extensions:
+ 			for ext in self.__extensions.values() or []:
+@@ -181,23 +169,35 @@ class FeedEntry(object):
+ 			raise ValueError('Required fields not set')
+ 		if self.__rss_title:
+ 			title = etree.SubElement(entry, 'title')
+-			title.text = self.__rss_title
++			title.text = etree.CDATA(self.__rss_title['title']) \
++						 if self.__rss_title['CDATA'] else \
++							self.__rss_title['title']
+ 		if self.__rss_link:
+ 			link = etree.SubElement(entry, 'link')
+ 			link.text = self.__rss_link
+ 		if self.__rss_description and self.__rss_content:
+ 			description = etree.SubElement(entry, 'description')
+-			description.text = self.__rss_description
++			description.text = etree.CDATA(
++				self.__rss_description['description']) \
++				if self.__rss_description['CDATA'] else \
++				   self.__rss_description['description']
+ 			content = etree.SubElement(entry, '{%s}encoded' %
+ 									'http://purl.org/rss/1.0/modules/content/')
+ 			content.text = etree.CDATA(self.__rss_content['content']) \
+-				if self.__rss_content.get('type', '') == 'CDATA' else self.__rss_content['content']
++						   if self.__rss_content['CDATA'] else \
++							  self.__rss_content['content']
+ 		elif self.__rss_description:
+ 			description = etree.SubElement(entry, 'description')
+-			description.text = self.__rss_description
++			description.text = etree.CDATA(
++				self.__rss_description['description']) \
++				if self.__rss_description['CDATA'] else \
++				   self.__rss_description['description']
+ 		elif self.__rss_content:
+ 			description = etree.SubElement(entry, 'description')
+-			description.text = self.__rss_content['content']
++			description.text = etree.CDATA(
++				self.__rss_content['content']) \
++				if self.__rss_content['CDATA'] else \
++				   self.__rss_content['content']
+ 		for a in self.__rss_author or []:
+ 			author = etree.SubElement(entry, 'author')
+ 			author.text = a
+@@ -232,17 +232,21 @@ class FeedEntry(object):
+ 
+ 
+ 
+-	def title(self, title=None):
++	def title(self, title=None, type=None, cdata=False):
+ 		'''Get or set the title value of the entry. It should contain a human
+ 		readable title for the entry. Title is mandatory for both ATOM and RSS
+ 		and should not be blank.
+ 
+ 		:param title: The new title of the entry.
++		:param type: The type of content. 'text'/'html'/'xthml'.
++		:param cdata: If True then content would not be escaped.
+ 		:returns: The entriess title.
+ 		'''
+-		if not title is None:
+-			self.__atom_title = title
+-			self.__rss_title = title
++		if title:
++			self.__atom_title = {'title':title, 'CDATA':cdata}
++			self.__rss_title = {'title':title, 'CDATA':cdata}
++			if type:
++				self.__atom_title['type'] = type
+ 		return self.__atom_title
+ 
+ 
+@@ -255,7 +259,7 @@ class FeedEntry(object):
+ 		:param id: New Id of the entry.
+ 		:returns: Id of the entry.
+ 		'''
+-		if not id is None:
++		if id:
+ 			self.__atom_id = id
+ 			self.__rss_guid = id
+ 		return self.__atom_id
+@@ -282,7 +286,7 @@ class FeedEntry(object):
+ 		:param updated: The modification date.
+ 		:returns: Modification date as datetime.datetime
+ 		'''
+-		if not updated is None:
++		if updated:
+ 			if isinstance(updated, string_types):
+ 				updated = dateutil.parser.parse(updated)
+ 			if not isinstance(updated, datetime):
+@@ -328,19 +332,26 @@ class FeedEntry(object):
+ 		'''
+ 		if author is None and kwargs:
+ 			author = kwargs
+-		if not author is None:
++		if author:
+ 			if replace or self.__atom_author is None:
+ 				self.__atom_author = []
+ 			self.__atom_author += ensure_format( author,
+ 					set(['name', 'email', 'uri']), set(['name']))
+ 			self.__rss_author = []
+-			for a in self.__atom_author:
+-				if a.get('email'):
+-					self.__rss_author.append('%s (%s)' % ( a['email'], a['name'] ))
++			if self.__extensions and \
++			   'dc' in self.__extensions.keys() and \
++			   self.__extensions['dc']['rss']:
++				self.dc.dc_creator([x['name'] for x in self.__atom_author],
++								   replace)
++			else:
++				for a in self.__atom_author:
++					if a.get('email'):
++						self.__rss_author.append(
++							'%s (%s)' % ( a['email'], a['name'] ))
+ 		return self.__atom_author
+ 
+ 
+-	def content(self, content=None, src=None, type=None):
++	def content(self, content=None, src=None, type=None, cdata=False):
+ 		'''Get or set the cntent of the entry which contains or links to the
+ 		complete content of the entry. Content must be provided for ATOM entries
+ 		if there is no alternate link, and should be provided if there is no
+@@ -349,17 +360,20 @@ class FeedEntry(object):
+ 
+ 		:param content: The content of the feed entry.
+ 		:param src: Link to the entries content.
+-		:param type: If type is CDATA content would not be escaped.
++		:param type: The type of content. 'text'/'html'/'xthml' or a MIME type.
++		:param cdata: If True then content would not be escaped.
+ 		:returns: Content element of the entry.
+ 		'''
+-		if not src is None:
+-			self.__atom_content = {'src':src}
+-		elif not content is None:
+-			self.__atom_content = {'content':content}
+-			self.__rss_content = {'content':content}
+-			if not type is None:
++		if src:
++			if type is None:
++				raise ValueError('A type attribute is required in a content element that have a src attribute.')
++			self.__atom_content = {'src':src, 'type':type}
++		elif content:
++			self.__atom_content = {'content':content, 'CDATA':cdata}
++			self.__rss_content = {'content':content, 'CDATA':cdata}
++			if type:
+ 				self.__atom_content['type'] = type
+-				self.__rss_content['type'] = type
++
+ 		return self.__atom_content
+ 
+ 
+@@ -407,7 +421,7 @@ class FeedEntry(object):
+ 		'''
+ 		if link is None and kwargs:
+ 			link = kwargs
+-		if not link is None:
++		if link:
+ 			if replace or self.__atom_link is None:
+ 				self.__atom_link = []
+ 			self.__atom_link += ensure_format( link,
+@@ -427,7 +441,7 @@ class FeedEntry(object):
+ 		return self.__atom_link
+ 
+ 
+-	def summary(self, summary=None):
++	def summary(self, summary=None, type=None, cdata=False):
+ 		'''Get or set the summary element of an entry which conveys a short
+ 		summary, abstract, or excerpt of the entry. Summary is an ATOM only
+ 		element and should be provided if there either is no content provided for
+@@ -437,19 +451,25 @@ class FeedEntry(object):
+ 		previously set or contains the old value of summary.
+ 
+ 		:param summary: Summary of the entries contents.
++		:param type: The type of content. 'text'/'html'/'xthml'.
++		:param cdata: If True then content would not be escaped.
+ 		:returns: Summary of the entries contents.
+ 		'''
+-		if not summary is None:
++		if summary:
+ 			# Replace the RSS description with the summary if it was the summary
+ 			# before. Not if is the description.
+-			if not self.__rss_description or \
+-					self.__rss_description == self.__atom_summary:
+-				self.__rss_description = summary
+-			self.__atom_summary = summary
++			if (not self.__rss_description or
++				self.__rss_description['description'] ==
++				self.__atom_summary['summary']):
++				self.__rss_description = {'description':summary, 'CDATA':cdata}
++			self.__atom_summary = {'summary':summary, 'CDATA':cdata}
++			if type:
++				self.__atom_summary['type'] = type
+ 		return self.__atom_summary
+ 
+ 
+-	def description(self, description=None, isSummary=False):
++	def description(self, description=None, isSummary=True,
++					type=None, cdata=False):
+ 		'''Get or set the description value which is the item synopsis.
+ 		Description is an RSS only element. For ATOM feeds it is split in summary
+ 		and content. The isSummary parameter can be used to control which ATOM
+@@ -457,14 +477,21 @@ class FeedEntry(object):
+ 
+ 		:param description: Description of the entry.
+ 		:param isSummary: If the description should be used as content or summary.
++		:param type: The type of content. 'text'/'html'/'xthml'.
++		:param cdata: If True then content would not be escaped.
+ 		:returns: The entries description.
+ 		'''
+-		if not description is None:
+-			self.__rss_description = description
++		if description:
++			self.__rss_description['description'] = description
++			self.__rss_description['CDATA'] = cdata
+ 			if isSummary:
+-				self.__atom_summary = description
++				self.__atom_summary = {'summary':description, 'CDATA':cdata}
++				if type:
++					self.__atom_summary['type'] = type
+ 			else:
+-				self.__atom_content = description
++				self.__atom_content = {'content':description, 'CDATA':cdata}
++				if type:
++					self.__atom_content['type'] = type
+ 		return self.__rss_description
+ 
+ 
+@@ -490,7 +517,7 @@ class FeedEntry(object):
+ 		'''
+ 		if category is None and kwargs:
+ 			category = kwargs
+-		if not category is None:
++		if category:
+ 			if replace or self.__atom_category is None:
+ 				self.__atom_category = []
+ 			self.__atom_category += ensure_format(
+@@ -498,14 +525,14 @@ class FeedEntry(object):
+ 					set(['term', 'scheme', 'label']),
+ 					set(['term']) )
+ 			# Map the ATOM categories to RSS categories. Use the atom:label as
+-			# name or if not present the atom:term. The atom:schema is the
++			# name or if not present the atom:term. The atom:scheme is the
+ 			# rss:domain.
+ 			self.__rss_category = []
+ 			for cat in self.__atom_category:
+ 				rss_cat = {}
+ 				rss_cat['value'] = cat['label'] if cat.get('label') else cat['term']
+-				if cat.get('schema'):
+-					rss_cat['domain'] = cat['schema']
++				if cat.get('scheme'):
++					rss_cat['domain'] = cat['scheme']
+ 				self.__rss_category.append( rss_cat )
+ 		return self.__atom_category
+ 
+@@ -530,7 +557,7 @@ class FeedEntry(object):
+ 		'''
+ 		if contributor is None and kwargs:
+ 			contributor = kwargs
+-		if not contributor is None:
++		if contributor:
+ 			if replace or self.__atom_contributor is None:
+ 				self.__atom_contributor = []
+ 			self.__atom_contributor += ensure_format( contributor,
+@@ -549,7 +576,7 @@ class FeedEntry(object):
+ 		:param published: The creation date.
+ 		:returns: Creation date as datetime.datetime
+ 		'''
+-		if not published is None:
++		if published:
+ 			if isinstance(published, string_types):
+ 				published = dateutil.parser.parse(published)
+ 			if not isinstance(published, datetime):
+@@ -570,16 +597,20 @@ class FeedEntry(object):
+ 		return self.published(pubDate)
+ 
+ 
+-	def rights(self, rights=None):
++	def rights(self, rights=None, type=None, cdata=False):
+ 		'''Get or set the rights value of the entry which conveys information
+ 		about rights, e.g. copyrights, held in and over the entry. This ATOM value
+ 		will also set rss:copyright.
+ 
+ 		:param rights: Rights information of the feed.
++		:param type: The type of content. 'text'/'html'/'xthml'.
++		:param cdata: If True then content would not be escaped.
+ 		:returns: Rights information of the feed.
+ 		'''
+-		if not rights is None:
+-			self.__atom_rights = rights
++		if rights:
++			self.__atom_rights = {'rights':rights, 'CDATA':cdata}
++			if type:
++				self.__atom_rights['type'] = type
+ 		return self.__atom_rights
+ 
+ 
+@@ -590,7 +621,7 @@ class FeedEntry(object):
+ 		:param comments: URL to the comments page.
+ 		:returns: URL to the comments page.
+ 		'''
+-		if not comments is None:
++		if comments:
+ 			self.__rss_comments = comments
+ 		return self.__rss_comments
+ 
+@@ -608,7 +639,7 @@ class FeedEntry(object):
+ 		:param type: Mimetype of the linked media.
+ 		:returns: Data of the enclosure element.
+ 		'''
+-		if not url is None:
++		if url:
+ 			self.link( href=url, rel='enclosure', type=type, length=length )
+ 		return self.__rss_enclosure
+ 
+@@ -621,7 +652,7 @@ class FeedEntry(object):
+ 		:param ttl: Integer value representing the time to live.
+ 		:returns: Time to live of of the entry.
+ 		'''
+-		if not ttl is None:
++		if ttl:
+ 			self.__rss_ttl = int(ttl)
+ 		return self.__rss_ttl
+ 
+diff --git a/feedgen/ext/dc.py b/feedgen/ext/dc.py
+index 69835d2..ee69ce9 100644
+--- a/feedgen/ext/dc.py
++++ b/feedgen/ext/dc.py
+@@ -97,7 +97,7 @@ class DcBaseExtension(BaseExtension):
+ 		:param replace: Replace alredy set contributors (deault: False).
+ 		:returns: List of contributors.
+ 		'''
+-		if not contributor is None:
++		if contributor:
+ 			if not isinstance(contributor, list):
+ 				contributor = [contributor]
+ 			if replace or not self._dcelem_contributor:
+@@ -126,7 +126,7 @@ class DcBaseExtension(BaseExtension):
+ 		:param replace: Replace already set coverage (default: True).
+ 		:returns: Coverage of the feed.
+ 		'''
+-		if not coverage is None:
++		if coverage:
+ 			if not isinstance(coverage, list):
+ 				coverage = [coverage]
+ 			if replace or not self._dcelem_coverage:
+@@ -146,7 +146,7 @@ class DcBaseExtension(BaseExtension):
+ 		:param replace: Replace alredy set creators (deault: False).
+ 		:returns: List of creators.
+ 		'''
+-		if not creator is None:
++		if creator:
+ 			if not isinstance(creator, list):
+ 				creator = [creator]
+ 			if replace or not self._dcelem_creator:
+@@ -166,7 +166,7 @@ class DcBaseExtension(BaseExtension):
+ 		:param replace: Replace alredy set dates (deault: True).
+ 		:returns: List of dates.
+ 		'''
+-		if not date is None:
++		if date:
+ 			if not isinstance(date, list):
+ 				date = [date]
+ 			if replace or not self._dcelem_date:
+@@ -185,7 +185,7 @@ class DcBaseExtension(BaseExtension):
+ 		:param replace: Replace alredy set descriptions (deault: True).
+ 		:returns: List of descriptions.
+ 		'''
+-		if not description is None:
++		if description:
+ 			if not isinstance(description, list):
+ 				description = [description]
+ 			if replace or not self._dcelem_description:
+@@ -205,7 +205,7 @@ class DcBaseExtension(BaseExtension):
+ 		:param replace: Replace alredy set format (deault: True).
+ 		:returns: Format of the resource.
+ 		'''
+-		if not format is None:
++		if format:
+ 			if not isinstance(format, list):
+ 				format = [format]
+ 			if replace or not self._dcelem_format:
+@@ -225,7 +225,7 @@ class DcBaseExtension(BaseExtension):
+ 		:param replace: Replace alredy set identifier (deault: True).
+ 		:returns: Identifiers of the resource.
+ 		'''
+-		if not identifier is None:
++		if identifier:
+ 			if not isinstance(identifier, list):
+ 				identifier = [identifier]
+ 			if replace or not self._dcelem_identifier:
+@@ -243,7 +243,7 @@ class DcBaseExtension(BaseExtension):
+ 		:param replace: Replace alredy set languages (deault: True).
+ 		:returns: List of languages.
+ 		'''
+-		if not language is None:
++		if language:
+ 			if not isinstance(language, list):
+ 				language = [language]
+ 			if replace or not self._dcelem_language:
+@@ -263,7 +263,7 @@ class DcBaseExtension(BaseExtension):
+ 		:param replace: Replace alredy set publishers (deault: False).
+ 		:returns: List of publishers.
+ 		'''
+-		if not publisher is None:
++		if publisher:
+ 			if not isinstance(publisher, list):
+ 				publisher = [publisher]
+ 			if replace or not self._dcelem_publisher:
+@@ -282,7 +282,7 @@ class DcBaseExtension(BaseExtension):
+ 		:param replace: Replace alredy set relations (deault: False).
+ 		:returns: List of relations.
+ 		'''
+-		if not relation is None:
++		if relation:
+ 			if not isinstance(relation, list):
+ 				relation = [relation]
+ 			if replace or not self._dcelem_relation:
+@@ -302,7 +302,7 @@ class DcBaseExtension(BaseExtension):
+ 		:param replace: Replace alredy set rightss (deault: False).
+ 		:returns: List of rights information.
+ 		'''
+-		if not rights is None:
++		if rights:
+ 			if not isinstance(rights, list):
+ 				rights = [rights]
+ 			if replace or not self._dcelem_rights:
+@@ -327,7 +327,7 @@ class DcBaseExtension(BaseExtension):
+ 		:param replace: Replace alredy set sources (deault: False).
+ 		:returns: List of sources.
+ 		'''
+-		if not source is None:
++		if source:
+ 			if not isinstance(source, list):
+ 				source = [source]
+ 			if replace or not self._dcelem_source:
+@@ -346,7 +346,7 @@ class DcBaseExtension(BaseExtension):
+ 		:param replace: Replace alredy set subjects (deault: False).
+ 		:returns: List of subjects.
+ 		'''
+-		if not subject is None:
++		if subject:
+ 			if not isinstance(subject, list):
+ 				subject = [subject]
+ 			if replace or not self._dcelem_subject:
+@@ -365,7 +365,7 @@ class DcBaseExtension(BaseExtension):
+ 		:param replace: Replace alredy set titles (deault: False).
+ 		:returns: List of titles.
+ 		'''
+-		if not title is None:
++		if title:
+ 			if not isinstance(title, list):
+ 				title = [title]
+ 			if replace or not self._dcelem_title:
+@@ -385,7 +385,7 @@ class DcBaseExtension(BaseExtension):
+ 		:param replace: Replace alredy set types (deault: False).
+ 		:returns: List of types.
+ 		'''
+-		if not type is None:
++		if type:
+ 			if not isinstance(type, list):
+ 				type = [type]
+ 			if replace or not self._dcelem_type:
+diff --git a/feedgen/ext/podcast.py b/feedgen/ext/podcast.py
+index 616473e..37bf7b7 100644
+--- a/feedgen/ext/podcast.py
++++ b/feedgen/ext/podcast.py
+@@ -50,7 +50,7 @@ class PodcastExtension(BaseExtension):
+ 			author = etree.SubElement(channel, '{%s}author' % ITUNES_NS)
+ 			author.text = self.__itunes_author
+ 
+-		if not self.__itunes_block is None:
++		if self.__itunes_block:
+ 			block = etree.SubElement(channel, '{%s}block' % ITUNES_NS)
+ 			block.text = 'yes' if self.__itunes_block else 'no'
+ 
+@@ -104,7 +104,7 @@ class PodcastExtension(BaseExtension):
+ 		:param itunes_author: The author of the podcast.
+ 		:returns: The author of the podcast.
+ 		'''
+-		if not itunes_author is None:
++		if itunes_author:
+ 			self.__itunes_author = itunes_author
+ 		return self.__itunes_author
+ 
+@@ -116,7 +116,7 @@ class PodcastExtension(BaseExtension):
+ 		:param itunes_block: Block the podcast.
+ 		:returns: If the podcast is blocked.
+ 		'''
+-		if not itunes_block is None:
++		if itunes_block:
+ 			self.__itunes_block = itunes_block
+ 		return self.__itunes_block
+ 
+@@ -132,11 +132,11 @@ class PodcastExtension(BaseExtension):
+ 		:param itunes_subcategory: Subcategory of the podcast.
+ 		:returns: Category data of the podcast.
+ 		'''
+-		if not itunes_category is None:
++		if itunes_category:
+ 			if not itunes_category in self._itunes_categories.keys():
+ 				raise ValueError('Invalid category')
+ 			cat = {'cat':itunes_category}
+-			if not itunes_subcategory is None:
++			if itunes_subcategory:
+ 				if not itunes_subcategory in self._itunes_categories[itunes_category]:
+ 					raise ValueError('Invalid subcategory')
+ 				cat['sub'] = itunes_subcategory
+@@ -165,7 +165,7 @@ class PodcastExtension(BaseExtension):
+ 		:param itunes_image: Image of the podcast.
+ 		:returns: Image of the podcast.
+ 		'''
+-		if not itunes_image is None:
++		if itunes_image:
+ 			if not ( itunes_image.endswith('.jpg') or itunes_image.endswith('.png') ):
+ 				ValueError('Image file must be png or jpg')
+ 			self.__itunes_image = itunes_image
+@@ -188,7 +188,7 @@ class PodcastExtension(BaseExtension):
+ 		:param itunes_explicit: If the podcast contains explicit material.
+ 		:returns: If the podcast contains explicit material.
+ 		'''
+-		if not itunes_explicit is None:
++		if itunes_explicit:
+ 			if not itunes_explicit in ('', 'yes', 'no', 'clean'):
+ 				raise ValueError('Invalid value for explicit tag')
+ 			self.__itunes_explicit = itunes_explicit
+@@ -207,7 +207,7 @@ class PodcastExtension(BaseExtension):
+ 		:param itunes_complete: If the podcast is complete.
+ 		:returns: If the podcast is complete.
+ 		'''
+-		if not itunes_complete is None:
++		if itunes_complete:
+ 			if not itunes_complete in ('yes', 'no', '', True, False):
+ 				raise ValueError('Invalid value for complete tag')
+ 			if itunes_complete == True:
+@@ -229,7 +229,7 @@ class PodcastExtension(BaseExtension):
+ 		:param itunes_new_feed_url: New feed URL.
+ 		:returns: New feed URL.
+ 		'''
+-		if not itunes_new_feed_url is None:
++		if itunes_new_feed_url:
+ 			self.__itunes_new_feed_url = itunes_new_feed_url
+ 		return self.__itunes_new_feed_url
+ 
+@@ -243,7 +243,7 @@ class PodcastExtension(BaseExtension):
+ 		:param itunes_owner: The owner of the feed.
+ 		:returns: Data of the owner of the feed.
+ 		'''
+-		if not name is None:
++		if name:
+ 			if name and email:
+ 				self.__itunes_owner = {'name':name, 'email':email}
+ 			elif not name and not email:
+@@ -261,7 +261,7 @@ class PodcastExtension(BaseExtension):
+ 		:param itunes_subtitle: Subtitle of the podcast.
+ 		:returns: Subtitle of the podcast.
+ 		'''
+-		if not itunes_subtitle is None:
++		if itunes_subtitle:
+ 			self.__itunes_subtitle = itunes_subtitle
+ 		return self.__itunes_subtitle
+ 
+@@ -277,7 +277,7 @@ class PodcastExtension(BaseExtension):
+ 		:param itunes_summary: Summary of the podcast.
+ 		:returns: Summary of the podcast.
+ 		'''
+-		if not itunes_summary is None:
++		if itunes_summary:
+ 			self.__itunes_summary = itunes_summary
+ 		return self.__itunes_summary
+ 
+diff --git a/feedgen/ext/podcast_entry.py b/feedgen/ext/podcast_entry.py
+index 179694c..45e806b 100644
+--- a/feedgen/ext/podcast_entry.py
++++ b/feedgen/ext/podcast_entry.py
+@@ -44,7 +44,7 @@ class PodcastEntryExtension(BaseEntryExtension):
+ 			author = etree.SubElement(entry, '{%s}author' % ITUNES_NS)
+ 			author.text = self.__itunes_author
+ 
+-		if not self.__itunes_block is None:
++		if self.__itunes_block:
+ 			block = etree.SubElement(entry, '{%s}block' % ITUNES_NS)
+ 			block.text = 'yes' if self.__itunes_block else 'no'
+ 
+@@ -60,11 +60,11 @@ class PodcastEntryExtension(BaseEntryExtension):
+ 			explicit = etree.SubElement(entry, '{%s}explicit' % ITUNES_NS)
+ 			explicit.text = self.__itunes_explicit
+ 
+-		if not self.__itunes_is_closed_captioned is None:
++		if self.__itunes_is_closed_captioned:
+ 			is_closed_captioned = etree.SubElement(entry, '{%s}isClosedCaptioned' % ITUNES_NS)
+ 			is_closed_captioned.text = 'yes' if self.__itunes_is_closed_captioned else 'no'
+ 
+-		if not self.__itunes_order is None and self.__itunes_order >= 0:
++		if self.__itunes_order and self.__itunes_order >= 0:
+ 			order = etree.SubElement(entry, '{%s}order' % ITUNES_NS)
+ 			order.text = str(self.__itunes_order)
+ 
+@@ -88,7 +88,7 @@ class PodcastEntryExtension(BaseEntryExtension):
+ 		:param itunes_author: The author of the podcast.
+ 		:returns: The author of the podcast.
+ 		'''
+-		if not itunes_author is None:
++		if itunes_author:
+ 			self.__itunes_author = itunes_author
+ 		return self.__itunes_author
+ 
+@@ -100,7 +100,7 @@ class PodcastEntryExtension(BaseEntryExtension):
+ 		:param itunes_block: Block podcast episodes.
+ 		:returns: If the podcast episode is blocked.
+ 		'''
+-		if not itunes_block is None:
++		if itunes_block:
+ 			self.__itunes_block = itunes_block
+ 		return self.__itunes_block
+ 
+@@ -126,7 +126,7 @@ class PodcastEntryExtension(BaseEntryExtension):
+ 		:param itunes_image: Image of the podcast.
+ 		:returns: Image of the podcast.
+ 		'''
+-		if not itunes_image is None:
++		if itunes_image:
+ 			if not ( itunes_image.endswith('.jpg') or itunes_image.endswith('.png') ):
+ 				ValueError('Image file must be png or jpg')
+ 			self.__itunes_image = itunes_image
+@@ -147,7 +147,7 @@ class PodcastEntryExtension(BaseEntryExtension):
+ 		:param itunes_duration: Duration of the podcast episode.
+ 		:returns: Duration of the podcast episode.
+ 		'''
+-		if not itunes_duration is None:
++		if itunes_duration:
+ 			itunes_duration = str(itunes_duration)
+ 			if len(itunes_duration.split(':')) > 3 or \
+ 					itunes_duration.lstrip('0123456789:') != '':
+@@ -172,7 +172,7 @@ class PodcastEntryExtension(BaseEntryExtension):
+ 		:param itunes_explicit: If the podcast episode contains explicit material.
+ 		:returns: If the podcast episode contains explicit material.
+ 		'''
+-		if not itunes_explicit is None:
++		if itunes_explicit:
+ 			if not itunes_explicit in ('', 'yes', 'no', 'clean'):
+ 				raise ValueError('Invalid value for explicit tag')
+ 			self.__itunes_explicit = itunes_explicit
+@@ -188,7 +188,7 @@ class PodcastEntryExtension(BaseEntryExtension):
+ 		:param is_closed_captioned: If the episode has closed captioning support.
+ 		:returns: If the episode has closed captioning support.
+ 		'''
+-		if not itunes_is_closed_captioned is None:
++		if itunes_is_closed_captioned:
+ 			self.__itunes_is_closed_captioned = itunes_is_closed_captioned in ('yes', True)
+ 		return self.__itunes_is_closed_captioned
+ 
+@@ -209,7 +209,7 @@ class PodcastEntryExtension(BaseEntryExtension):
+ 		:param itunes_order: The order of the episode.
+ 		:returns: The order of the episode.
+ 		'''
+-		if not itunes_order is None:
++		if itunes_order:
+ 			self.__itunes_order = int(itunes_order)
+ 		return self.__itunes_order
+ 
+@@ -222,7 +222,7 @@ class PodcastEntryExtension(BaseEntryExtension):
+ 		:param itunes_subtitle: Subtitle of the podcast episode.
+ 		:returns: Subtitle of the podcast episode.
+ 		'''
+-		if not itunes_subtitle is None:
++		if itunes_subtitle:
+ 			self.__itunes_subtitle = itunes_subtitle
+ 		return self.__itunes_subtitle
+ 
+@@ -238,6 +238,6 @@ class PodcastEntryExtension(BaseEntryExtension):
+ 		:param itunes_summary: Summary of the podcast episode.
+ 		:returns: Summary of the podcast episode.
+ 		'''
+-		if not itunes_summary is None:
++		if itunes_summary:
+ 			self.__itunes_summary = itunes_summary
+ 		return self.__itunes_summary
+diff --git a/feedgen/feed.py b/feedgen/feed.py
+index bfe1717..aae6a8a 100644
+--- a/feedgen/feed.py
++++ b/feedgen/feed.py
+@@ -14,10 +14,10 @@ from datetime import datetime
+ import dateutil.parser
+ import dateutil.tz
+ from feedgen.entry import FeedEntry
+-from feedgen.util import ensure_format
++from feedgen.util import ensure_format, atom_text_construct
+ import feedgen.version
+ import sys
+-from six import string_types
++from feedgen.compat import string_types
+ 
+ 
+ _feedgen_version = feedgen.version.version_str
+@@ -36,7 +36,7 @@ class FeedGenerator(object):
+ 		# http://www.atomenabled.org/developers/syndication/
+ 		# required
+ 		self.__atom_id      = None
+-		self.__atom_title   = None
++		self.__atom_title   = None # atomTextConstruct
+ 		self.__atom_updated = datetime.now(dateutil.tz.tzutc())
+ 
+ 		# recommended
+@@ -44,7 +44,7 @@ class FeedGenerator(object):
+ 		self.__atom_link   = None # {href*, rel, type, hreflang, title, length}
+ 
+ 		# optional
+-		self.__atom_category    = None # {term*, schema, label}
++		self.__atom_category    = None # {term*, scheme, label}
+ 		self.__atom_contributor = None
+ 		self.__atom_generator   = {
+ 				'value'  :'python-feedgen',
+@@ -52,8 +52,8 @@ class FeedGenerator(object):
+ 				'version':feedgen.version.version_str } #{value*,uri,version}
+ 		self.__atom_icon     = None
+ 		self.__atom_logo     = None
+-		self.__atom_rights   = None
+-		self.__atom_subtitle = None
++		self.__atom_rights   = None # atomTextConstruct
++		self.__atom_subtitle = None # atomTextConstruct
+ 
+ 		# other
+ 		self.__atom_feed_xml_lang = None
+@@ -106,10 +106,12 @@ class FeedGenerator(object):
+ 					([] if self.__atom_id else ['id']) + \
+ 					([] if self.__atom_updated else ['updated']))
+ 			raise ValueError('Required fields not set (%s)' % missing)
+-		id      = etree.SubElement(feed, 'id')
++		id = etree.SubElement(feed, 'id')
+ 		id.text = self.__atom_id
+-		title   = etree.SubElement(feed, 'title')
+-		title.text = self.__atom_title
++		title = etree.SubElement(feed, 'title')
++		atom_text_construct(title, self.__atom_title['title'],
++							self.__atom_title.get('type'),
++							self.__atom_title['CDATA'])
+ 		updated   = etree.SubElement(feed, 'updated')
+ 		updated.text = self.__atom_updated.isoformat()
+ 
+@@ -143,12 +145,12 @@ class FeedGenerator(object):
+ 
+ 		for c in self.__atom_category or []:
+ 			cat = etree.SubElement(feed, 'category', term=c['term'])
+-			if c.get('schema'):
+-				cat.attrib['schema'] = c['schema']
++			if c.get('scheme'):
++				cat.attrib['scheme'] = c['scheme']
+ 			if c.get('label'):
+ 				cat.attrib['label'] = c['label']
+ 
+-		# Add author elements
++		# Add contributor elements
+ 		for c in self.__atom_contributor or []:
+ 			# Atom requires a name. Skip elements without.
+ 			if not c.get('name'):
+@@ -181,11 +183,15 @@ class FeedGenerator(object):
+ 
+ 		if self.__atom_rights:
+ 			rights = etree.SubElement(feed, 'rights')
+-			rights.text = self.__atom_rights
++			atom_text_construct(rights, self.__atom_rights['rights'],
++								self.__atom_rights.get('type'),
++								self.__atom_rights['CDATA'])
+ 
+ 		if self.__atom_subtitle:
+ 			subtitle = etree.SubElement(feed, 'subtitle')
+-			subtitle.text = self.__atom_subtitle
++			atom_text_construct(subtitle, self.__atom_subtitle['subtitle'],
++								self.__atom_subtitle.get('type'),
++								self.__atom_subtitle['CDATA'])
+ 
+ 		if extensions:
+ 			for ext in self.__extensions.values() or []:
+@@ -200,28 +206,38 @@ class FeedGenerator(object):
+ 		return feed, doc
+ 
+ 
+-	def atom_str(self, pretty=False, extensions=True, encoding="unicode"):
++	def atom_str(self, pretty=False, extensions=True, encoding="unicode",
++				 xml_declaration=False):
+ 		'''Generates an ATOM feed and returns the feed XML as string.
+ 
+ 		:param pretty: If the feed should be split into multiple lines and
+ 			properly indented.
+ 		:param extensions: Enable or disable the loaded extensions for the xml
+ 			generation (default: enabled).
++		:param encoding: Encoding (default: unicode)
++		:param xml_declaration: Output a xml declaration at first line If true
+ 		:returns: String representation of the ATOM feed.
+ 		'''
+ 		feed, doc = self._create_atom(extensions=extensions)
+-		return etree.tostring(feed, pretty_print=pretty, encoding=encoding)
++		return etree.tostring(feed, pretty_print=pretty, encoding=encoding,
++							  xml_declaration=xml_declaration)
+ 
+ 
+-	def atom_file(self, filename, extensions=True, pretty=False, encoding="UTF-8"):
++	def atom_file(self, filename, extensions=True, pretty=False,
++				  encoding="UTF-8", xml_declaration=True):
+ 		'''Generates an ATOM feed and write the resulting XML to a file.
+ 
+ 		:param filename: Name of file to write, or a file-like object, or a URL.
+ 		:param extensions: Enable or disable the loaded extensions for the xml
+ 			generation (default: enabled).
++		:param pretty: If the feed should be split into multiple lines and
++			properly indented.
++		:param encoding: Encoding (default: UTF-8)
++		:param xml_declaration: Output a xml declaration at first line If true
+ 		'''
+ 		feed, doc = self._create_atom(extensions=extensions)
+-		doc.write(filename, pretty_print=pretty, encoding=encoding)
++		doc.write(filename, pretty_print=pretty, encoding=encoding,
++				  xml_declaration=xml_declaration)
+ 
+ 
+ 	def _create_rss(self, extensions=True):
+@@ -246,11 +262,14 @@ class FeedGenerator(object):
+ 					([] if self.__rss_description else ['description']))
+ 			raise ValueError('Required fields not set (%s)' % missing)
+ 		title = etree.SubElement(channel, 'title')
+-		title.text = self.__rss_title
++		title.text = etree.CDATA(self.__rss_title['title']) \
++					 if self.__rss_title['CDATA'] else self.__rss_title['title']
+ 		link = etree.SubElement(channel, 'link')
+ 		link.text = self.__rss_link
+ 		desc = etree.SubElement(channel, 'description')
+-		desc.text = self.__rss_description
++		desc.text = etree.CDATA(self.__rss_description['description']) \
++					if self.__rss_description['CDATA'] else \
++					   self.__rss_description['description']
+ 		for ln in  self.__atom_link or []:
+ 			# It is recommended to include a atom self link in rss documents…
+ 			if ln.get('rel') == 'self':
+@@ -282,7 +301,9 @@ class FeedGenerator(object):
+ 			cloud.attrib['protocol'] = self.__rss_cloud.get('protocol')
+ 		if self.__rss_copyright:
+ 			copyright = etree.SubElement(channel, 'copyright')
+-			copyright.text = self.__rss_copyright
++			copyright.text = etree.CDATA(self.__rss_copyright['copyright']) \
++					if self.__rss_copyright['CDATA'] else \
++					   self.__rss_copyright['copyright']
+ 		if self.__rss_docs:
+ 			docs = etree.SubElement(channel, 'docs')
+ 			docs.text = self.__rss_docs
+@@ -295,7 +316,8 @@ class FeedGenerator(object):
+ 			url.text = self.__rss_image.get('url')
+ 			title = etree.SubElement(image, 'title')
+ 			title.text = self.__rss_image['title'] \
+-					if self.__rss_image.get('title') else self.__rss_title
++					if self.__rss_image.get('title') else \
++					   self.__rss_title['title']
+ 			link = etree.SubElement(image, 'link')
+ 			link.text = self.__rss_image['link'] \
+ 					if self.__rss_image.get('link') else self.__rss_link
+@@ -361,31 +383,41 @@ class FeedGenerator(object):
+ 		return feed, doc
+ 
+ 
+-	def rss_str(self, pretty=False, extensions=True, encoding="unicode"):
++	def rss_str(self, pretty=False, extensions=True, encoding="unicode",
++				xml_declaration=False):
+ 		'''Generates an RSS feed and returns the feed XML as string.
+ 
+ 		:param pretty: If the feed should be split into multiple lines and
+ 			properly indented.
+ 		:param extensions: Enable or disable the loaded extensions for the xml
+ 			generation (default: enabled).
++		:param encoding: Encoding (default: unicode)
++		:param xml_declaration: Output a xml declaration at first line If true
+ 		:returns: String representation of the RSS feed.
+ 		'''
+ 		feed, doc = self._create_rss(extensions=extensions)
+-		return etree.tostring(feed, pretty_print=pretty, encoding=encoding)
++		return etree.tostring(feed, pretty_print=pretty, encoding=encoding,
++							  xml_declaration=xml_declaration)
+ 
+ 
+-	def rss_file(self, filename, extensions=True, pretty=False, encoding="UTF-8"):
++	def rss_file(self, filename, extensions=True, pretty=False,
++				 encoding="UTF-8", xml_declaration=True):
+ 		'''Generates an RSS feed and write the resulting XML to a file.
+ 
+ 		:param filename: Name of file to write, or a file-like object, or a URL.
+ 		:param extensions: Enable or disable the loaded extensions for the xml
+ 			generation (default: enabled).
++		:param pretty: If the feed should be split into multiple lines and
++			properly indented.
++		:param encoding: Encoding (default: UTF-8)
++		:param xml_declaration: Output a xml declaration at first line If true
+ 		'''
+ 		feed, doc = self._create_rss(extensions=extensions)
+-		doc.write(filename, pretty_print=pretty, encoding=encoding)
++		doc.write(filename, pretty_print=pretty, encoding=encoding,
++				  xml_declaration=xml_declaration)
+ 
+ 
+-	def title(self, title=None):
++	def title(self, title=None, type=None, cdata=False):
+ 		'''Get or set the title value of the feed. It should contain a human
+ 		readable title for the feed. Often the same as the title of the
+ 		associated website. Title is mandatory for both ATOM and RSS and should
+@@ -393,10 +425,14 @@ class FeedGenerator(object):
+ 
+ 		:param title: The new title of the feed.
+ 		:returns: The feeds title.
++		:param type: The type of content. 'text'/'html'/'xthml'.
++		:param cdata: If True then content would not be escaped.
+ 		'''
+-		if not title is None:
+-			self.__atom_title = title
+-			self.__rss_title = title
++		if title:
++			self.__atom_title = {'title':title, 'CDATA':cdata}
++			self.__rss_title = {'title':title, 'CDATA':cdata}
++			if type:
++				self.__atom_title['type'] = type
+ 		return self.__atom_title
+ 
+ 
+@@ -410,7 +446,7 @@ class FeedGenerator(object):
+ 		:returns: Id of the feed.
+ 		'''
+ 
+-		if not id is None:
++		if id:
+ 			self.__atom_id = id
+ 		return self.__atom_id
+ 
+@@ -431,7 +467,7 @@ class FeedGenerator(object):
+ 		:param updated: The modification date.
+ 		:returns: Modification date as datetime.datetime
+ 		'''
+-		if not updated is None:
++		if updated:
+ 			if isinstance(updated, string_types):
+ 				updated = dateutil.parser.parse(updated)
+ 			if not isinstance(updated, datetime):
+@@ -499,15 +535,21 @@ class FeedGenerator(object):
+ 		'''
+ 		if author is None and kwargs:
+ 			author = kwargs
+-		if not author is None:
++		if author:
+ 			if replace or self.__atom_author is None:
+ 				self.__atom_author = []
+ 			self.__atom_author += ensure_format( author,
+ 					set(['name', 'email', 'uri']), set(['name']))
+ 			self.__rss_author = []
+-			for a in self.__atom_author:
+-				if a.get('email'):
+-					self.__rss_author.append(a['email'])
++			if self.__extensions and \
++			   'dc' in self.__extensions and self.__extensions['dc']['rss']:
++				self.dc.dc_creator([x['name'] for x in self.__atom_author],
++								   replace)
++			else:
++				for a in self.__atom_author:
++					if a.get('email'):
++						self.__rss_author.append(
++							'%s (%s)' % ( a['email'], a['name'] ))
+ 		return self.__atom_author
+ 
+ 
+@@ -555,7 +597,7 @@ class FeedGenerator(object):
+ 		'''
+ 		if link is None and kwargs:
+ 			link = kwargs
+-		if not link is None:
++		if link:
+ 			if replace or self.__atom_link is None:
+ 				self.__atom_link = []
+ 			self.__atom_link += ensure_format( link,
+@@ -593,7 +635,7 @@ class FeedGenerator(object):
+ 		'''
+ 		if category is None and kwargs:
+ 			category = kwargs
+-		if not category is None:
++		if category:
+ 			if replace or self.__atom_category is None:
+ 				self.__atom_category = []
+ 			self.__atom_category += ensure_format(
+@@ -601,14 +643,14 @@ class FeedGenerator(object):
+ 					set(['term', 'scheme', 'label']),
+ 					set(['term']) )
+ 			# Map the ATOM categories to RSS categories. Use the atom:label as
+-			# name or if not present the atom:term. The atom:schema is the
++			# name or if not present the atom:term. The atom:scheme is the
+ 			# rss:domain.
+ 			self.__rss_category = []
+ 			for cat in self.__atom_category:
+ 				rss_cat = {}
+ 				rss_cat['value'] = cat['label'] if cat.get('label') else cat['term']
+-				if cat.get('schema'):
+-					rss_cat['domain'] = cat['schema']
++				if cat.get('scheme'):
++					rss_cat['domain'] = cat['scheme']
+ 				self.__rss_category.append( rss_cat )
+ 		return self.__atom_category
+ 
+@@ -626,7 +668,7 @@ class FeedGenerator(object):
+ 		:param protocol: Can be either HTTP-POST, XML-RPC or SOAP 1.1.
+ 		:returns: Dictionary containing the cloud data.
+ 		'''
+-		if not domain is None:
++		if domain:
+ 			self.__rss_cloud = {'domain':domain, 'port':port, 'path':path,
+ 					'registerProcedure':registerProcedure, 'protocol':protocol}
+ 		return self.__rss_cloud
+@@ -652,7 +694,7 @@ class FeedGenerator(object):
+ 		'''
+ 		if contributor is None and kwargs:
+ 			contributor = kwargs
+-		if not contributor is None:
++		if contributor:
+ 			if replace or self.__atom_contributor is None:
+ 				self.__atom_contributor = []
+ 			self.__atom_contributor += ensure_format( contributor,
+@@ -669,11 +711,11 @@ class FeedGenerator(object):
+ 		:param version: Version of the software.
+ 		:param uri: URI the software can be found.
+ 		'''
+-		if not generator is None:
++		if generator:
+ 			self.__atom_generator = {'value':generator}
+-			if not version is None:
++			if version:
+ 				self.__atom_generator['version'] = version
+-			if not uri is None:
++			if uri:
+ 				self.__atom_generator['uri'] = uri
+ 			self.__rss_generator = generator
+ 		return self.__atom_generator
+@@ -687,7 +729,7 @@ class FeedGenerator(object):
+ 		:param icon: URI of the feeds icon.
+ 		:returns: URI of the feeds icon.
+ 		'''
+-		if not icon is None:
++		if icon:
+ 			self.__atom_icon = icon
+ 		return self.__atom_icon
+ 
+@@ -701,7 +743,7 @@ class FeedGenerator(object):
+ 		:param logo: Logo of the feed.
+ 		:returns: Logo of the feed.
+ 		'''
+-		if not logo is None:
++		if logo:
+ 			self.__atom_logo = logo
+ 			self.__rss_image = { 'url' : logo }
+ 		return self.__atom_logo
+@@ -721,11 +763,11 @@ class FeedGenerator(object):
+ 		:param description: Title of the link.
+ 		:returns: Data of the image as dictionary.
+ 		'''
+-		if not url is None:
++		if url:
+ 			self.__rss_image = { 'url' : url }
+-			if not title is None:
++			if title:
+ 				self.__rss_image['title'] = title
+-			if not link is None:
++			if link:
+ 				self.__rss_image['link'] = link
+ 			if width:
+ 				self.__rss_image['width'] = width
+@@ -735,54 +777,67 @@ class FeedGenerator(object):
+ 		return self.__rss_image
+ 
+ 
+-	def rights(self, rights=None):
++	def rights(self, rights=None, type=None, cdata=False):
+ 		'''Get or set the rights value of the feed which conveys information
+ 		about rights, e.g. copyrights, held in and over the feed. This ATOM value
+ 		will also set rss:copyright.
+ 
+ 		:param rights: Rights information of the feed.
++		:param type: The type of content. 'text'/'html'/'xthml'.
++		:param cdata: If True then content would not be escaped.
++		:returns: Rights information of the feed.
+ 		'''
+-		if not rights is None:
+-			self.__atom_rights = rights
+-			self.__rss_copyright = rights
++		if rights:
++			self.__atom_rights = {'rights':rights, 'CDATA':cdata}
++			self.__rss_copyright = {'copyright':rights, 'CDATA':cdata}
++			if type:
++				self.__atom_rights['type'] = type
+ 		return self.__atom_rights
+ 
+ 
+-	def copyright(self, copyright=None):
++	def copyright(self, copyright=None, type=None, cdata=False):
+ 		'''Get or set the copyright notice for content in the channel. This RSS
+ 		value will also set the atom:rights value.
+ 
+ 		:param copyright: The copyright notice.
++		:param type: The type of content. 'text'/'html'/'xthml'.
++		:param cdata: If True then content would not be escaped.
+ 		:returns: The copyright notice.
+ 		'''
+-		return self.rights( copyright )
++		return self.rights(copyright, type, cdata)
+ 
+ 
+-	def subtitle(self, subtitle=None):
++	def subtitle(self, subtitle=None, type=None, cdata=False):
+ 		'''Get or set the subtitle value of the cannel which contains a
+ 		human-readable description or subtitle for the feed. This ATOM property
+ 		will also set the value for rss:description.
+ 
+ 		:param subtitle: The subtitle of the feed.
++		:param type: The type of content. 'text'/'html'/'xthml'.
++		:param cdata: If True then content would not be escaped.
+ 		:returns: The subtitle of the feed.
+ 		'''
+-		if not subtitle is None:
+-			self.__atom_subtitle   = subtitle
+-			self.__rss_description = subtitle
++		if subtitle:
++			self.__atom_subtitle = {'subtitle':subtitle, 'CDATA':cdata}
++			self.__rss_description = {'description':subtitle, 'CDATA':cdata}
++			if type:
++				self.__atom_subtitle['type'] = type
+ 		return self.__atom_subtitle
+ 
+ 
+-	def description(self, description=None):
++	def description(self, description=None, type=None, cdata=False):
+ 		'''Set and get the description of the feed. This is an RSS only element
+ 		which is a phrase or sentence describing the channel. It is mandatory for
+ 		RSS feeds. It is roughly the same as atom:subtitle. Thus setting this
+ 		will also set atom:subtitle.
+ 
+ 		:param description: Description of the channel.
++		:param type: The type of content. 'text'/'html'/'xthml'.
++		:param cdata: If True then content would not be escaped.
+ 		:returns: Description of the channel.
+ 
+ 		'''
+-		return self.subtitle( description )
++		return self.subtitle(description, type, cdata)
+ 
+ 
+ 	def docs(self, docs=None):
+@@ -797,7 +852,7 @@ class FeedGenerator(object):
+ 		:param docs: URL of the format documentation.
+ 		:returns: URL of the format documentation.
+ 		'''
+-		if not docs is None:
++		if docs:
+ 			self.__rss_docs = docs
+ 		return self.__rss_docs
+ 
+@@ -813,7 +868,7 @@ class FeedGenerator(object):
+ 		:param language: Language of the feed.
+ 		:returns: Language of the feed.
+ 		'''
+-		if not language is None:
++		if language:
+ 			self.__rss_language = language
+ 			self.__atom_feed_xml_lang = language
+ 		return self.__rss_language
+@@ -826,7 +881,7 @@ class FeedGenerator(object):
+ 		:param managingEditor: Email adress of the managing editor.
+ 		:returns: Email adress of the managing editor.
+ 		'''
+-		if not managingEditor is None:
++		if managingEditor:
+ 			self.__rss_managingEditor = managingEditor
+ 		return self.__rss_managingEditor
+ 
+@@ -846,7 +901,7 @@ class FeedGenerator(object):
+ 		:param pubDate: The publication date.
+ 		:returns: Publication date as datetime.datetime
+ 		'''
+-		if not pubDate is None:
++		if pubDate:
+ 			if isinstance(pubDate, string_types):
+ 				pubDate = dateutil.parser.parse(pubDate)
+ 			if not isinstance(pubDate, datetime):
+@@ -862,7 +917,7 @@ class FeedGenerator(object):
+ 		'''Set and get the PICS rating for the channel.	It is an RSS only
+ 		value.
+ 		'''
+-		if not rating is None:
++		if rating:
+ 			self.__rss_rating = rating
+ 		return self.__rss_rating
+ 
+@@ -878,7 +933,7 @@ class FeedGenerator(object):
+ 		:param replace: Add or replace old data.
+ 		:returns:       List of hours the feedreaders should not check the feed.
+ 		'''
+-		if not hours is None:
++		if hours:
+ 			if not (isinstance(hours, list) or isinstance(hours, set)):
+ 				hours = [hours]
+ 			for h in hours:
+@@ -901,7 +956,7 @@ class FeedGenerator(object):
+ 		:param replace: Add or replace old data.
+ 		:returns:       List of days the feedreaders should not check the feed.
+ 		'''
+-		if not days is None:
++		if days:
+ 			if not (isinstance(days, list) or isinstance(days, set)):
+ 				days = [days]
+ 			for d in days:
+@@ -926,7 +981,7 @@ class FeedGenerator(object):
+ 		:param link: The URL of the CGI script that processes text input requests.
+ 		:returns: Dictionary containing textInput values.
+ 		'''
+-		if not title is None:
++		if title:
+ 			self.__rss_textInput = {}
+ 			self.__rss_textInput['title'] = title
+ 			self.__rss_textInput['description'] = description
+@@ -943,7 +998,7 @@ class FeedGenerator(object):
+ 		:param ttl: Integer value indicating how long the channel may be cached.
+ 		:returns: Time to live.
+ 		'''
+-		if not ttl is None:
++		if ttl:
+ 			self.__rss_ttl = int(ttl)
+ 		return self.__rss_ttl
+ 
+@@ -956,7 +1011,7 @@ class FeedGenerator(object):
+ 		:param webMaster: Email address of the webmaster.
+ 		:returns: Email address of the webmaster.
+ 		'''
+-		if not webMaster is None:
++		if webMaster:
+ 			self.__rss_webMaster = webMaster
+ 		return self.__rss_webMaster
+ 
+@@ -1014,7 +1069,7 @@ class FeedGenerator(object):
+ 		:param entry: FeedEntry object or list of FeedEntry objects.
+ 		:returns: List ob all feed entries.
+ 		'''
+-		if not entry is None:
++		if entry:
+ 			if not isinstance(entry, list):
+ 				entry = [entry]
+ 			if replace:
+diff --git a/feedgen/util.py b/feedgen/util.py
+index 3f3d97e..d4629ac 100644
+--- a/feedgen/util.py
++++ b/feedgen/util.py
+@@ -9,6 +9,7 @@
+ 	:license: FreeBSD and LGPL, see license.* for more details.
+ '''
+ import sys
++from lxml import etree
+ 
+ 
+ def ensure_format(val, allowed, required, allowed_values=None, defaults=None):
+@@ -60,3 +61,52 @@ def ensure_format(val, allowed, required, allowed_values=None, defaults=None):
+ 			if elem.get(k) and not elem[k] in v:
+ 				raise ValueError('Invalid value for %s' % k )
+ 	return val
++
++
++def atom_content(element, text, typ=None, cdata=False):
++	if cdata:
++		element.text = etree.CDATA(text)
++	else:
++		# Surround xhtml with a div tag, parse it and embed it
++		if typ == 'xhtml':
++			content.append(etree.fromstring(
++				'<div xmlns="http://www.w3.org/1999/xhtml">%s</div>' % text))
++		# Embed the text in escaped form
++		elif not typ or typ.startswith('text') or typ == 'html':
++			element.text = text
++		# Parse XML and embed it
++		elif typ.endswith('/xml') or typ.endswith('+xml'):
++			element.append(etree.fromstring(text))
++		# Everything else should be included base64 encoded
++		else:
++			raise ValueError(
++				'base64 encoded content is not supported at the moment.'
++				+ 'If you are interested , please file a bug report.')
++
++	# Add type description of the content
++	if typ:
++		element.attrib['type'] = typ
++
++	return element
++
++
++def atom_text_construct(element, text, typ=None, cdata=False):
++	if cdata:
++		element.text = etree.CDATA(text)
++	else:
++		# Surround xhtml with a div tag, parse it and embed it
++		if typ == 'xhtml':
++			content.append(etree.fromstring(
++				'<div xmlns="http://www.w3.org/1999/xhtml">%s</div>' % text))
++		# Embed the text in escaped form
++		elif not typ or typ == 'text' or typ == 'html':
++			element.text = text
++		# Everything else should be included base64 encoded
++		else:
++			raise ValueError('unsupported type with atomTextConstruct.')
++
++	# Add type description of the content
++	if typ:
++		element.attrib['type'] = typ
++
++	return element
+diff --git a/setup.py b/setup.py
+index 87d87ef..b947995 100755
+--- a/setup.py
++++ b/setup.py
+@@ -14,7 +14,7 @@ setup(
+ 		url = 'http://lkiesow.github.io/python-feedgen',
+ 		keywords = ['feed','ATOM','RSS','podcast'],
+ 		license = 'FreeBSD and LGPLv3+',
+-		install_requires = ['lxml', 'dateutils', 'six'],
++		install_requires = ['lxml', 'dateutil'],
+ 		classifiers = [
+ 			'Development Status :: 4 - Beta',
+ 			'Development Status :: 5 - Production/Stable',

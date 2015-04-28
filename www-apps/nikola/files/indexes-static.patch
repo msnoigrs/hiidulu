@@ -1,0 +1,18 @@
+diff --git a/nikola/nikola.py b/nikola/nikola.py
+index 1ea265b..254e419 100644
+--- a/nikola/nikola.py
++++ b/nikola/nikola.py
+@@ -1567,8 +1567,11 @@ class Nikola(object):
+         # Split in smaller lists
+         lists = []
+         if kw["indexes_static"]:
+-            lists.append(posts[:kw["index_display_post_count"]])
+-            posts = posts[kw["index_display_post_count"]:]
++            count_of_last = len(posts) % kw["index_display_post_count"]
++            if count_of_last == 0:
++                count_of_last = kw["index_display_post_count"]
++            lists.append(posts[:count_of_last])
++            posts = posts[count_of_last:]
+             while posts:
+                 lists.append(posts[-kw["index_display_post_count"]:])
+                 posts = posts[:-kw["index_display_post_count"]]

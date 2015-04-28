@@ -29,21 +29,21 @@ RDEPEND="${DEPEND}
 	python_targets_python2_7? ( dev-python/configparser[python_targets_python2_7] )
 	>=dev-python/blinker-1.3[${PYTHON_USEDEP}]
 	dev-python/colorama[${PYTHON_USEDEP}]
-	>=dev-python/doit-0.23.0[${PYTHON_USEDEP}]
+	=dev-python/doit-0.28.0[${PYTHON_USEDEP}]
 	>=dev-python/logbook-0.7.0[${PYTHON_USEDEP}]
 	>=dev-python/lxml-3.3.5[${PYTHON_USEDEP}]
 	>=dev-python/mako-1.0[${PYTHON_USEDEP}]
 	>=dev-python/natsort-3.3.0[${PYTHON_USEDEP}]
 	>=dev-python/pygments-1.6[${PYTHON_USEDEP}]
 	>=dev-python/PyRSS2Gen-1.1[${PYTHON_USEDEP}]
-	>=dev-python/python-dateutil-2.2[${PYTHON_USEDEP}]
+	=dev-python/python-dateutil-2.4.2[${PYTHON_USEDEP}]
 	>=dev-python/requests-2.2.0[${PYTHON_USEDEP}]
 	>=dev-python/unidecode-0.04.16[${PYTHON_USEDEP}]
 	>=dev-python/yapsy-1.10.423[${PYTHON_USEDEP}]
 	dev-python/docutils-htmlwriter[${PYTHON_USEDEP}]
 	virtual/python-imaging[${PYTHON_USEDEP}]
 	assets? ( >=dev-python/webassets-0.10.1[${PYTHON_USEDEP}] )
-	charts? ( >=dev-python/pygal-1.5.1[${PYTHON_USEDEP}] )
+	charts? ( =dev-python/pygal-1.7.0[${PYTHON_USEDEP}] )
 	hyphenation? ( >=dev-python/pyphen-0.9.1[${PYTHON_USEDEP}] )
 	ipython? ( >=dev-python/ipython-1.2.1[${PYTHON_USEDEP}] )
 	jinja? ( >=dev-python/jinja-2.7.2[${PYTHON_USEDEP}] )
@@ -55,6 +55,9 @@ RDEPEND="${DEPEND}
 
 python_prepare_all() {
 	epatch "${FILESDIR}/htmlwriter.patch"
+	#epatch "${FILESDIR}/latest-posts.patch"
+	#epatch "${FILESDIR}/feed-length.patch"
+	#epatch "${FILESDIR}/indexes-static.patch"
 	distutils-r1_python_prepare_all
 }
 
