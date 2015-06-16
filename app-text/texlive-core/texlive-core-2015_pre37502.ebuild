@@ -5,7 +5,7 @@
 EAPI=5
 
 #TL_UPSTREAM_PATCHLEVEL="1"
-PATCHLEVEL="78"
+PATCHLEVEL="78-37502"
 #TL_SOURCE_VERSION=20140525
 
 inherit eutils flag-o-matic toolchain-funcs libtool texlive-common
@@ -160,6 +160,10 @@ src_prepare() {
 	cd "${B}"
 	#EPATCH_MULTI_MSG="Applying patches from upstream bugfix branch..." EPATCH_SUFFIX="patch" epatch "${WORKDIR}/gentoo_branch2011_patches"
 	EPATCH_SUFFIX="patch" epatch "${WORKDIR}/patches"
+
+	cp "${FILESDIR}"/mktexlsr.pl texk/texlive/linked_scripts/texlive
+	sed -i -e '/fmtutil-sys.sh/ a \
+	texlive/mktexlsr.pl \\' texk/texlive/linked_scripts/Makefile.in
 
 	elibtoolize
 }
@@ -333,6 +337,8 @@ src_install() {
 	# Ditto for pdftex
 	mv "${ED}/usr/bin/pdftex" "${ED}/usr/bin/pdftex-${P}"
 	dosym "pdftex-${P}" /usr/bin/pdftex
+
+	rm "${ED}/usr/bin/mktexlsr"
 }
 
 pkg_postinst() {

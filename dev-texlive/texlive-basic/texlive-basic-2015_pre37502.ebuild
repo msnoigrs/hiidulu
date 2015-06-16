@@ -26,7 +26,7 @@ DEPEND="!<app-text/texlive-core-2009
 !dev-texlive/texlive-documentation-base
 "
 RDEPEND="${DEPEND} "
-PATCHES=( "${FILESDIR}/texmfcnflua2014.patch" )
+#PATCHES=( "${FILESDIR}/texmfcnflua2014.patch" )
 TEXLIVE_MODULE_BINSCRIPTS="texmf-dist/scripts/simpdftex/simpdftex texmf-dist/scripts/texlive/rungs.tlu"
 DEPEND="${DEPEND}
 !!<dev-texlive/texlive-langcjk-2011
