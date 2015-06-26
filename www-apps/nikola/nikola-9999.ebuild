@@ -41,7 +41,7 @@ RDEPEND="${DEPEND}
 	~dev-python/python-dateutil-2.4.2[${PYTHON_USEDEP}]
 	>=dev-python/requests-2.2.0[${PYTHON_USEDEP}]
 	>=dev-python/unidecode-0.04.16[${PYTHON_USEDEP}]
-	=dev-python/yapsy-1.10.423[${PYTHON_USEDEP}]
+	=dev-python/yapsy-1.11.223[${PYTHON_USEDEP}]
 	dev-python/docutils-htmlwriter[${PYTHON_USEDEP}]
 	virtual/python-imaging[${PYTHON_USEDEP}]
 	assets? ( >=dev-python/webassets-0.10.1[${PYTHON_USEDEP}] )
@@ -66,5 +66,5 @@ src_install() {
 	rm -rf "${D}"/usr/share/doc/${PN}
 
 	dodoc AUTHORS.txt CHANGES.txt README.rst docs/*.txt
-	doman docs/man/*
+	doman docs/man/nikola.1.gz
 }
