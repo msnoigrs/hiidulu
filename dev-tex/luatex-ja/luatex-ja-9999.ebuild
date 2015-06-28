@@ -4,7 +4,12 @@
 
 EAPI=4
 
-EGIT_REPO_URI="git://git.sourceforge.jp/gitroot/luatex-ja/luatexja.git"
+#EGIT_REPO_URI="git://git.sourceforge.jp/gitroot/luatex-ja/luatexja.git"
+EGIT_REPO_URI="git://git.osdn.jp/gitroot/luatex-ja/luatexja.git"
+#EGIT_COMMIT="a2678b42" # 20150420.0
+#EGIT_COMMIT="beef40dd"
+EGIT_COMMIT="fed2ae04"
+#EGIT_COMMIT="b94a4a89" # 20150307.0
 
 inherit git-2
 
@@ -23,7 +28,7 @@ DEPEND="|| ( >=app-text/texlive-core-2014-r2
 RDEPEND="${DEPEND}"
 
 src_install() {
-	luatexjadir="/usr/share/texmf-dist/tex/luatexja"
+	luatexjadir="/usr/share/texmf-site/tex/luatex/luatexja"
 	dodir ${luatexjadir} || die
 	cp -r src/* ${D}${luatexjadir}
 	dodoc doc/*.{lua,pdf,dtx,ins}
