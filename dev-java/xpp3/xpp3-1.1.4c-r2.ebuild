@@ -1,8 +1,8 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI="2"
+EAPI=5
 JAVA_PKG_IUSE="doc source"
 
 inherit java-pkg-2 java-ant-2
@@ -14,16 +14,21 @@ DESCRIPTION="An implementation of XMLPULL V1 API."
 HOMEPAGE="http://www.extreme.indiana.edu/xgws/xsoap/xpp/mxp1/index.html"
 SRC_URI="http://www.extreme.indiana.edu/dist/java-repository/${PN}/distributions/${MY_P}_src.zip"
 
-LICENSE="as-is"
+LICENSE="Apache-1.1 IBM JDOM LGPL-2.1+"
 SLOT="0"
 KEYWORDS="amd64 ~ia64 ppc ppc64 x86 ~x86-fbsd"
 IUSE="test"
 
-DEPEND=">=virtual/jdk-1.5
-	test? ( dev-java/ant-junit )"
-RDEPEND=">=virtual/jre-1.5"
+DEPEND=">=virtual/jdk-1.6
+	test? (
+		dev-java/ant-junit:0
+		dev-java/junit:0
+	)"
+RDEPEND=">=virtual/jre-1.6"
 
 S="${WORKDIR}/${MY_P}"
+
+JAVA_ANT_ENCODING="ISO-8859-1"
 
 java_prepare() {
 	rm -v *.jar || die
