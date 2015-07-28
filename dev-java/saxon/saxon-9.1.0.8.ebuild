@@ -1,8 +1,8 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI="2"
+EAPI=5
 JAVA_PKG_IUSE="doc source"
 
 inherit java-pkg-2 java-ant-2
@@ -19,12 +19,12 @@ IUSE=""
 
 COMMON_DEP="
 	dev-java/xom:0
-	dev-java/jdom:1.0
+	dev-java/jdom:0
 	dev-java/dom4j:1"
-RDEPEND=">=virtual/jre-1.5
+RDEPEND=">=virtual/jre-1.6
 	${COMMON_DEP}"
 
-DEPEND=">=virtual/jdk-1.5
+DEPEND=">=virtual/jdk-1.6
 	${COMMON_DEP}"
 
 S="${WORKDIR}"
@@ -46,7 +46,7 @@ java_prepare() {
 	java-pkg_jar-from --build-only ant-core ant.jar
 #	java-pkg_jar-from jsr173
 #	java-pkg_jar-from stax
-	java-pkg_jar-from jdom-1.0
+	java-pkg_jar-from jdom
 	java-pkg_jar-from xom
 	java-pkg_jar-from dom4j-1
 

@@ -9,7 +9,7 @@ inherit java-pkg-2 java-ant-2
 
 DESCRIPTION="A text-processing Java classes that serialize objects to XML and back again."
 HOMEPAGE="http://x-stream.github.io/"
-SRC_URI="https://nexus.codehaus.org/content/repositories/releases/com/thoughtworks/${PN}/${PN}-distribution/${PV}/${PN}-distribution-${PV}-src.zip"
+SRC_URI="http://repo1.maven.org/maven2/com/thoughtworks/xstream/xstream-distribution/${PV}/xstream-distribution-${PV}-src.zip"
 LICENSE="BSD"
 SLOT="0"
 KEYWORDS="~amd64 ~x86"
@@ -20,6 +20,7 @@ COMMON_DEPS="
 	dev-java/cglib-nodep:2.2
 	dev-java/dom4j:1
 	dev-java/jdom:0
+	dev-java/jdom:2
 	dev-java/kxml:2
 	dev-java/joda-time:0
 	dev-java/xom:0
@@ -50,11 +51,14 @@ RESTRICT="test"
 #JAVA_ANT_REWRITE_CLASSPATH="true"
 
 java_prepare() {
-	rm src/java/com/thoughtworks/xstream/converters/reflection/HarmonyReflectionProvider.java
+	#rm src/java/com/thoughtworks/xstream/converters/reflection/HarmonyReflectionProvider.java
+
+	rm -v src/java/com/thoughtworks/xstream/io/xml/WstxDriver.java
 
 	mkdir lib
 	java-pkg_jar-from --into lib xpp3
 	java-pkg_jar-from --into lib jdom
+	java-pkg_jar-from --into lib jdom-2 jdom.jar jdom2.jar
 	java-pkg_jar-from --into lib kxml-2
 	java-pkg_jar-from --into lib xom
 	java-pkg_jar-from --into lib dom4j-1

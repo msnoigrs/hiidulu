@@ -1,8 +1,8 @@
-# Copyright 1999-2012 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI="4"
+EAPI=5
 JAVA_PKG_IUSE="doc examples source"
 
 inherit java-pkg-2 java-ant-2
@@ -12,13 +12,13 @@ DESCRIPTION="Java API to manipulate XML data"
 SRC_URI="http://www.jdom.org/dist/binary/archive/${P}.tar.gz"
 HOMEPAGE="http://www.jdom.org"
 LICENSE="JDOM"
-SLOT="1.0"
+SLOT="0"
 KEYWORDS="amd64 ~ia64 ppc ppc64 x86 ~x86-fbsd"
 #COMMON_DEP="dev-java/jaxen:1.1"
 #	dev-java/xerces:2"
-RDEPEND=">=virtual/jre-1.5"
+RDEPEND=">=virtual/jre-1.6"
 #	${COMMON_DEP}"
-DEPEND=">=virtual/jdk-1.5"
+DEPEND=">=virtual/jdk-1.6"
 #	${COMMON_DEP}"
 PDEPEND="=dev-java/jdom-jaxen-${PVR}"
 IUSE=""
