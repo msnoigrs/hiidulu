@@ -1,4 +1,4 @@
-# Copyright 1999-2013 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -18,11 +18,11 @@ IUSE=""
 
 SITEFILE="50git-modes-gentoo.el"
 
-#src_compile() {
-#	default
-#}
+src_compile() {
+	emake
+}
 
 src_install() {
-	elisp-install ${PN} git-commit-mode.{el,elc} git-rebase-mode.{el,elc} gitattributes-mode.{el,elc} gitconfig-mode.{el,elc} gitignore-mode.{el,elc}|| die
+	elisp-install ${PN} gitattributes-mode.{el,elc} gitconfig-mode.{el,elc} gitignore-mode.{el,elc}|| die
 	elisp-site-file-install "${FILESDIR}/${SITEFILE}" || die
 }
