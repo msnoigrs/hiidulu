@@ -2,17 +2,17 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI="4"
+EAPI=5
 JAVA_PKG_IUSE="doc source"
 
-inherit java-pkg-2 java-ant-2 eutils versionator
+inherit java-pkg-2 java-ant-2 versionator
 
 MY_PN="xalan-j"
 MY_PV="$(replace_all_version_separators _)"
 MY_P="${MY_PN}_${MY_PV}"
 DESCRIPTION="DOM Level 3 serializer from Apache Xalan, shared by Xalan and Xerces"
-HOMEPAGE="http://xml.apache.org/xalan-j/index.html"
-SRC_URI="mirror://apache/xml/${MY_PN}/source/${MY_P}-src.tar.gz"
+HOMEPAGE="http://xalan.apache.org/"
+SRC_URI="mirror://apache/xalan/${MY_PN}/source/${MY_P}-src.tar.gz"
 LICENSE="Apache-2.0"
 SLOT="0"
 KEYWORDS="~amd64 ~ia64 ~ppc ~ppc64 ~x86 ~x86-fbsd"
