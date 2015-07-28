@@ -16,7 +16,7 @@ SLOT="0"
 KEYWORDS="~amd64 ~x86"
 IUSE=""
 
-SITEFILE="50git-modes-gentoo.el"
+#SITEFILE="50git-modes-gentoo.el"
 
 src_compile() {
 	emake
@@ -24,5 +24,5 @@ src_compile() {
 
 src_install() {
 	elisp-install ${PN} gitattributes-mode.{el,elc} gitconfig-mode.{el,elc} gitignore-mode.{el,elc}|| die
-	elisp-site-file-install "${FILESDIR}/${SITEFILE}" || die
+	#elisp-site-file-install "${FILESDIR}/${SITEFILE}" || die
 }
