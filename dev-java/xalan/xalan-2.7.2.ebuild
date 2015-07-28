@@ -2,10 +2,10 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI=4
+EAPI=5
 JAVA_PKG_IUSE="doc source"
 
-inherit java-pkg-2 java-ant-2 eutils versionator
+inherit java-pkg-2 java-ant-2 versionator
 
 MY_PN="${PN}-j"
 MY_PV="$(replace_all_version_separators _)"
@@ -13,9 +13,9 @@ MY_P="${MY_PN}_${MY_PV}"
 SRC_DIST="${MY_P}-src.tar.gz"
 BIN_DIST="${MY_P}-bin.zip"
 DESCRIPTION="Apache's XSLT processor for transforming XML documents into HTML, text, or other XML document types."
-HOMEPAGE="http://xml.apache.org/xalan-j/index.html"
-SRC_URI="mirror://apache/xml/${MY_PN}/source/${SRC_DIST}
-	doc? ( mirror://apache/xml/${MY_PN}/binaries/${BIN_DIST} )"
+HOMEPAGE="http://xalan.apache.org/"
+SRC_URI="mirror://apache/xalan/${MY_PN}/source/${SRC_DIST}
+	doc? ( mirror://apache/xalan/${MY_PN}/binaries/${BIN_DIST} )"
 LICENSE="Apache-2.0"
 SLOT="0"
 KEYWORDS="amd64 ~ia64 ppc ppc64 x86 ~x86-fbsd ~x86-freebsd ~amd64-linux ~x86-linux ~ppc-macos ~x64-macos ~x86-macos ~sparc-solaris ~sparc64-solaris ~x64-solaris ~x86-solaris"
