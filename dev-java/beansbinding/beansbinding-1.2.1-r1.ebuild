@@ -1,8 +1,8 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI="2"
+EAPI=5
 JAVA_PKG_IUSE="doc source"
 
 inherit java-pkg-2 java-ant-2
@@ -17,17 +17,20 @@ KEYWORDS="amd64 x86"
 
 IUSE=""
 
-RDEPEND=">=virtual/jre-1.5"
-DEPEND=">=virtual/jdk-1.5"
+RDEPEND=">=virtual/jre-1.6"
+DEPEND=">=virtual/jdk-1.6"
 
 S="${WORKDIR}"
 
-# https://bugs.gentoo.org/show_bug.cgi?id=249740
-# Quite weird. Should look into why this is happening.
-JAVA_PKG_FILTER_COMPILER="ecj-3.4 ecj-3.3 ecj-3.2"
-
 java_prepare() {
 	epatch ${FILESDIR}/svn.patch
+
+	# Avoid the usual "Javadoc returned 1" error.
+	java-ant_xml-rewrite \
+		-f nbproject/build-impl.xml \
+		-c -e javadoc \
+		-a failonerror \
+		-v "false"
 }
 
 src_install() {

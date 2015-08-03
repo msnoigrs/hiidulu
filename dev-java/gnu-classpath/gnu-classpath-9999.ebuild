@@ -29,8 +29,8 @@ RDEPEND="alsa? ( media-libs/alsa-lib )
 		gjdoc? ( >=dev-java/antlr-2.7.1:0 )
 		gmp? ( >=dev-libs/gmp-4.2.4 )
 		gstreamer? (
-			>=media-libs/gstreamer-0.10.10
-			>=media-libs/gst-plugins-base-0.10.10
+			>=media-libs/gstreamer-0.10.10:0.10
+			>=media-libs/gst-plugins-base-0.10.10:0.10
 			x11-libs/gtk+
 		)
 		gtk? (
