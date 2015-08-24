@@ -1,8 +1,8 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
+# $Id$
 
-EAPI="2"
+EAPI=5
 JAVA_PKG_IUSE="source doc"
 
 inherit java-pkg-2 java-ant-2
@@ -22,10 +22,9 @@ SLOT="0"
 KEYWORDS="amd64 ~ia64 ppc ppc64 x86 ~x86-fbsd ~x86-freebsd ~amd64-linux ~x86-linux ~ppc-macos ~x64-macos ~x86-macos ~sparc-solaris ~sparc64-solaris ~x64-solaris ~x86-solaris"
 IUSE="userland_BSD"
 
-DEPEND=">=virtual/jdk-1.5
+DEPEND=">=virtual/jdk-1.6
 	!userland_BSD? ( >=sys-apps/findutils-4.4 )"
-RDEPEND=">=virtual/jre-1.5
-	>=dev-java/ant-core-1.7.0"
+RDEPEND=">=virtual/jre-1.6"
 
 java_prepare() {
 	find . -name "*.class" -delete || die

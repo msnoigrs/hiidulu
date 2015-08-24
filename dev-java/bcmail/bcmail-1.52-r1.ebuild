@@ -1,6 +1,6 @@
 # Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
+# $Id$
 
 EAPI="5"
 
@@ -18,13 +18,10 @@ LICENSE="BSD"
 SLOT="0"
 KEYWORDS="~amd64 ~ppc ~ppc64 ~x86 ~amd64-fbsd ~x86-fbsd ~amd64-linux ~x86-linux ~x64-macos"
 
-# Tests are currently broken. Appears to need older version of bcprov; but since bcprov is not slotted, this can cause conflicts.
-# Needs further investigation; though, only a small part has tests and there are no tests for bcpg itself.
-RESTRICT="test"
-
-COMMON_DEPEND="
-	~dev-java/bcmail-${PV}:0
-	~dev-java/bcprov-${PV}:0"
+COMMON_DEPEND=">=dev-java/bcprov-${PV}:0
+		>=dev-java/bcpkix-${PV}:0
+		dev-java/sun-jaf:0
+		java-virtuals/javamail:0"
 
 DEPEND=">=virtual/jdk-1.6
 	app-arch/unzip
@@ -34,6 +31,9 @@ RDEPEND=">=virtual/jre-1.6
 	${COMMON_DEPEND}"
 
 S="${WORKDIR}/${MY_P}"
+
+# Package can't be build with test as bcprov and bcpkix can't be built with test.
+RESTRICT="test"
 
 src_unpack() {
 	default
@@ -55,6 +55,9 @@ java_prepare() {
 	mkdir lib
 	cd lib
 	java-pkg_jar-from bcprov
+	java-pkg_jar-from bcpkix
+	java-pkg_jar-from --virtual jaf
+	java-pkg_jar-from --virtual javamail
 }
 
 JAVA_ANT_ENCODING="iso-8859-1"

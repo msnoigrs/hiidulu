@@ -50,7 +50,7 @@ src_install() {
 	cd core
 	java-pkg_newjar build/${PN}-1.1.3.jar
 
-	java-pkg_register-dependency "jdom-jaxen-${SLOT}"
+	java-pkg_register-dependency "jdom-jaxen"
 #	java-pkg_register-optional-dependency xerces-2
 
 	dodoc CHANGES.txt COMMITTERS.txt README.txt TODO.txt || die

@@ -2,12 +2,13 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI="4"
+EAPI=5
 
 JAVA_PKG_IUSE="doc source"
 
 ESVN_REPO_URI="http://jing-trang.googlecode.com/svn/trunk"
-WANT_ANT_TASKS="ant-trax dev-java/saxon:9.3 dev-java/testng:0 ant-nodeps"
+WANT_ANT_TASKS="dev-java/saxon:9.3 dev-java/testng:0"
+#WANT_ANT_TASKS="ant-trax dev-java/saxon:9.3 dev-java/testng:0 ant-nodeps"
 #WANT_ANT_TASKS="ant-trax dev-java/saxon:9.3 ant-nodeps"
 
 inherit subversion java-pkg-2 java-ant-2
@@ -71,7 +72,6 @@ java_prepare() {
 	java-pkg_jar-from xml-commons-resolver xml-commons-resolver.jar resolver.jar
 	java-pkg_jar-from --build-only ant-core
 	java-pkg_jar-from --build-only javacc
-
 }
 
 src_compile() {

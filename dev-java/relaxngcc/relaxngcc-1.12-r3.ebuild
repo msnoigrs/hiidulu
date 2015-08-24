@@ -2,7 +2,7 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI="4"
+EAPI=5
 JAVA_PKG_IUSE="doc source"
 
 JAVA_ANT_ENCODING="iso-8859-1"

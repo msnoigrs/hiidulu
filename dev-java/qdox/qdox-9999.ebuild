@@ -1,12 +1,12 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI="2"
-ESVN_REPO_URI="https://svn.codehaus.org/qdox/trunk/qdox"
+EAPI=5
+EGIT_REPO_URI="https://github.com/paul-hammant/qdox.git"
 JAVA_PKG_IUSE="doc source junit"
 
-inherit subversion java-pkg-2 java-ant-2
+inherit git-2 java-pkg-2 java-ant-2
 
 DESCRIPTION="Parser for extracting class/interface/method definitions from source files with JavaDoc tags."
 SRC_URI=""
@@ -17,16 +17,18 @@ KEYWORDS="~x86 ~amd64"
 IUSE=""
 
 COMMON_DEP="junit? ( dev-java/junit:4 )"
-RDEPEND=">=virtual/jre-1.5
+RDEPEND=">=virtual/jre-1.6
 	${COMMON_DEP}"
-DEPEND=">=virtual/jdk-1.5
+DEPEND=">=virtual/jdk-1.6
 	${COMMON_DEP}
 	dev-java/ant-core
 	>=dev-java/byaccj-1.14
-	>=dev-java/jflex-1.4.2
+	dev-java/jflex:1.6.1
 	sys-apps/sed"
 
 java_prepare() {
+	sed -i -s 's/JFlexLexer( sourceStream )/JFlexLexer( new java.io.InputStreamReader(sourceStream) )/' src/main/java/com/thoughtworks/qdox/library/ClassLoaderLibrary.java
+
 	find . -depth -name .svn -type d -delete
 
 	mkdir lib || die
@@ -46,8 +48,8 @@ src_compile() {
 	local impldir="src/main/java/com/thoughtworks/qdox/parser/impl"
 	mkdir -p ${impldir}
 #	jflex -d ${impldir} --skel src/grammar/skeleton.inner src/grammar/lexer.flex || die "jflex failed"
-	jflex -d ${impldir} src/grammar/lexer.flex || die "jflex failed"
-	jflex -d ${impldir} src/grammar/commentlexer.flex || die "jflex failed"
+	jflex-1.6.1 -d ${impldir} src/grammar/lexer.flex || die "jflex failed"
+	jflex-1.6.1 -d ${impldir} src/grammar/commentlexer.flex || die "jflex failed"
 	byaccj -v -Jnorun -Jnoconstruct -Jclass=DefaultJavaCommentParser \
 		-Jpackage=com.thoughtworks.qdox.parser.impl \
 		src/grammar/commentparser.y || die "byaccj failed"
@@ -55,6 +57,8 @@ src_compile() {
 		-Jpackage=com.thoughtworks.qdox.parser.impl \
 		-Jstack=500 \
 		src/grammar/parser.y || die "byaccj failed"
+
+	sed -i -s 's/this( stream )/this( new java.io.InputStreamReader(stream) )/' src/main/java/com/thoughtworks/qdox/parser/impl/JFlexLexer.java
 
 	sed -i -e 's/\(public class Parser\)/\1 implements CommentHandler/' Parser.java
 	mv Parser.java ${impldir} || die
@@ -100,7 +104,6 @@ src_install() {
 	java-pkg_dojar target/${PN}.jar
 	java-pkg_register-ant-task
 
-	dodoc README.txt
 	use doc && java-pkg_dohtml -r dist/docs/api
 	use source && java-pkg_dosrc src/main/java/com
 }

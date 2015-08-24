@@ -1,8 +1,8 @@
-# Copyright 1999-2012 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI="4"
+EAPI=5
 inherit toolchain-funcs
 
 DESCRIPTION="A java extension of BSD YACC-compatible parser generator"
@@ -13,9 +13,9 @@ LICENSE="as-is"
 SLOT="0"
 KEYWORDS="~x86 ~amd64"
 IUSE=""
-DEPEND=">=virtual/jre-1.5
+DEPEND=">=virtual/jre-1.6
 	sys-apps/sed"
-RDEPEND=">=virtual/jdk-1.5"
+RDEPEND=">=virtual/jdk-1.6"
 
 S="${WORKDIR}/${PN}${PV}"
 
@@ -30,6 +30,4 @@ src_compile() {
 
 src_install() {
 	newbin src/yacc.linux ${PN}  || die "missing bin"
-	#newman src/yacc.1 ${PN}.1 // would need to rewrite the not talk about yacc
-	#dodoc docs/ACKNOWLEDGEMEN || die
 }
