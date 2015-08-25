@@ -1,17 +1,15 @@
-# Copyright 1999-2014 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
+# $Id$
 
-EAPI="5"
+EAPI=5
 JAVA_PKG_IUSE="doc source test"
 
-ESVN_REPO_URI="https://svn.apache.org/repos/asf/commons/proper/collections/branches/COLLECTIONS_3_2_BRANCH"
-
-inherit subversion java-pkg-2 java-ant-2 eutils
+inherit java-pkg-2 java-ant-2
 
 DESCRIPTION="Jakarta-Commons Collections Component"
 HOMEPAGE="http://commons.apache.org/collections/"
-SRC_URI=""
+SRC_URI="mirror://apache/${PN/-//}/source/${P}-src.tar.gz"
 
 LICENSE="Apache-2.0"
 SLOT="0"
@@ -19,13 +17,24 @@ KEYWORDS="~amd64 ~ia64 ~ppc ~ppc64 ~x86 ~x86-fbsd"
 IUSE="test-framework"
 
 COMMON_DEP="test-framework? ( dev-java/junit:0 )"
-DEPEND=">=virtual/jdk-1.5
+DEPEND=">=virtual/jdk-1.6
 	test? ( dev-java/ant-junit:0 )
 	${COMMON_DEP}"
-RDEPEND=">=virtual/jre-1.5
+RDEPEND=">=virtual/jre-1.6
 	${COMMON_DEP}"
 
+S="${WORKDIR}/${P}-src"
+
 JAVA_ANT_ENCODING="iso-8859-1"
+
+java_prepare() {
+	# Check for VM version.
+	java-pkg_is-vm-version-ge 1.8
+	if [[ $? -eq 0 ]]; then
+		einfo "You are running a JVM greater or equal than version 1.8."
+		epatch "${FILESDIR}"/${P}-Java-8.patch
+	fi
+}
 
 src_compile() {
 	local antflags
@@ -46,9 +55,9 @@ src_test() {
 }
 
 src_install() {
-	java-pkg_newjar target/${PN}*.jar ${PN}.jar
+	java-pkg_newjar build/${P}.jar ${PN}.jar
 	use test-framework && \
-		java-pkg_newjar build/${PN}-testframework*.jar \
+		java-pkg_newjar build/${PN}-testframework-${PV}.jar \
 			${PN}-testframework.jar
 
 	dodoc README.txt || die

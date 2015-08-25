@@ -1,8 +1,8 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
+# $Id$
 
-EAPI="2"
+EAPI=5
 
 EGIT_REPO_URI="git://github.com/fusesource/jansi.git"
 
@@ -18,11 +18,10 @@ SLOT="0"
 KEYWORDS="amd64 ~ppc x86 ~amd64-linux ~x86-linux ~ppc-macos ~x86-macos"
 IUSE=""
 
-COMMON_DEP="dev-java/jansi-native
-	dev-java/hawtjni-runtime"
-RDEPEND=">=virtual/jre-1.5
+COMMON_DEP="dev-java/jansi-native"
+RDEPEND=">=virtual/jre-1.6
 	${COMMON_DEP}"
-DEPEND=">=virtual/jdk-1.5
+DEPEND=">=virtual/jdk-1.6
 	${COMMON_DEP}"
 
 java_prepare() {
@@ -30,7 +29,6 @@ java_prepare() {
 
 	mkdir lib
 	java-pkg_jar-from --into lib jansi-native
-	java-pkg_jar-from --into lib hawtjni-runtime
 	cp "${FILESDIR}/gentoo-build.xml" build.xml
 }
 

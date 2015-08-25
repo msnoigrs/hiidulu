@@ -15,7 +15,7 @@ DESCRIPTION="Bytecode manipulation framework for Java"
 HOMEPAGE="http://asm.ow2.org"
 SRC_URI="http://download.forge.objectweb.org/${PN}/${MY_P}.tar.gz"
 LICENSE="BSD"
-SLOT="4.2"
+SLOT="5"
 IUSE=""
 KEYWORDS="~amd64 ~x86"
 
@@ -41,6 +41,8 @@ src_install() {
 	for x in output/dist/lib/*.jar ; do
 		java-pkg_newjar "${x}" $(basename "${x%-*}.jar")
 	done
+
+	java-pkg_newjar output/dist/lib/all/asm-all-${PV}.jar asm-all.jar
 
 	use doc && java-pkg_dojavadoc output/dist/doc/javadoc/user/
 	use source && java-pkg_dosrc src/*

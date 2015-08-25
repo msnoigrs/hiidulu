@@ -1,8 +1,8 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI="2"
+EAPI=5
 JAVA_PKG_IUSE="doc source"
 
 EGIT_PROJECT="hawtjni"
@@ -18,16 +18,10 @@ SLOT="0"
 KEYWORDS="amd64 ~ppc x86 ~amd64-linux ~x86-linux ~ppc-macos ~x86-macos"
 IUSE=""
 
-COMMON_DEP="dev-java/commons-cli:1"
-RDEPEND=">=virtual/jre-1.5
-	${COMMON_DEP}"
-DEPEND=">=virtual/jdk-1.5
-	${COMMON_DEP}"
+RDEPEND=">=virtual/jre-1.6"
+DEPEND=">=virtual/jdk-1.6"
 
 java_prepare() {
-	mkdir ${PN}/lib
-	java-pkg_jar-from --into ${PN}/lib commons-cli-1
-
 	cp "${FILESDIR}/gentoo-build.xml" ${PN}/build.xml
 }
 

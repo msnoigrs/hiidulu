@@ -1,12 +1,12 @@
 # Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
+# $Id$
 
-EAPI="4"
+EAPI=5
 JAVA_PKG_IUSE="doc source"
 ESVN_REPO_URI="https://svn.apache.org/repos/asf/commons/proper/io/trunk"
 
-inherit eutils subversion java-pkg-2 java-ant-2
+inherit subversion java-pkg-2 java-ant-2
 
 MY_P="${P}-src"
 DESCRIPTION="Commons-IO contains utility classes, stream implementations, file filters, and endian classes."

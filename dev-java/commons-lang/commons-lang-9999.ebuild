@@ -1,13 +1,13 @@
-# Copyright 1999-2014 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI="4"
+EAPI=5
 JAVA_PKG_IUSE="doc source test"
 
-ESVN_REPO_URI="https://svn.apache.org/repos/asf/commons/proper/lang/trunk"
+EGIT_REPO_URI="http://git-wip-us.apache.org/repos/asf/commons-lang.git"
 
-inherit subversion java-pkg-2 java-ant-2
+inherit git-2 java-pkg-2 java-ant-2
 
 DESCRIPTION="Commons components to manipulate core java classes"
 HOMEPAGE="http://commons.apache.org/lang/"
