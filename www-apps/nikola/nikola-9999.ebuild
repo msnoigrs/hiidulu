@@ -1,6 +1,6 @@
 # Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
+# $Id$
 
 EAPI=5
 PYTHON_COMPAT=( python{2_7,3_3,3_4} )
@@ -44,8 +44,9 @@ RDEPEND="${DEPEND}
 	=dev-python/yapsy-1.11.223[${PYTHON_USEDEP}]
 	dev-python/docutils-htmlwriter[${PYTHON_USEDEP}]
 	virtual/python-imaging[${PYTHON_USEDEP}]
+	>=dev-python/husl-4.0.2[${PYTHON_USEDEP}]
 	assets? ( >=dev-python/webassets-0.10.1[${PYTHON_USEDEP}] )
-	charts? ( =dev-python/pygal-2.0.4[${PYTHON_USEDEP}] )
+	charts? ( =dev-python/pygal-2.0.5[${PYTHON_USEDEP}] )
 	hyphenation? ( >=dev-python/pyphen-0.9.1[${PYTHON_USEDEP}] )
 	ipython? ( >=dev-python/ipython-1.2.1[${PYTHON_USEDEP}] )
 	jinja? ( >=dev-python/jinja-2.7.2[${PYTHON_USEDEP}] )
