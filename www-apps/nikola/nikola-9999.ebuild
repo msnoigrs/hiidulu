@@ -46,7 +46,7 @@ RDEPEND="${DEPEND}
 	virtual/python-imaging[${PYTHON_USEDEP}]
 	>=dev-python/husl-4.0.2[${PYTHON_USEDEP}]
 	assets? ( >=dev-python/webassets-0.10.1[${PYTHON_USEDEP}] )
-	charts? ( =dev-python/pygal-2.0.5[${PYTHON_USEDEP}] )
+	charts? ( =dev-python/pygal-2.0.6[${PYTHON_USEDEP}] )
 	hyphenation? ( >=dev-python/pyphen-0.9.1[${PYTHON_USEDEP}] )
 	ipython? ( >=dev-python/ipython-1.2.1[${PYTHON_USEDEP}] )
 	jinja? ( >=dev-python/jinja-2.7.2[${PYTHON_USEDEP}] )
