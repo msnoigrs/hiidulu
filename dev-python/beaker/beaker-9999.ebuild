@@ -1,6 +1,6 @@
-# Copyright 1999-2014 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
+# $Id$
 
 EAPI=5
 
@@ -8,6 +8,7 @@ PYTHON_COMPAT=( python{2_7,3_3,3_4} )
 
 #EGIT_REPO_URI="https://github.com/bbangert/beaker.git"
 EGIT_REPO_URI="https://github.com/masayuko/beaker.git"
+EGIT_BRANCH="rework"
 
 inherit distutils-r1 git-2
 
@@ -24,7 +25,9 @@ IUSE="test"
 DEPEND="dev-python/setuptools[${PYTHON_USEDEP}]
 	test? ( dev-python/mock[${PYTHON_USEDEP}]
 		dev-python/nose[${PYTHON_USEDEP}]
-		dev-python/webtest[$(python_gen_usedep python{2_7,3_3,3_4})] )"
+		dev-python/webtest[${PYTHON_USEDEP}]
+		dev-python/coverage[${PYTHON_USEDEP}]
+		dev-python/pycrypto[${PYTHON_USEDEP}] )"
 RDEPEND=""
 
 python_prepare_all() {
@@ -35,5 +38,5 @@ python_test() {
 	cp -r -l tests "${BUILD_DIR}"/ || die
 
 	cd "${BUILD_DIR}"/tests || die
-	nosetests || die "Tests fail with ${EPYTHON}"
+	nosetests -s -v -d --with-coverage --cover-package=beaker || die "Tests fail with ${EPYTHON}"
 }
