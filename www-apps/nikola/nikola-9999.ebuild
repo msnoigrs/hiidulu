@@ -14,7 +14,8 @@ if [[ ${PV} == *9999* ]]; then
 	inherit git-2
 	#EGIT_REPO_URI="git://github.com/getnikola/${PN}.git"
 	EGIT_REPO_URI="https://github.com/masayuko/nikola.git"
-	EGIT_BRANCH="hiidulu-custom"
+	EGIT_BRANCH="hiidulu-custom-test"
+	#EGIT_BRANCH="hiidulu-custom"
 	KEYWORDS=""
 else
 	SRC_URI="mirror://pypi/${MY_PN:0:1}/${MY_PN}/${P}.tar.gz"

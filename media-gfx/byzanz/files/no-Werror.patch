@@ -1,0 +1,23 @@
+From: Markus Koschany <apo@gambaru.de>
+Date: Thu, 9 Jul 2015 16:30:44 +0200
+Subject: no Werror
+
+Bug: https://bugs.debian.org/791910
+Forwarded: no, since this should be automatically done when a new version of byzanz is released
+---
+ configure.ac | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/configure.ac b/configure.ac
+index 2384482..76ea70d 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -5,7 +5,7 @@ dnl need to do this here so intltool-update doesn't die a slow but awful death
+ PACKAGE=byzanz
+ dnl when going to/from release please set the nano (fourth number) right !
+ dnl releases only do Wall, cvs and prerelease does Werror too
+-AS_VERSION($PACKAGE, TOOLS_VERSION, 0, 3, 0, 1, BYZANZ_CVS="no", BYZANZ_CVS="yes")
++AS_VERSION($PACKAGE, TOOLS_VERSION, 0, 3, 0, 0, BYZANZ_CVS="no", BYZANZ_CVS="yes")
+ 
+ dnl AM_MAINTAINER_MODE only provides the option to configure to enable it
+ AM_MAINTAINER_MODE
