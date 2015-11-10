@@ -9,7 +9,7 @@ JAVA_PKG_IUSE="doc source"
 inherit java-pkg-2
 
 MY_PN="ecj"
-DMF="R-${PV}-201502041700"
+DMF="R-${PV}-201509040015"
 
 DESCRIPTION="Eclipse Compiler for Java"
 HOMEPAGE="http://www.eclipse.org/"
@@ -17,7 +17,7 @@ SRC_URI="http://download.eclipse.org/eclipse/downloads/drops4/${DMF}/${MY_PN}src
 
 LICENSE="EPL-1.0"
 KEYWORDS="amd64 ppc ppc64 x86 ~x86-fbsd ~x86-freebsd ~amd64-linux ~x86-linux ~x86-solaris"
-SLOT="4.4"
+SLOT="4.5"
 IUSE="+ant userland_GNU"
 
 COMMON_DEP="
@@ -34,9 +34,11 @@ PDEPEND="
 S="${WORKDIR}"
 
 java_prepare() {
+	epatch "${FILESDIR}/remove-dep-core.patch"
+
 	# These have their own package.
-	rm -f org/eclipse/jdt/core/JDTCompilerAdapter.java || die
-	rm -fr org/eclipse/jdt/internal/antadapter || die
+	rm -v org/eclipse/jdt/core/JDTCompilerAdapter.java || die
+	rm -rv org/eclipse/jdt/internal/antadapter || die
 
 	rm build.xml || die
 	rm META-INF/eclipse.inf

@@ -1,102 +1,59 @@
-# Copyright 1999-2014 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
+# $Id$
 
-EAPI="4"
+EAPI=5
 JAVA_PKG_IUSE="doc source"
-WANT_ANT_TASKS="ant-nodeps"
 
-ESVN_REPO_URI="http://svn.apache.org/repos/asf/pdfbox/trunk/pdfbox"
+EGIT_REPO_URI="https://github.com/apache/pdfbox.git"
+EGIT_BRANCH="trunk"
 
-inherit subversion java-pkg-2 java-ant-2
+inherit git-2 java-pkg-2 java-ant-2
 
 DESCRIPTION="Java library and utilities for working with PDF documents"
 HOMEPAGE="http://www.pdfbox.org"
-#SRC_URI="pcfi-2009.06.14.jar additional_cmaps.jar removed_cmaps.jar"
-#SRC_URI="https://github.com/masayuko/hiidulu/raw/master/distfiles/pcfi-2010.08.09.jar"
-#SRC_URI="http://dev.gentoo.gr.jp/~igarashi/distfiles/pcfi-2010.08.09.jar"
 LICENSE="Apache-2.0"
 SLOT="0"
 KEYWORDS="~amd64 ~ppc ~x86"
 IUSE=""
 
-#	dev-java/lucene:2.4
-#>=dev-java/tika-core-0.10
-#	dev-java/bcmail:1.49
-#	dev-java/jempbox
-CDEPEND="dev-java/fontbox
-	dev-java/bcprov:0
-	dev-java/bcpkix:0
-	dev-java/jcl-over-slf4j
-	dev-java/icu4j:49"
-RDEPEND=">=virtual/jre-1.6
-	dev-java/logback-core
-	dev-java/logback-classic
+CDEPEND="dev-java/fontbox:0
+	dev-java/bcprov:1.52
+	dev-java/bcpkix:1.52
+	dev-java/jcl-over-slf4j:0
+	dev-java/java-diff-utils:0"
+RDEPEND=">=virtual/jre-1.7
+	dev-java/logback-core:0
+	dev-java/logback-classic:0
 	${CDEPEND}"
-DEPEND=">=virtual/jdk-1.6
+DEPEND=">=virtual/jdk-1.7
 	dev-java/junit:4
 	${CDEPEND}"
 
-JAVA_PKG_FILTER_COMPILER="jikes"
-#S="${WORKDIR}/${ECVS_MODULE}"
-
-# missing needed files
-RESTRICT="test"
-
 java_prepare() {
-	#epatch "${FILESDIR}/xfdfimport-fix.patch"
-	#epatch "${FILESDIR}/zuki-cjk.patch"
-	#epatch "${FILESDIR}/zuki-pdfbox-ucs4.patch"
-	#epatch "${FILESDIR}/zuki-315.patch"
-	#epatch "${FILESDIR}/pdfbox-zuki.patch"
+	cd pdfbox
+	cp "${FILESDIR}/gentoo-build.xml" build.xml
 
-	#sed -i -e 's/\(material.getPrivateKey()\), "BC"/new org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient((java.security.PrivateKey)\1).setProvider("BC")/' \
-	#	src/main/java/org/apache/pdfbox/pdmodel/encryption/PublicKeySecurityHandler.java
+	mkdir "lib" || die
+	cd "lib"
 
-	#epatch "${FILESDIR}/defaultfontwidth.patch"
-	#epatch "${FILESDIR}/identity-h.patch"
-
-#	cp "${FILESDIR}/gentoo-build.xml" build.xml
-	sed -i -e 's/depends="get.externallibs.pdfbox,/depends="/' build.xml
-	sed -i -e 's/depends="get.externallibs.fontbox,/depends="/' build.xml
-	sed -i -e 's/depends="fontbox.package,/depends="/' build.xml
-
-	mkdir external || die
-	cd external
-#	java-pkg_jar-from tika-core tika-core.jar tika-core-0.10.jar
 	java-pkg_jar-from fontbox fontbox.jar
-	#java-pkg_jar-from jempbox jempbox.jar
-	java-pkg_jar-from bcprov bcprov.jar bcprov-jdk15on-1.50.jar
-#	java-pkg_jar-from bcmail-1.49 bcmail.jar bcmail-jdk15on-1.48.jar
-	java-pkg_jar-from bcpkix bcpkix.jar bcpkix-jdk15on-1.50.jar
-#	java-pkg_jar-from lucene-2.4 lucene-core.jar lucene-core-2.4.1.jar
-#	java-pkg_jar-from lucene-2.4 lucene-demos.jar lucene-dmoes-2.4.1.jar
-#	java-pkg_jar-from --build-only ant-core ant.jar
-	java-pkg_jar-from --build-only junit junit.jar junit-4.8.1.jar
-	java-pkg_jar-from jcl-over-slf4j jcl-over-slf4j.jar commons-logging-1.1.3.jar
-	java-pkg_jar-from icu4j-49 icu4j.jar icu4j-3.8.jar
+	java-pkg_jar-from bcprov-1.52 bcprov.jar
+	java-pkg_jar-from bcpkix-1.52 bcpkix.jar
+	java-pkg_jar-from java-diff-utils
 
-	cd ${S}
-#	mkdir download || die
-	cp ${DISTDIR}/*.jar download
-
-	rm -rf src/test/java/org
+	java-pkg_jar-from --build-only junit junit.jar
+	java-pkg_jar-from jcl-over-slf4j jcl-over-slf4j.jar
+}
+EANT_EXTRA_ARGS="-Dproject.name=${PN}"
+src_compile() {
+	cd pdfbox
+	java-pkg-2_src_compile
 }
 
-#EANT_EXTRA_ARGS="-Dfontbox.jar=external/fontbox.jar -Djempbox.jar=external/jempbox.jar"
-EANT_EXTRA_ARGS="-Dfontbox.jar=external/fontbox.jar"
-EANT_BUILD_TARGET="pdfbox.package"
-
-#my_launcher() {
-#	java-pkg_dolauncher ${1} --main org.apache.pdfbox.${2} --jar pdfbox.jar
-#	echo "${1} -> ${2}" >> "${T}"/launcher.list
-#}
-
 src_install() {
-	java-pkg_newjar target/${PN}-*.jar
-#	java-pkg_dojar download/pcfi-2010.08.09.jar
-#	java-pkg_dojar download/additional_cmaps.jar
-#	java-pkg_dojar download/removed_cmaps.jar
+	cd pdfbox
+	java-pkg_dojar target/${PN}.jar
 
 	java-pkg_register-optional-dependency logback-core
 	java-pkg_register-optional-dependency logback-classic
@@ -122,16 +79,3 @@ src_install() {
 	use doc && java-pkg_dojavadoc target/site/apidocs
 	use source && java-pkg_dosrc src/main/java/*
 }
-
-#pkg_postinst() {
-#	elog "This package installs several command line tools for manipulating"
-#	elog "PDF files. Some of their names were changed from upstream to"
-#	elog "be less ambigous, and not collide with other packages. For"
-#	elog "detailed information refer to the html documentation installed with"
-#	elog "USE=doc, or ${HOMEPAGE}"
-#
-#	while read line
-#	do
-#		elog ${line}
-#	done < "${T}"/launcher.list
-#}

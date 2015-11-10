@@ -3,7 +3,7 @@
 # $Id$
 
 EAPI=5
-PYTHON_COMPAT=( python{2_7,3_3,3_4} )
+PYTHON_COMPAT=( python{3_3,3_4} )
 inherit distutils-r1
 
 DESCRIPTION="A static website and blog generator"
@@ -14,8 +14,10 @@ if [[ ${PV} == *9999* ]]; then
 	inherit git-2
 	#EGIT_REPO_URI="git://github.com/getnikola/${PN}.git"
 	EGIT_REPO_URI="https://github.com/masayuko/nikola.git"
-	EGIT_BRANCH="hiidulu-custom-test"
-	#EGIT_BRANCH="hiidulu-custom"
+	#EGIT_BRANCH="feedgen-for-pr-test"
+	#EGIT_BRANCH="master"
+	#EGIT_BRANCH="hiidulu-custom-test"
+	EGIT_BRANCH="hiidulu-custom"
 	KEYWORDS=""
 else
 	SRC_URI="mirror://pypi/${MY_PN:0:1}/${MY_PN}/${P}.tar.gz"
@@ -29,7 +31,6 @@ RESTRICT="test" # needs freezegun, coveralls, and phpserialize
 
 DEPEND=">=dev-python/docutils-0.12[${PYTHON_USEDEP}]" # needs rst2man to build manpage
 RDEPEND="${DEPEND}
-	python_targets_python2_7? ( dev-python/configparser[python_targets_python2_7] )
 	>=dev-python/blinker-1.3[${PYTHON_USEDEP}]
 	dev-python/colorama[${PYTHON_USEDEP}]
 	=dev-python/doit-0.28.0[${PYTHON_USEDEP}]
@@ -47,7 +48,7 @@ RDEPEND="${DEPEND}
 	virtual/python-imaging[${PYTHON_USEDEP}]
 	>=dev-python/husl-4.0.2[${PYTHON_USEDEP}]
 	assets? ( >=dev-python/webassets-0.10.1[${PYTHON_USEDEP}] )
-	charts? ( =dev-python/pygal-2.0.6[${PYTHON_USEDEP}] )
+	charts? ( >=dev-python/pygal-2.0.0[${PYTHON_USEDEP}] )
 	hyphenation? ( >=dev-python/pyphen-0.9.1[${PYTHON_USEDEP}] )
 	ipython? ( >=dev-python/ipython-1.2.1[${PYTHON_USEDEP}] )
 	jinja? ( >=dev-python/jinja-2.7.2[${PYTHON_USEDEP}] )

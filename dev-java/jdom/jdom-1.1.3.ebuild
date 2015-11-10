@@ -1,6 +1,6 @@
 # Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
+# $Id$
 
 EAPI=5
 JAVA_PKG_IUSE="doc examples source"
@@ -14,12 +14,8 @@ HOMEPAGE="http://www.jdom.org"
 LICENSE="JDOM"
 SLOT="0"
 KEYWORDS="amd64 ~ia64 ppc ppc64 x86 ~x86-fbsd"
-#COMMON_DEP="dev-java/jaxen:1.1"
-#	dev-java/xerces:2"
 RDEPEND=">=virtual/jre-1.6"
-#	${COMMON_DEP}"
 DEPEND=">=virtual/jdk-1.6"
-#	${COMMON_DEP}"
 PDEPEND="=dev-java/jdom-jaxen-${PVR}"
 IUSE=""
 
@@ -33,10 +29,6 @@ java_prepare() {
 
 	rm -v src/java/org/jdom/xpath/JaxenXPath.java \
 	   || die "Unable to remove Jaxen Binding class."
-
-	cd ${S}/lib
-#	java-pkg_jar-from xerces-2
-#	java-pkg_jar-from jaxen-1.1 jaxen.jar jaxen-1.1.jar
 }
 
 src_compile() {
@@ -49,7 +41,6 @@ src_install() {
 	java-pkg_newjar build/${P}.jar
 
 	java-pkg_register-dependency "jdom-jaxen"
-#	java-pkg_register-optional-dependency xerces-2
 
 	dodoc CHANGES.txt COMMITTERS.txt README.txt TODO.txt || die
 	use doc && java-pkg_dojavadoc build/apidocs

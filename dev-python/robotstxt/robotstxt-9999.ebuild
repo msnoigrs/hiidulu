@@ -6,12 +6,12 @@ EAPI=5
 
 PYTHON_COMPAT=( python{2_7,3_3,3_4} )
 
-EGIT_REPO_URI="https://github.com/masayuko/robotstxt.git"
+EGIT_REPO_URI="https://github.com/masayuko/python-robotstxt.git"
 
 inherit distutils-r1 git-2
 
 DESCRIPTION="A robots.txt Manipulation Library for Python"
-HOMEPAGE="https://github.com/masayuko/robotstxt"
+HOMEPAGE="https://github.com/masayuko/python-robotstxt"
 
 LICENSE="MIT"
 SLOT="0"

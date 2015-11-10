@@ -8,40 +8,38 @@ JAVA_PKG_IUSE="doc source"
 EGIT_REPO_URI="https://github.com/apache/pdfbox.git"
 EGIT_BRANCH="trunk"
 
-inherit java-pkg-2 java-ant-2 git-2
+inherit git-2 java-pkg-2 java-ant-2
 
-DESCRIPTION="An open source Java library for parsing font files"
-HOMEPAGE="http://pdfbox.apache.org/"
-SRC_URI=""
-
+DESCRIPTION="Java library and utilities for working with PDF documents"
+HOMEPAGE="http://www.pdfbox.org"
 LICENSE="Apache-2.0"
 SLOT="0"
-KEYWORDS="~amd64 ~x86"
-
+KEYWORDS="~amd64 ~ppc ~x86"
 IUSE=""
 
-COMMON_DEP="dev-java/jcl-over-slf4j:0"
-RDEPEND=">=virtual/jre-1.6
-	${COMMON_DEP}"
-DEPEND=">=virtual/jdk-1.6
-	${COMMON_DEP}"
+CDEPEND="dev-java/pdfbox:0"
+RDEPEND=">=virtual/jre-1.7
+	${CDEPEND}"
+DEPEND=">=virtual/jdk-1.7
+	${CDEPEND}"
 
 java_prepare() {
-	cd fontbox
-	mkdir lib || die
-	java-pkg_jar-from --into lib jcl-over-slf4j
-
+	cd debugger
 	cp "${FILESDIR}/gentoo-build.xml" build.xml
-}
 
+	mkdir "lib" || die
+	cd "lib"
+
+	java-pkg_jar-from pdfbox
+}
 EANT_EXTRA_ARGS="-Dproject.name=${PN}"
 src_compile() {
-	cd fontbox
+	cd debugger
 	java-pkg-2_src_compile
 }
 
 src_install() {
-	cd fontbox
+	cd debugger
 	java-pkg_dojar target/${PN}.jar
 
 	use doc && java-pkg_dojavadoc target/site/apidocs

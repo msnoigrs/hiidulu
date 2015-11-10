@@ -12,7 +12,7 @@ HOMEPAGE="http://www.jcraft.com/jzlib/"
 SRC_URI="http://www.jcraft.com/${PN}/${P}.zip"
 
 LICENSE="jcraft"
-SLOT="1.1"
+SLOT="1.1.3"
 KEYWORDS="amd64 ~ia64 ppc ppc64 x86 ~x86-fbsd"
 
 DEPEND=">=virtual/jdk-1.6"
