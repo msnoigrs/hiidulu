@@ -1,13 +1,13 @@
-# Copyright 1999-2013 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
+# $Id$
 
-EAPI=4
-PYTHON_COMPAT=( python{2_6,2_7,3_3} )
+EAPI=5
+PYTHON_COMPAT=( python{2_6,2_7,3_3,3_4} )
 
 inherit distutils-r1
 
-DESCRIPTION="Network diagram generator"
+DESCRIPTION="Sequence diagram generator"
 HOMEPAGE="http://blockdiag.com/"
 SRC_URI="http://pypi.python.org/packages/source/${PN:0:1}/${PN}/${P}.tar.gz"
 
@@ -16,7 +16,7 @@ SLOT="0"
 KEYWORDS="~amd64"
 IUSE=""
 
-DEPEND="virtual/python-imaging
+DEPEND="dev-python/pillow
 	dev-python/webcolors
 	dev-python/funcparserlib
 	dev-python/setuptools
@@ -24,6 +24,5 @@ DEPEND="virtual/python-imaging
 RDEPEND="${DEPEND}"
 
 src_prepare() {
-	epatch "${FILESDIR}"/nwdiag-tip.patch
-	epatch "${FILESDIR}"/nwdiag-py3.patch
+	sed -i -e '/include_package_data=True/ d' setup.py
 }

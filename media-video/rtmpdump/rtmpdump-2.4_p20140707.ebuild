@@ -1,15 +1,16 @@
 # Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
+# $Id$
 
-EAPI="5"
+EAPI=5
 
 inherit multilib toolchain-funcs multilib-minimal
 
 MY_P="${PN}-ksv-20140707"
 DESCRIPTION="Open source command-line RTMP client intended to stream audio or video flash content"
 HOMEPAGE="http://rtmpdump.mplayerhq.hu/"
-SRC_URI="http://dev.gentoo.gr.jp/~igarashi/distfiles/${MY_P}.tar.bz2"
+MY_TARBALL="rtmpdump-ksv-20140707.tar.bz2"
+SRC_URI="http://osdn.jp/frs/chamber_redir.php?m=iij&f=%2Fusers%2F9%2F9547%2F${MY_TARBALL}"
 
 # the library is LGPL-2.1, the command is GPL-2
 LICENSE="GPL-2 LGPL-2.1"

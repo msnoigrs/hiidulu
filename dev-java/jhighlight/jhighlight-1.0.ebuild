@@ -1,23 +1,24 @@
-# Copyright 1999-2012 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
+# $Id$
 
-EAPI="4"
+EAPI=5
 JAVA_PKG_IUSE="doc source"
 
 inherit java-pkg-2 java-ant-2
 
 DESCRIPTION="JHighlight is an embeddable pure Java syntax highlighting library"
 HOMEPAGE="http://rifers.org/blogs/gbevin/2006/3/13/jhighlight_1_0_released"
-SRC_URI="http://dev.gentoo.gr.jp/~igarashi/distfiles/${P}.tar.bz2"
+MY_TARBALL="jhighlight-1.0.tar.bz2"
+SRC_URI="http://osdn.jp/frs/chamber_redir.php?m=iij&f=%2Fusers%2F9%2F9544%2F${MY_TARBALL}"
 #SRC_URI="https://jhighlight.dev.java.net/files/documents/3366/30845/${P}-src.zip"
 #HOMEPAGE="https://jhighlight.dev.java.net/"
 LICENSE="CDDL"
 SLOT="0"
 KEYWORDS="~amd64 ~x86"
 
-RDEPEND=">=virtual/jre-1.5"
-DEPEND=">=virtual/jdk-1.5
+RDEPEND=">=virtual/jre-1.6"
+DEPEND=">=virtual/jdk-1.6
 	java-virtuals/servlet-api:3.0"
 #	dev-java/jflex"
 

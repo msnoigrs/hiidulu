@@ -1,24 +1,23 @@
-# Copyright 1999-2012 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
+# $Id$
 
-EAPI="4"
+EAPI=5
 JAVA_PKG_IUSE="doc source"
-
-EGIT_REPO_URI="git://github.com/cbeust/jcommander.git"
 
 inherit java-pkg-2 java-ant-2
 
 DESCRIPTION="parse command line parameters"
 HOMEPAGE="http://jcommander.org/"
-SRC_URI="http://dev.gentoo.gr.jp/~igarashi/distfiles/${P}.tar.bz2"
+MY_TARBALL="jcommander-1.19.tar.bz2"
+SRC_URI="http://osdn.jp/frs/chamber_redir.php?m=iij&f=%2Fusers%2F9%2F9543%2F${MY_TARBALL} -> ${MY_TARBALL}"
 LICENSE="Apache-2.0"
 SLOT="0"
 KEYWORDS="~amd64 ~x86"
 IUSE=""
 
-DEPEND=">=virtual/jdk-1.5"
-RDEPEND=">=virtual/jre-1.5"
+DEPEND=">=virtual/jdk-1.6"
+RDEPEND=">=virtual/jre-1.6"
 
 java_prepare() {
 	cp "${FILESDIR}/gentoo-build.xml" build.xml

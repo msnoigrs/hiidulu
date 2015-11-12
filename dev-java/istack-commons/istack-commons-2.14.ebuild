@@ -1,15 +1,16 @@
-# Copyright 1999-2013 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
+# $Id$
 
-EAPI="4"
+EAPI=5
 JAVA_PKG_IUSE="source"
 
 inherit java-pkg-2 java-ant-2
 
 DESCRIPTION="istack-commons"
 HOMEPAGE="https://istack-commons.dev.java.net/"
-SRC_URI="http://dev.gentoo.gr.jp/~igarashi/distfiles/istack-commons-${PV}.tar.gz"
+MY_TARBALL="istack-commons-2.14.tar.gz"
+SRC_URI="http://osdn.jp/frs/chamber_redir.php?m=iij&f=%2Fusers%2F9%2F9539%2F${MY_TARBALL} -> ${MY_TARBALL}"
 
 LICENSE="|| ( CDDL GPL-2 )"
 SLOT="0"
@@ -18,10 +19,10 @@ IUSE=""
 
 COMMON_DEP="java-virtuals/jaf"
 
-DEPEND=">=virtual/jdk-1.5
+DEPEND=">=virtual/jdk-1.6
 	dev-java/ant-core
 	${COMMON_DEP}"
-RDEPEND=">=virtual/jre-1.5
+RDEPEND=">=virtual/jre-1.6
 	${COMMON_DEP}"
 
 java_prepare() {

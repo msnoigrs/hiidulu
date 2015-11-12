@@ -1,8 +1,8 @@
 # Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
+# $Id$
 
-EAPI="5"
+EAPI=5
 WANT_AUTOCONF="2.1"
 
 PYTHON_COMPAT=( python{2_7,3_3,3_4} )
@@ -29,7 +29,8 @@ IUSE="+crashreporter gconf +ipc system-sqlite +webm"
 REL_URI="ftp://ftp.mozilla.org/pub/mozilla.org/firefox/releases"
 # More URIs appended below...
 #SRC_URI="http://dev.gentoo.org/~anarchy/mozilla/patchsets/${PATCH}.tar.bz2"
-SRC_URI="http://dev.gentoo.gr.jp/~igarashi/distfiles/${PATCH}.tar.bz2"
+MY_TARBALL="xulrunner-2.0-patches-1.8.tar.bz2"
+SRC_URI="http://osdn.jp/frs/chamber_redir.php?m=iij&f=%2Fusers%2F9%2F9548%2F${MY_TARBALL}"
 
 ASM_DEPEND=">=dev-lang/yasm-1.1.0"
 

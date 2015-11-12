@@ -45,7 +45,7 @@ RDEPEND="${DEPEND}
 	>=dev-python/unidecode-0.04.16[${PYTHON_USEDEP}]
 	=dev-python/yapsy-1.11.223[${PYTHON_USEDEP}]
 	dev-python/docutils-htmlwriter[${PYTHON_USEDEP}]
-	virtual/python-imaging[${PYTHON_USEDEP}]
+	dev-python/pillow[${PYTHON_USEDEP}]
 	>=dev-python/husl-4.0.2[${PYTHON_USEDEP}]
 	assets? ( >=dev-python/webassets-0.10.1[${PYTHON_USEDEP}] )
 	charts? ( >=dev-python/pygal-2.0.0[${PYTHON_USEDEP}] )

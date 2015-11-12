@@ -1,14 +1,15 @@
-# Copyright 1999-2012 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
+# $Id$
 
-EAPI="2"
+EAPI=5
 
 inherit toolchain-funcs
 
 DESCRIPTION="r5u87x userspace firmware loader"
 HOMEPAGE="http://www.bitbucket.org/ahixon/r5u87x/"
-SRC_URI="http://dev.gentoo.gr.jp/~igarashi/distfiles/${P}.tar.bz2"
+MY_TARBALL="r5u87x-0.2.1.20100409.tar.bz2"
+SRC_URI="http://osdn.jp/frs/chamber_redir.php?m=iij&f=%2Fusers%2F9%2F9546%2F${MY_TARBALL} -> ${MY_TARBALL}"
 
 LICENSE="GPL-2"
 SLOT="0"

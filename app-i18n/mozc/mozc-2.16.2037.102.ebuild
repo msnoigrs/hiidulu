@@ -1,18 +1,21 @@
 # Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
+# $Id$
 
-EAPI="5"
+EAPI=5
 PYTHON_COMPAT=( python2_7 )
 inherit elisp-common eutils multilib multiprocessing python-single-r1 toolchain-funcs
 
 DESCRIPTION="The Mozc engine for IBus Framework"
 HOMEPAGE="http://code.google.com/p/mozc/"
 
+MOZC_BALL="${P}.tar.bz2"
 JUDIC_REV="r10"
-MOZC_URL="http://dev.gentoo.gr.jp/~igarashi/distfiles/${P}.tar.bz2"
-JUDIC_URL="http://dev.gentoo.gr.jp/~igarashi/distfiles/japanese-usage-dictionary-${JUDIC_REV}.tar.bz2"
-FCITX_URL="http://dev.gentoo.gr.jp/~igarashi/distfiles/mozc-fcitx-37d1760.tar.bz2"
+JUDIC_BALL="japanese-usage-dictionary-${JUDIC_REV}.tar.bz2"
+MOZC_URL="http://osdn.jp/frs/chamber_redir.php?m=iij&f=%2Fusers%2F9%2F9551%2F${MOZC_BALL} -> ${MOZC_BALL}"
+JUDIC_URL="http://osdn.jp/frs/chamber_redir.php?m=iij&f=%2Fusers%2F9%2F9550%2F${JUDIC_BALL} -> ${JUDIC_BALL}"
+FCITX_BALL="mozc-fcitx-37d1760.tar.bz2"
+FCITX_URL="http://osdn.jp/frs/chamber_redir.php?m=iij&f=%2Fusers%2F9%2F9552%2F${FCITX_BALL} -> ${FCITX_BALL}"
 SRC_URI="${MOZC_URL} ${JUDIC_URL}
 	fcitx? ( ${FCITX_URL} )"
 #	test? ( ${GMOCK_URL} ${GTEST_URL} ${JSONCPP_URL} )
@@ -47,7 +50,7 @@ RESTRICT="test"
 SITEFILE=50${PN}-gentoo.el
 
 src_unpack() {
-	unpack $(basename ${MOZC_URL})
+	unpack ${MOZC_BALL}
 
 	#unpack $(basename ${GYP_URL})
 	#mv gyp-${GYP_REV} "${S}"/third_party/gyp || die
@@ -55,12 +58,12 @@ src_unpack() {
 	#unpack $(basename ${PROTOBUF_URL})
 	#mv protobuf-${PROTOBUF_VER} "${S}"/third_party/protobuf || die
 
-	unpack $(basename ${JUDIC_URL})
+	unpack ${JUDIC_BALL}
 	mv japanese-usage-dictionary-${JUDIC_REV} "${S}"/third_party/japanese_usage_dictionary || die
 
 	if use fcitx; then
 		cd "${S}"
-		unpack $(basename ${FCITX_URL})
+		unpack ${FCITX_BALL}
 	fi
 
 	# if use test; then

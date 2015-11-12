@@ -1,8 +1,8 @@
-# Copyright 1999-2013 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
+# $Id$
 
-EAPI="5"
+EAPI=5
 
 JAVA_PKG_IUSE="doc examples source"
 
@@ -11,7 +11,8 @@ inherit eutils java-pkg-2 java-ant-2
 DESCRIPTION="Java Compiler Compiler - The Java Parser Generator"
 HOMEPAGE="https://javacc.java.net/"
 # svn export https://svn.java.net/svn/javacc~svn/branches/version_60 javacc
-SRC_URI="http://dev.gentoo.gr.jp/~igarashi/distfiles/${P}.tar.gz"
+MY_TARBALL="javacc-6.0.tar.gz"
+SRC_URI="http://osdn.jp/frs/chamber_redir.php?m=iij&f=%2Fusers%2F9%2F9542%2F${MY_TARBALL} -> ${MY_TARBALL}"
 
 LICENSE="BSD"
 SLOT="0"

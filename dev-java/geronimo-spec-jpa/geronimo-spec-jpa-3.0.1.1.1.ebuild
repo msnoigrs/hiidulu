@@ -1,13 +1,14 @@
-# Copyright 1999-2012 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
+# $Id$
 
-EAPI="4"
+EAPI=5
 inherit java-pkg-2
 
 DESCRIPTION="Apache's Geronimo implementation of J2EE specification (JPA)"
 HOMEPAGE="http://geronimo.apache.org"
-SRC_URI="http://dev.gentoo.gr.jp/~igarashi/distfiles/${P}.tar.bz2"
+MY_TARBALL="geronimo-spec-jpa-3.0.1.1.1.tar.bz2"
+SRC_URI="http://osdn.jp/frs/chamber_redir.php?m=iij&f=%2Fusers%2F9%2F9537%2F${MY_TARBALL} -> ${MY_TARBALL}"
 # svn export https://svn.apache.org/repos/asf/geronimo/specs/tags/geronimo-jpa_3.0_spec-1.1.1 geronimo-spec-jpa-3.0.1.1.1
 # tar jcf geronimo-spec-jpa-3.0.1.1.1.tar.bz2 geronimo-spec-jpa-3.0.1.1.1
 
@@ -15,8 +16,8 @@ LICENSE="Apache-2.0"
 SLOT="0"
 KEYWORDS="~x86 ~amd64"
 IUSE="source"
-DEPEND=">=virtual/jdk-1.5"
-RDEPEND=">=virtual/jre-1.5"
+DEPEND=">=virtual/jdk-1.6"
+RDEPEND=">=virtual/jre-1.6"
 
 src_compile() {
 	local classes="${S}/target/classes"

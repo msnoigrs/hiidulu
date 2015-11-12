@@ -1,37 +1,35 @@
-# Copyright 1999-2013 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
+# $Id$
 
-EAPI="5"
-PYTHON_COMPAT=( python{2_6,2_7} )
-inherit elisp-common eutils multilib multiprocessing python-single-r1 toolchain-funcs
+EAPI=5
+PYTHON_COMPAT=( python2_7 )
+inherit elisp-common eutils l10n multilib multiprocessing python-single-r1 toolchain-funcs
 
 DESCRIPTION="The Mozc engine for IBus Framework"
 HOMEPAGE="http://code.google.com/p/mozc/"
 
-PROTOBUF_VER="2.5.0"
-GMOCK_VER="1.6.0"
-GTEST_VER="1.6.0"
-JSONCPP_VER="0.6.0-rc2"
-MOZC_OLD_URL="http://mozc.googlecode.com/files/mozc-1.10.1390.102.tar.bz2"
-MOZC_URL="http://mozc.googlecode.com/files/${P}.tar.bz2"
-PROTOBUF_URL="http://protobuf.googlecode.com/files/protobuf-${PROTOBUF_VER}.tar.bz2"
-GMOCK_URL="https://googlemock.googlecode.com/files/gmock-${GMOCK_VER}.zip"
-GTEST_URL="https://googletest.googlecode.com/files/gtest-${GTEST_VER}.zip"
-JSONCPP_URL="mirror://sourceforge/jsoncpp/jsoncpp-src-${JSONCPP_VER}.tar.gz"
-#FCITX_URL="https://fcitx.googlecode.com/files/fcitx-mozc-1.10.1390.102.2.patch"
-SRC_URI="${MOZC_URL} ${MOZC_OLD_URL} ${PROTOBUF_URL}
-	test? ( ${GMOCK_URL} ${GTEST_URL} ${JSONCPP_URL} )"
-#	fcitx? ( ${FCITX_URL} )
+MOZC_BALL="${P}.tar.bz2"
+JUDIC_REV="r10"
+JUDIC_BALL="japanese-usage-dictionary-${JUDIC_REV}.tar.bz2"
+MOZC_URL="http://osdn.jp/frs/chamber_redir.php?m=iij&f=%2Fusers%2F9%2F9554%2F${MOZC_BALL} -> ${MOZC_BALL}"
+JUDIC_URL="http://osdn.jp/frs/chamber_redir.php?m=iij&f=%2Fusers%2F9%2F9550%2F${JUDIC_BALL} -> ${JUDIC_BALL}"
+GYP_DATE="20140602"
+GYP_URL="https://dev.gentoo.org/~naota/files/gyp-${GYP_DATE}.tar.bz2"
+#FCITX_URL="http://dev.gentoo.gr.jp/~igarashi/distfiles/mozc-fcitx-37d1760.tar.bz2"
+SRC_URI="${MOZC_URL} ${JUDIC_URL} ${GYP_URL}"
+#	fcitx? ( ${FCITX_URL} )"
+#	test? ( ${GMOCK_URL} ${GTEST_URL} ${JSONCPP_URL} )
 
 LICENSE="Apache-2.0 BSD Boost-1.0 ipadic public-domain unicode"
 SLOT="0"
 KEYWORDS="~amd64 ~x86"
-IUSE="emacs fcitx +ibus +qt4 renderer test"
+#IUSE="emacs fcitx +ibus +qt4 renderer test"
+IUSE="emacs fcitx +ibus +qt4 renderer"
 
 RDEPEND="dev-libs/glib:2
-	dev-libs/openssl
 	x11-libs/libxcb
+	=dev-libs/protobuf-2.6.1*
 	emacs? ( virtual/emacs )
 	fcitx? ( app-i18n/fcitx )
 	ibus? ( >=app-i18n/ibus-1.4.1 )
@@ -42,7 +40,8 @@ RDEPEND="dev-libs/glib:2
 	)
 	${PYTHON_DEPS}"
 DEPEND="${RDEPEND}
-	>=dev-libs/protobuf-2.5.0
+	sys-devel/clang
+	dev-util/ninja
 	virtual/pkgconfig"
 
 BUILDTYPE="${BUILDTYPE:-Release}"
@@ -52,33 +51,41 @@ RESTRICT="test"
 SITEFILE=50${PN}-gentoo.el
 
 src_unpack() {
-	unpack $(basename ${MOZC_URL})
-	unpack $(basename ${MOZC_OLD_URL})
+	unpack ${MOZC_BALL}
 
-	#cd "${S}"/protobuf
-	unpack $(basename ${PROTOBUF_URL})
-	#mv protobuf-${PROTOBUF_VER} files || die
-	mv protobuf-${PROTOBUF_VER} "${S}"/third_party/protobuf || die
+	unpack $(basename ${GYP_URL})
+	rmdir "${S}"/third_party/gyp || die
+	mv gyp-${GYP_DATE} "${S}"/third_party/gyp || die
 
-	cd "${WORKDIR}"
-	rmdir "${S}"/third_party/gyp
-	mv mozc-1.10.1390.102/third_party/gyp "${S}"/third_party
+	#unpack $(basename ${PROTOBUF_URL})
+	#mv protobuf-${PROTOBUF_VER} "${S}"/third_party/protobuf || die
 
-	if use test; then
-		cd "${S}"/third_party
-		unpack $(basename ${GMOCK_URL}) $(basename ${GTEST_URL}) \
-			$(basename ${JSONCPP_URL})
-		mv gmock-${GMOCK_VER} gmock || die
-		mv gtest-${GTEST_VER} gtest || die
-		mv jsoncpp-src-${JSONCPP_VER} jsoncpp || die
-	fi
+	unpack ${JUDIC_BALL}
+	rmdir "${S}"/third_party/japanese_usage_dictionary || die
+	mv japanese-usage-dictionary-${JUDIC_REV} "${S}"/third_party/japanese_usage_dictionary || die
+
+	#if use fcitx; then
+	#	cd "${S}"
+	#	unpack $(basename ${FCITX_URL})
+	#fi
+
+	# if use test; then
+	# 	cd "${S}"/third_party
+	# 	unpack $(basename ${GMOCK_URL}) $(basename ${GTEST_URL}) \
+	# 		$(basename ${JSONCPP_URL})
+	# 	mv gmock-${GMOCK_VER} gmock || die
+	# 	mv gtest-${GTEST_VER} gtest || die
+	# 	mv jsoncpp-src-${JSONCPP_VER} jsoncpp || die
+	#fi
 }
 
 src_prepare() {
-	if use fcitx; then
-		epatch "${FILESDIR}/fcitx-b56a938.patch"
-		mv b/src/unix/fcitx unix
-	fi
+	# verbose build
+	sed -i -e "/RunOrDie(\[make_command\]/s/build_args/build_args + [\"-v\"]/" \
+		build_mozc.py || die
+	sed -i -e "s/<!(which clang)/$(tc-getCC)/" \
+		-e "s/<!(which clang++)/$(tc-getCXX)/" \
+		gyp/common.gypi || die
 
 	epatch_user
 }
@@ -88,16 +95,18 @@ src_configure() {
 
 	if ! use qt4 ; then
 		myconf+=" --noqt"
-		export GYP_DEFINES="use_libzinnia=0"
 	fi
+	export GYP_DEFINES="use_libzinnia=1"
 
 	if ! use renderer ; then
 		export GYP_DEFINES="${GYP_DEFINES} enable_gtk_renderer=0"
 	fi
 
-	# export GYP_DEFINES="${GYP_DEFINES} use_libprotobuf=1"
+	export GYP_DEFINES="${GYP_DEFINES} use_libprotobuf=1"
 
-	"${PYTHON}" build_mozc.py gyp ${myconf} --gypdir="$(pwd)/third_party/gyp" --channel_dev=0 || die "gyp failed"
+	tc-export CC CXX AR AS RANLIB LD
+
+	"${PYTHON}" build_mozc.py gyp ${myconf} --gypdir="$(pwd)/third_party/gyp" || die "gyp failed"
 }
 
 src_compile() {
@@ -105,8 +114,9 @@ src_compile() {
 
 	local my_makeopts=$(makeopts_jobs)
 	# This is for a safety. -j without a number, makeopts_jobs returns 999.
-	local myjobs=-j${my_makeopts/999/1}
-	#myjobs="--jobs=1"
+	#local myjobs="-j=${my_makeopts/999/1}"
+	#local myjobs="--jobs=1"
+	local myjobs=""
 
 	local mytarget="server/server.gyp:mozc_server"
 	use emacs && mytarget="${mytarget} unix/emacs/emacs.gyp:mozc_emacs_helper"
@@ -118,8 +128,9 @@ src_compile() {
 		mytarget="${mytarget} gui/gui.gyp:mozc_tool"
 	fi
 
-	V=1 "${PYTHON}" build_mozc.py build_tools -c "${BUILDTYPE}" ${myjobs} || die
-	V=1 "${PYTHON}" build_mozc.py build -c "${BUILDTYPE}" ${mytarget} ${myjobs} || die
+	#V=1 "${PYTHON}" build_mozc.py build_tools -c "${BUILDTYPE}" ${myjobs} || die
+	#V=1 "${PYTHON}" build_mozc.py build -c "${BUILDTYPE}" ${mytarget} ${myjobs} || die
+	"${PYTHON}" build_mozc.py build -v -c "${BUILDTYPE}" ${mytarget} ${myjobs} || die
 
 	if use emacs ; then
 		elisp-compile unix/emacs/*.el || die
@@ -132,6 +143,12 @@ src_test() {
 }
 
 src_install() {
+	install_fcitx_locale() {
+		lang=$1
+		insinto "/usr/share/locale/${lang}/LC_MESSAGES/"
+		newins out_linux/${BUILDTYPE}/gen/unix/fcitx/po/${lang}.mo fcitx-mozc.mo
+	}
+
 	if use emacs ; then
 		dobin "out_linux/${BUILDTYPE}/mozc_emacs_helper" || die
 		elisp-install ${PN} unix/emacs/*.{el,elc} || die
@@ -155,20 +172,14 @@ src_install() {
 				newins ${f} "mozc-${f/ui-}" || die
 			done
 		)
-		for mofile in out_linux/${BUILDTYPE}/obj/gen/unix/fcitx/po/*.mo
-		do
-			filename=`basename $mofile` || die
-			lang=${filename/.mo/} || die
-			insinto /usr/share/locale/$lang/LC_MESSAGES/ || die
-			newins ${mofile} fcitx-mozc.mo || die
-		done
+		l10n_for_each_locale_do install_fcitx_locale
 	fi
 
 	if use ibus ; then
 		exeinto /usr/libexec || die
 		newexe "out_linux/${BUILDTYPE}/ibus_mozc" ibus-engine-mozc || die
 		insinto /usr/share/ibus/component || die
-		doins "out_linux/${BUILDTYPE}/obj/gen/unix/ibus/mozc.xml" || die
+		doins "out_linux/${BUILDTYPE}/gen/unix/ibus/mozc.xml" || die
 		insinto /usr/share/ibus-mozc || die
 		(
 			cd data/images/unix

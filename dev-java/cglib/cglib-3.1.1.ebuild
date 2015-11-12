@@ -1,8 +1,8 @@
 # Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
+# $Id$
 
-EAPI="5"
+EAPI=5
 JAVA_PKG_IUSE="doc"
 
 #WANT_ANT_TASKS="dev-java/jarjar:1"
@@ -10,7 +10,8 @@ JAVA_PKG_IUSE="doc"
 inherit java-pkg-2 java-ant-2
 
 DESCRIPTION="cglib is a powerful, high performance and quality Code Generation Library."
-SRC_URI="http://dev.gentoo.gr.jp/~igarashi/distfiles/${P}-e10bc3d.tar.gz"
+MY_TARBALL="cglib-3.1.1-e10bc3d.tar.gz"
+SRC_URI="http://osdn.jp/frs/chamber_redir.php?m=iij&f=%2Fusers%2F9%2F9534%2F${MY_TARBALL} -> ${MY_TARBALL}"
 HOMEPAGE="http://cglib.sourceforge.net"
 LICENSE="Apache-2.0"
 SLOT="3"

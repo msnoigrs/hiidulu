@@ -1,8 +1,8 @@
-# Copyright 1999-2014 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
+# $Id$
 
-EAPI="5"
+EAPI=5
 JAVA_PKG_IUSE="doc source"
 JAVA_ANT_ENCODING="utf-8"
 
@@ -15,7 +15,7 @@ ASIANJAR="iTextAsian.jar"
 ASIANCMAPSJAR="iTextAsianCmaps.jar"
 #mirror://sourceforge/itext/${DISTFILE}
 #SRC_URI="https://github.com/masayuko/hiidulu/raw/master/distfiles/${DISTFILE}
-SRC_URI="http://dev.gentoo.gr.jp/~igarashi/distfiles/${DISTFILE}
+SRC_URI="http://osdn.jp/frs/chamber_redir.php?m=iij&f=%2Fusers%2F9%2F9541%2F${DISTFILE} -> ${DISTFILE}
 	cjk? ( mirror://sourceforge/itext/${ASIANJAR}
 		mirror://sourceforge/itext/${ASIANCMAPSJAR} )"
 
