@@ -9,13 +9,13 @@ inherit java-pkg-2 java-ant-2
 
 MY_PN="common"
 MY_PV=${PV//./_}
-MY_P="${PN}-${MY_PV}"
+MY_P="${PN}-${MY_PV}-20140629"
 DESCRIPTION="JGoodies Common Library"
 HOMEPAGE="http://www.jgoodies.com/"
 SRC_URI="http://www.jgoodies.com/download/libraries/${MY_PN}/${MY_P}.zip"
 
 LICENSE="BSD"
-SLOT="1.6"
+SLOT="1.8"
 KEYWORDS="amd64 ppc ppc64 x86 ~x86-fbsd"
 IUSE=""
 

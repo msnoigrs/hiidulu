@@ -1,19 +1,21 @@
-# Copyright 1999-2013 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
+# $Id$
 
-EAPI="4"
+EAPI=5
 JAVA_PKG_IUSE="doc examples source test"
 
-ESVN_REPO_URI="http://svn.apache.org/repos/asf/xmlgraphics/commons/trunk"
-inherit subversion java-pkg-2 java-ant-2
+EGIT_REPO_URI="https://github.com/apache/xml-graphics-commons.git"
+EGIT_BRANCH="trunk"
+
+inherit git-2 java-pkg-2 java-ant-2
 
 DESCRIPTION="A library of several reusable components used by Apache Batik and Apache FOP."
 HOMEPAGE="http://xmlgraphics.apache.org/commons/index.html"
 #SRC_URI="mirror://apache/xmlgraphics/commons/source/${P}-src.tar.gz"
 
 LICENSE="Apache-2.0"
-SLOT="1.5"
+SLOT="2"
 KEYWORDS="amd64 ppc ppc64 x86 ~amd64-linux ~x86-linux ~ppc-macos ~x86-macos ~sparc-solaris ~x86-solaris"
 IUSE="jpeg"
 
@@ -21,12 +23,12 @@ IUSE="jpeg"
 RESTRICT="test"
 CDEPEND="dev-java/commons-io:1
 	dev-java/jcl-over-slf4j"
-DEPEND=">=virtual/jdk-1.5
+DEPEND=">=virtual/jdk-1.6
 		test? (
 			dev-java/ant-junit
 		)
 		${CDEPEND}"
-RDEPEND=">=virtual/jre-1.5
+RDEPEND=">=virtual/jre-1.6
 		${CDEPEND}"
 
 # TODO investigate producing .net libraries

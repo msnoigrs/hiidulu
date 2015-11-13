@@ -1,6 +1,6 @@
-# Copyright 1999-2013 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
+# $Id$
 
 EAPI="5"
 
@@ -19,19 +19,19 @@ IUSE="groovy latex pdf svg hsqldb jmapviewer"
 
 COMMON_DEP="
 	dev-java/javahelp:0
-	dev-java/jgoodies-forms:0
+	dev-java/jgoodies-forms:1.8
 	dev-java/jibx:0
 	>=dev-java/simplyhtml-0.13.1:0
 	dev-java/jortho
 	groovy? ( dev-java/groovy )
 	latex? ( dev-java/hoteqn:0 )
-	pdf? ( dev-java/batik:1.7 >=dev-java/fop-0.95:0 )
-	svg? ( dev-java/batik:1.7 >=dev-java/fop-0.95:0 )"
-DEPEND=">=virtual/jdk-1.5
+	pdf? ( dev-java/batik:1.8 >=dev-java/fop-0.95:0 )
+	svg? ( dev-java/batik:1.8 >=dev-java/fop-0.95:0 )"
+DEPEND=">=virtual/jdk-1.6
 	pdf? ( dev-java/avalon-framework:4.2 )
 	svg? ( dev-java/avalon-framework:4.2 )
 	${COMMON_DEP}"
-RDEPEND=">=virtual/jre-1.5
+RDEPEND=">=virtual/jre-1.6
 	${COMMON_DEP}"
 
 S="${WORKDIR}/${PN}"
@@ -44,7 +44,7 @@ java_prepare() {
 	epatch "${FILESDIR}/jgoodies-1.patch"
 	epatch "${FILESDIR}/jgoodies-2.patch"
 	epatch "${FILESDIR}/jgoodies-3.patch"
-	epatch "${FILESDIR}/jgoodies-4.patch"
+	epatch "${FILESDIR}/jgoodies-5.patch"
 
 	sed -i -e 's/new RowSpec("fill:20dlu")/RowSpec.decode("fill:20dlu")/' freemind/preferences/layout/OptionPanel.java
 	sed -i -e 's/register(textfield, false, true, true)/register(textfield, false, false, true, true)/' freemind/view/mindmapview/EditNodeTextField.java
@@ -53,7 +53,7 @@ java_prepare() {
 	# someone got it all wrong (set/unset vs. bool)
 	sed -i -e 's|<property name="include_latex" value="false"/>||' plugins/build.xml || die
 
-	java-ant_remove-taskdefs --name jarbundler # macOS only
+	#java-ant_remove-taskdefs --name jarbundler # macOS only
 
 	use groovy || rm plugins/build_scripting.xml || die
 	use latex || rm plugins/build_latex.xml || die
@@ -74,11 +74,11 @@ src_configure() {
 src_compile() {
 	local svg_deps svg_build_deps
 	if use pdf || use svg; then
-		svg_deps="batik-1.7,fop"
+		svg_deps="batik-1.8,fop"
 		svg_build_deps=":$(java-pkg_getjars --build-only avalon-framework-4.2)"
 	fi
 	EANT_GENTOO_CLASSPATH="
-		jgoodies-forms,jibx,javahelp,simplyhtml,jortho
+		jgoodies-forms-1.8,jibx,javahelp,simplyhtml,jortho
 		$(usex groovy groovy '')
 		$(usex latex hoteqn '')
 		${svg_deps}"

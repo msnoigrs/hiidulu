@@ -1,9 +1,9 @@
-# Copyright 1999-2012 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
+# $Id$
 
-EAPI="4"
-JAVA_PKG_IUSE="source"
+EAPI=5
+JAVA_PKG_IUSE="source doc"
 
 ESVN_REPO_URI="https://jortho.svn.sourceforge.net/svnroot/jortho/trunk/JOrtho"
 
@@ -17,8 +17,8 @@ SLOT="0"
 KEYWORDS="amd64 x86"
 IUSE=""
 
-DEPEND=">=virtual/jdk-1.5"
-RDEPEND=">=virtual/jre-1.5"
+DEPEND=">=virtual/jdk-1.6"
+RDEPEND=">=virtual/jre-1.6"
 
 java_prepare() {
 	cp ${FILESDIR}/build.xml build.xml

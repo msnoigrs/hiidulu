@@ -4,9 +4,10 @@
 
 EAPI=5
 JAVA_PKG_IUSE="doc source"
-ESVN_REPO_URI="https://svn.apache.org/repos/asf/commons/proper/io/trunk"
+EGIT_REPO_URI="https://github.com/apache/commons-io.git"
+EGIT_BRANCH="trunk"
 
-inherit subversion java-pkg-2 java-ant-2
+inherit git-2 java-pkg-2 java-ant-2
 
 MY_P="${P}-src"
 DESCRIPTION="Commons-IO contains utility classes, stream implementations, file filters, and endian classes."
@@ -47,7 +48,7 @@ src_test() {
 }
 
 src_install() {
-	java-pkg_newjar target/${PN}-2.2-SNAPSHOT.jar ${PN}.jar
+	java-pkg_newjar target/${PN}-*-SNAPSHOT.jar ${PN}.jar
 
 	dodoc RELEASE-NOTES.txt NOTICE.txt || die
 	use doc && java-pkg_dojavadoc target/apidocs

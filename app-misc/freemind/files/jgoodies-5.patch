@@ -1,0 +1,20 @@
+--- freemind.orig/plugins/collaboration/socket/SocketBasics.java	2014-04-13 03:05:35.000000000 +0900
++++ freemind/plugins/collaboration/socket/SocketBasics.java	2015-11-13 11:52:51.739582363 +0900
+@@ -41,7 +41,7 @@
+ import javax.swing.WindowConstants;
+ 
+ import com.jgoodies.forms.builder.DefaultFormBuilder;
+-import com.jgoodies.forms.factories.ButtonBarFactory;
++import com.jgoodies.forms.builder.ButtonBarBuilder;
+ import com.jgoodies.forms.layout.FormLayout;
+ 
+ import freemind.common.NumberProperty;
+@@ -226,7 +226,7 @@
+ 			});
+ 			getRootPane().setDefaultButton(mOkButton);
+ 			getContentPane().add(
+-					ButtonBarFactory.buildOKCancelBar(cancelButton, mOkButton),
++					new ButtonBarBuilder().addGlue().addButton(cancelButton, mOkButton).build(),
+ 					BorderLayout.SOUTH);
+ 			setTitle("Enter Password Dialog");
+ 			setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);

@@ -5,13 +5,11 @@
 EAPI=5
 JAVA_PKG_IUSE="doc"
 
-EGIT_REPO_URI="https://github.com/apache/batik.git"
-EGIT_BRANCH="trunk"
-
-inherit git-2 java-pkg-2 java-ant-2 eutils
+inherit java-pkg-2 java-ant-2 eutils
 
 DESCRIPTION="Java based SVG toolkit"
 HOMEPAGE="https://xmlgraphics.apache.org/batik/"
+SRC_URI="http://apache.mirrors.ovh.net/ftp.apache.org/dist/xmlgraphics/${PN}/source/${PN}-src-${PV}.tar.gz"
 
 LICENSE="Apache-2.0"
 SLOT="1.8"
@@ -86,17 +84,17 @@ src_compile() {
 src_install() {
 	batik_unversion_jars() {
 		for jar in batik-*.jar; do
-			newj="${jar%-svn-trunk}.jar"
+			newj="${jar%-*}.jar"
 			java-pkg_newjar ${jar} ${newj}
 		done
 	}
 
 	# First unversion jars in ${P}/lib
-	cd "${S}"/batik-svn-trunk/lib || die
+	cd "${S}"/"${P}"/lib || die
 	batik_unversion_jars
 
 	# Then, only those in ${P}
-	cd "${S}"/batik-svn-trunk || die
+	cd "${S}"/"${P}" || die
 	batik_unversion_jars
 
 	# Proceed with documentation installation
