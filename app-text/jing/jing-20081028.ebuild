@@ -1,26 +1,26 @@
-# Copyright 1999-2012 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
+# $Id$
 
-EAPI=4
+EAPI=5
 inherit eutils java-pkg-2 java-ant-2
 
 DESCRIPTION="Jing: A RELAX NG validator in Java"
 HOMEPAGE="http://thaiopensource.com/relaxng/jing.html"
-SRC_URI="http://jing-trang.googlecode.com/files/${P}.zip"
+SRC_URI="https://github.com/relaxng/jing-trang/archive/V20081028.zip -> ${P}.zip"
 LICENSE="BSD Apache-1.1"
 SLOT="0"
 KEYWORDS="amd64 ~ppc x86"
 IUSE="doc source"
 COMMON_DEPEND="
-	dev-java/saxon:9
+	dev-java/saxon:9.3
 	dev-java/xerces:2
 	dev-java/iso-relax
 	dev-java/xalan
 	dev-java/relaxng-datatype"
-RDEPEND=">=virtual/jre-1.5
+RDEPEND=">=virtual/jre-1.6
 	${COMMON_DEPEND}"
-DEPEND=">=virtual/jdk-1.5
+DEPEND=">=virtual/jdk-1.6
 	dev-java/ant-core
 	app-arch/unzip
 	source? ( app-arch/zip )
@@ -47,7 +47,7 @@ java_prepare() {
 	java-pkg_jar-from iso-relax
 	java-pkg_jar-from xerces-2
 	java-pkg_jar-from xalan
-	java-pkg_jar-from saxon-9 saxon9.jar saxon.jar
+	java-pkg_jar-from saxon-9.3 saxon9.jar saxon.jar
 	java-pkg_jar-from relaxng-datatype
 	java-pkg_jar-from --build-only ant-core
 }
@@ -55,18 +55,6 @@ java_prepare() {
 src_compile() {
 	eant jar #premade javadocs
 }
-
-#src_test() {
-#	local cp
-#	for jar in bin/*.jar; do
-#		cp="${cp}:${jar}"
-#	done
-	# would need some test files could probably take this from the gcj version
-	#java -cp ${cp} com.thaiopensource.datatype.xsd.regex.test.TestDriver || die
-	#java -cp ${cp} com.thaiopensource.datatype.relaxng.util.TestDriver || die
-	#java -cp ${cp} com.thaiopensource.datatype.xsd.regex.test.CategoryTest \
-	#	|| die
-#}
 
 src_install() {
 	java-pkg_dojar bin/jing.jar

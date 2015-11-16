@@ -1,26 +1,30 @@
 # Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
+# $Id$
 
 EAPI=5
 
-inherit eutils gnome2-utils fdo-mime multilib multilib-build cmake-utils readme.gentoo
+EGIT_REPO_URI="https://github.com/fcitx/fcitx.git"
+
+inherit git-2 eutils gnome2-utils fdo-mime readme.gentoo cmake-multilib
 
 DESCRIPTION="Flexible Contect-aware Input Tool with eXtension support"
 HOMEPAGE="http://fcitx-im.org/"
-SRC_URI="http://download.fcitx-im.org/fcitx/${P}_dict.tar.xz"
+#SRC_URI="http://download.fcitx-im.org/fcitx/${P}_dict.tar.xz"
 
 LICENSE="GPL-2"
 SLOT="0"
 KEYWORDS="~amd64 ~ppc ~ppc64 ~x86"
 
 IUSE="+X +autostart +cairo +dbus debug +enchant +gtk +gtk3 icu introspection lua
-nls opencc +pango +qt4 static-libs table test +xml"
+nls opencc +pango +qt4 static-libs table test +xml gtk3_abi_x86_32"
+
+REQUIRED_USE="gtk3_abi_x86_32? ( abi_x86_32 )"
 
 RDEPEND="
 	X? (
-		x11-libs/libX11[abi_x86_32=]
-		x11-libs/libXinerama[abi_x86_32=]
+		x11-libs/libX11[${MULTILIB_USEDEP}]
+		x11-libs/libXinerama[${MULTILIB_USEDEP}]
 	)
 	cairo? (
 		x11-libs/cairo[X]
@@ -30,40 +34,37 @@ RDEPEND="
 	dbus? ( sys-apps/dbus )
 	enchant? ( app-text/enchant )
 	gtk? (
-		x11-libs/gtk+:2
-		dev-libs/glib:2
-		dev-libs/dbus-glib
+		x11-libs/gtk+:2[${MULTILIB_USEDEP}]
+		dev-libs/glib:2[${MULTILIB_USEDEP}]
+		dev-libs/dbus-glib[${MULTILIB_USEDEP}]
 	)
 	gtk3? (
 		x11-libs/gtk+:3
 		dev-libs/glib:2
 		dev-libs/dbus-glib
+
+		gtk3_abi_x86_32? (
+			x11-libs/gtk+:3[${MULTILIB_USEDEP}]
+			dev-libs/glib:2[${MULTILIB_USEDEP}]
+			dev-libs/dbus-glib[${MULTILIB_USEDEP}]
+		)
 	)
 	icu? ( dev-libs/icu:= )
 	lua? ( dev-lang/lua )
 	opencc? ( app-i18n/opencc )
 	qt4? (
-		dev-qt/qtgui:4[dbus(+),glib]
-		dev-qt/qtdbus:4
+		dev-libs/glib:2[${MULTILIB_USEDEP}]
+		dev-qt/qtgui:4[dbus(+),glib,${MULTILIB_USEDEP}]
+		dev-qt/qtdbus:4[${MULTILIB_USEDEP}]
 	)
 	xml? (
 		app-text/iso-codes
-		dev-libs/libxml2
+		dev-libs/libxml2[${MULTILIB_USEDEP}]
 		x11-libs/libxkbfile
-	)
-
-	amd64? ( abi_x86_32? (
-		gtk? ( app-emulation/emul-linux-x86-gtklibs )
-		gtk3? ( app-emulation/emul-linux-x86-gtklibs )
-		qt4? (
-		  || ( app-emulation/emul-linux-x86-qtlibs
-			  dev-qt/qtgui:4[abi_x86_32] )
-		   || ( app-emulation/emul-linux-x86-qtlibs
-			  dev-qt/qtdbus:4[abi_x86_32] )
-		  )
-	) )"
+	)"
 
 DEPEND="${RDEPEND}
+	kde-frameworks/extra-cmake-modules
 	introspection? ( dev-libs/gobject-introspection )
 	virtual/libintl
 	virtual/pkgconfig
@@ -73,7 +74,6 @@ DOCS=( AUTHORS ChangeLog README THANKS TODO
 HTML_DOCS=( doc/wb_fh.htm )
 
 src_prepare() {
-	epatch "${FILESDIR}/fcitx-2ece7ec.patch"
 	use autostart && DOC_CONTENTS="You have enabled the autostart USE flag,
 	which will let fcitx start automatically on XDG compatible desktop
 	environments, such as Gnome, KDE, LXDE, Razor-qt and Xfce. If you use
@@ -82,7 +82,54 @@ src_prepare() {
 	epatch_user
 }
 
-src_configure() {
+src_cross_configure(){
+
+	CFLAGS="$CFLAGS -m32"
+	CXXFLAGS="$CXXFLAGS -m32"
+	LDFLAGS="$LDFLAGS -m32 -L/usr/lib32/qt4 -L/usr/lib32"
+
+	local mycmakeargs="
+		-DSYSCONFDIR=/etc
+		-DLIB_INSTALL_DIR=/usr/lib32
+		-DCMAKE_INSTALL_PREFIX=/usr
+		$(cmake-utils_use_enable gtk GTK2_IM_MODULE)
+		$(cmake-utils_use_enable gtk3_abi_x86_32 GTK3_IM_MODULE)
+		$(cmake-utils_use_enable qt4 QT)
+		$(cmake-utils_use_enable qt4 QT_IM_MODULE)
+		-DENABLE_X11=ON
+		-DENABLE_QT_GUI=OFF
+		-DENABLE_PANGO=OFF
+		-DENABLE_STATIC=OFF
+		-DENABLE_OPENCC=OFF
+		-DENABLE_GIR=OFF
+		-DENABLE_CAIRO=OFF
+		-DENABLE_LIBXML2=OFF
+		-DENABLE_PINYIN=OFF
+		-DENABLE_TABLE=OFF
+		-DENABLE_LUA=OFF
+		-DENABLE_SNOOPER=OFF"
+
+	cmake-utils_src_configure
+
+
+	sed -i "s|/usr/lib64/qt4|/usr/lib32/qt4|g" \
+		`grep -rl /usr/lib64/qt4 ./src` || die
+	sed -i "s|lib64|lib32|g" \
+		src/frontend/gtk2/cmake_install.cmake \
+		src/frontend/gtk3/cmake_install.cmake \
+		|| die
+	sed -i 's|/usr/local/lib|/usr/lib32|g' \
+		src/lib/fcitx-utils/cmake_install.cmake  \
+		src/lib/fcitx-config/cmake_install.cmake \
+		src/lib/fcitx-gclient/cmake_install.cmake \
+		src/lib/fcitx-gclient/cmake_install.cmake \
+		src/lib/fcitx-qt/cmake_install.cmake \
+		src/frontend/gtk2/cmake_install.cmake \
+		src/frontend/gtk3/cmake_install.cmake \
+		|| die
+}
+
+src_native_configure(){
 	local mycmakeargs="
 		-DLIB_INSTALL_DIR=/usr/$(get_libdir)
 		-DSYSCONFDIR=/etc/
@@ -113,87 +160,39 @@ src_configure() {
 	if use gtk || use gtk3 || use qt4 ; then
 		mycmakeargs+=" -DENABLE_GLIB2=ON "
 	fi
+
 	cmake-utils_src_configure
-
-	if use abi_x86_64 && use abi_x86_32 ; then
-		mkdir -p "${WORKDIR}/${P}_build32"
-		cd "${WORKDIR}/${P}_build32"
-
-		local CFLAGS="$CFLAGS -m32"
-		local CXXFLAGS="$CXXFLAGS -m32"
-		local LDFLAGS="$LDFLAGS -m32 -L/usr/lib32/qt4"
-
-		local mycmakeargs="
-			-DSYSCONFDIR=/etc
-			-DLIB_INSTALL_DIR=/usr/lib32
-			-DCMAKE_INSTALL_PREFIX=/usr
-			$(cmake-utils_use_enable gtk GTK2_IM_MODULE)
-			$(cmake-utils_use_enable gtk3 GTK3_IM_MODULE)
-			$(cmake-utils_use_enable qt4 QT)
-			$(cmake-utils_use_enable qt4 QT_IM_MODULE)
-			-DENABLE_X11=OFF
-			-DENABLE_QT_GUI=OFF
-			-DENABLE_PANGO=OFF
-			-DENABLE_STATIC=OFF
-			-DENABLE_OPENCC=OFF
-			-DENABLE_GIR=OFF
-			-DENABLE_CAIRO=OFF
-			-DENABLE_LIBXML2=OFF
-			-DENABLE_PINYIN=OFF
-			-DENABLE_TABLE=OFF
-			-DENABLE_LUA=OFF
-			-DENABLE_SNOOPER=OFF"
-
-		"${CMAKE_BINARY}" "${mycmakeargs[@]}" "${CMAKE_USE_DIR}" || die
-
-		sed -i "s|/usr/lib64/qt4|/usr/lib32/qt4|g" \
-			`grep -rl /usr/lib64/qt4 ./src` || die
-		sed -i "s|lib64|lib32|g" \
-			src/frontend/gtk2/cmake_install.cmake \
-			src/frontend/gtk3/cmake_install.cmake \
-			|| die
-		sed -i 's|/usr/local/lib|/usr/lib32|g' \
-			src/lib/fcitx-utils/cmake_install.cmake  \
-			src/lib/fcitx-config/cmake_install.cmake \
-			src/lib/fcitx-gclient/cmake_install.cmake \
-			src/lib/fcitx-gclient/cmake_install.cmake \
-			src/lib/fcitx-qt/cmake_install.cmake \
-			src/frontend/gtk2/cmake_install.cmake \
-			src/frontend/gtk3/cmake_install.cmake \
-			|| die
-	fi
 }
 
-src_compile(){
-	cmake-utils_src_compile
+multilib_src_configure(){
 
-	if use abi_x86_64 && use abi_x86_32 ; then
-		cd ${WORKDIR}/${P}_build32/src/
+	if multilib_is_native_abi ; then
+		src_native_configure
+	else
+		( src_cross_configure ) || die "configure failed for multilib cross compile"
+	fi
+
+}
+
+multilib_src_compile(){
+
+	if multilib_is_native_abi ; then
+		cmake-utils_src_compile
+	else
+		pushd src
 		make -C lib || echo
-
 		use gtk && emake -C frontend/gtk2 || die
-		use gtk3 && emake -C frontend/gtk3 || die
+		if gtk3_abi_x86_32 ; then
+			emake -C frontend/gtk3 || die
+		fi
 		use qt4 && emake -C frontend/qt || die
-	fi
-}
-
-src_install() {
-	if use abi_x86_64 && use abi_x86_32 ; then
-		pushd "${WORKDIR}/${P}_build32/src"
-		emake DESTDIR="${D}" -C lib/fcitx-config install || die
-		emake DESTDIR="${D}" -C lib/fcitx-utils install || die
-		use qt4  && emake DESTDIR="${D}" -C lib/fcitx-qt install || die
-
-		use gtk  && emake DESTDIR="${D}" -C frontend/gtk2 install || die
-		use gtk3  && emake DESTDIR="${D}" -C frontend/gtk3 install || die
-		use qt4  && emake DESTDIR="${D}" -C frontend/qt install || die
-
 		popd
 	fi
-	rm -rf "${D}/usr/include" "${D}/usr/lib32/pkgconfig"
-	rm -rf "${D}/usr/local"
+}
 
+native_abi_src_install(){
 	cmake-utils_src_install
+
 	rm -rf "${ED}"/usr/share/doc/${PN} || die
 	use autostart && readme.gentoo_create_doc
 
@@ -219,6 +218,35 @@ src_install() {
 	chmod 0755 "${XINITRCFCITX}"
 }
 
+multilib_check_headers(){
+	echo
+}
+
+multilib_src_install() {
+
+	if multilib_is_native_abi ; then
+		native_abi_src_install
+	else
+		pushd src
+		emake DESTDIR="${D}" -C lib/fcitx-config install || die
+		emake DESTDIR="${D}" -C lib/fcitx-utils install || die
+		emake DESTDIR="${D}" -C lib/fcitx-gclient install || die
+		use qt4  && emake DESTDIR="${D}" -C lib/fcitx-qt install || die
+
+		use gtk  && emake DESTDIR="${D}" -C frontend/gtk2 install || die
+		if gtk3_abi_x86_32; then
+			emake DESTDIR="${D}" -C frontend/gtk3 install || die
+		fi
+		use qt4  && emake DESTDIR="${D}" -C frontend/qt install || die
+
+		popd
+
+		rm -rf "${D}/usr/include"
+		rm -rf "${D}/usr/lib32/pkgconfig"
+		rm -rf "${D}/usr/local"
+	fi
+}
+
 pkg_postinst() {
 	gnome2_icon_cache_update
 	fdo-mime_desktop_database_update
@@ -236,9 +264,9 @@ pkg_postinst() {
 }
 
 pkg_postrm() {
-	gnome2_icon_cache_update
-	fdo-mime_desktop_database_update
-	fdo-mime_mime_database_update
-	use gtk && gnome2_query_immodules_gtk2
-	use gtk3 && gnome2_query_immodules_gtk3
+		gnome2_icon_cache_update
+		fdo-mime_desktop_database_update
+		fdo-mime_mime_database_update
+		gnome2_query_immodules_gtk2
+		gnome2_query_immodules_gtk3
 }

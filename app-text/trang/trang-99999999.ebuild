@@ -12,7 +12,7 @@ WANT_ANT_TASKS="dev-java/saxon:9.3 dev-java/testng:0"
 
 inherit git-2 java-pkg-2 java-ant-2
 
-DESCRIPTION="Jing: A RELAX NG validator in Java"
+DESCRIPTION="Multi-format schema converter based on RELAX NG"
 HOMEPAGE="http://thaiopensource.com/relaxng/jing.html"
 SRC_URI=""
 LICENSE="BSD Apache-1.1"
@@ -25,8 +25,6 @@ COMMON_DEPEND="
 	dev-java/xalan
 	dev-java/saxon:9.3
 	dev-java/xml-commons-resolver"
-#	dev-java/relaxng-datatype
-#	dev-java/saxon:9
 RDEPEND=">=virtual/jre-1.6
 	${COMMON_DEPEND}"
 DEPEND=">=virtual/jdk-1.6
@@ -35,7 +33,6 @@ DEPEND=">=virtual/jdk-1.6
 	${COMMON_DEPEND}"
 
 JAVA_PKG_BSFIX="off"
-
 java_prepare() {
 	find -type f -exec sed -i -e 's/com.icl.saxon/net.sf.saxon/g' {} \;
 
@@ -58,12 +55,13 @@ src_compile() {
 }
 
 src_install() {
-	java-pkg_dojar build/jing.jar
-	#java-pkg_dojar build/trang.jar
-	java-pkg_dojar build/dtdinst.jar
-	java-pkg_register-ant-task
+	#java-pkg_dojar build/jing.jar
+	java-pkg_dojar build/trang.jar
+	#java-pkg_dojar build/dtdinst.jar
+	#java-pkg_register-ant-task
 #	java-pkg_dolauncher ${PN}-${SLOT} --main com.thaiopensource.relaxng.util.Driver
-	java-pkg_dolauncher ${PN} --main com.thaiopensource.relaxng.util.Driver
+	#java-pkg_dolauncher ${PN} --main com.thaiopensource.relaxng.util.Driver
+	java-pkg_dolauncher ${PN} --main com.thaiopensource.relaxng.translate.Driver
 	use doc && java-pkg_dohtml -r doc/* readme.html
 	use source && java-pkg_dosrc src/com
 }
