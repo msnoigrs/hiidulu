@@ -1,0 +1,77 @@
+diff -uNr jericho-html-3.4.orig/src/java/net/htmlparser/jericho/LoggerFactory.java jericho-html-3.4/src/java/net/htmlparser/jericho/LoggerFactory.java
+--- jericho-html-3.4.orig/src/java/net/htmlparser/jericho/LoggerFactory.java	2015-10-23 23:27:10.000000000 +0900
++++ jericho-html-3.4/src/java/net/htmlparser/jericho/LoggerFactory.java	2015-12-01 22:27:30.515569918 +0900
+@@ -34,7 +34,7 @@
+ 	public static Logger getLogger(final Class<?> loggedClass) {
+ 		return getLogger(loggedClass.getName());
+ 	}
+-	
++
+ 	public static LoggerProvider getLoggerProvider() {
+ 		return (Config.LoggerProvider!=null) ? Config.LoggerProvider : getDefaultLoggerProvider();
+ 	}
+@@ -47,17 +47,8 @@
+ 	private static LoggerProvider determineDefaultLoggerProvider() {
+ 		if (isClassAvailable("org.slf4j.impl.StaticLoggerBinder")) {
+ 			if (isClassAvailable("org.slf4j.impl.JDK14LoggerFactory")) return LoggerProvider.JAVA;
+-			if (isClassAvailable("org.slf4j.impl.Log4jLoggerFactory")) return LoggerProvider.LOG4J;
+-			if (!isClassAvailable("org.slf4j.impl.JCLLoggerFactory")) return LoggerProvider.SLF4J;
+ 			// fall through to next check if SLF4J is configured to use JCL
+ 		}
+-		if (isClassAvailable("org.apache.commons.logging.Log")) {
+-			final String logClassName=org.apache.commons.logging.LogFactory.getLog("test").getClass().getName();
+-			if (logClassName.equals("org.apache.commons.logging.impl.Jdk14Logger")) return LoggerProvider.JAVA;
+-			if (logClassName.equals("org.apache.commons.logging.impl.Log4JLogger")) return LoggerProvider.LOG4J;
+-			return LoggerProvider.JCL;
+-		}
+-		if (isClassAvailable("org.apache.log4j.Logger")) return LoggerProvider.LOG4J;
+ 		return LoggerProvider.JAVA;
+ 	}
+ 
+diff -uNr jericho-html-3.4.orig/src/java/net/htmlparser/jericho/LoggerProvider.java jericho-html-3.4/src/java/net/htmlparser/jericho/LoggerProvider.java
+--- jericho-html-3.4.orig/src/java/net/htmlparser/jericho/LoggerProvider.java	2015-10-23 23:27:10.000000000 +0900
++++ jericho-html-3.4/src/java/net/htmlparser/jericho/LoggerProvider.java	2015-12-01 22:24:30.138772009 +0900
+@@ -65,38 +65,6 @@
+ 	public static final LoggerProvider JAVA=LoggerProviderJava.INSTANCE;
+ 
+ 	/**
+-	 * A {@link LoggerProvider} implementation that wraps the <a target="_blank" href="http://jakarta.apache.org/commons/logging/">Jakarta Commons Logging</a> (JCL) framework.
+-	 * <p>
+-	 * See the description of the static {@link Config#LoggerProvider} property for details on when this implementation is used as the default.
+-	 * <p>
+-	 * The following mapping of <a href="Logger.html#LoggingLevel">logging levels</a> is used:
+-	 * <table class="bordered" style="margin: 15px" cellspacing="0">
+-	 *  <tr><th>{@link Logger} level<th><code>org.apache.commons.logging</code> level
+-	 *  <tr><td>{@link Logger#error(String) ERROR}<td><code>error</code>
+-	 *  <tr><td>{@link Logger#warn(String) WARN}<td><code>warn</code>
+-	 *  <tr><td>{@link Logger#info(String) INFO}<td><code>info</code>
+-	 *  <tr><td>{@link Logger#debug(String) DEBUG}<td><code>debug</code>
+-	 * </table>
+-	 */
+-	public static final LoggerProvider JCL=LoggerProviderJCL.INSTANCE;
+-
+-	/**
+-	 * A {@link LoggerProvider} implementation that wraps the <a target="_blank" href="http://logging.apache.org/log4j/">Apache Log4J</a> framework.
+-	 * <p>
+-	 * See the description of the static {@link Config#LoggerProvider} property for details on when this implementation is used as the default.
+-	 * <p>
+-	 * The following mapping of <a href="Logger.html#LoggingLevel">logging levels</a> is used:
+-	 * <table class="bordered" style="margin: 15px" cellspacing="0">
+-	 *  <tr><th>{@link Logger} level<th><code>org.apache.log4j.Level</code>
+-	 *  <tr><td>{@link Logger#error(String) ERROR}<td><code>ERROR</code>
+-	 *  <tr><td>{@link Logger#warn(String) WARN}<td><code>WARN</code>
+-	 *  <tr><td>{@link Logger#info(String) INFO}<td><code>INFO</code>
+-	 *  <tr><td>{@link Logger#debug(String) DEBUG}<td><code>DEBUG</code>
+-	 * </table>
+-	 */
+-	public static final LoggerProvider LOG4J=LoggerProviderLog4J.INSTANCE;
+-
+-	/**
+ 	 * A {@link LoggerProvider} implementation that wraps the <a target="_blank" href="http://www.slf4j.org/">SLF4J</a> framework.
+ 	 * <p>
+ 	 * See the description of the static {@link Config#LoggerProvider} property for details on when this implementation is used as the default.
+@@ -137,3 +105,4 @@
+ 	 */
+ 	public Logger getSourceLogger();
+ }
++

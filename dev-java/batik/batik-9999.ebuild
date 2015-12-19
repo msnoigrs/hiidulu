@@ -86,7 +86,7 @@ src_compile() {
 src_install() {
 	batik_unversion_jars() {
 		for jar in batik-*.jar; do
-			newj="${jar%-svn-trunk}.jar"
+			newj="${jar%-svn-trunk.jar}.jar"
 			java-pkg_newjar ${jar} ${newj}
 		done
 	}

@@ -4,7 +4,7 @@
 
 EAPI=5
 
-PYTHON_COMPAT=( python{2_7,3_3,3_4} )
+PYTHON_COMPAT=( python{2_7,3_3,3_4,3_5} )
 
 #EGIT_REPO_URI="https://github.com/bbangert/beaker.git"
 EGIT_REPO_URI="https://github.com/masayuko/beaker.git"

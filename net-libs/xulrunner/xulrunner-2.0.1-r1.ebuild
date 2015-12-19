@@ -5,7 +5,7 @@
 EAPI=5
 WANT_AUTOCONF="2.1"
 
-PYTHON_COMPAT=( python{2_7,3_3,3_4} )
+PYTHON_COMPAT=( python{2_7,3_3,3_4,3_5} )
 
 inherit flag-o-matic toolchain-funcs eutils mozconfig-3 makeedit multilib autotools versionator pax-utils prefix python-utils-r1
 
