@@ -1,8 +1,8 @@
-#!/bin/bash
-# use the gentoo startDM to start the default WM
-#
-# see /usr/share/doc/xrdp-version/startwm.sh for the factory version of this
-# script.
-source /etc/profile
+#!/bin/sh
 
-/etc/X11/Sessions/"${XSESSION}"
+# try hard to respect Gentoo's wm choice
+. /etc/profile
+[ -f /etc/rc.conf ] && . /etc/rc.conf
+export XSESSION
+
+. /etc/X11/xinit/xinitrc

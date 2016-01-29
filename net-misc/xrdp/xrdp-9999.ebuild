@@ -1,115 +1,156 @@
-# Copyright 1999-2014 Gentoo Foundation
+# Copyright 1999-2016 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
+# $Id$
 
-EAPI="5"
+EAPI=5
 
-inherit eutils autotools multilib user
+EGIT_REPO_URI="https://github.com/neutrinolabs/xrdp.git"
 
-if [[ ${PV} == "9999" ]] ; then
-	inherit git-2
-	EGIT_REPO_URI="git://github.com/FreeRDP/xrdp.git"
-	SRC_URI=""
-	KEYWORDS="~amd64 ~x86"
-else
-	SRC_URI="mirror://sourceforge/${PN}/${PN}-v${PV}.tar.gz"
-	KEYWORDS="~amd64 ~ppc ~sparc ~x86"
-	S="${WORKDIR}/${PN}-v${PV}"
-fi
+inherit eutils autotools multilib user systemd git-2
 
-DESCRIPTION="An open source remote desktop protocol(rdp) server."
+DESCRIPTION="An open source Remote Desktop Protocol server"
 HOMEPAGE="http://www.xrdp.org/"
-
+SRC_URI=""
 LICENSE="Apache-2.0"
 SLOT="0"
+KEYWORDS="~amd64 ~x86"
+IUSE="debug fuse kerberos jpeg pam pulseaudio"
 
-IUSE="+vnc x11rdp xorg-modules pulseaudio debug"
+RDEPEND="dev-libs/openssl:0=
+	x11-libs/libX11:0=
+	x11-libs/libXfixes:0=
+	x11-libs/libXrandr:0=
+	fuse? ( sys-fs/fuse:0= )
+	jpeg? ( virtual/jpeg:0= )
+	kerberos? ( virtual/krb5:0= )
+	pam? ( virtual/pam:0= )
+	pulseaudio? ( media-sound/pulseaudio:0= )"
+DEPEND="${RDEPEND}
+	app-arch/xz-utils"
+RDEPEND="${RDEPEND}
+		net-misc/tigervnc:0=[server,xorgmodule]"
+#	|| (
+#		net-misc/tigervnc:0=[server,xorgmodule]
+#		net-misc/x11rdp:0=
+#	)"
 
-DEPEND="sys-libs/pam"
-RDEPEND="${DEPEND}
-	vnc? ( net-misc/tigervnc )
-	x11rdp? ( >=x11-base/xorg-x11rdp-0.7.0.9999 )
-	pulseaudio? ( media-sound/pulseaudio )
-	"
-RESTRICT="${RESTRICT}
-	debug? ( strip )
-	"
-
-pkg_setup() {
-	einfo "checking for necessary groups and users...  create if missing.\n"
-	enewgroup tsusers  || die "problem adding group tsusers"
-	enewgroup tsadmins || die "problem adding group tsadmins"
-}
-
-src_unpack() {
-	if [[ ${PV} == "9999" ]] ; then
-		git-2_src_unpack
-	else
-		unpack ${A}
-	fi
-}
+# does not work with gentoo version of freerdp
+#	neutrinordp? ( net-misc/freerdp:0= )
+# incompatible with current ffmpeg/libav (surprising, isn't it?)
+#	xrdpvr? ( virtual/ffmpeg:0= )
 
 src_prepare() {
-	epatch ${FILESDIR}/xrdpdev-9999.patch || die "epatch failed"
-	cp ${FILESDIR}/startwm.sh ./sesman/
-	cp ${FILESDIR}/xrdp-sesman-0.7.0.pamd ./instfiles/pam.d/xrdp-sesman
-	sed -e 's:/usr/local/sbin:/usr/sbin:' -i ${S}/instfiles/xrdp.sh
-	ln -s ../config.c ${S}/sesman/tools/config.c
+	epatch_user
+
+	epatch "${FILESDIR}"/fixups.patch
+	cp "${FILESDIR}"/xrdp-sesman.pamd instfiles/pam.d/xrdp-sesman
+
+	# #540630: crypt() unchecked for NULL return
+	#epatch "${FILESDIR}"/xrdp-0.8.0-crypt-null-return.patch
+
+	# don't let USE=debug adjust CFLAGS
+	sed -i -e 's:-g -O0::' configure.ac || die
+	# disallow root login by default
+	sed -i -e '/^AllowRootLogin/s/1/0/' sesman/sesman.ini || die
+	# Fedora files, not included here
+	#sed -i -e '/EnvironmentFile=/d' instfiles/*.service || die
+	# reorder so that X11rdp comes last again since it's not supported
+	#sed -i -e '/^\[xrdp1\]$/,/^$/{wxrdp.ini.tmp
+	#	;d}' xrdp/xrdp.ini || die
+	# move newline to the beginning
+	#sed -i -e 'x' xrdp.ini.tmp || die
+	#cat xrdp.ini.tmp >> xrdp/xrdp.ini || die
+	#rm -f xrdp.ini.tmp || die
+
 	eautoreconf
-	EXTRA_ECONF="--prefix=${EPREFIX}/usr --sysconfdir=${EPREFIX}/etc --localstatedir=${EPREFIX}/var --enable-fuse $(use_enable debug xrdpdebug)"
+	# part of ./bootstrap
+	ln -s ../config.c sesman/tools/config.c || die
 }
 
-src_compile() {
-	if use debug; then
-		CFLAGS="${CFLAGS} -ggdb -O0"
-	fi
+src_configure() {
+	use kerberos && use pam \
+		&& ewarn "Both kerberos & pam auth enabled, kerberos will take precedence."
 
-	emake CFLAGS="${CFLAGS}" -j1 || die "compile failed"
+	local myconf=(
+		# warning: configure.ac is completed flawed
 
-	if use xorg-modules; then
-		emake -C ${S}/xorg/server -j1 || die "compile xorg-modules failed"
-	fi
+		--localstatedir="${EPREFIX}"/var
 
-	if use pulseaudio; then
-		emake -C ${S}/sesman/chansrv/pulse || die "compile pulseaudio faield"
-	fi
+		# -- authentication backends --
+		# kerberos is inside !SESMAN_NOPAM conditional for no reason
+		$(use pam || use kerberos || echo --enable-nopam)
+		$(usex kerberos --enable-kerberos '')
+		# pam_userpass is not in Gentoo at the moment
+		#--disable-pamuserpass
+
+		# -- jpeg support --
+		$(usex jpeg --enable-jpeg '')
+		# the package supports explicit linking against libjpeg-turbo
+		# (no need for -ljpeg compat)
+		$(use jpeg && has_version 'media-libs/libjpeg-turbo:0' && echo --enable-tjpeg)
+
+		# -- sound support --
+		$(usex pulseaudio '--enable-simplesound --enable-loadpulsemodules' '')
+
+		# -- others --
+		$(usex debug --enable-xrdpdebug '')
+		$(usex fuse --enable-fuse '')
+		# $(usex neutrinordp --enable-neutrinordp '')
+		# $(usex xrdpvr --enable-xrdpvr '')
+
+		"$(systemd_with_unitdir)"
+	)
+
+	econf "${myconf[@]}"
 }
 
 src_install() {
-	emake -j1 DESTDIR="${D}" install || die "install failed"
-	dodoc design.txt readme.txt sesman/startwm.sh
-	systemd_dounit "${FILESDIR}/xrdp-sesman.service"
-	systemd_dounit "${FILESDIR}/xrdp.service"
-	newinitd "${FILESDIR}/${PN}.initd" ${PN}
+	default
+	prune_libtool_files --all
 
-	if use xorg-modules; then
-		into "/usr/lib/xorg/modules"
-		insinto "${DESTTREE}"
-		insopts "-m0755"
-		doins "${S}/xorg/server/module/libxorgxrdp.so" || die
-		insinto "${DESTTREE}/drivers"
-		doins "${S}/xorg/server/xrdpdev/xrdpdev_drv.so" || die
-		insinto "${DESTTREE}/input"
-		doins "${S}/xorg/server/xrdpkeyb/xrdpkeyb_drv.so" || die
-		doins "${S}/xorg/server/xrdpmouse/xrdpmouse_drv.so" || die
-		into "/etc/X11/xrdp"
-		insinto "${DESTTREE}"
-		insopts "-m0644"
-		doins "${S}/xorg/server/xrdpdev/xorg.conf" || die
-	fi
+	# use our pam.d file since upstream's incompatible with Gentoo
+	use pam && newpamd "${FILESDIR}"/xrdp-sesman.pamd xrdp-sesman
+	# and our startwm.sh
+	exeinto /etc/xrdp
+	doexe "${FILESDIR}"/startwm.sh
 
-	#http://opamp.hatenablog.jp/entry/2014/02/05/161522
+	# Fedora stuff
+	rm -r "${ED}"/etc/default || die
 
-	#http://241931348f64b1d1.wordpress.com/2013/05/27/how-to-compile-xrdpx11rdp-on-ubuntu/
-	if use pulseaudio; then
-		insinto "/usr/lib/pulse-5.0/modules"
-		doins "${S}/sesman/chansrv/pulse/module-xrdp-sink.so" || die
+	# own /etc/xrdp/rsakeys.ini
+	: > rsakeys.ini
+	insinto /etc/xrdp
+	doins rsakeys.ini
+
+	# contributed by Jan Psota <jasiupsota@gmail.com>
+	newinitd "${FILESDIR}/${PN}-initd" ${PN}
+}
+
+pkg_preinst() {
+	# either copy existing keys over to avoid CONFIG_PROTECT whining
+	# or generate new keys (but don't include them in binpkg!)
+	if [[ -f ${EROOT}/etc/xrdp/rsakeys.ini ]]; then
+		cp {"${EROOT}","${ED}"}/etc/xrdp/rsakeys.ini || die
+	else
+		einfo "Running xrdp-keygen to generate new rsakeys.ini ..."
+		"${S}"/keygen/xrdp-keygen xrdp "${ED}"/etc/xrdp/rsakeys.ini \
+			|| die "xrdp-keygen failed to generate RSA keys"
 	fi
 }
 
 pkg_postinst() {
-	elog
-	elog "After installation you must generate rsa key for xrdp"
-	elog "\`xrdp-keygen xrdp auto\`"
-	elog
+	# check for use of bundled rsakeys.ini (installed by default upstream)
+	if [[ $(cksum "${EROOT}"/etc/xrdp/rsakeys.ini) == '2935297193 1019 '* ]]
+	then
+		ewarn "You seem to be using upstream bundled rsakeys.ini. This means that"
+		ewarn "your communications are encrypted using a well-known key. Please"
+		ewarn "consider regenerating rsakeys.ini using the following command:"
+		ewarn
+		ewarn "  ${EROOT}/usr/bin/xrdp-keygen xrdp ${EROOT}/etc/xrdp/rsakeys.ini"
+		ewarn
+	fi
+
+	elog "Various session types require different backend implementations:"
+	elog "- sesman-Xvnc requires net-misc/tigervnc[server,xorgmodule]"
+	elog "- sesman-X11rdp requires net-misc/x11rdp"
 }

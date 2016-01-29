@@ -22,7 +22,7 @@ DEPEND="dev-python/setuptools[${PYTHON_USEDEP}]"
 RDEPEND=""
 
 # Include COPYRIGHT.txt because the license seems to require it.
-DOCS=( CHANGES.txt README.txt COPYRIGHT.txt )
+DOCS=( CHANGES.rst README.rst COPYRIGHT.txt )
 
 python_test() {
 	esetup.py test

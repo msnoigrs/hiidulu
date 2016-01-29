@@ -1,9 +1,9 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2016 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Id$
 
 EAPI="5"
-PYTHON_COMPAT=( python{2_7,3_3,3_4,3_5} pypy pypy2_0 )
+PYTHON_COMPAT=( python{2_7,3_4,3_5} pypy pypy2_0 )
 
 EGIT_REPO_URI="https://github.com/benoitc/gunicorn.git"
 
@@ -17,8 +17,9 @@ SLOT="0"
 IUSE="doc examples test"
 KEYWORDS="~amd64 ~x86"
 
-RDEPEND="python_targets_python3_3? ( dev-python/aiohttp[python_targets_python3_3] )
+RDEPEND="
 	python_targets_python3_4? ( dev-python/aiohttp[python_targets_python3_4] )
+	python_targets_python3_5? ( dev-python/aiohttp[python_targets_python3_5] )
 	dev-python/setproctitle"
 DEPEND="dev-python/setuptools
 	doc? ( dev-python/sphinx )
