@@ -1,4 +1,4 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2016 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Id$
 
@@ -7,7 +7,9 @@ JAVA_PKG_IUSE="doc source"
 
 inherit java-pkg-2 java-pkg-simple versionator
 
-MY_PN="${PN^^}"
+# Switch to ^^ when we switch to EAPI=6.
+#MY_PN="${PN^^}"
+MY_PN="GROOVY"
 MY_PV="$(replace_all_version_separators _ ${PV})"
 MY_P="${MY_PN}_${MY_PV}"
 
@@ -16,7 +18,7 @@ HOMEPAGE="http://www.groovy-lang.org/"
 SRC_URI="https://github.com/apache/incubator-${PN}/archive/${MY_P}.zip -> ${P}.zip"
 LICENSE="Apache-2.0"
 SLOT="0"
-KEYWORDS="~amd64 ~ppc ~ppc64 ~x86"
+KEYWORDS="~amd64 ~ppc64 ~x86"
 IUSE=""
 
 CDEPEND="
@@ -25,6 +27,7 @@ CDEPEND="
 	dev-java/commons-cli:1
 	>=dev-java/asm-5.0.3:5
 	>=dev-java/antlr-2.7.7-r7:0[script]
+	dev-java/ant-ivy:2
 "
 
 RDEPEND="
@@ -34,6 +37,8 @@ DEPEND="
 	${CDEPEND}
 	>=virtual/jdk-1.6
 	app-arch/unzip"
+
+#	dev-java/ant-ivy:2
 
 JAVA_GENTOO_CLASSPATH="
 	asm-5
@@ -78,6 +83,8 @@ groovy_cleanup_source_files() {
 java_prepare() {
 	epatch "${PATCHES[@]}"
 	groovy_cleanup_source_files
+
+	rm groovy/util/FileTreeBuilder.groovy
 }
 
 # This function generates the ANTLR grammar files.
@@ -112,10 +119,53 @@ generate_exceptionutils() {
 	eend $?
 }
 
+groovy_compile() {
+	local sources=gsources.lst classes=target/classes
+
+	# gather sources
+	#find -name \*.groovy > ${sources}
+	gsources=$(find -name \*.groovy)
+	#gsources="$(cat ${FILESDIR}/${sources})"
+
+	# compile
+	local classpath="${JAVA_GENTOO_CLASSPATH_EXTRA}" dependency
+	#classpath="${classpath}:$(java-pkg_getjar --build-only ant-ivy-2 ivy.jar)"
+	#local classpath="$(java-pkg_getjar --build-only ant-ivy-2 ivy.jar)" dependency
+	for dependency in ${JAVA_GENTOO_CLASSPATH}; do
+		classpath="${classpath}:$(java-pkg_getjars ${dependency})" \
+			|| die "getjars failed for ${dependency}"
+	done
+	while [[ $classpath = *::* ]]; do classpath="${classpath//::/:}"; done
+	classpath=${classpath%:}
+	classpath=${classpath#:}
+
+	classpath="${classpath}:$(java-pkg_getjar --build-only ant-ivy-2 ivy.jar)"
+
+	#$(java-config -J) -classpath "$(java-pkg_getjar --build-only asm-5 asm.jar):target/classes" org.codehaus.groovy.tools.FileSystemCompiler \
+	# for s in ${gsources}; do
+	# 	$(java-config -J) -classpath "$(java-pkg_getjar --build-only commons-cli-1 commons-cli.jar):$(java-pkg_getjar --build-only asm-5 asm.jar):$(java-pkg_getjar --build-only antlr antlr.jar):groovy.jar" org.codehaus.groovy.tools.FileSystemCompiler \
+	# 					  -d ${classes} -encoding ${JAVA_ENCODING} \
+	# 					  ${classpath:+-classpath ${classpath}} ${JAVAC_ARGS} \
+	# 					  ${s}
+	# done
+	$(java-config -J) -classpath "$(java-pkg_getjar --build-only commons-cli-1 commons-cli.jar):$(java-pkg_getjar --build-only asm-5 asm.jar):$(java-pkg_getjar --build-only antlr antlr.jar):groovy.jar" org.codehaus.groovy.tools.FileSystemCompiler \
+					  -d ${classes} -encoding ${JAVA_ENCODING} \
+					  ${classpath:+-classpath ${classpath}} ${JAVAC_ARGS} \
+					  ${gsources} || die
+
+	# package
+	local jar_args="cf ${JAVA_JAR_FILENAME}"
+	if [[ -e ${classes}/META-INF/MANIFEST.MF ]]; then
+		jar_args="cfm ${JAVA_JAR_FILENAME} ${classes}/META-INF/MANIFEST.MF"
+	fi
+	jar ${jar_args} -C ${classes} . || die "jar failed"
+}
+
 src_compile() {
 	generate_antlr_grammar "${ANTLR_GRAMMAR_FILES[@]}"
 	generate_exceptionutils
 	java-pkg-simple_src_compile
+	groovy_compile
 }
 
 src_install() {

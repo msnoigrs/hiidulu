@@ -1,4 +1,4 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2016 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Id$
 
@@ -8,7 +8,8 @@ PYTHON_COMPAT=( python{2_7,3_3,3_4,3_5} )
 
 #EGIT_REPO_URI="https://github.com/bbangert/beaker.git"
 EGIT_REPO_URI="https://github.com/masayuko/beaker.git"
-EGIT_BRANCH="rework"
+EGIT_BRANCH="rework2"
+#EGIT_BRANCH="rework"
 
 inherit distutils-r1 git-2
 

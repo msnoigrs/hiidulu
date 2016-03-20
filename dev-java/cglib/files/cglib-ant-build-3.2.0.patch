@@ -1,0 +1,559 @@
+diff --git a/cglib/build.properties b/cglib/build.properties
+new file mode 100644
+index 0000000..e69de29
+diff --git a/cglib/build.xml b/cglib/build.xml
+new file mode 100644
+index 0000000..5d48451
+--- /dev/null
++++ b/cglib/build.xml
+@@ -0,0 +1,293 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project basedir="." default="test" name="simplestore">
++
++<!--   "cglib"  was   "simplestore" component of the Jakarta Commons Subproject         $Id: build.xml,v 1.57 2013/12/07 16:08:19 sameb Exp $ -->
++
++<!-- ========== Executable Targets ======================================== -->
++
++  <target description="Initialize and evaluate conditionals" name="init">
++
++    <!-- read properties from the build.properties, if any -->
++    <property file="${user.home}/build.properties" />
++    <property name="component-propfile" value="${basedir}/build.properties"/>
++
++    <property name="component.name" value="cglib"/>
++    <property name="component.package" value="net.sf.cglib"/>
++    <property name="component.title" value="cglib"/>
++    <property name="component.version" value="3.2.0"/>
++
++    <property name="build.home" value="build/proxy"/>
++    <property name="build.transform" value="build/transform"/>
++    <property name="samples.build.home" value="build/samples"/>
++
++
++    <property name="test.build.home" value="build/test"/>
++
++    <property name="dist.home" value="dist"/>
++    <property name="source.home" value="src/main/java"/>
++    <property name="samples.source.home" value="src/main/samples"/>
++    <property name="source.test" value="src/test"/>
++    <property name="source.asm" value="../asm-src"/>
++
++    <property name="compile.target" value="1.2"/>
++    <property name="compile.source" value="1.2"/>
++    <property name="compile.bootclasspath" value=""/>
++    <property name="compile.extdirs" value=""/>
++
++    <property name="compile.debug" value="true"/>
++    <property name="compile.deprecation" value="true"/>
++    <property name="compile.optimize" value="true"/>
++
++    <path id="compile.classpath">
++      <pathelement location="${build.home}/classes"/>
++      <fileset dir="./lib">
++		<include name="*.jar"/>
++       </fileset>
++    </path>
++
++    <path id="javadoc.path">
++      <pathelement path="${source.home}"/>
++      <!-- pathelement path="${source.asm}"/ -->
++    </path>
++
++    <!-- ========== Test Execution Defaults =================================== -->
++    <property name="cp" value=""/>
++    <property name="classpath" value="${cp}:${junit.jar}" />
++    <property name="test.entry" value="net.sf.cglib.TestAll" />
++    <property name="test.failonerror" value="true" />
++    <property name="test.runner" value="junit.textui.TestRunner" />
++
++    <echo message="-------- ${component.name} ${component.version} --------"/>
++  </target>
++
++  <target depends="init" description="Prepare build directory" name="prepare">
++    <mkdir dir="${build.home}"/>
++    <mkdir dir="${build.home}/classes"/>
++    <mkdir dir="${samples.build.home}/classes"/>
++    <mkdir dir="${build.home}/conf"/>
++    <mkdir dir="${test.build.home}/classes"/>
++
++
++  </target>
++
++  <target depends="prepare" description="Compile shareable components"
++          name="compile">
++    <javac debug="${compile.debug}" deprecation="${compile.deprecation}" destdir="${build.home}/classes" optimize="${compile.optimize}" srcdir="${source.home}"
++      target="${compile.target}" bootclasspath="${compile.bootclasspath}" extdirs="${compile.extdirs}" source="${compile.source}">
++      <classpath refid="compile.classpath"/>
++      <compilerarg compiler="jikes" value="-nowarn"/>
++    </javac>
++  </target>
++
++  <target depends="init" description="Clean build and distribution directories"
++          name="clean">
++    <delete dir="${build.home}"/>
++    <delete dir="${test.build.home}"/>
++    <delete dir="${dist.home}"/>
++    <delete dir="${build.transform}"/>
++  </target>
++
++  <target depends="clean,compile"
++          description="Clean and compile all components"
++   name="all"/>
++
++
++
++  <target depends="compile"
++          description="Create component Javadoc documentation"
++          name="javadoc">
++    <mkdir dir="docs/api"/>
++    <javadoc author="true"
++             bottom="Copyright (c) 2001 - Apache Software Foundation"
++             destdir="docs"
++             doctitle="${component.title}"
++             packagenames="net.sf.cglib.*"
++             access="public"
++             classpathref="compile.classpath"
++             sourcepathref="javadoc.path" version="true"
++             windowtitle="${component.title} (Version ${component.version})"/>
++  </target>
++
++
++  <target depends="jar" name="proxy"/>
++
++  <target depends="compile" description="Create binary distribution" name="jar">
++    <mkdir dir="${dist.home}"/>
++    <mkdir dir="${build.home}/src"/>
++
++
++
++    <jar basedir="${build.home}/classes" jarfile="${dist.home}/${component.name}-${component.version}.jar" >
++      <include name="**/*"/>
++      <exclude name="samples/**" />
++    </jar>
++
++    <taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask" classpathref="compile.classpath"/>
++    <jarjar basedir="${build.home}/classes" jarfile="${dist.home}/${component.name}-nodep-${component.version}.jar" >
++      <zipfileset dir="lib" includes="asm*.txt"/>
++      <zipfileset src="lib/asm.jar" excludes="META-INF"/>
++      <zipfileset src="lib/asm-analysis.jar" excludes="META-INF"/>
++      <zipfileset src="lib/asm-tree.jar" excludes="META-INF"/>
++      <zipfileset src="lib/asm-xml.jar" excludes="META-INF"/>
++      <zipfileset src="lib/asm-commons.jar" excludes="META-INF"/>
++      <zipfileset src="lib/asm-util.jar" excludes="META-INF"/>
++      <rule pattern="org.objectweb.asm.**" result="net.sf.cglib.asm.@1"/>
++      <include name="**/*"/>
++      <exclude name="samples/**"/>
++    </jarjar>
++  </target>
++
++  <target depends="compile,javadoc" description="Create docs and source distribution" name="srcjar">
++    <jar basedir="docs" jarfile="${dist.home}/${component.name}-docs-${component.version}.jar" >
++      <include name="**/*.html"/>
++      <include name="**/*.css"/>
++      <include name="**/*.php"/>
++      <include name="**/*.js"/>
++      <include name="**/*.pdf"/>
++      <include name="**/*.gif"/>
++    </jar>
++    
++    <jar basedir="./" jarfile="${dist.home}/${component.name}-src-${component.version}.jar" >
++      <include name="build.xml"/>
++      <include name="src/**/*.txt"/>
++      <include name="src/**/*.java"/>
++      <include name="src/**/*.properties"/>
++      <include name="src/**/*.xml"/>
++      <include name="lib/**"/>
++    </jar>
++  </target>
++
++  <target depends="clean,jar,srcjar" description="Create binary, docs and source distributions" name="dist"/>
++
++   <target depends="compile" name="compile-samples">
++     <javac debug="${compile.debug}"
++            deprecation="${compile.deprecation}"
++            destdir="${samples.build.home}/classes"
++            optimize="${compile.optimize}"
++            srcdir="${samples.source.home}">
++       <classpath refid="compile.classpath"/>
++       <compilerarg compiler="jikes" value="-nowarn"/>
++     </javac>
++   </target>
++
++
++   <target depends="compile-samples"
++          description="runs samples"
++          name="samples-beans">
++    <java classname="Beans"
++          failonerror="${test.failonerror}"
++          fork="yes"
++          >
++
++        <classpath>
++          <pathelement path="${samples.build.home}/classes"/>
++          <pathelement path="${build.home}/classes"/>
++          <fileset dir="./lib">
++		<include name="*.*"/>
++          </fileset>
++        </classpath>
++    </java>
++  </target>
++
++
++
++   <target depends="compile-samples"
++          description="runs samples"
++          name="samples-trace">
++    <java classname="Trace"
++          failonerror="${test.failonerror}"
++          fork="yes"
++          >
++
++        <classpath>
++          <pathelement path="${samples.build.home}/classes"/>
++          <pathelement path="${build.home}/classes"/>
++          <fileset dir="./lib">
++		<include name="*.*"/>
++          </fileset>
++        </classpath>
++    </java>
++  </target>
++
++
++
++
++  <target depends="compile,compile-samples"
++    name="build-test">
++    <javac debug="${compile.debug}"
++           deprecation="${compile.deprecation}"
++           destdir="${test.build.home}/classes"
++           optimize="${compile.optimize}"
++           srcdir="${source.test}"
++         >
++
++   <classpath refid="compile.classpath"/>
++   <classpath>
++   <pathelement path="${build.home}/classes"/>
++   <pathelement path="${samples.build.home}/classes" />
++   </classpath>
++   <compilerarg compiler="jikes" value="-nowarn"/>
++
++   </javac>
++
++
++  </target>
++
++  <target depends="init,build-test"
++          description="runs (junit) unit tests"
++          name="test">
++    <java classname="net.sf.cglib.TestAll"
++          failonerror="${test.failonerror}"
++          fork="yes"
++          >
++
++  <!-- jvmarg value="-Xrunhprof:heap=all,file=debug.txt"/ -->
++  <!-- <jvmarg value="-verbose:gc"/> -->
++  <!-- <jvmarg value="-verbose:class"/> -->
++  <!-- <jvmarg value="-Xprof"/> -->
++  <!-- <jvmarg value="-server"/> -->
++  <!-- <sysproperty key="cglib.debugLocation" value="debug"/> -->
++  <!-- <jvmarg value="-Djava.security.policy==java.policy" /> -->
++  <!-- <jvmarg value="-Djava.security.manager" />  -->
++
++      <arg value="${test.entry}"/>
++        <classpath>
++          <pathelement path="${build.home}/classes"/>
++          <pathelement path="${test.build.home}/classes"/>
++          <pathelement path="${classpath}"/>
++          <pathelement path="${java.class.path}"/>
++          <pathelement path="${source.test}"/>
++          <pathelement path="${samples.build.home}/classes" />
++          <fileset dir="./lib">
++		<include name="*.jar"/>
++          </fileset>
++        </classpath>
++    </java>
++  </target>
++
++  <target name="test-transform" depends="build-test">
++    <mkdir dir="${build.transform}"/>
++    <copy todir="${build.transform}" preservelastmodified="yes">
++      <fileset dir="${build.home}/classes"/>
++      <fileset dir="./lib"/>
++    </copy>
++    <taskdef name="example" classname="net.sf.cglib.transform.impl.ExampleTask">
++      <classpath>
++        <pathelement path="${build.home}/classes"/>
++        <pathelement path="${test.build.home}/classes"/>
++        <fileset dir="./lib">
++          <include name="*.jar"/>
++        </fileset>
++      </classpath>
++    </taskdef>
++    <example fieldsuffix="Cglib" verbose="yes">
++      <fileset dir="${build.transform}" includes="**/*">
++      <!--  <not><depend targetdir="${build.home}/classes"/></not> -->
++      </fileset>
++
++      <newproperty name="cglibFoo" type="long"/>
++      <newproperty name="cglibBar" type="Double"/>
++    </example>
++  </target>
++
++</project>
+diff --git a/cglib/project.properties b/cglib/project.properties
+new file mode 100644
+index 0000000..58e1fa6
+--- /dev/null
++++ b/cglib/project.properties
+@@ -0,0 +1,89 @@
++# -------------------------------------------------------------------
++# P R O J E C T  P R O P E R T I E S
++# -------------------------------------------------------------------
++
++maven.junit.fork=true
++
++maven.checkstyle.javadoc.scope = protected
++
++maven.xdoc.date = left
++maven.jarResources.basedir=${basedir}/src/proxy
++maven.ssh.executable = ssh2
++maven.scp.executable = scp2
++
++#maven.javadoc.stylesheet=${basedir}/xdocs/javadoc-stylesheet.css
++
++maven.src.dir = ${basedir}/src
++maven.conf.dir = ${basedir}/conf
++maven.build.dir = ${basedir}/target
++maven.build.src = ${maven.build.dir}/src
++maven.build.dest = ${maven.build.dir}/classes
++
++maven.docs.src = ${basedir}/xdocs
++maven.docs.dest = ${maven.build.dir}/docs
++maven.docs.outputencoding = ISO-8859-1
++maven.gen.docs = ${maven.build.dir}/generated-xdocs
++
++
++# ------------------------------------------------------------------------
++# M A V E N  J A R  O V E R R I D E
++# ------------------------------------------------------------------------
++maven.jar.override = on
++maven.jar.excludes = samples/**
++
++# ------------------------------------------------------------------------
++# Jars set explicity by path.
++# ------------------------------------------------------------------------
++maven.jar.asm = ${basedir}/lib/asm.jar
++maven.jar.aspectwerkz-core= ${basedir}/lib/aspectwerkz-core-0.8.1.jar
++
++
++#
++# DATE Preferences
++#
++# The place of the date on the pages : choices are 'bottom', 'left', 'right', 'navigation-top', 'navigation-bottom'
++maven.xdoc.date = 
++maven.xdoc.date.format = dd MMMM yyyy
++# The date locale
++maven.xdoc.date.locale = en
++
++#
++# UI Color Prefs
++#
++#
++maven.ui.body.background = #fff
++maven.ui.body.foreground = #000
++maven.ui.section.background = #036
++maven.ui.section.foreground = #fff
++maven.ui.subsection.background = #888
++maven.ui.subsection.foreground = #fff
++maven.ui.table.header.background = #bbb
++maven.ui.table.header.foreground = #fff
++maven.ui.table.row.odd.background = #ddd
++maven.ui.table.row.odd.foreground = #000
++maven.ui.table.row.even.background = #efefef
++maven.ui.table.row.even.foreground = #000
++maven.ui.banner.background = #036
++maven.ui.banner.foreground = #fff
++maven.ui.banner.border.top = #369
++maven.ui.banner.border.bottom = #003
++maven.ui.source.background = #fff
++maven.ui.source.foreground = #000
++maven.ui.source.border.right = #888
++maven.ui.source.border.left = #888
++maven.ui.source.border.top = #888
++maven.ui.source.border.bottom = #888
++maven.ui.navcol.background = #eee
++maven.ui.navcol.background.ns4 = #fff
++maven.ui.navcol.foreground = #000
++maven.ui.navcol.foreground.ns4 = #555
++maven.ui.navcol.border.top = #fff
++maven.ui.navcol.border.right = #aaa
++maven.ui.navcol.border.bottom = #aaa
++maven.ui.breadcrumbs.background = #ddd
++maven.ui.breadcrumbs.foreground = #000
++maven.ui.breadcrumbs.border.top = #fff
++maven.ui.breadcrumbs.border.bottom = #aaa
++maven.ui.href.link = blue
++maven.ui.href.link.active = #f30
++maven.ui.href.link.selfref = #555
+diff --git a/cglib/project.xml b/cglib/project.xml
+new file mode 100644
+index 0000000..8da970e
+--- /dev/null
++++ b/cglib/project.xml
+@@ -0,0 +1,156 @@
++<?xml version="1.0"?>
++
++<project>
++
++ <!--extend>template:sourceforge</extend -->
++
++  <pomVersion>3</pomVersion>
++
++  <name>cglib</name>
++  <id>cglib</id>
++  <logo>/images/cglib.png</logo>
++  <url>http://sourceforge.net/projects/cglib/</url>
++  <currentVersion>2.0beta2</currentVersion>
++  <inceptionYear>2002</inceptionYear>
++  <package>net.sf.cglib</package>
++
++  <shortDescription>Code Generation Library</shortDescription> 
++
++  <organization>
++    <name>cglib</name> 
++    <url>http://sourceforge.net/projects/cglib/</url> 
++    <logo>http://sourceforge.net/sflogo.php?group_id=56933</logo> 
++  </organization>
++     
++
++  <issueTrackingUrl>http://sourceforge.net/tracker/?group_id=56933</issueTrackingUrl>
++  <siteAddress>cglib.sourceforge.net</siteAddress>
++  <siteDirectory>/home/groups/c/cg/cglib/htdocs/</siteDirectory>
++  <distributionDirectory>/home/groups/c/cg/cglib/htdocs/</distributionDirectory>
++
++
++ <repository>
++  <connection>scm:cvs:pserver:anonymous@cvs.cglib.sourceforge.net:/cvsroot/cglib:cglib</connection> 
++  <url>http://cvs.cglib.sourceforge.net/cgi-bin/viewcvs.cgi/cglib/cglib/</url> 
++ </repository>
++  
++
++
++
++ <mailingLists>
++    <mailingList>
++      <name>cglib developer list</name>
++      <subscribe>http://lists.sourceforge.net/lists/listinfo/cglib-devel</subscribe>
++      <unsubscribe>http://lists.sourceforge.net/lists/listinfo/cglib-devel</unsubscribe>
++      <archive>http://sourceforge.net/mail/?group_id=56933</archive>
++    </mailingList>
++
++  </mailingLists>
++
++
++    <dependencies>
++
++    <dependency>
++      <id>ant</id>
++      <version>1.5.3-1</version>
++    </dependency>
++
++    <dependency>
++      <id>asm</id>
++      <version>1.3.4</version>
++    </dependency>
++
++    <dependency>
++      <groupId>asm</groupId>
++      <artifactId>asm-util</artifactId>
++      <version>1.3.4</version>
++    </dependency>
++
++    <dependency>
++      <id>junit</id>
++      <version>3.7</version>
++    </dependency>
++
++    <dependency>
++      <id>aspectwerkz-core</id>
++      <version>0.8.1</version>
++    </dependency>
++
++    
++  </dependencies>
++  
++  <developers>
++
++    <developer>
++      <name>Juozas Baliuka</name>
++      <id>baliuka</id>
++      <email>cglib-devel@lists.sourceforge.net</email>
++      <organization></organization>
++      <roles>
++        <role>Administrator</role>
++        <role>Release Manager</role>
++        <role>Developer</role>
++       </roles>
++    </developer>
++
++    <developer>
++      <name>Chris Nokleberg</name>
++      <id>herbyderby</id>
++      <email>cglib-devel@lists.sourceforge.net</email>
++      <organization></organization>
++      <roles>
++        <role>Administrator</role>
++        <role>Release Manager</role>
++        <role>Developer</role>
++       </roles>
++    </developer>
++
++   <developer>
++      <name>Matas Ramoska</name>
++      <id>mr226maf</id>
++      <email>cglib-devel@lists.sourceforge.net</email>
++      <organization></organization>
++      <roles>
++        <role>Administrator</role>
++        <role>Release Manager</role>
++        <role>Developer</role>
++       </roles>
++    </developer>
++
++
++  <developer>
++      <name>Wes Biggs</name>
++      <id>wbiggs</id>
++      <email>cglib-devel@lists.sourceforge.net</email>
++      <organization></organization>
++      <roles>
++        <role>Administrator</role>
++        <role>Release Manager</role>
++        <role>Developer</role>
++      </roles>
++    </developer>
++
++  </developers>
++
++  <build>
++    <sourceDirectory>src/proxy</sourceDirectory>
++    <unitTestSourceDirectory>src/test</unitTestSourceDirectory>
++    <unitTest>
++      <includes>
++        <include>**/TestAll.java</include>
++      </includes>
++      <excludes>
++        <exclude>**/Abstract*.java</exclude>
++      </excludes>
++      <resources>
++        <resource>
++          <directory>${basedir}/src/test</directory>
++          <includes>
++            <include>**/*.txt</include>
++          </includes>
++        </resource>
++      </resources>
++    </unitTest>
++  </build>
++
++</project>

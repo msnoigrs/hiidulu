@@ -1,4 +1,4 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2016 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Id$
 
@@ -20,8 +20,8 @@ IUSE=""
 CDEPEND="dev-java/fontbox:0
 	dev-java/bcprov:1.52
 	dev-java/bcpkix:1.52
-	dev-java/jcl-over-slf4j:0
-	dev-java/java-diff-utils:0"
+	dev-java/jcl-over-slf4j:0"
+#	dev-java/java-diff-utils:0"
 RDEPEND=">=virtual/jre-1.7
 	dev-java/logback-core:0
 	dev-java/logback-classic:0
@@ -40,7 +40,7 @@ java_prepare() {
 	java-pkg_jar-from fontbox fontbox.jar
 	java-pkg_jar-from bcprov-1.52 bcprov.jar
 	java-pkg_jar-from bcpkix-1.52 bcpkix.jar
-	java-pkg_jar-from java-diff-utils
+	#java-pkg_jar-from java-diff-utils
 
 	java-pkg_jar-from --build-only junit junit.jar
 	java-pkg_jar-from jcl-over-slf4j jcl-over-slf4j.jar

@@ -1,0 +1,30 @@
+diff -uNr qcma-0.3.10.orig/common/avdecoder.cpp qcma-0.3.10/common/avdecoder.cpp
+--- qcma-0.3.10.orig/common/avdecoder.cpp	2016-01-11 02:30:34.000000000 +0900
++++ qcma-0.3.10/common/avdecoder.cpp	2016-02-21 19:06:12.361599499 +0900
+@@ -239,7 +239,7 @@
+                 pCodecCtx->width, pCodecCtx->height,
+                 pCodecCtx->pix_fmt,
+                 width, height,
+-                PIX_FMT_YUVJ420P, SWS_BICUBIC,
++                AV_PIX_FMT_YUVJ420P, SWS_BICUBIC,
+                 NULL, NULL, NULL);
+ 
+     if(!sws_ctx) {
+@@ -257,7 +257,7 @@
+         return data;
+     }
+ 
+-    int numBytes = avpicture_get_size(PIX_FMT_YUVJ420P, width, height);
++    int numBytes = avpicture_get_size(AV_PIX_FMT_YUVJ420P, width, height);
+ 
+     uint8_t *buffer = (uint8_t *)av_malloc(numBytes);
+ 
+@@ -271,7 +271,7 @@
+         return data;
+     }
+ 
+-    avpicture_fill((AVPicture *)pFrameRGB, buffer, PIX_FMT_YUVJ420P, width, height);
++    avpicture_fill((AVPicture *)pFrameRGB, buffer, AV_PIX_FMT_YUVJ420P, width, height);
+ 
+     sws_scale(
+         sws_ctx,

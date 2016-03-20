@@ -36,13 +36,24 @@ S="${WORKDIR}/pgjdbc"
 RESTRICT="test"
 
 java_prepare() {
+	cp "${FILESDIR}"/build.xml build.xml
+	echo "major=9" >> build.properties
+	echo "minor=5" >> build.properties
+	echo "fullversion=9.5" >> build.properties
+	echo "def_pgport=5432" >> build.properties
+	echo "enable_debug=yes" >> build.properties
 	#epatch "${FILESDIR}/remove-maven.patch"
-	epatch "${FILESDIR}/rmmaven.patch"
-	epatch "${FILESDIR}/sspi.patch"
+	#epatch "${FILESDIR}/rmmaven.patch"
+	#epatch "${FILESDIR}/sspi.patch"
 
-	rm -rv org/postgresql/osgi
-	rm -v org/postgresql/sspi/NTDSAPI.java
-	rm -v org/postgresql/sspi/NTDSAPIWrapper.java
+	#rm -rv org/postgresql/osgi
+	#rm -v org/postgresql/sspi/NTDSAPI.java
+	#rm -v org/postgresql/sspi/NTDSAPIWrapper.java
+
+	epatch "${FILESDIR}/rmsspi.patch"
+	rm -rv pgjdbc/src/main/java/org/postgresql/osgi
+	rm -v pgjdbc/src/main/java/org/postgresql/sspi/NTDSAPI.java
+	rm -v pgjdbc/src/main/java/org/postgresql/sspi/NTDSAPIWrapper.java
 
 	java-ant_rewrite-classpath
 }

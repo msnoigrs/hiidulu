@@ -1,4 +1,4 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2016 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Id$
 
@@ -6,7 +6,8 @@ EAPI=5
 
 PYTHON_COMPAT=( python{2_7,3_3,3_4,3_5} )
 
-EGIT_REPO_URI="https://github.com/thruflo/beaker_extensions.git"
+#EGIT_REPO_URI="https://github.com/thruflo/beaker_extensions.git"
+EGIT_REPO_URI="https://github.com/masayuko/beaker_extensions.git"
 
 inherit distutils-r1 git-2
 
@@ -24,6 +25,5 @@ RDEPEND="${DEPEND}"
 python_prepare_all() {
 	# don't support python 3.x yet
 	rm beaker_extensions/ringogw.py
-	sed -i -e '/import urlparse/ a try:\n    from urlparse import urlparse\nexcept ImportError:\n    from urllib.parse import urlparse\n' -e '/^from urlparse/ d' beaker_extensions/nosql.py
 	distutils-r1_python_prepare_all
 }

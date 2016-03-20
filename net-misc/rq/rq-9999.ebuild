@@ -1,4 +1,4 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2016 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Id$
 
@@ -18,5 +18,7 @@ SLOT="0"
 KEYWORDS="~amd64 ~x86"
 RESTRICT="test"
 
-#DEPEND=""
-RDEPEND=">=dev-db/redis-2.7.0"
+CDEPEND="dev-python/click[${PYTHON_USEDEP}]"
+DEPEND="${CDEPEND}"
+RDEPEND="${CDEPEND}
+	>=dev-db/redis-2.7.0"

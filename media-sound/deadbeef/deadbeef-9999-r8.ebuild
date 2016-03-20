@@ -1,4 +1,4 @@
-# Copyright 1999-2014 Gentoo Foundation
+# Copyright 1999-2016 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -84,7 +84,7 @@ src_prepare() {
 	fi
 
 	# remove unity trash
-	epatch "${FILESDIR}/desktop-3.patch"
+	#epatch "${FILESDIR}/desktop-3.patch"
 
 	for lang in ${LANGS};do
 		for x in ${lang};do

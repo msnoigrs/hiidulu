@@ -1,4 +1,4 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2016 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Id$
 
@@ -24,7 +24,8 @@ RESTRICT="test"
 RDEPEND=">=dev-python/translationstring-1.1[${PYTHON_USEDEP}]
 	>=dev-python/colander-1.0_alpha1[${PYTHON_USEDEP}]
 	>=dev-python/peppercorn-0.4[${PYTHON_USEDEP}]
-	>=dev-python/chameleon-1.2.3[${PYTHON_USEDEP}]"
+	>=dev-python/chameleon-1.2.3[${PYTHON_USEDEP}]
+	dev-python/iso8601[${PYTHON_USEDEP}]"
 DEPEND="${RDEPEND}
 	test? ( dev-python/beautifulsoup:4[${PYTHON_USEDEP}] )"
 

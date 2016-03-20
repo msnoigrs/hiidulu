@@ -1,4 +1,4 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2016 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Id$
 
@@ -38,7 +38,7 @@ src_unpack() {
 }
 
 python_prepare_all() {
-	epatch "${FILESDIR}/3.2.11.patch"
+	epatch "${FILESDIR}/3.2.16.patch"
 
 	sed -i \
 		-e "s|/usr/lib/X11/fonts/TrueType/|${EPREFIX}/usr/share/fonts/dejavu/|" \
