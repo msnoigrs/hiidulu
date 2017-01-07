@@ -1,4 +1,4 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2016 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Id$
 
@@ -19,7 +19,8 @@ KEYWORDS="~amd64 ~x86 ~amd64-linux ~x86-linux ~ppc-macos ~x64-macos ~x86-macos ~
 IUSE=""
 
 DEPEND="dev-python/psycopg
-	python_targets_python3_3? ( dev-python/asyncio[python_targets_python3_3] )"
+	virtual/python-asyncio"
+#	python_targets_python3_3? ( dev-python/asyncio[python_targets_python3_3] )"
 RDEPEND="${DEPEND}"
 
 RESTRICT="test"

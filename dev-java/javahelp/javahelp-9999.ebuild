@@ -1,4 +1,4 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2016 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -22,11 +22,11 @@ LICENSE="GPL-2-with-linking-exception"
 SLOT="0"
 KEYWORDS="amd64 ppc x86 ~x86-fbsd"
 
-COMMON_DEP="java-virtuals/servlet-api:3.0
-	>=dev-java/jdic-0.9.5"
-RDEPEND=">=virtual/jre-1.5
+COMMON_DEP="java-virtuals/servlet-api:3.0"
+#	>=dev-java/jdic-0.9.5"
+RDEPEND=">=virtual/jre-1.6
 	${COMMON_DEP}"
-DEPEND=">=virtual/jdk-1.5
+DEPEND=">=virtual/jdk-1.6
 	${COMMON_DEP}"
 
 #S="${WORKDIR}/${MY_PN}-${MY_PV}/"
@@ -42,11 +42,14 @@ JAVA_PKG_BSFIX_NAME="build.xml build-impl.xml"
 #}
 
 java_prepare() {
+	# jdic does not currently build out of the box against the browsers we have
+	cd "${S}/jhMaster/JavaHelp/src/new/" || die
+	rm -v javax/help/plaf/basic/BasicNativeContentViewerUI.java || die
+
 	mkdir -p "${BDIR}/lib" || die
 	cd "${BDIR}/lib" || die
 	java-pkg_jar-from --virtual servlet-api-3.0
-	java-pkg_jar-from jdic jdic.jar
-#	java-pkg_filter-compiler jikes
+	#java-pkg_jar-from jdic jdic.jar
 }
 
 #_eant() {
@@ -62,8 +65,10 @@ java_prepare() {
 #}
 
 EANT_BUILD_TARGET="release"
-EANT_EXTRA_ARGS="-Dservlet-jar-present=true -Djdic-zip-present=true \
-	-Djdic-jar-present=true -Dtomcat-zip-present=true"
+#EANT_EXTRA_ARGS="-Dservlet-jar-present=true -Djdic-zip-present=true \
+#	-Djdic-jar-present=true -Dtomcat-zip-present=true"
+EANT_EXTRA_ARGS="-Dservlet-jar-present=true -Djdic-zip-present=false \
+	-Djdic-jar-present=false -Dtomcat-zip-present=true"
 src_compile() {
 #	_eant release $(use_doc)
 	cd ${BDIR} || die

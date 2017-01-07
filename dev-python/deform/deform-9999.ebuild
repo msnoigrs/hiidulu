@@ -30,7 +30,7 @@ DEPEND="${RDEPEND}
 	test? ( dev-python/beautifulsoup:4[${PYTHON_USEDEP}] )"
 
 # Include COPYRIGHT.txt because the license seems to require it.
-DOCS=( CHANGES.txt COPYRIGHT.txt README.txt )
+DOCS=( CHANGES.txt COPYRIGHT.txt )
 
 python_prepare_all() {
 	sed -i -e '/zope.deprecation/ d' setup.py

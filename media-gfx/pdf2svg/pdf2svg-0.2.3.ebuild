@@ -13,8 +13,10 @@ SLOT="0"
 KEYWORDS="amd64 x86"
 IUSE=""
 
-RDEPEND=">=app-text/poppler-0.12.3-r3:=[cairo]
-	>=x11-libs/cairo-1.2.6:=[svg]"
+#RDEPEND=">=app-text/poppler-0.12.3-r3:=[cairo]
+#	>=x11-libs/cairo-1.2.6:=[svg]"
+RDEPEND="app-text/poppler:0[cairo]
+	x11-libs/cairo:0[svg]"
 DEPEND="${RDEPEND}
 	virtual/pkgconfig"
 
