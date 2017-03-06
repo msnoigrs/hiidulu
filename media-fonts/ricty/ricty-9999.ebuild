@@ -1,15 +1,19 @@
-# Copyright 1999-2013 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI="4"
+EAPI=6
 
-EGIT_REPO_URI="git://github.com/yascentur/Ricty.git"
+#EGIT_REPO_URI="git://github.com/yascentur/Ricty.git"
+EGIT_REPO_URI="https://github.com/masayuko/Ricty.git"
 
-inherit font git-2
+inherit font git-r3
 
-MIG_SFD="59022"
-MIG_V="20130617"
+#MIG_SFD="59022"
+#MIG_V="20130617"
+#MIG="redir.php?m=iij&f=%2Fmix-mplus-ipa%2F${MIG_SFD}%2Fmigu-1m-${MIG_V}.zip"
+MIG_SFD="63545"
+MIG_V="20150712"
 MIG="redir.php?m=iij&f=%2Fmix-mplus-ipa%2F${MIG_SFD}%2Fmigu-1m-${MIG_V}.zip"
 
 DESCRIPTION="Japanese TrueType font. for programing"
@@ -37,7 +41,7 @@ FONTDIR="/usr/share/fonts/${PN}"
 RESTRICT="strip bincheckes"
 
 src_unpack() {
-	git-2_src_unpack
+	git-r3_src_unpack
 	cd ${S}
 	unpack ${MIG}
 	cp "${DISTDIR}/Inconsolata.otf" .

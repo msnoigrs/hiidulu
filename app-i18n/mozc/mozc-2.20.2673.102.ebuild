@@ -32,6 +32,7 @@ RDEPEND="dev-libs/glib:2
 	)
 	${PYTHON_DEPS}"
 DEPEND="${RDEPEND}
+	app-i18n/zinnia
 	sys-devel/clang
 	dev-util/ninja
 	virtual/pkgconfig"

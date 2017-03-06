@@ -1,9 +1,10 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Id$
 
 EAPI=5
-PYTHON_COMPAT=( python{2_6,2_7,3_3,3_4,3_5} pypy2_0 )
+PYTHON_COMPAT=( python{2_7,3_4,3_5,3_6} pypy2_0 )
+
 
 EGIT_REPO_URI="https://github.com/kennethreitz/requests.git"
 
@@ -32,11 +33,7 @@ DOCS=( README.rst HISTORY.rst )
 python_prepare_all() {
 	local PATCHES=(
 		"${FILESDIR}"/${PN}-system-cacerts.patch
-		"${FILESDIR}"/${PN}-system-chardet.patch
 	)
-
-	# use system chardet
-	rm -r requests/packages/chardet || die
 
 	distutils-r1_python_prepare_all
 }
