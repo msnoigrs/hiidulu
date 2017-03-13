@@ -1,13 +1,12 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Id$
 
 EAPI=5
-PYTHON_COMPAT=( python{2_7,3_3,3_4,3_5} )
+PYTHON_COMPAT=( python{2_7,3_4,3_5,3_6} )
 
 EGIT_REPO_URI="https://github.com/psycopg/psycopg2.git"
 
-inherit distutils-r1 flag-o-matic git-2
+inherit distutils-r1 flag-o-matic git-r3
 
 #MY_PN="${PN}2"
 #MY_P="${MY_PN}-${PV}"
@@ -38,9 +37,9 @@ python_compile() {
 }
 
 python_prepare_all() {
-	local PATCHES=(
-		"${FILESDIR}/${PN}-2.4.2-setup.py.patch"
-	)
+	#local PATCHES=(
+	#	"${FILESDIR}/${PN}-2.4.2-setup.py.patch"
+	#)
 
 	if use debug; then
 		sed -i 's/^\(define=\)/\1PSYCOPG_DEBUG,/' setup.cfg || die

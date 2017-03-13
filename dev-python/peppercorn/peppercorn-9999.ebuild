@@ -1,14 +1,14 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Id$
 
 EAPI=5
 
-PYTHON_COMPAT=( python{2_6,2_7,3_3,3_4,3_5} pypy pypy2_0 )
+PYTHON_COMPAT=( python{2_7,3_4,3_5,3_6} pypy pypy2_0 )
 
 EGIT_REPO_URI="https://github.com/Pylons/peppercorn.git"
 
-inherit distutils-r1 git-2
+inherit distutils-r1 git-r3
 
 DESCRIPTION="A library for converting a token stream into a data structure for use in web form posts"
 HOMEPAGE="https://github.com/Pylons/peppercorn http://pypi.python.org/pypi/peppercorn"

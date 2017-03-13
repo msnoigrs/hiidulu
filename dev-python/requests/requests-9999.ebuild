@@ -8,7 +8,7 @@ PYTHON_COMPAT=( python{2_7,3_4,3_5,3_6} pypy2_0 )
 
 EGIT_REPO_URI="https://github.com/kennethreitz/requests.git"
 
-inherit distutils-r1 git-2
+inherit distutils-r1 git-r3
 
 DESCRIPTION="HTTP library for human beings"
 HOMEPAGE="http://python-requests.org/ http://pypi.python.org/pypi/requests"

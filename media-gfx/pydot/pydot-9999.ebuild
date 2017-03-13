@@ -1,14 +1,14 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Id$
 
 EAPI=5
 
-EGIT_REPO_URI="git://github.com/nlhepler/pydot.git"
+EGIT_REPO_URI="https://github.com/nlhepler/pydot.git"
 
-PYTHON_COMPAT=( python{2_7,3_3,3_4,3_5} pypy2_0 )
+PYTHON_COMPAT=( python{2_7,3_4,3_5,3_6} pypy2_0 )
 
-inherit git-2 distutils-r1
+inherit distutils-r1 git-r3
 
 DESCRIPTION="Python interface to Graphviz's Dot language"
 HOMEPAGE="http://code.google.com/p/pydot/ http://pypi.python.org/pypi/pydot"
