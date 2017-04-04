@@ -1,12 +1,12 @@
-# Copyright 1999-2012 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
 
-EAPI="2"
+EAPI=5
 JAVA_PKG_IUSE="doc source test"
 
-ESVN_REPO_URI="https://svn.apache.org/repos/asf/commons/proper/logging/trunk"
-inherit subversion java-pkg-2 java-ant-2 java-osgi
+EGIT_REPO_URI="https://github.com/apache/commons-logging"
+
+inherit git-r3 java-pkg-2 java-ant-2 java-osgi
 
 DESCRIPTION="The Jakarta-Commons Logging package is an ultra-thin bridge between different logging libraries."
 HOMEPAGE="http://jakarta.apache.org/commons/logging/"
@@ -23,11 +23,9 @@ COMMON_DEP="
 	servletapi? ( java-virtuals/servlet-api:3.0 )
 	avalon-framework? ( dev-java/avalon-framework:4.2 )
 	test? ( dev-java/ant-junit:0 )"
-# ATTENTION: Add this when log4j-1.3 is out
-#	=dev-java/log4j-1.3*
-RDEPEND=">=virtual/jre-1.5
+RDEPEND=">=virtual/jre-1.6
 	${COMMON_DEP}"
-DEPEND=">=virtual/jdk-1.5
+DEPEND=">=virtual/jdk-1.6
 	${COMMON_DEP}"
 
 RESTRICT="!servletapi? ( test )"

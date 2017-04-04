@@ -1,13 +1,13 @@
-# Copyright 1999-2016 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Id$
 
 EAPI=5
 
 EGIT_REPO_URI="https://github.com/capitaomorte/yasnippet.git"
-EGIT_HAS_SUBMODULES="true"
+#EGIT_HAS_SUBMODULES="true"
 
-inherit elisp git-2
+inherit elisp git-r3
 
 DESCRIPTION="Yet another snippet extension for Emacs"
 HOMEPAGE="https://github.com/capitaomorte/yasnippet"
@@ -24,7 +24,7 @@ RDEPEND="${DEPEND}"
 #SITEFILE="50${PN}-gentoo.el"
 
 src_unpack() {
-	git-2_src_unpack
+	git-r3_src_unpack
 
 	rm -rf "${S}/snippets/.git" || die
 }

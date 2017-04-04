@@ -1,6 +1,5 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Id$
 
 EAPI=5
 JAVA_PKG_IUSE="source test"
@@ -8,7 +7,7 @@ JAVA_PKG_IUSE="source test"
 EGIT_REPO_URI="http://git-wip-us.apache.org/repos/asf/commons-lang.git"
 EGIT_BRANCH="LANG_2_X"
 
-inherit git-2 java-pkg-2 java-ant-2
+inherit git-r3 java-pkg-2 java-ant-2
 
 DESCRIPTION="Commons components to manipulate core java classes"
 HOMEPAGE="http://commons.apache.org/lang/"
@@ -27,7 +26,6 @@ JAVA_ANT_ENCODING="ISO-8859-1"
 
 java_prepare() {
 	rm -rf src/main/java/org/apache/commons/lang/enum
-#	#epatch ${FILESDIR}/BigDecimal-compareTo.patch
 }
 
 src_install() {
@@ -35,6 +33,5 @@ src_install() {
 
 	dodoc RELEASE-NOTES.txt NOTICE.txt || die
 	dohtml *.html || die
-#	use doc && java-pkg_dojavadoc target/docs/api
 	use source && java-pkg_dosrc src/main/java/*
 }

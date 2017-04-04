@@ -1,4 +1,4 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Id$
 
@@ -8,7 +8,7 @@ PYTHON_COMPAT=( python2_7 )
 
 EGIT_REPO_URI="https://github.com/sk1project/uniconvertor.git"
 
-inherit git-2 distutils-r1
+inherit git-r3 distutils-r1
 
 DESCRIPTION="Commandline tool for popular vector formats convertion"
 HOMEPAGE="http://sk1project.org/modules.php?name=Products&product=uniconvertor https://github.com/sk1project/uniconvertor"
