@@ -16,3 +16,11 @@ KEYWORDS="~amd64 ~x86"
 IUSE=""
 
 #SITEFILE="50${PN}-gentoo.el"
+
+src_prepare() {
+	sed -i -e 's/lang=en/lang=ja/g' conf/snippets.json
+}
+
+src_compile() {
+	emake
+}
