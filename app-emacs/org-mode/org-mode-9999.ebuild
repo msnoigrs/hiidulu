@@ -1,13 +1,12 @@
-# Copyright 1999-2013 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
 
-EAPI=4
+EAPI=5
 NEED_EMACS=22
 
-EGIT_REPO_URI="git://orgmode.org/org-mode.git"
+EGIT_REPO_URI="https://orgmode.org/org-mode.git"
 
-inherit elisp git-2
+inherit elisp git-r3
 
 DESCRIPTION="An Emacs mode for notes and project planning"
 HOMEPAGE="http://www.orgmode.org/"

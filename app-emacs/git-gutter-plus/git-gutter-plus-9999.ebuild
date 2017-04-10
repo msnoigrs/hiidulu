@@ -1,12 +1,11 @@
-# Copyright 1999-2014 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
 
-EAPI=4
+EAPI=5
 
-EGIT_REPO_URI="git://github.com/nonsequitur/git-gutter-plus.git"
+EGIT_REPO_URI="https://github.com/nonsequitur/git-gutter-plus.git"
 
-inherit elisp git-2
+inherit elisp git-r3
 
 DESCRIPTION="View, stage and revert Git changes straight from the buffer"
 HOMEPAGE="https://github.com/nonsequitur/git-gutter-plus"

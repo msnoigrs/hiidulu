@@ -3,7 +3,7 @@
 
 EAPI=5
 
-EGIT_REPO_URI="git://github.com/auto-complete/popup-el.git"
+EGIT_REPO_URI="https://github.com/auto-complete/popup-el.git"
 
 inherit elisp eutils git-r3
 

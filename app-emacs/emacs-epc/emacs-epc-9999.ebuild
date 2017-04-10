@@ -5,7 +5,7 @@ EAPI=5
 
 EGIT_REPO_URI="https://github.com/kiwanami/emacs-epc.git"
 
-inherit elisp git-2
+inherit elisp git-r3
 
 DESCRIPTION="A RPC stack for Emacs Lisp"
 HOMEPAGE="https://github.com/kiwanami/emacs-epc"

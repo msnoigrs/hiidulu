@@ -1,12 +1,11 @@
-# Copyright 1999-2013 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
 
-EAPI=4
+EAPI=5
 
-EGIT_REPO_URI="git://github.com/yascentur/judge-indent-el.git"
+EGIT_REPO_URI="https://github.com/yascentur/judge-indent-el.git"
 
-inherit elisp git-2
+inherit elisp git-r3
 
 DESCRIPTION="Judge indent and tab widths"
 HOMEPAGE="http://d.hatena.ne.jp/yascentur/20110626/1309099966"
