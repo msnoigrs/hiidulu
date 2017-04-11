@@ -3,7 +3,7 @@
 
 EAPI=5
 
-EGIT_REPO_URI="https://github.com/yascentur/judge-indent-el.git"
+EGIT_REPO_URI="https://github.com/emacsmirror/judge-indent.git"
 
 inherit elisp git-r3
 
