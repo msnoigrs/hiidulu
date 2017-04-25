@@ -1,31 +1,32 @@
-# Copyright 1999-2014 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
 
-EAPI="4"
+EAPI="5"
 JAVA_PKG_IUSE="doc examples source"
 
-EGIT_REPO_URI="git://github.com/JodaOrg/joda-time.git"
+inherit java-pkg-2 java-ant-2
 
-inherit java-pkg-2 java-ant-2 git-2
-
-#MY_P="${P}-dist"
+MY_P="${P}-dist"
 
 DESCRIPTION="A quality open-source replacement for the Java Date and Time classes."
 HOMEPAGE="http://joda-time.sourceforge.net/"
-#SRC_URI="mirror://sourceforge/${PN}/${PV}/${MY_P}.tar.gz"
+SRC_URI="https://github.com/JodaOrg/joda-time/archive/v${PV}.tar.gz -> ${PN}-${PV}.tar.gz"
 LICENSE="Apache-2.0"
 SLOT="0"
-KEYWORDS=""
+KEYWORDS="~amd64 ~ppc ~ppc64 ~x86"
 IUSE=""
 
 COMMON_DEP="dev-java/joda-convert"
-DEPEND=">=virtual/jdk-1.5
+DEPEND=">=virtual/jdk-1.8
 	${COMMON_DEP}"
-RDEPEND=">=virtual/jre-1.5
+RDEPEND=">=virtual/jre-1.8
 	${COMMON_DEP}"
 
 java_prepare() {
+	#rm -v *.jar || die
+	# https://sourceforge.net/tracker/index.php?func=detail&aid=1855430&group_id=97367&atid=617889
+	#epatch "${FILESDIR}/1.5.1-ecj.patch"
+
 	mkdir lib
 	java-pkg_jar-from --into lib joda-convert
 

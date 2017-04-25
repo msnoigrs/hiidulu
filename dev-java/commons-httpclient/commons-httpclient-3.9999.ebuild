@@ -1,8 +1,7 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
 
-EAPI="2"
+EAPI=5
 JAVA_PKG_IUSE="doc examples source test"
 
 ESVN_REPO_URI="https://svn.apache.org/repos/asf/httpcomponents/oac.hc3x/trunk/"

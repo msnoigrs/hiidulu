@@ -1,6 +1,5 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Id$
 
 EAPI=5
 JAVA_PKG_IUSE="doc source"
@@ -14,7 +13,6 @@ LICENSE="Apache-2.0"
 SLOT="1"
 KEYWORDS="~x86 ~amd64"
 IUSE="test"
-#COMMON_DEP="dev-java/asm:4"
 COMMON_DEP="dev-java/asm:5"
 RDEPEND=">=virtual/jre-1.6
 	${COMMON_DEP}"
@@ -22,8 +20,6 @@ DEPEND=">=virtual/jdk-1.6
 	${COMMON_DEP}
 	dev-java/ant-core
 	test? ( dev-java/ant-junit )"
-
-#S="${WORKDIR}/${PN}-${MY_PV}"
 
 java_prepare() {
 	# remove maven dependency
@@ -49,8 +45,6 @@ java_prepare() {
 
 	cd "${S}/lib"
 	rm -v *.jar || die
-	#java-pkg_jar-from asm-4 asm.jar asm-4.0.jar
-	#java-pkg_jar-from asm-4 asm-commons.jar asm-commons-4.0.jar
 	java-pkg_jar-from asm-5 asm.jar asm-4.0.jar
 	java-pkg_jar-from asm-5 asm-commons.jar asm-commons-4.0.jar
 	java-pkg_jar-from --build-only ant-core ant.jar

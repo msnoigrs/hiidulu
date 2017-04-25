@@ -1,14 +1,12 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
 
 EAPI=5
 JAVA_PKG_IUSE="doc source"
 
-EGIT_PROJECT="hawtjni"
-EGIT_REPO_URI="git://github.com/fusesource/hawtjni.git"
+EGIT_REPO_URI="https://github.com/fusesource/hawtjni.git"
 
-inherit git-2 java-pkg-2 java-ant-2
+inherit git-r3 java-pkg-2 java-ant-2
 
 DESCRIPTION="A JNI code generator based on the JNI generator used by the eclipse SWT project"
 HOMEPAGE="http://jansi.fusesource.org/"

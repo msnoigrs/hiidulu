@@ -1,13 +1,12 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Id$
 
 EAPI=5
 JAVA_PKG_IUSE="doc source"
 
-EGIT_REPO_URI="git://github.com/fusesource/jansi-native.git"
+EGIT_REPO_URI="https://github.com/fusesource/jansi-native.git"
 
-inherit git-2 java-pkg-2 java-ant-2
+inherit git-r3 java-pkg-2 java-ant-2
 
 DESCRIPTION="Builds the JNI libraries for the jansi project"
 HOMEPAGE="http://jansi.fusesource.org/"

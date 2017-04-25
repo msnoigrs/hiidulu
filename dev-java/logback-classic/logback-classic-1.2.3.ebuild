@@ -1,56 +1,52 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
 
-EAPI="2"
-
-#ESVN_REPO_URI="http://svn.qos.ch/repos/logback/trunk/${PN}"
-EGIT_REPO_URI="git://github.com/ceki/logback.git"
-EGIT_PROJECT="logback"
-
+EAPI="5"
 JAVA_PKG_IUSE="source doc"
 
+WANT_ANT_TASKS="dev-java/groovy-ant:0"
+
 #inherit subversion java-pkg-2 java-ant-2
-inherit git-2 java-pkg-2 java-ant-2
+inherit java-pkg-2 java-ant-2
 
 DESCRIPTION="Logback is intended as a successor to the popular log4j project."
 HOMEPAGE="http://logback.qos.ch/"
-SRC_URI=""
+SRC_URI="http://logback.qos.ch/dist/logback-${PV}.tar.gz"
 
 LICENSE="LGPL"
 SLOT="0"
 KEYWORDS="~x86 ~amd64"
 IUSE=""
 
-COMMON_DEP="=dev-java/logback-core-${PV}
-	dev-java/slf4j-api
-	dev-java/janino:0
-	dev-java/groovy
-	dev-java/antlr:0
-	dev-java/asm:3
-	dev-java/commons-cli:1"
-DEPEND=">=virtual/jdk-1.5
+COMMON_DEP="~dev-java/logback-core-${PV}
+	dev-java/slf4j-api:0"
+#	dev-java/janino:0
+#	dev-java/groovy
+#	dev-java/antlr:0
+#	dev-java/asm:3
+#	dev-java/commons-cli:1"
+DEPEND=">=virtual/jdk-1.6
 	dev-java/geronimo-spec-jms
 	java-virtuals/servlet-api:3.0
 	${COMMON_DEP}"
-RDEPEND=">=virtual/jre-1.5
+RDEPEND=">=virtual/jre-1.6
 	${COMMON_DEP}"
 
+S="${WORKDIR}/logback-${PV}/${PN}"
+
 java_prepare() {
-	cd ${PN}
 	cp "${FILESDIR}/gentoo-build.xml" build.xml
 #	rm -v src/main/java/ch/qos/logback/classic/net/JMS*.java
 	mkdir lib || die
 	java-pkg_jar-from --into lib slf4j-api
 	java-pkg_jar-from --into lib --build-only --virtual servlet-api-3.0 servlet-api.jar
 	java-pkg_jar-from --into lib --build-only geronimo-spec-jms
-	java-pkg_jar-from --into lib janino
+	#java-pkg_jar-from --into lib janino
 	java-pkg_jar-from --into lib logback-core
-	java-pkg_jar-from --into lib groovy
-	java-pkg_jar-from --into lib antlr
-	java-pkg_jar-from --into lib asm-3
-	java-pkg_jar-from --into lib commons-cli-1
-
+	#java-pkg_jar-from --into lib groovy
+	#java-pkg_jar-from --into lib antlr
+	#java-pkg_jar-from --into lib asm-3
+	#java-pkg_jar-from --into lib commons-cli-1
 
 #	rm -r src/main/java/ch/qos/logback/classic/gaffer
 }
@@ -75,13 +71,13 @@ java_prepare() {
 JAVA_ANT_ENCODING="utf-8"
 EANT_EXTRA_ARGS="-Dproject.name=${PN}"
 
-src_compile() {
-	cd ${PN}
-	java-pkg-2_src_compile
-}
+#src_compile() {
+#	cd ${PN}
+#	groovyc -d target/classes src/main/groovy/ch/qos/logback/classic/gaffer/GafferConfigurator.groovy
+#	java-pkg-2_src_compile
+#}
 
 src_install() {
-	cd ${PN}
 	java-pkg_dojar target/${PN}.jar
 
 	use doc && java-pkg_dojavadoc target/site/apidocs

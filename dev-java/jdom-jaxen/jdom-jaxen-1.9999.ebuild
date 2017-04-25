@@ -1,22 +1,17 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
 
 EAPI=5
 
-EGIT_REPO_URI="git://github.com/hunterhacker/jdom.git"
+EGIT_REPO_URI="https://github.com/hunterhacker/jdom.git"
 EGIT_BRANCH="jdom-1.x"
 
 JAVA_PKG_IUSE="source"
 
-inherit base java-pkg-2 git-2
-
-#MY_PN="jdom"
-#MY_P="${MY_PN}-1.1.3"
+inherit base java-pkg-2 git-r3
 
 DESCRIPTION="Jaxen binding for jdom."
 HOMEPAGE="http://www.jdom.org"
-#SRC_URI="http://www.jdom.org/dist/source/${MY_P}.tar.gz"
 LICENSE="JDOM"
 SLOT="0"
 KEYWORDS="amd64 ppc ppc64 x86"
@@ -29,8 +24,6 @@ RDEPEND=">=virtual/jre-1.6
 		${COMMON_DEP}"
 DEPEND=">=virtual/jdk-1.6
 		${COMMON_DEP}"
-
-#S="${WORKDIR}/${MY_PN}"
 
 java_prepare() {
 	cd core

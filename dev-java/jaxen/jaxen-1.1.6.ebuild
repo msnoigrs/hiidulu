@@ -1,11 +1,10 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Id$
 
 EAPI=5
 JAVA_PKG_IUSE="doc examples source test"
 
-inherit java-pkg-2 eutils java-ant-2
+inherit java-pkg-2 java-ant-2
 
 DESCRIPTION="A Java XPath Engine"
 HOMEPAGE="http://jaxen.org/"
@@ -39,10 +38,6 @@ java_prepare() {
 
 src_install() {
 	java-pkg_dojar target/${PN}.jar
-
-#	java-pkg_register-dependency "jaxen-dom4j-${SLOT}"
-#	java-pkg_register-dependency "jaxen-jdom-${SLOT}"
-#	java-pkg_register-dependency "jaxen-xom-${SLOT}"
 
 	use doc && java-pkg_dojavadoc dist/docs/api
 	use examples && java-pkg_doexamples src/java/samples

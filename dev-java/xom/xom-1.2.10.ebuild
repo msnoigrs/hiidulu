@@ -1,8 +1,7 @@
-# Copyright 1999-2013 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
 
-EAPI="5"
+EAPI=5
 
 JAVA_PKG_IUSE="doc examples source"
 
@@ -35,7 +34,6 @@ java_prepare() {
 	mv "${WORKDIR}/${JAXEN_P}" "${S}/build"
 
 	epatch "${FILESDIR}/${P}-gentoo.patch"
-	#epatch "${FILESDIR}/${PN}-strip-fallback-parser.patch" #399119
 
 	# remove dependency junit
 	rm -rv ${S}/src/nu/xom/tests
@@ -44,14 +42,7 @@ java_prepare() {
 	cd ${S}/lib
 	rm -v *.jar
 	java-pkg_jar-from --build-only jarjar-1 jarjar-nodep.jar jarjar.jar
-	#java-pkg_jar-from --build-only jaxen-1.1
 	java-pkg_jar-from xerces-2
-
-	#if use servlet; then
-	#	mkdir -p ${S}/lib2
-	#	cd ${S}/lib2
-	#	java-pkg_jar-from --build-only --virtual servlet-api-3.0 servlet-api.jar servlet.jar
-	#fi
 }
 
 src_compile() {

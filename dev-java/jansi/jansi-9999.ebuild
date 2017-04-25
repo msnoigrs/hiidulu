@@ -1,14 +1,13 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Id$
 
 EAPI=5
 
-EGIT_REPO_URI="git://github.com/fusesource/jansi.git"
+EGIT_REPO_URI="https://github.com/fusesource/jansi.git"
 
 JAVA_PKG_IUSE="doc source"
 
-inherit git-2 java-pkg-2 java-ant-2
+inherit git-r3 java-pkg-2 java-ant-2
 
 DESCRIPTION="Jansi is a small java library that allows you to use ANSI escape sequences in your console output"
 HOMEPAGE="http://jansi.fusesource.org/"

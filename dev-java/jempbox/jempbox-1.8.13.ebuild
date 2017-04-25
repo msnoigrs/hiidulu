@@ -2,26 +2,29 @@
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=5
+
+MY_PN="pdfbox"
+MY_P="${MY_PN}-${PV}"
+
 JAVA_PKG_IUSE="doc source"
 
 inherit java-pkg-2 java-ant-2
 
-DESCRIPTION="Dependency Injection for Java (JSR-330)"
-HOMEPAGE="http://code.google.com/p/atinject/"
-SRC_URI="http://atinject.googlecode.com/files/javax.inject.zip"
+DESCRIPTION="An open source Java library for working with XMP metadata"
+HOMEPAGE="http://pdfbox.apache.org/"
+SRC_URI="mirror://apache/${MY_PN}/${PV}/${MY_P}-src.zip"
 LICENSE="Apache-2.0"
-SLOT="0"
-KEYWORDS="~x86 ~amd64"
+SLOT="1.8"
+KEYWORDS="amd64 ppc64 x86"
 IUSE=""
 
-DEPEND=">=virtual/jdk-1.6"
 RDEPEND=">=virtual/jre-1.6"
 
-src_unpack() {
-	unpack "${A}"
-	mkdir -p "${P}"/src/main/java
-	unzip -qq javax.inject-src.zip -d "${P}"/src/main/java
-}
+DEPEND=">=virtual/jdk-1.6"
+
+S="${WORKDIR}/${MY_PN}-${PV}/${PN}"
+
+JAVA_ANT_ENCODING="iso-8859-1"
 
 java_prepare() {
 	cp "${FILESDIR}/gentoo-build.xml" build.xml
@@ -30,7 +33,7 @@ java_prepare() {
 EANT_EXTRA_ARGS="-Dproject.name=${PN}"
 
 src_install() {
-	java-pkg_newjar target/${PN}.jar javax.inject.jar
+	java-pkg_dojar target/${PN}.jar
 
 	use doc && java-pkg_dojavadoc target/site/apidocs
 	use source && java-pkg_dosrc src/main/java/*

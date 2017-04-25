@@ -1,27 +1,30 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Id$
 
 EAPI=5
+
+MY_PN="pdfbox"
+MY_P="${MY_PN}-${PV}"
+
 JAVA_PKG_IUSE="doc source"
 
-EGIT_REPO_URI="https://github.com/apache/pdfbox.git"
-EGIT_BRANCH="trunk"
-
-inherit git-2 java-pkg-2 java-ant-2
+inherit java-pkg-2 java-ant-2
 
 DESCRIPTION="Java library and utilities for working with PDF documents"
 HOMEPAGE="http://www.pdfbox.org"
+SRC_URI="mirror://apache/${MY_PN}/${PV}/${MY_P}-src.zip"
 LICENSE="Apache-2.0"
-SLOT="0"
+SLOT="2.0"
 KEYWORDS="~amd64 ~ppc ~x86"
 IUSE=""
 
-CDEPEND="dev-java/pdfbox:0"
+CDEPEND="dev-java/pdfbox:${SLOT}"
 RDEPEND=">=virtual/jre-1.7
 	${CDEPEND}"
 DEPEND=">=virtual/jdk-1.7
 	${CDEPEND}"
+
+S="${WORKDIR}/${MY_PN}-${PV}/debugger"
 
 java_prepare() {
 	cd debugger
@@ -30,7 +33,7 @@ java_prepare() {
 	mkdir "lib" || die
 	cd "lib"
 
-	java-pkg_jar-from pdfbox
+	java-pkg_jar-from pdfbox-2.0
 }
 EANT_EXTRA_ARGS="-Dproject.name=${PN}"
 src_compile() {

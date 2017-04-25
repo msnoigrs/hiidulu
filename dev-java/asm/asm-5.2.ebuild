@@ -2,21 +2,19 @@
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=5
-
-WANT_ANT_TASKS="dev-java/ant-bnd:0"
-
-MY_P="${PN}-${PV/rc/RC}"
+OLD_P="${PN}-4.0"
 JAVA_PKG_IUSE="doc source"
 
 inherit java-pkg-2 java-ant-2
 
 DESCRIPTION="Bytecode manipulation framework for Java"
 HOMEPAGE="http://asm.ow2.org"
-SRC_URI="http://download.forge.objectweb.org/${PN}/${MY_P}.tar.gz"
+SRC_URI="http://download.forge.objectweb.org/${PN}/${P}.tar.gz
+	http://download.forge.objectweb.org/${PN}/${OLD_P}.tar.gz"
 LICENSE="BSD"
-SLOT="5"
+SLOT="5.2"
 IUSE=""
-KEYWORDS="~amd64 ~x86"
+KEYWORDS="~amd64 ~arm ~ppc64 ~x86 ~amd64-fbsd ~x64-macos"
 
 DEPEND=">=virtual/jdk-1.6"
 RDEPEND=">=virtual/jre-1.6"
@@ -24,7 +22,6 @@ RDEPEND=">=virtual/jre-1.6"
 # Needs dependencies we don't have yet.
 RESTRICT="test"
 
-S="${WORKDIR}/${MY_P}"
 EANT_DOC_TARGET="jdoc"
 
 # Fails if this objectweb.ant.tasks.path is not set.
@@ -32,16 +29,15 @@ EANT_DOC_TARGET="jdoc"
 EANT_EXTRA_ARGS="-Dobjectweb.ant.tasks.path=foobar -Dproduct.noshrink=true"
 
 java_prepare() {
-	sed -i -e '/test/ d' .classpath
-	sed -i -e '/output\/eclipse/ d' .classpath
+	# Borrow some ant scripts from an old version to avoid requiring
+	# bndlib and friends. This may not work forever!
+	cp -vf "../${OLD_P}/archive"/*.xml archive/ || die
 }
 
 src_install() {
 	for x in output/dist/lib/*.jar ; do
 		java-pkg_newjar "${x}" $(basename "${x%-*}.jar")
 	done
-
-	java-pkg_newjar output/dist/lib/all/asm-all-${PV}.jar asm-all.jar
 
 	use doc && java-pkg_dojavadoc output/dist/doc/javadoc/user/
 	use source && java-pkg_dosrc src/*

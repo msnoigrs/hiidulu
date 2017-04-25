@@ -1,18 +1,16 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
 
 EAPI=5
 
-EGIT_REPO_URI="git://github.com/hunterhacker/jdom.git"
+EGIT_REPO_URI="https://github.com/hunterhacker/jdom.git"
 EGIT_BRANCH="jdom-1.x"
 
 JAVA_PKG_IUSE="doc examples source"
 
-inherit java-pkg-2 java-ant-2 git-2
+inherit java-pkg-2 java-ant-2 git-r3
 
 DESCRIPTION="Java API to manipulate XML data"
-#SRC_URI="http://www.jdom.org/dist/binary/archive/${P}.tar.gz"
 HOMEPAGE="http://www.jdom.org"
 LICENSE="JDOM"
 SLOT="0"
@@ -22,21 +20,14 @@ DEPEND=">=virtual/jdk-1.6"
 PDEPEND="=dev-java/jdom-jaxen-${PVR}"
 IUSE=""
 
-#S="${WORKDIR}/${PN}"
-
 java_prepare() {
 	cd core
 	cp "${FILESDIR}"/build-1.1.3.xml build.xml
-
-#	rm -v build/*.jar lib/*.jar || die
-#	rm -rf build/{apidocs,samples} || die
 
 	rm -v src/java/org/jdom/xpath/JaxenXPath.java \
 	   || die "Unable to remove Jaxen Binding class."
 
 	cd ${S}/lib
-#	java-pkg_jar-from xerces-2
-#	java-pkg_jar-from jaxen-1.1 jaxen.jar jaxen-1.1.jar
 }
 
 src_compile() {
@@ -51,7 +42,6 @@ src_install() {
 	java-pkg_newjar build/${PN}-1.1.3.jar
 
 	java-pkg_register-dependency "jdom-jaxen"
-#	java-pkg_register-optional-dependency xerces-2
 
 	dodoc CHANGES.txt COMMITTERS.txt README.txt TODO.txt || die
 	use doc && java-pkg_dojavadoc build/apidocs
