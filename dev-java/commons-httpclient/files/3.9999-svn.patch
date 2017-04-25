@@ -1,0 +1,1334 @@
+diff --git a/contrib/org/apache/commons/httpclient/contrib/proxy/PluginProxyUtil.java b/contrib/org/apache/commons/httpclient/contrib/proxy/PluginProxyUtil.java
+index 7c78fab..e47ba62 100644
+--- a/contrib/org/apache/commons/httpclient/contrib/proxy/PluginProxyUtil.java
++++ b/contrib/org/apache/commons/httpclient/contrib/proxy/PluginProxyUtil.java
+@@ -32,6 +32,7 @@ package org.apache.commons.httpclient.contrib.proxy;
+ import java.lang.reflect.Array;
+ import java.lang.reflect.Method;
+ import java.net.URL;
++import java.util.Locale;
+ import java.util.Properties;
+ 
+ import org.apache.commons.httpclient.ProxyHost;
+@@ -286,7 +287,7 @@ public class PluginProxyUtil {
+             }
+             boolean useProxy = (proxyList != null);
+             if (useProxy) {
+-                proxyList = proxyList.toUpperCase();
++                proxyList = proxyList.toUpperCase(Locale.ENGLISH);
+                 //  Using HTTP proxy as proxy for HTTP proxy tunnelled SSL 
+                 //  socket (should be listed FIRST)....
+                 //  1/14/03 1.3.1_06 appears to omit HTTP portion of 
+diff --git a/contrib/org/apache/commons/httpclient/contrib/ssl/EasySSLProtocolSocketFactory.java b/contrib/org/apache/commons/httpclient/contrib/ssl/EasySSLProtocolSocketFactory.java
+index ca7d00d..b34ccc6 100644
+--- a/contrib/org/apache/commons/httpclient/contrib/ssl/EasySSLProtocolSocketFactory.java
++++ b/contrib/org/apache/commons/httpclient/contrib/ssl/EasySSLProtocolSocketFactory.java
+@@ -65,11 +65,13 @@ import javax.net.ssl.TrustManager;
+  *     <pre>
+  *     Protocol easyhttps = new Protocol("https", new EasySSLProtocolSocketFactory(), 443);
+  *
+- *     HttpClient client = new HttpClient();
+- *     client.getHostConfiguration().setHost("localhost", 443, easyhttps);
++ *     URI uri = new URI("https://localhost/", true);
+  *     // use relative url only
+- *     GetMethod httpget = new GetMethod("/");
+- *     client.executeMethod(httpget);
++ *     GetMethod httpget = new GetMethod(uri.getPathQuery());
++ *     HostConfiguration hc = new HostConfiguration();
++ *     hc.setHost(uri.getHost(), uri.getPort(), easyhttps);
++ *     HttpClient client = new HttpClient();
++ *     client.executeMethod(hc, httpget);
+  *     </pre>
+  * </p>
+  * <p>
+diff --git a/contrib/org/apache/commons/httpclient/contrib/ssl/HttpHostFactory.java b/contrib/org/apache/commons/httpclient/contrib/ssl/HttpHostFactory.java
+index c76047a..733c943 100644
+--- a/contrib/org/apache/commons/httpclient/contrib/ssl/HttpHostFactory.java
++++ b/contrib/org/apache/commons/httpclient/contrib/ssl/HttpHostFactory.java
+@@ -1,5 +1,7 @@
+ package org.apache.commons.httpclient.contrib.ssl;
+ 
++import java.util.Locale;
++
+ import org.apache.commons.httpclient.HostConfiguration;
+ import org.apache.commons.httpclient.HttpHost;
+ import org.apache.commons.httpclient.HttpsURL;
+@@ -47,7 +49,7 @@ public class HttpHostFactory
+                 return oldProtocol; // Retain it.
+             }
+         }
+-        Protocol newProtocol = (scheme != null && scheme.toLowerCase().endsWith("s")) ? httpsProtocol
++        Protocol newProtocol = (scheme != null && scheme.toLowerCase(Locale.ENGLISH).endsWith("s")) ? httpsProtocol
+                 : httpProtocol;
+         if (newProtocol == null) {
+             newProtocol = Protocol.getProtocol(scheme);
+diff --git a/examples/MultiThreadedExample.java b/examples/MultiThreadedExample.java
+index 9a2e44c..22d3fa7 100644
+--- a/examples/MultiThreadedExample.java
++++ b/examples/MultiThreadedExample.java
+@@ -56,14 +56,14 @@ public class MultiThreadedExample {
+         HttpClient httpClient = new HttpClient(new MultiThreadedHttpConnectionManager());
+         // Set the default host/protocol for the methods to connect to.
+         // This value will only be used if the methods are not given an absolute URI
+-        httpClient.getHostConfiguration().setHost("jakarta.apache.org", 80, "http");
++        httpClient.getHostConfiguration().setHost("hc.apache.org", 80, "http");
+         
+         // create an array of URIs to perform GETs on
+         String[] urisToGet = {
+             "/",
+-            "/commons/",
+-            "/commons/httpclient/",
+-            "http://svn.apache.org/viewvc/jakarta/httpcomponents/oac.hc3x/"
++            "/httpclient-3.x/status.html",
++            "/httpclient-3.x/methods/",
++            "http://svn.apache.org/viewvc/httpcomponents/oac.hc3x/"
+         };
+         
+         // create a thread for each URI
+@@ -83,7 +83,7 @@ public class MultiThreadedExample {
+     
+     /**
+      * A thread that performs a GET.
+-     */
++	 */
+     static class GetThread extends Thread {
+         
+         private HttpClient httpClient;
+diff --git a/java/org/apache/commons/httpclient/ChunkedInputStream.java b/java/org/apache/commons/httpclient/ChunkedInputStream.java
+index efa5ae7..6da92aa 100644
+--- a/java/org/apache/commons/httpclient/ChunkedInputStream.java
++++ b/java/org/apache/commons/httpclient/ChunkedInputStream.java
+@@ -148,8 +148,11 @@ public class ChunkedInputStream extends InputStream {
+                 return -1;
+             }
+         }
+-        pos++;
+-        return in.read();
++        int b = in.read();
++        if (b != -1) {
++            pos++;
++        }
++        return b;
+     }
+ 
+     /**
+@@ -179,9 +182,13 @@ public class ChunkedInputStream extends InputStream {
+             }
+         }
+         len = Math.min(len, chunkSize - pos);
+-        int count = in.read(b, off, len);
+-        pos += count;
+-        return count;
++        int bytesRead = in.read(b, off, len);
++        if (bytesRead != -1) {
++            pos += bytesRead;
++            return bytesRead;
++        } else {
++            throw new IOException("Truncated chunk");
++        }
+     }
+ 
+     /**
+diff --git a/java/org/apache/commons/httpclient/Cookie.java b/java/org/apache/commons/httpclient/Cookie.java
+index 682ff9b..ddc4c2b 100644
+--- a/java/org/apache/commons/httpclient/Cookie.java
++++ b/java/org/apache/commons/httpclient/Cookie.java
+@@ -33,6 +33,7 @@ package org.apache.commons.httpclient;
+ import java.io.Serializable;
+ import java.util.Comparator;
+ import java.util.Date;
++import java.util.Locale;
+ 
+ import org.apache.commons.httpclient.cookie.CookiePolicy;
+ import org.apache.commons.httpclient.cookie.CookieSpec;
+@@ -234,7 +235,7 @@ public class Cookie extends NameValuePair implements Serializable, Comparator {
+             if (ndx != -1) {
+               domain = domain.substring(0, ndx);
+             }
+-            cookieDomain = domain.toLowerCase();
++            cookieDomain = domain.toLowerCase(Locale.ENGLISH);
+         }
+     }
+ 
+diff --git a/java/org/apache/commons/httpclient/HeaderGroup.java b/java/org/apache/commons/httpclient/HeaderGroup.java
+index b9246bd..f70fb45 100644
+--- a/java/org/apache/commons/httpclient/HeaderGroup.java
++++ b/java/org/apache/commons/httpclient/HeaderGroup.java
+@@ -33,6 +33,7 @@ package org.apache.commons.httpclient;
+ import java.util.ArrayList;
+ import java.util.Iterator;
+ import java.util.List;
++import java.util.Locale;
+ 
+ /**
+  * A class for combining a set of headers.  This class allows for multiple
+@@ -122,7 +123,7 @@ public class HeaderGroup {
+                 valueBuffer.append(headers[i].getValue());
+             }
+             
+-            return new Header(name.toLowerCase(), valueBuffer.toString());
++            return new Header(name.toLowerCase(Locale.ENGLISH), valueBuffer.toString());
+         }
+     }
+     
+diff --git a/java/org/apache/commons/httpclient/HttpConnection.java b/java/org/apache/commons/httpclient/HttpConnection.java
+index fa44e2e..01c8dc2 100644
+--- a/java/org/apache/commons/httpclient/HttpConnection.java
++++ b/java/org/apache/commons/httpclient/HttpConnection.java
+@@ -892,7 +892,9 @@ public class HttpConnection {
+     public boolean isResponseAvailable(int timeout) 
+         throws IOException {
+         LOG.trace("enter HttpConnection.isResponseAvailable(int)");
+-        assertOpen();
++        if (!this.isOpen) {
++            return false;
++        }
+         boolean result = false;
+         if (this.inputStream.available() > 0) {
+             result = true;
+@@ -1105,7 +1107,7 @@ public class HttpConnection {
+      *
+      * @throws IllegalStateException if the connection is not open
+      * @throws IOException if an I/O problem occurs
+-     * @return a line from the response
++     * @return a line from the response or null at the end of the stream
+      * 
+      * @since 3.0
+      */
+diff --git a/java/org/apache/commons/httpclient/HttpHost.java b/java/org/apache/commons/httpclient/HttpHost.java
+index 0b7c411..fc937e5 100644
+--- a/java/org/apache/commons/httpclient/HttpHost.java
++++ b/java/org/apache/commons/httpclient/HttpHost.java
+@@ -58,7 +58,7 @@ public class HttpHost implements Cloneable {
+     /**
+      * Constructor for HttpHost.
+      *   
+-     * @param hostname the hostname (IP or DNS name). Can be <code>null</code>.
++     * @param hostname the hostname (IP or DNS name).
+      * @param port the port. Value <code>-1</code> can be used to set default protocol port
+      * @param protocol the protocol. Value <code>null</code> can be used to set default protocol
+      */
+diff --git a/java/org/apache/commons/httpclient/HttpMethodBase.java b/java/org/apache/commons/httpclient/HttpMethodBase.java
+index c65bf35..a37c651 100644
+--- a/java/org/apache/commons/httpclient/HttpMethodBase.java
++++ b/java/org/apache/commons/httpclient/HttpMethodBase.java
+@@ -36,6 +36,7 @@ import java.io.IOException;
+ import java.io.InputStream;
+ import java.io.InterruptedIOException;
+ import java.util.Collection;
++import java.util.Locale;
+ 
+ import org.apache.commons.httpclient.auth.AuthState;
+ import org.apache.commons.httpclient.cookie.CookiePolicy;
+@@ -1503,7 +1504,7 @@ public abstract class HttpMethodBase implements HttpMethod {
+         // Absolute or relative URL?
+         if (!connection.isTransparent()) {
+             Protocol protocol = connection.getProtocol();
+-            buf.append(protocol.getScheme().toLowerCase());
++            buf.append(protocol.getScheme().toLowerCase(Locale.ENGLISH));
+             buf.append("://");
+             buf.append(connection.getHost());
+             if ((connection.getPort() != -1) 
+@@ -1976,9 +1977,6 @@ public abstract class HttpMethodBase implements HttpMethod {
+                 throw new NoHttpResponseException("The server " + conn.getHost() + 
+                     " failed to respond");
+             }
+-            if (Wire.HEADER_WIRE.enabled()) {
+-                Wire.HEADER_WIRE.input(s + "\r\n");
+-            }
+             if (s != null && StatusLine.startsWithHTTP(s)) {
+                 // Got one
+                 break;
+@@ -2495,12 +2493,14 @@ public abstract class HttpMethodBase implements HttpMethod {
+     void fakeResponse(
+         StatusLine statusline, 
+         HeaderGroup responseheaders,
++        HttpConnection conn,
+         InputStream responseStream
+     ) {
+         // set used so that the response can be read
+         this.used = true;
+         this.statusLine = statusline;
+         this.responseHeaders = responseheaders;
++        this.responseConnection = conn;
+         this.responseBody = null;
+         this.responseStream = responseStream;
+     }
+diff --git a/java/org/apache/commons/httpclient/HttpMethodDirector.java b/java/org/apache/commons/httpclient/HttpMethodDirector.java
+index 13dd480..eea8711 100644
+--- a/java/org/apache/commons/httpclient/HttpMethodDirector.java
++++ b/java/org/apache/commons/httpclient/HttpMethodDirector.java
+@@ -516,7 +516,6 @@ class HttpMethodDirector {
+             this.connectMethod = null;
+             return true;
+         } else {
+-            this.conn.close();
+             return false;
+         }
+     }
+@@ -551,6 +550,7 @@ class HttpMethodDirector {
+             ((HttpMethodBase) method).fakeResponse(
+                 this.connectMethod.getStatusLine(),
+                 this.connectMethod.getResponseHeaderGroup(),
++                conn,
+                 this.connectMethod.getResponseBodyAsStream()
+             );
+             method.getProxyAuthState().setAuthScheme(
+@@ -645,16 +645,17 @@ class HttpMethodDirector {
+                 + "' to '" + redirectUri.getEscapedURI());
+         }
+         //And finally invalidate the actual authentication scheme
+-        method.getHostAuthState().invalidate(); 
+-        return true;
+-    }
+-
+-    /**
+-     * Processes a response that requires authentication
+-     *
+-     * @param method the current {@link HttpMethod HTTP method}
+-     *
+-     * @return <tt>true</tt> if the authentication challenge can be responsed to,
++                method.getHostAuthState().invalidate(); 
++                method.getProxyAuthState().invalidate(); 
++		return true;
++	}
++
++	/**
++	 * Processes a response that requires authentication
++	 *
++	 * @param method the current {@link HttpMethod HTTP method}
++	 *
++	 * @return <tt>true</tt> if the authentication challenge can be responsed to,
+      *   (that is, at least one of the requested authentication scheme is supported, 
+      *   and matching credentials have been found), <tt>false</tt> otherwise.
+      */
+diff --git a/java/org/apache/commons/httpclient/ProxyHost.java b/java/org/apache/commons/httpclient/ProxyHost.java
+index 8459b5e..a3b09aa 100644
+--- a/java/org/apache/commons/httpclient/ProxyHost.java
++++ b/java/org/apache/commons/httpclient/ProxyHost.java
+@@ -57,7 +57,7 @@ public class ProxyHost extends HttpHost {
+     /**
+      * Constructor for ProxyHost.
+      *   
+-     * @param hostname the hostname (IP or DNS name). Can be <code>null</code>.
++     * @param hostname the hostname (IP or DNS name).
+      * @param port the port. Value <code>-1</code> can be used to set default protocol port
+      */
+     public ProxyHost(final String hostname, int port) {
+diff --git a/java/org/apache/commons/httpclient/SimpleHttpConnectionManager.java b/java/org/apache/commons/httpclient/SimpleHttpConnectionManager.java
+index 13a25a2..fe12035 100644
+--- a/java/org/apache/commons/httpclient/SimpleHttpConnectionManager.java
++++ b/java/org/apache/commons/httpclient/SimpleHttpConnectionManager.java
+@@ -268,6 +268,8 @@ public class SimpleHttpConnectionManager implements HttpConnectionManager {
+      * @since 3.0
+      */
+     public void closeIdleConnections(long idleTimeout) {
++        if (httpConnection == null)
++            return;
+         long maxIdleTime = System.currentTimeMillis() - idleTimeout;
+         if (idleStartTime <= maxIdleTime) {
+             httpConnection.close();
+@@ -278,7 +280,8 @@ public class SimpleHttpConnectionManager implements HttpConnectionManager {
+      * since 3.1
+      */
+     public void shutdown() {
+-        httpConnection.close();
++        if (httpConnection != null)
++            httpConnection.close();
+     }
+     
+ }
+diff --git a/java/org/apache/commons/httpclient/StatusLine.java b/java/org/apache/commons/httpclient/StatusLine.java
+index c983dd8..00be0ca 100644
+--- a/java/org/apache/commons/httpclient/StatusLine.java
++++ b/java/org/apache/commons/httpclient/StatusLine.java
+@@ -30,6 +30,8 @@
+ 
+ package org.apache.commons.httpclient;
+ 
++import java.util.Locale;
++
+ /**
+  * Represents a Status-Line as returned from a HTTP server.
+  *
+@@ -100,7 +102,7 @@ public class StatusLine {
+                         "Unable to parse HTTP-Version from the status line: '"
+                         + statusLine + "'");
+             }
+-            this.httpVersion = (statusLine.substring(start, at)).toUpperCase();
++            this.httpVersion = (statusLine.substring(start, at)).toUpperCase(Locale.ENGLISH);
+ 
+             //advance through spaces
+             while (statusLine.charAt(at) == ' ') {
+diff --git a/java/org/apache/commons/httpclient/URI.java b/java/org/apache/commons/httpclient/URI.java
+index 927ebf3..58bd589 100644
+--- a/java/org/apache/commons/httpclient/URI.java
++++ b/java/org/apache/commons/httpclient/URI.java
+@@ -264,7 +264,7 @@ public class URI implements Cloneable, Comparable, Serializable {
+         if (scheme == null) {
+            throw new URIException(URIException.PARSING, "scheme required");
+         }
+-        char[] s = scheme.toLowerCase().toCharArray();
++        char[] s = scheme.toLowerCase(Locale.ENGLISH).toCharArray();
+         if (validate(s, URI.scheme)) {
+             _scheme = s; // is_absoluteURI
+         } else {
+@@ -1945,7 +1945,7 @@ public class URI implements Cloneable, Comparable, Serializable {
+          * </pre></blockquote><p>
+          */
+         if (at > 0 && at < length && tmp.charAt(at) == ':') {
+-            char[] target = tmp.substring(0, at).toLowerCase().toCharArray();
++            char[] target = tmp.substring(0, at).toLowerCase(Locale.ENGLISH).toCharArray();
+             if (validate(target, scheme)) {
+                 _scheme = target;
+             } else {
+diff --git a/java/org/apache/commons/httpclient/WireLogInputStream.java b/java/org/apache/commons/httpclient/WireLogInputStream.java
+index fee09ee..c80bddc 100644
+--- a/java/org/apache/commons/httpclient/WireLogInputStream.java
++++ b/java/org/apache/commons/httpclient/WireLogInputStream.java
+@@ -79,7 +79,7 @@ class WireLogInputStream extends FilterInputStream {
+      */
+     public int read() throws IOException {
+         int l = this.in.read();
+-        if (l > 0) { 
++        if (l != -1) { 
+             wire.input(l);
+         }
+         return l;
+diff --git a/java/org/apache/commons/httpclient/auth/AuthChallengeParser.java b/java/org/apache/commons/httpclient/auth/AuthChallengeParser.java
+index c6af73e..b874978 100644
+--- a/java/org/apache/commons/httpclient/auth/AuthChallengeParser.java
++++ b/java/org/apache/commons/httpclient/auth/AuthChallengeParser.java
+@@ -32,6 +32,7 @@ package org.apache.commons.httpclient.auth;
+ 
+ import java.util.HashMap;
+ import java.util.List;
++import java.util.Locale;
+ import java.util.Map;
+ 
+ import org.apache.commons.httpclient.Header;
+@@ -74,7 +75,7 @@ public final class AuthChallengeParser {
+         if (s.equals("")) {
+             throw new MalformedChallengeException("Invalid challenge: " + challengeStr);
+         }
+-        return s.toLowerCase();
++        return s.toLowerCase(Locale.ENGLISH);
+     }
+ 
+     /** 
+@@ -103,7 +104,7 @@ public final class AuthChallengeParser {
+             challengeStr.substring(idx + 1, challengeStr.length()), ',');
+         for (int i = 0; i < params.size(); i++) {
+             NameValuePair param = (NameValuePair) params.get(i);
+-            map.put(param.getName().toLowerCase(), param.getValue());
++            map.put(param.getName().toLowerCase(Locale.ENGLISH), param.getValue());
+         }
+         return map;
+     }
+diff --git a/java/org/apache/commons/httpclient/auth/AuthChallengeProcessor.java b/java/org/apache/commons/httpclient/auth/AuthChallengeProcessor.java
+index b3a1dc7..06a113d 100644
+--- a/java/org/apache/commons/httpclient/auth/AuthChallengeProcessor.java
++++ b/java/org/apache/commons/httpclient/auth/AuthChallengeProcessor.java
+@@ -32,6 +32,7 @@ package org.apache.commons.httpclient.auth;
+ 
+ import java.util.Collection;
+ import java.util.Iterator;
++import java.util.Locale;
+ import java.util.Map;
+ 
+ import org.apache.commons.httpclient.params.HttpParams;
+@@ -95,7 +96,7 @@ public final class AuthChallengeProcessor {
+         Iterator item = authPrefs.iterator();
+         while (item.hasNext()) {
+             String id = (String) item.next();
+-            challenge = (String) challenges.get(id.toLowerCase()); 
++            challenge = (String) challenges.get(id.toLowerCase(Locale.ENGLISH)); 
+             if (challenge != null) {
+                 if (LOG.isInfoEnabled()) {
+                     LOG.info(id + " authentication scheme selected");
+@@ -154,7 +155,7 @@ public final class AuthChallengeProcessor {
+         if (LOG.isDebugEnabled()) {
+             LOG.debug("Using authentication scheme: " + id);
+         }
+-        String challenge = (String) challenges.get(id.toLowerCase());
++        String challenge = (String) challenges.get(id.toLowerCase(Locale.ENGLISH));
+         if (challenge == null) {
+             throw new AuthenticationException(id + 
+                 " authorization challenge expected, but not found");
+diff --git a/java/org/apache/commons/httpclient/auth/AuthPolicy.java b/java/org/apache/commons/httpclient/auth/AuthPolicy.java
+index 66022f9..3100ae9 100644
+--- a/java/org/apache/commons/httpclient/auth/AuthPolicy.java
++++ b/java/org/apache/commons/httpclient/auth/AuthPolicy.java
+@@ -33,6 +33,7 @@ package org.apache.commons.httpclient.auth;
+ import java.util.ArrayList;
+ import java.util.HashMap;
+ import java.util.List;
++import java.util.Locale;
+ 
+ import org.apache.commons.logging.Log;
+ import org.apache.commons.logging.LogFactory;
+@@ -129,8 +130,8 @@ public abstract class AuthPolicy {
+         if (clazz == null) {
+             throw new IllegalArgumentException("Authentication scheme class may not be null");
+         }
+-        SCHEMES.put(id.toLowerCase(), clazz);
+-        SCHEME_LIST.add(id.toLowerCase());
++        SCHEMES.put(id.toLowerCase(Locale.ENGLISH), clazz);
++        SCHEME_LIST.add(id.toLowerCase(Locale.ENGLISH));
+     }
+ 
+     /**
+@@ -143,8 +144,8 @@ public abstract class AuthPolicy {
+          if (id == null) {
+              throw new IllegalArgumentException("Id may not be null");
+          }
+-        SCHEMES.remove(id.toLowerCase());
+-        SCHEME_LIST.remove(id.toLowerCase());
++        SCHEMES.remove(id.toLowerCase(Locale.ENGLISH));
++        SCHEME_LIST.remove(id.toLowerCase(Locale.ENGLISH));
+     }
+ 
+     /**
+@@ -162,7 +163,7 @@ public abstract class AuthPolicy {
+         if (id == null) {
+             throw new IllegalArgumentException("Id may not be null");
+         }
+-        Class clazz = (Class)SCHEMES.get(id.toLowerCase());
++        Class clazz = (Class)SCHEMES.get(id.toLowerCase(Locale.ENGLISH));
+         if (clazz != null) {
+             try {
+                 return (AuthScheme)clazz.newInstance();
+diff --git a/java/org/apache/commons/httpclient/auth/AuthScope.java b/java/org/apache/commons/httpclient/auth/AuthScope.java
+index f5df0a8..b9e6e30 100644
+--- a/java/org/apache/commons/httpclient/auth/AuthScope.java
++++ b/java/org/apache/commons/httpclient/auth/AuthScope.java
+@@ -30,6 +30,8 @@
+ 
+ package org.apache.commons.httpclient.auth;
+ 
++import java.util.Locale;
++
+ import org.apache.commons.httpclient.util.LangUtils;
+ 
+ /** 
+@@ -106,10 +108,10 @@ public class AuthScope {
+     public AuthScope(final String host, int port, 
+         final String realm, final String scheme)
+     {
+-        this.host =   (host == null)   ? ANY_HOST: host.toLowerCase();
++        this.host =   (host == null)   ? ANY_HOST: host.toLowerCase(Locale.ENGLISH);
+         this.port =   (port < 0)       ? ANY_PORT: port;
+         this.realm =  (realm == null)  ? ANY_REALM: realm;
+-        this.scheme = (scheme == null) ? ANY_SCHEME: scheme.toUpperCase();;
++        this.scheme = (scheme == null) ? ANY_SCHEME: scheme.toUpperCase(Locale.ENGLISH);
+     }
+     
+     /** Creates a new credentials scope for the given 
+@@ -294,7 +296,7 @@ public class AuthScope {
+     public String toString() {
+         StringBuffer buffer = new StringBuffer();
+         if (this.scheme != null) {
+-            buffer.append(this.scheme.toUpperCase());
++            buffer.append(this.scheme.toUpperCase(Locale.ENGLISH));
+             buffer.append(' ');
+         }
+         if (this.realm != null) {
+diff --git a/java/org/apache/commons/httpclient/auth/NTLM.java b/java/org/apache/commons/httpclient/auth/NTLM.java
+index a609189..9c9630b 100644
+--- a/java/org/apache/commons/httpclient/auth/NTLM.java
++++ b/java/org/apache/commons/httpclient/auth/NTLM.java
+@@ -32,6 +32,7 @@ package org.apache.commons.httpclient.auth;
+ 
+ import java.security.InvalidKeyException;
+ import java.security.NoSuchAlgorithmException;
++import java.util.Locale;
+ 
+ import javax.crypto.BadPaddingException;
+ import javax.crypto.Cipher;
+@@ -230,8 +231,8 @@ final class NTLM {
+      * @return String the message to add to the HTTP request header.
+      */
+     public String getType1Message(String host, String domain) {
+-        host = host.toUpperCase();
+-        domain = domain.toUpperCase();
++        host = host.toUpperCase(Locale.ENGLISH);
++        domain = domain.toUpperCase(Locale.ENGLISH);
+         byte[] hostBytes = EncodingUtil.getBytes(host, DEFAULT_CHARSET);
+         byte[] domainBytes = EncodingUtil.getBytes(domain, DEFAULT_CHARSET);
+ 
+@@ -334,9 +335,9 @@ final class NTLM {
+ 
+         int ntRespLen = 0;
+         int lmRespLen = 24;
+-        domain = domain.toUpperCase();
+-        host = host.toUpperCase();
+-        user = user.toUpperCase();
++        domain = domain.toUpperCase(Locale.ENGLISH);
++        host = host.toUpperCase(Locale.ENGLISH);
++        user = user.toUpperCase(Locale.ENGLISH);
+         byte[] domainBytes = EncodingUtil.getBytes(domain, DEFAULT_CHARSET);
+         byte[] hostBytes = EncodingUtil.getBytes(host, DEFAULT_CHARSET);
+         byte[] userBytes = EncodingUtil.getBytes(user, credentialCharset);
+@@ -429,7 +430,7 @@ final class NTLM {
+      */
+     private byte[] hashPassword(String password, byte[] nonce)
+         throws AuthenticationException {
+-        byte[] passw = EncodingUtil.getBytes(password.toUpperCase(), credentialCharset);
++        byte[] passw = EncodingUtil.getBytes(password.toUpperCase(Locale.ENGLISH), credentialCharset);
+         byte[] lmPw1 = new byte[7];
+         byte[] lmPw2 = new byte[7];
+ 
+diff --git a/java/org/apache/commons/httpclient/auth/RFC2617Scheme.java b/java/org/apache/commons/httpclient/auth/RFC2617Scheme.java
+index 8177074..8327268 100644
+--- a/java/org/apache/commons/httpclient/auth/RFC2617Scheme.java
++++ b/java/org/apache/commons/httpclient/auth/RFC2617Scheme.java
+@@ -30,6 +30,7 @@
+ 
+ package org.apache.commons.httpclient.auth;
+ 
++import java.util.Locale;
+ import java.util.Map;
+ 
+ /**
+@@ -117,7 +118,7 @@ public abstract class RFC2617Scheme implements AuthScheme {
+         if (this.params == null) {
+             return null;
+         }
+-        return (String) this.params.get(name.toLowerCase());
++        return (String) this.params.get(name.toLowerCase(Locale.ENGLISH));
+     }
+ 
+     /**
+diff --git a/java/org/apache/commons/httpclient/cookie/CookiePolicy.java b/java/org/apache/commons/httpclient/cookie/CookiePolicy.java
+index af97d07..a09c372 100644
+--- a/java/org/apache/commons/httpclient/cookie/CookiePolicy.java
++++ b/java/org/apache/commons/httpclient/cookie/CookiePolicy.java
+@@ -32,6 +32,7 @@ package org.apache.commons.httpclient.cookie;
+ 
+ import java.util.Collections;
+ import java.util.HashMap;
++import java.util.Locale;
+ import java.util.Map;
+ 
+ import org.apache.commons.logging.Log;
+@@ -171,7 +172,7 @@ public abstract class CookiePolicy {
+         if (clazz == null) {
+             throw new IllegalArgumentException("Cookie spec class may not be null");
+         }
+-        SPECS.put(id.toLowerCase(), clazz);
++        SPECS.put(id.toLowerCase(Locale.ENGLISH), clazz);
+     }
+ 
+     /**
+@@ -185,7 +186,7 @@ public abstract class CookiePolicy {
+          if (id == null) {
+              throw new IllegalArgumentException("Id may not be null");
+          }
+-         SPECS.remove(id.toLowerCase());
++         SPECS.remove(id.toLowerCase(Locale.ENGLISH));
+     }
+ 
+     /**
+@@ -205,7 +206,7 @@ public abstract class CookiePolicy {
+         if (id == null) {
+             throw new IllegalArgumentException("Id may not be null");
+         }
+-        Class clazz = (Class)SPECS.get(id.toLowerCase());
++        Class clazz = (Class)SPECS.get(id.toLowerCase(Locale.ENGLISH));
+ 
+         if (clazz != null) {
+             try {
+diff --git a/java/org/apache/commons/httpclient/cookie/CookieSpecBase.java b/java/org/apache/commons/httpclient/cookie/CookieSpecBase.java
+index f97f081..44372bb 100644
+--- a/java/org/apache/commons/httpclient/cookie/CookieSpecBase.java
++++ b/java/org/apache/commons/httpclient/cookie/CookieSpecBase.java
+@@ -34,6 +34,7 @@ import java.util.Collection;
+ import java.util.Date;
+ import java.util.LinkedList;
+ import java.util.List;
++import java.util.Locale;
+ 
+ import org.apache.commons.httpclient.Cookie;
+ import org.apache.commons.httpclient.Header;
+@@ -135,7 +136,7 @@ public class CookieSpecBase implements CookieSpec {
+         if (path.trim().equals("")) {
+             path = PATH_DELIM;
+         }
+-        host = host.toLowerCase();
++        host = host.toLowerCase(Locale.ENGLISH);
+ 
+         String defaultPath = path;    
+         int lastSlashIndex = defaultPath.lastIndexOf(PATH_DELIM);
+@@ -150,7 +151,7 @@ public class CookieSpecBase implements CookieSpec {
+         HeaderElement[] headerElements = null;
+ 
+         boolean isNetscapeCookie = false; 
+-        int i1 = header.toLowerCase().indexOf("expires=");
++        int i1 = header.toLowerCase(Locale.ENGLISH).indexOf("expires=");
+         if (i1 != -1) {
+             i1 += "expires=".length();
+             int i2 = header.indexOf(";", i1);
+@@ -269,7 +270,7 @@ public class CookieSpecBase implements CookieSpec {
+         if (cookie == null) {
+             throw new IllegalArgumentException("Cookie may not be null.");
+         }
+-        final String paramName = attribute.getName().toLowerCase();
++        final String paramName = attribute.getName().toLowerCase(Locale.ENGLISH);
+         String paramValue = attribute.getValue();
+ 
+         if (paramName.equals("path")) {
+@@ -386,7 +387,7 @@ public class CookieSpecBase implements CookieSpec {
+         if (path.trim().equals("")) {
+             path = PATH_DELIM;
+         }
+-        host = host.toLowerCase();
++        host = host.toLowerCase(Locale.ENGLISH);
+         // check version
+         if (cookie.getVersion() < 0) {
+             throw new MalformedCookieException ("Illegal version number " 
+@@ -474,7 +475,7 @@ public class CookieSpecBase implements CookieSpec {
+         if (path.trim().equals("")) {
+             path = PATH_DELIM;
+         }
+-        host = host.toLowerCase();
++        host = host.toLowerCase(Locale.ENGLISH);
+         if (cookie.getDomain() == null) {
+             LOG.warn("Invalid cookie state: domain not specified");
+             return false;
+diff --git a/java/org/apache/commons/httpclient/cookie/NetscapeDraftSpec.java b/java/org/apache/commons/httpclient/cookie/NetscapeDraftSpec.java
+index 874d37d..dc50efb 100644
+--- a/java/org/apache/commons/httpclient/cookie/NetscapeDraftSpec.java
++++ b/java/org/apache/commons/httpclient/cookie/NetscapeDraftSpec.java
+@@ -125,7 +125,7 @@ public class NetscapeDraftSpec extends CookieSpecBase {
+         if (path.trim().equals("")) {
+             path = PATH_DELIM;
+         }
+-        host = host.toLowerCase();
++        host = host.toLowerCase(Locale.ENGLISH);
+ 
+         String defaultPath = path;    
+         int lastSlashIndex = defaultPath.lastIndexOf(PATH_DELIM);
+@@ -174,7 +174,7 @@ public class NetscapeDraftSpec extends CookieSpecBase {
+         if (cookie == null) {
+             throw new IllegalArgumentException("Cookie may not be null.");
+         }
+-        final String paramName = attribute.getName().toLowerCase();
++        final String paramName = attribute.getName().toLowerCase(Locale.ENGLISH);
+         final String paramValue = attribute.getValue();
+ 
+         if (paramName.equals("expires")) {
+@@ -256,7 +256,7 @@ public class NetscapeDraftSpec extends CookieSpecBase {
+      * @return True if the specified domain is "special"
+      */
+     private static boolean isSpecialDomain(final String domain) {
+-        final String ucDomain = domain.toUpperCase();
++        final String ucDomain = domain.toUpperCase(Locale.ENGLISH);
+         if (ucDomain.endsWith(".COM") 
+            || ucDomain.endsWith(".EDU")
+            || ucDomain.endsWith(".NET")
+diff --git a/java/org/apache/commons/httpclient/cookie/RFC2109Spec.java b/java/org/apache/commons/httpclient/cookie/RFC2109Spec.java
+index 829c740..3ceac24 100644
+--- a/java/org/apache/commons/httpclient/cookie/RFC2109Spec.java
++++ b/java/org/apache/commons/httpclient/cookie/RFC2109Spec.java
+@@ -30,6 +30,8 @@
+ 
+ package org.apache.commons.httpclient.cookie;
+ 
++import java.util.Locale;
++
+ import org.apache.commons.httpclient.NameValuePair;
+ import org.apache.commons.httpclient.Cookie;
+ import org.apache.commons.httpclient.util.ParameterFormatter;
+@@ -87,7 +89,7 @@ public class RFC2109Spec extends CookieSpecBase {
+         if (cookie == null) {
+             throw new IllegalArgumentException("Cookie may not be null.");
+         }
+-        final String paramName = attribute.getName().toLowerCase();
++        final String paramName = attribute.getName().toLowerCase(Locale.ENGLISH);
+         final String paramValue = attribute.getValue();
+ 
+         if (paramName.equals("path")) {
+@@ -164,7 +166,7 @@ public class RFC2109Spec extends CookieSpecBase {
+                     + cookie.getDomain() 
+                     + "\" violates RFC 2109: domain must contain an embedded dot");
+             }
+-            host = host.toLowerCase();
++            host = host.toLowerCase(Locale.ENGLISH);
+             if (!host.endsWith(cookie.getDomain())) {
+                 throw new MalformedCookieException(
+                     "Illegal domain attribute \"" + cookie.getDomain() 
+diff --git a/java/org/apache/commons/httpclient/cookie/RFC2965Spec.java b/java/org/apache/commons/httpclient/cookie/RFC2965Spec.java
+index e1a4559..3d5b446 100644
+--- a/java/org/apache/commons/httpclient/cookie/RFC2965Spec.java
++++ b/java/org/apache/commons/httpclient/cookie/RFC2965Spec.java
+@@ -38,6 +38,7 @@ import java.util.HashMap;
+ import java.util.Iterator;
+ import java.util.LinkedList;
+ import java.util.List;
++import java.util.Locale;
+ import java.util.Map;
+ import java.util.StringTokenizer;
+ 
+@@ -275,7 +276,7 @@ public class RFC2965Spec extends CookieSpecBase implements CookieVersionSupport
+                 Map attribmap = new HashMap(parameters.length); 
+                 for (int j = parameters.length - 1; j >= 0; j--) {
+                     NameValuePair param = parameters[j];
+-                    attribmap.put(param.getName().toLowerCase(), param);
++                    attribmap.put(param.getName().toLowerCase(Locale.ENGLISH), param);
+                 }
+                 for (Iterator it = attribmap.entrySet().iterator(); it.hasNext(); ) {
+                     Map.Entry entry = (Map.Entry) it.next();
+@@ -309,7 +310,7 @@ public class RFC2965Spec extends CookieSpecBase implements CookieVersionSupport
+         if (cookie == null) {
+             throw new IllegalArgumentException("Cookie may not be null.");
+         }
+-        final String paramName = attribute.getName().toLowerCase();
++        final String paramName = attribute.getName().toLowerCase(Locale.ENGLISH);
+         final String paramValue = attribute.getValue();
+ 
+         CookieAttributeHandler handler = findAttribHandler(paramName);
+@@ -556,7 +557,7 @@ public class RFC2965Spec extends CookieSpecBase implements CookieVersionSupport
+      * @return
+      */
+     private static String getEffectiveHost(final String host) {
+-        String effectiveHost = host.toLowerCase();
++        String effectiveHost = host.toLowerCase(Locale.ENGLISH);
+         if (host.indexOf('.') < 0) {
+             effectiveHost += ".local";
+         }
+@@ -712,7 +713,7 @@ public class RFC2965Spec extends CookieSpecBase implements CookieVersionSupport
+                 throw new MalformedCookieException(
+                         "Blank value for domain attribute");
+             }
+-            domain = domain.toLowerCase();
++            domain = domain.toLowerCase(Locale.ENGLISH);
+             if (!domain.startsWith(".")) {
+                 // Per RFC 2965 section 3.2.2
+                 // "... If an explicitly specified value does not start with
+@@ -736,12 +737,12 @@ public class RFC2965Spec extends CookieSpecBase implements CookieVersionSupport
+             if (origin == null) {
+                 throw new IllegalArgumentException("Cookie origin may not be null");
+             }
+-            String host = origin.getHost().toLowerCase();
++            String host = origin.getHost().toLowerCase(Locale.ENGLISH);
+             if (cookie.getDomain() == null) {
+                 throw new MalformedCookieException("Invalid cookie state: " +
+                                                    "domain not specified");
+             }
+-            String cookieDomain = cookie.getDomain().toLowerCase();
++            String cookieDomain = cookie.getDomain().toLowerCase(Locale.ENGLISH);
+ 
+             if (cookie.isDomainAttributeSpecified()) {
+                 // Domain attribute must start with a dot
+@@ -799,7 +800,7 @@ public class RFC2965Spec extends CookieSpecBase implements CookieVersionSupport
+             if (origin == null) {
+                 throw new IllegalArgumentException("Cookie origin may not be null");
+             }
+-            String host = origin.getHost().toLowerCase();
++            String host = origin.getHost().toLowerCase(Locale.ENGLISH);
+             String cookieDomain = cookie.getDomain();
+ 
+             // The effective host name MUST domain-match the Domain
+diff --git a/java/org/apache/commons/httpclient/methods/OptionsMethod.java b/java/org/apache/commons/httpclient/methods/OptionsMethod.java
+index 5ce4cb9..4676ec6 100644
+--- a/java/org/apache/commons/httpclient/methods/OptionsMethod.java
++++ b/java/org/apache/commons/httpclient/methods/OptionsMethod.java
+@@ -38,6 +38,7 @@ import org.apache.commons.httpclient.HttpState;
+ import org.apache.commons.logging.LogFactory;
+ import org.apache.commons.logging.Log;
+ import java.util.Enumeration;
++import java.util.Locale;
+ import java.util.StringTokenizer;
+ import java.util.Vector;
+ 
+@@ -169,7 +170,7 @@ public class OptionsMethod
+                 new StringTokenizer(allowHeaderValue, ",");
+             while (tokenizer.hasMoreElements()) {
+                 String methodAllowed =
+-                    tokenizer.nextToken().trim().toUpperCase();
++                    tokenizer.nextToken().trim().toUpperCase(Locale.ENGLISH);
+                 methodsAllowed.addElement(methodAllowed);
+             }
+         }
+diff --git a/java/org/apache/commons/httpclient/params/DefaultHttpParamsFactory.java b/java/org/apache/commons/httpclient/params/DefaultHttpParamsFactory.java
+index e083938..eb8dfa4 100644
+--- a/java/org/apache/commons/httpclient/params/DefaultHttpParamsFactory.java
++++ b/java/org/apache/commons/httpclient/params/DefaultHttpParamsFactory.java
+@@ -32,6 +32,7 @@ package org.apache.commons.httpclient.params;
+ 
+ import java.util.ArrayList;
+ import java.util.Arrays;
++import java.util.Locale;
+ 
+ import org.apache.commons.httpclient.DefaultHttpMethodRetryHandler;
+ import org.apache.commons.httpclient.HttpVersion;
+@@ -115,7 +116,7 @@ public class DefaultHttpParamsFactory implements HttpParamsFactory {
+         } catch (SecurityException ignore) {
+         }
+         if (preemptiveDefault != null) {
+-            preemptiveDefault = preemptiveDefault.trim().toLowerCase();
++            preemptiveDefault = preemptiveDefault.trim().toLowerCase(Locale.ENGLISH);
+             if (preemptiveDefault.equals("true")) {
+                 params.setParameter(HttpClientParams.PREEMPTIVE_AUTHENTICATION, Boolean.TRUE);
+             } else if (preemptiveDefault.equals("false")) {
+diff --git a/java/org/apache/commons/httpclient/protocol/Protocol.java b/java/org/apache/commons/httpclient/protocol/Protocol.java
+index b176db1..3dfb13c 100644
+--- a/java/org/apache/commons/httpclient/protocol/Protocol.java
++++ b/java/org/apache/commons/httpclient/protocol/Protocol.java
+@@ -31,6 +31,7 @@ package org.apache.commons.httpclient.protocol;
+ 
+ import java.util.Collections;
+ import java.util.HashMap;
++import java.util.Locale;
+ import java.util.Map;
+ 
+ import org.apache.commons.httpclient.util.LangUtils;
+@@ -288,7 +289,7 @@ public class Protocol {
+     public int hashCode() {
+         int hash = LangUtils.HASH_SEED;
+         hash = LangUtils.hashCode(hash, this.defaultPort);
+-        hash = LangUtils.hashCode(hash, this.scheme.toLowerCase());
++        hash = LangUtils.hashCode(hash, this.scheme.toLowerCase(Locale.ENGLISH));
+         hash = LangUtils.hashCode(hash, this.secure);
+         hash = LangUtils.hashCode(hash, this.socketFactory);
+         return hash;
+diff --git a/java/org/apache/commons/httpclient/protocol/SSLProtocolSocketFactory.java b/java/org/apache/commons/httpclient/protocol/SSLProtocolSocketFactory.java
+index f176fed..fa0acc7 100644
+--- a/java/org/apache/commons/httpclient/protocol/SSLProtocolSocketFactory.java
++++ b/java/org/apache/commons/httpclient/protocol/SSLProtocolSocketFactory.java
+@@ -31,10 +31,25 @@
+ package org.apache.commons.httpclient.protocol;
+ 
+ import java.io.IOException;
++import java.io.InputStream;
+ import java.net.InetAddress;
+ import java.net.Socket;
+ import java.net.UnknownHostException;
++import java.security.cert.Certificate;
++import java.security.cert.CertificateParsingException;
++import java.security.cert.X509Certificate;
++import java.util.Arrays;
++import java.util.Collection;
++import java.util.Iterator;
++import java.util.LinkedList;
++import java.util.List;
++import java.util.Locale;
++import java.util.StringTokenizer;
++import java.util.regex.Pattern;
+ 
++import javax.net.ssl.SSLException;
++import javax.net.ssl.SSLSession;
++import javax.net.ssl.SSLSocket;
+ import javax.net.ssl.SSLSocketFactory;
+ 
+ import org.apache.commons.httpclient.ConnectTimeoutException;
+@@ -55,6 +70,11 @@ public class SSLProtocolSocketFactory implements SecureProtocolSocketFactory {
+      */
+     private static final SSLProtocolSocketFactory factory = new SSLProtocolSocketFactory();
+     
++    // This is a a sorted list, if you insert new elements do it orderdered.
++    private final static String[] BAD_COUNTRY_2LDS =
++        {"ac", "co", "com", "ed", "edu", "go", "gouv", "gov", "info",
++            "lg", "ne", "net", "or", "org"};
++    
+     /**
+      * Gets an singleton instance of the SSLProtocolSocketFactory.
+      * @return a SSLProtocolSocketFactory
+@@ -79,12 +99,14 @@ public class SSLProtocolSocketFactory implements SecureProtocolSocketFactory {
+         InetAddress clientHost,
+         int clientPort)
+         throws IOException, UnknownHostException {
+-        return SSLSocketFactory.getDefault().createSocket(
++        Socket sslSocket =  SSLSocketFactory.getDefault().createSocket(
+             host,
+             port,
+             clientHost,
+             clientPort
+         );
++        verifyHostName(host, (SSLSocket) sslSocket);
++        return sslSocket;
+     }
+ 
+     /**
+@@ -124,16 +146,19 @@ public class SSLProtocolSocketFactory implements SecureProtocolSocketFactory {
+         }
+         int timeout = params.getConnectionTimeout();
+         if (timeout == 0) {
+-            return createSocket(host, port, localAddress, localPort);
++            Socket sslSocket =  createSocket(host, port, localAddress, localPort);
++            verifyHostName(host, (SSLSocket) sslSocket);
++            return sslSocket;
+         } else {
+             // To be eventually deprecated when migrated to Java 1.4 or above
+-            Socket socket = ReflectionSocketFactory.createSocket(
++            Socket sslSocket = ReflectionSocketFactory.createSocket(
+                 "javax.net.ssl.SSLSocketFactory", host, port, localAddress, localPort, timeout);
+-            if (socket == null) {
+-                socket = ControllerThreadSocketFactory.createSocket(
++            if (sslSocket == null) {
++            	sslSocket = ControllerThreadSocketFactory.createSocket(
+                     this, host, port, localAddress, localPort, timeout);
+             }
+-            return socket;
++            verifyHostName(host, (SSLSocket) sslSocket);
++            return sslSocket;
+         }
+     }
+ 
+@@ -142,10 +167,12 @@ public class SSLProtocolSocketFactory implements SecureProtocolSocketFactory {
+      */
+     public Socket createSocket(String host, int port)
+         throws IOException, UnknownHostException {
+-        return SSLSocketFactory.getDefault().createSocket(
++        Socket sslSocket = SSLSocketFactory.getDefault().createSocket(
+             host,
+             port
+         );
++        verifyHostName(host, (SSLSocket) sslSocket);
++        return sslSocket;
+     }
+ 
+     /**
+@@ -157,13 +184,271 @@ public class SSLProtocolSocketFactory implements SecureProtocolSocketFactory {
+         int port,
+         boolean autoClose)
+         throws IOException, UnknownHostException {
+-        return ((SSLSocketFactory) SSLSocketFactory.getDefault()).createSocket(
++        Socket sslSocket = ((SSLSocketFactory) SSLSocketFactory.getDefault()).createSocket(
+             socket,
+             host,
+             port,
+             autoClose
+         );
++        verifyHostName(host, (SSLSocket) sslSocket);
++        return sslSocket;
+     }
++    
++
++    
++    
++    /**
++     * Verifies that the given hostname in certicifate is the hostname we are trying to connect to
++     * http://www.cvedetails.com/cve/CVE-2012-5783/
++     * @param host
++     * @param ssl
++     * @throws IOException
++     */
++    
++	private static void verifyHostName(String host, SSLSocket ssl)
++			throws IOException {
++		if (host == null) {
++			throw new IllegalArgumentException("host to verify was null");
++		}
++
++		SSLSession session = ssl.getSession();
++		if (session == null) {
++            // In our experience this only happens under IBM 1.4.x when
++            // spurious (unrelated) certificates show up in the server's chain.
++            // Hopefully this will unearth the real problem:
++			InputStream in = ssl.getInputStream();
++			in.available();
++            /*
++                 If you're looking at the 2 lines of code above because you're
++                 running into a problem, you probably have two options:
++
++                    #1.  Clean up the certificate chain that your server
++                         is presenting (e.g. edit "/etc/apache2/server.crt" or
++                         wherever it is your server's certificate chain is
++                         defined).
++
++                                             OR
++
++                    #2.   Upgrade to an IBM 1.5.x or greater JVM, or switch to a
++                          non-IBM JVM.
++              */
++
++            // If ssl.getInputStream().available() didn't cause an exception,
++            // maybe at least now the session is available?
++			session = ssl.getSession();
++			if (session == null) {
++                // If it's still null, probably a startHandshake() will
++                // unearth the real problem.
++				ssl.startHandshake();
++
++                // Okay, if we still haven't managed to cause an exception,
++                // might as well go for the NPE.  Or maybe we're okay now?
++				session = ssl.getSession();
++			}
++		}
++
++		Certificate[] certs = session.getPeerCertificates();
++		verifyHostName(host.trim().toLowerCase(Locale.US),  (X509Certificate) certs[0]);
++	}
++	/**
++	 * Extract the names from the certificate and tests host matches one of them
++	 * @param host
++	 * @param cert
++	 * @throws SSLException
++	 */
++
++	private static void verifyHostName(final String host, X509Certificate cert)
++			throws SSLException {
++        // I'm okay with being case-insensitive when comparing the host we used
++        // to establish the socket to the hostname in the certificate.
++        // Don't trim the CN, though.
++        
++		String cn = getCN(cert);
++		String[] subjectAlts = getDNSSubjectAlts(cert);
++		verifyHostName(host, cn.toLowerCase(Locale.US), subjectAlts);
++
++	}
++
++	/**
++	 * Extract all alternative names from a certificate.
++	 * @param cert
++	 * @return
++	 */
++	private static String[] getDNSSubjectAlts(X509Certificate cert) {
++		LinkedList subjectAltList = new LinkedList();
++		Collection c = null;
++		try {
++			c = cert.getSubjectAlternativeNames();
++		} catch (CertificateParsingException cpe) {
++			// Should probably log.debug() this?
++			cpe.printStackTrace();
++		}
++		if (c != null) {
++			Iterator it = c.iterator();
++			while (it.hasNext()) {
++				List list = (List) it.next();
++				int type = ((Integer) list.get(0)).intValue();
++				// If type is 2, then we've got a dNSName
++				if (type == 2) {
++					String s = (String) list.get(1);
++					subjectAltList.add(s);
++				}
++			}
++		}
++		if (!subjectAltList.isEmpty()) {
++			String[] subjectAlts = new String[subjectAltList.size()];
++			subjectAltList.toArray(subjectAlts);
++			return subjectAlts;
++		} else {
++			return new String[0];
++		}
++	        
++	}
++	/**
++	 * Verifies
++	 * @param host
++	 * @param cn
++	 * @param subjectAlts
++	 * @throws SSLException
++	 */
++
++	private static void verifyHostName(final String host, String cn, String[] subjectAlts)throws SSLException{
++		StringBuffer cnTested = new StringBuffer();
++
++		for (int i = 0; i < subjectAlts.length; i++){
++			String name = subjectAlts[i];
++			if (name != null) {
++				name = name.toLowerCase();
++				if (verifyHostName(host, name)){
++					return;
++				}
++				cnTested.append("/").append(name);
++			}				
++		}
++		if (cn != null && verifyHostName(host, cn)){
++			return;
++		}
++		cnTested.append("/").append(cn);
++		throw new SSLException("hostname in certificate didn't match: <"
++					+ host + "> != <" + cnTested + ">");
++		
++	}		
++	
++	private static boolean verifyHostName(final String host, final String cn){
++		if (doWildCard(cn) && !isIPAddress(host)) {
++			return matchesWildCard(cn, host);
++		} 
++		return host.equalsIgnoreCase(cn);		
++	}
++    private static boolean doWildCard(String cn) {
++		// Contains a wildcard
++		// wildcard in the first block
++    	// not an ipaddress (ip addres must explicitily be equal)
++    	// not using 2nd level common tld : ex: not for *.co.uk
++    	String parts[] = cn.split("\\.");
++    	return parts.length >= 3 &&
++    			parts[0].endsWith("*") &&
++    			acceptableCountryWildcard(cn) &&
++    			!isIPAddress(cn);
++    }
++    
++    
++	private static final Pattern IPV4_PATTERN = 
++			Pattern.compile("^(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)(\\.(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)){3}$");
++
++	private static final Pattern IPV6_STD_PATTERN = 
++			Pattern.compile("^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$");
++
++	private static final Pattern IPV6_HEX_COMPRESSED_PATTERN = 
++			Pattern.compile("^((?:[0-9A-Fa-f]{1,4}(?::[0-9A-Fa-f]{1,4})*)?)::((?:[0-9A-Fa-f]{1,4}(?::[0-9A-Fa-f]{1,4})*)?)$");
++
++
++	private static boolean isIPAddress(final String hostname) {
++		return hostname != null
++				&& (
++						IPV4_PATTERN.matcher(hostname).matches()
++						|| IPV6_STD_PATTERN.matcher(hostname).matches() 
++						|| IPV6_HEX_COMPRESSED_PATTERN.matcher(hostname).matches()
++		);
++
++	}
++
++	private static boolean acceptableCountryWildcard(final String cn) {
++		// The CN better have at least two dots if it wants wildcard action,
++		// but can't be [*.co.uk] or [*.co.jp] or [*.org.uk], etc...
++		// The [*.co.uk] problem is an interesting one. Should we just
++		// hope that CA's would never foolishly allow such a
++		// certificate to happen?
++    	
++		String[] parts = cn.split("\\.");
++		// Only checks for 3 levels, with country code of 2 letters.
++		if (parts.length > 3 || parts[parts.length - 1].length() != 2) {
++			return true;
++		}
++		String countryCode = parts[parts.length - 2];
++		return Arrays.binarySearch(BAD_COUNTRY_2LDS, countryCode) < 0;
++	}
++
++	private static boolean matchesWildCard(final String cn,
++			final String hostName) {
++		String parts[] = cn.split("\\.");
++		boolean match = false;
++		String firstpart = parts[0];
++		if (firstpart.length() > 1) {
++			// server∗
++			// e.g. server
++			String prefix =  firstpart.substring(0, firstpart.length() - 1);
++			// skipwildcard part from cn
++			String suffix = cn.substring(firstpart.length()); 
++			// skip wildcard part from host
++			String hostSuffix = hostName.substring(prefix.length());			
++			match = hostName.startsWith(prefix) && hostSuffix.endsWith(suffix);
++		} else {
++			match = hostName.endsWith(cn.substring(1));
++		}
++		if (match) {
++			// I f we're in strict mode ,
++			// [ ∗.foo.com] is not allowed to match [a.b.foo.com]
++			match = countDots(hostName) == countDots(cn);
++		}
++		return match;
++	}
++
++	private static int countDots(final String data) {
++		int dots = 0;
++		for (int i = 0; i < data.length(); i++) {
++			if (data.charAt(i) == '.') {
++				dots += 1;
++			}
++		}
++		return dots;
++	}
++
++	private static String getCN(X509Certificate cert) {
++        // Note:  toString() seems to do a better job than getName()
++        //
++        // For example, getName() gives me this:
++        // 1.2.840.113549.1.9.1=#16166a756c6975736461766965734063756362632e636f6d
++        //
++        // whereas toString() gives me this:
++        // EMAILADDRESS=juliusdavies@cucbc.com        
++		String subjectPrincipal = cert.getSubjectX500Principal().toString();
++		
++		return getCN(subjectPrincipal);
++
++	}
++	private static String getCN(String subjectPrincipal) {
++		StringTokenizer st = new StringTokenizer(subjectPrincipal, ",");
++		while(st.hasMoreTokens()) {
++			String tok = st.nextToken().trim();
++			if (tok.length() > 3) {
++				if (tok.substring(0, 3).equalsIgnoreCase("CN=")) {
++					return tok.substring(3);
++				}
++			}
++		}
++		return null;
++	}
+ 
+     /**
+      * All instances of SSLProtocolSocketFactory are the same.
+diff --git a/test/org/apache/commons/httpclient/TestExceptions.java b/test/org/apache/commons/httpclient/TestExceptions.java
+index cb3b297..77c0e25 100644
+--- a/test/org/apache/commons/httpclient/TestExceptions.java
++++ b/test/org/apache/commons/httpclient/TestExceptions.java
+@@ -34,6 +34,7 @@ import java.io.IOException;
+ import java.io.PrintStream;
+ import java.io.PrintWriter;
+ import java.io.StringWriter;
++import java.util.Locale;
+ 
+ import junit.framework.Test;
+ import junit.framework.TestCase;
+@@ -125,7 +126,7 @@ public class TestExceptions extends TestCase
+         
+         Throwable cause = exception.getCause();
+         if (cause != null) {
+-            assertTrue("Contains 'cause'", stackTrace.toLowerCase().indexOf("cause") != -1);
++            assertTrue("Contains 'cause'", stackTrace.toLowerCase(Locale.ENGLISH).indexOf("cause") != -1);
+             assertTrue("Contains cause.toString()", stackTrace.indexOf(cause.toString()) != -1);
+         }
+     }
+diff --git a/test/org/apache/commons/httpclient/TestHeaderOps.java b/test/org/apache/commons/httpclient/TestHeaderOps.java
+index 63a57f6..d433ae3 100644
+--- a/test/org/apache/commons/httpclient/TestHeaderOps.java
++++ b/test/org/apache/commons/httpclient/TestHeaderOps.java
+@@ -32,6 +32,7 @@ package org.apache.commons.httpclient;
+ import java.io.IOException;
+ import java.net.InetAddress;
+ import java.util.Iterator;
++import java.util.Locale;
+ 
+ import junit.framework.Test;
+ import junit.framework.TestSuite;
+@@ -83,7 +84,7 @@ public class TestHeaderOps extends HttpClientTestBase {
+             for (Iterator i = request.getHeaderIterator(); i.hasNext(); ) {
+                 Header header = (Header) i.next();
+                 buffer.append("name=\"");
+-                buffer.append(header.getName().toLowerCase());
++                buffer.append(header.getName().toLowerCase(Locale.ENGLISH));
+                 buffer.append("\";value=\"");
+                 buffer.append(header.getValue());
+                 buffer.append("\"\r\n");
+diff --git a/test/org/apache/commons/httpclient/TestStreams.java b/test/org/apache/commons/httpclient/TestStreams.java
+index 0ac2049..fd1bb39 100644
+--- a/test/org/apache/commons/httpclient/TestStreams.java
++++ b/test/org/apache/commons/httpclient/TestStreams.java
+@@ -112,6 +112,23 @@ public class TestStreams extends TestCase {
+         }
+     }
+ 
++    public void testCorruptChunkedInputStream2() throws IOException {
++        //truncated chunk
++        String corrupInput = "3\r\n11";
++        HttpMethod method = new FakeHttpMethod();
++
++        InputStream in = new ChunkedInputStream(new ByteArrayInputStream(
++            EncodingUtil.getBytes(corrupInput, CONTENT_CHARSET)), method);
++        byte[] buffer = new byte[300];
++        assertEquals(2, in.read(buffer));
++        try {
++            in.read(buffer);
++            fail("Should have thrown exception");
++        } catch(IOException e) {
++            /* expected exception */
++        }
++    }
++
+     public void testEmptyChunkedInputStream() throws IOException {
+         String input = "0\r\n";
+         HttpMethod method = new FakeHttpMethod();

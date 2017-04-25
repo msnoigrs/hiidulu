@@ -4,13 +4,13 @@
 EAPI=5
 JAVA_PKG_IUSE="doc examples source test"
 
-ESVN_REPO_URI="https://svn.apache.org/repos/asf/httpcomponents/oac.hc3x/trunk/"
+#ESVN_REPO_URI="https://svn.apache.org/repos/asf/httpcomponents/oac.hc3x/trunk/"
 
-inherit subversion java-pkg-2 java-ant-2
+inherit java-pkg-2 java-ant-2
 
 DESCRIPTION="The Jakarta Commons HttpClient library"
 HOMEPAGE="http://hc.apache.org/"
-SRC_URI=""
+SRC_URI="mirror://apache/httpcomponents/${PN}/source/${PN}-3.1-src.tar.gz"
 LICENSE="Apache-2.0"
 SLOT="3"
 KEYWORDS="~amd64 ~ppc ~ppc64 ~x86 ~x86-fbsd"
@@ -22,15 +22,21 @@ RESTRICT="test"
 COMMON_DEPEND="
 	dev-java/jcl-over-slf4j
 	dev-java/commons-codec"
-RDEPEND=">=virtual/jre-1.5
+RDEPEND=">=virtual/jre-1.6
 	${COMMON_DEPEND}"
-DEPEND=">=virtual/jdk-1.5
+DEPEND=">=virtual/jdk-1.6
 	test? ( dev-java/ant-junit:0 )
 	${COMMON_DEPEND}"
+
+S="${WORKDIR}/${PN}-3.1"
 
 JAVA_ANT_ENCODING="iso-8859-1"
 
 java_prepare() {
+	cd src
+	epatch "${FILESDIR}/3.9999-svn.patch"
+
+	cd ..
 	# the generated docs go to docs/api
 	rm -rf docs/apidocs
 
