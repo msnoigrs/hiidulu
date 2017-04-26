@@ -10,9 +10,6 @@ EGIT_REPO_URI="https://github.com/apache/commons-vfs.git"
 
 inherit git-r3 java-pkg-2 java-ant-2
 
-#ESVN_OPTIONS="-r${PV/*_pre}"
-ESVN_REPO_URI="http://svn.apache.org/repos/asf/commons/proper/vfs/branches/vfs-1-trunk"
-
 DESCRIPTION="a single API for accessing various different file systems"
 HOMEPAGE="http://jakarta.apache.org/commons/vfs/"
 SRC_URI=""
@@ -29,9 +26,9 @@ COMMON_DEP="
 	dev-java/jcl-over-slf4j
 "
 
-RDEPEND=">=virtual/jre-1.5
+RDEPEND=">=virtual/jre-1.6
 	${COMMON_DEP}"
-DEPEND=">=virtual/jdk-1.5
+DEPEND=">=virtual/jdk-1.6
 	dev-java/ant-core
 	${COMMON_DEP}"
 

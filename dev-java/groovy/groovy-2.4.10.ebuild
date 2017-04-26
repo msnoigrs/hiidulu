@@ -47,7 +47,7 @@ JAVA_GENTOO_CLASSPATH="
 	commons-cli-1
 "
 
-S="${WORKDIR}/incubator-${PN}-${MY_P}"
+S="${WORKDIR}/${PN}-${MY_P}"
 
 # ExceptionUtil filename.
 EU="ExceptionUtils.java"

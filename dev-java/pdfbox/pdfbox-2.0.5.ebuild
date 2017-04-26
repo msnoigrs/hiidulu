@@ -3,7 +3,7 @@
 
 EAPI=5
 
-BC_SLOT="1.54"
+BC_SLOT="1.56"
 ADOBE_FILES="pcfi-2010.08.09.jar"
 JAVA_PKG_IUSE="doc source"
 

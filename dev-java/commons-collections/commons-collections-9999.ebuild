@@ -1,13 +1,12 @@
-# Copyright 1999-2014 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
 
-EAPI="5"
+EAPI=5
 JAVA_PKG_IUSE="doc source test"
 
-ESVN_REPO_URI="https://svn.apache.org/repos/asf/commons/proper/collections/trunk"
+EGIT_REPO_URI="https://github.com/apache/commons-collections.git"
 
-inherit subversion java-pkg-2 java-ant-2 eutils
+inherit git-r3 java-pkg-2 java-ant-2
 
 DESCRIPTION="Jakarta-Commons Collections Component"
 HOMEPAGE="http://commons.apache.org/collections/"
@@ -51,7 +50,6 @@ src_install() {
 		java-pkg_newjar build/${PN}-testframework*.jar \
 			${PN}-testframework.jar
 
-	dodoc README.txt || die
 	java-pkg_dohtml *.html || die
 	if use doc; then
 		java-pkg_dojavadoc build/docs/apidocs

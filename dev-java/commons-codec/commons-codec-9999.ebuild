@@ -1,18 +1,17 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
 
-EAPI="4"
+EAPI=5
+
+EGIT_REPO_URI="https://github.com/apache/commons-codec.git"
+
 JAVA_PKG_IUSE="doc source test"
 
-ESVN_REPO_URI="https://svn.apache.org/repos/asf/commons/proper/codec/trunk"
-
-inherit subversion java-pkg-2 java-ant-2
+inherit git-r3 java-pkg-2 java-ant-2
 
 DESCRIPTION="Implementations of common encoders and decoders in Java."
 HOMEPAGE="http://jakarta.apache.org/commons/codec/"
 SRC_URI=""
-
 LICENSE="Apache-2.0"
 SLOT="0"
 KEYWORDS="~amd64 ~ppc ~ppc64 ~x86 ~x86-fbsd"
