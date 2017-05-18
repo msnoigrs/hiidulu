@@ -37,25 +37,23 @@
 
    <target name="compile" depends="init">
       <javac srcdir="${src}" destdir="${build}" classpathref="lib.classpath" debug="on"/>
-      <javac srcdir="${src}-apache" destdir="${build}" classpathref="lib.classpath" debug="on"/>
    </target>
 
    <target name="manifest" depends="init">
-      <manifest file="${basedir}/MANIFEST.MF" mode="update">
+      <manifest file="${build}/META-INF/MANIFEST.MF" mode="update">
          <attribute name="Built-By" value="Gentoo Portage"/>
       </manifest>
    </target>
    
    <target name="jar" depends="compile,manifest">
       <copy todir="${build}/META-INF/services">
-         <fileset dir="${basedir}/resource/META-INF/services">
+         <fileset dir="${basedir}">
             <include name="org.relaxng.datatype.DatatypeLibraryFactory"/>
          </fileset>
       </copy>
-      <jar jarfile="${dist}/${jar}" manifest="${basedir}/MANIFEST.MF">
+      <jar jarfile="${dist}/${jar}" manifest="${build}/META-INF/MANIFEST.MF">
          <fileset dir="${build}"/>
          <fileset dir="${src}" includes="**/*.properties"/>
-         <fileset dir="${src}-apache" includes="**/*.properties"/>
       </jar>
    </target>
 
