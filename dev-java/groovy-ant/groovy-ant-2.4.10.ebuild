@@ -76,14 +76,14 @@ groovy_compile() {
 	jar ${jar_args} -C ${classes} . || die "jar failed"
 }
 
-# Add target/classes to the CP as we're generating an extra class there.
-JAVA_GENTOO_CLASSPATH_EXTRA="$(java-pkg_getjar --build-only ant-core ant.jar):target/classes"
-
-JAVA_SRC_DIR="src/main/java"
-
 src_compile() {
 	mkdir -p target/classes || die
 	cp -r src/main/resources/org target/classes || die
+
+	# Add target/classes to the CP as we're generating an extra class there.
+	JAVA_GENTOO_CLASSPATH_EXTRA="$(java-pkg_getjar --build-only ant-core ant.jar):target/classes"
+	JAVA_SRC_DIR="src/main/java"
+
 	java-pkg-simple_src_compile
 	groovy_compile
 }
