@@ -1,6 +1,5 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Id$
 
 EAPI=5
 JAVA_PKG_IUSE="doc source"
@@ -24,10 +23,10 @@ COMMON_DEP="dev-java/bcel:0
 	dev-java/qdox:1.12
 	dev-java/log4j-over-slf4j"
 
-DEPEND=">=virtual/jdk-1.5
+DEPEND=">=virtual/jdk-1.6
 	dev-java/ant-core:0
 	${COMMON_DEP}"
-RDEPEND=">=virtual/jre-1.5
+RDEPEND=">=virtual/jre-1.6
 	dev-java/slf4j-api
 	dev-java/logback-core
 	dev-java/logback-classic
