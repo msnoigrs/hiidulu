@@ -1,12 +1,11 @@
-# Copyright 1999-2012 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
 
-EAPI=4
+EAPI=5
 
 JAVA_PKG_IUSE="doc source test"
 
-inherit eutils java-pkg-2 java-ant-2 prefix
+inherit eutils java-pkg-2 java-ant-2 prefix user
 
 MY_P="apache-${P}-src"
 
@@ -16,22 +15,22 @@ SRC_URI="mirror://apache/${PN}/tomcat-7/v${PV}/src/${MY_P}.tar.gz"
 
 LICENSE="Apache-2.0"
 SLOT="7"
-KEYWORDS="~amd64 ~ppc ~ppc64 ~x86 ~x86-fbsd"
+KEYWORDS="~amd64 ~ppc ~ppc64 ~x86 ~x86-fbsd ~x86-freebsd ~amd64-linux ~x86-linux ~x86-solaris"
 IUSE="extra-webapps dbcp"
 
 RESTRICT="test" # can we run them on a production system?
 
-ECJ_SLOT="3.7"
+ECJ_SLOT="4.4"
 SAPI_SLOT="3.0"
 
 COMMON_DEP="
 	dev-java/eclipse-ecj:${ECJ_SLOT}
-	~dev-java/tomcat-servlet-api-${PV}
+	~dev-java/tomcat-servlet-api-${PV}:3.0
 	dbcp? ( dev-java/tomcat-dbcp:${SLOT}
-		dev-java/geronimo-spec-jta )
+			dev-java/geronimo-spec-jta:0 )
 	extra-webapps? ( dev-java/jakarta-jstl:0 )"
 RDEPEND="${COMMON_DEP}
-	!<dev-java/tomcat-native-1.1.20
+	!<dev-java/tomcat-native-1.1.24
 	>=virtual/jre-1.6"
 DEPEND="${COMMON_DEP}
 	>=virtual/jdk-1.6
@@ -50,7 +49,7 @@ pkg_setup() {
 }
 
 java_prepare() {
-	find -name '*.jar' -exec rm -v {} + || die
+	find -name '*.jar' -type f -exec rm -v {} + || die
 	epatch "${FILESDIR}/${P}-build.xml.patch"
 
 	# For use of catalina.sh in netbeans
@@ -85,6 +84,7 @@ src_install() {
 	java-pkg_dojar output/build/bin/*.jar
 	exeinto "${dest}"/bin
 	doexe output/build/bin/*.sh
+	doexe "${FILESDIR}/tomcat.sh"
 
 	java-pkg_jarinto "${dest}"/lib
 	java-pkg_dojar output/build/lib/*.jar
@@ -118,17 +118,32 @@ src_install() {
 	### rc ###
 
 	cp "${FILESDIR}"/tomcat{.conf,.init,-instance-manager.bash} "${T}" || die
+	cp "${FILESDIR}"/tomcat.service "${T}" || die
+	cp "${FILESDIR}"/setup-daemon.sh "${T}" || die
 	eprefixify "${T}"/tomcat{.conf,.init,-instance-manager.bash}
 	sed -i -e "s|@SLOT@|${SLOT}|g" "${T}"/tomcat{.conf,.init,-instance-manager.bash} || die
+	sed -i -e "s|@SLOT@|${SLOT}|g" "${T}"/tomcat.service || die
+	sed -i -e "s|@SLOT@|${SLOT}|g" "${T}"/setup-daemon.sh || die
 
 	insinto "${dest}"/gentoo
 	doins "${T}"/tomcat.conf
+	doins "${T}"/tomcat.service
+	doins "${FILESDIR}"/tomcat.socket
+	doins "${FILESDIR}"/server.xml
+	doins "${FILESDIR}"/tomcat-users.xml
+	doins "${FILESDIR}"/manager.xml
+	doins "${FILESDIR}"/host-manager.xml
 	exeinto "${dest}"/gentoo
 	doexe "${T}"/tomcat{.init,-instance-manager.bash}
+	doexe "${T}"/setup-daemon.sh
 }
 
 pkg_postinst() {
-	elog "For how to deploy a server instance run:"
+	elog "New ebuilds of Tomcat support running multiple instances. If you used prior version"
+	elog "of Tomcat (<7.0.32), you have to migrate your existing instance to work with new Tomcat."
+	elog "You can find more information at https://wiki.gentoo.org/wiki/Apache_Tomcat"
+
+	elog "To manage Tomcat instances, run:"
 	elog "  ${EPREFIX}/usr/share/${PN}-${SLOT}/gentoo/tomcat-instance-manager.bash --help"
 
 #	ewarn "tomcat-dbcp.jar is not built at this time. Please fetch jar"
