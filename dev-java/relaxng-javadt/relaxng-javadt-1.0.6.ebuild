@@ -1,8 +1,7 @@
-# Copyright 1999-2012 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
 
-EAPI="4"
+EAPI=5
 
 JAVA_PKG_IUSE="source doc"
 
@@ -11,7 +10,9 @@ inherit java-pkg-2 java-ant-2
 DESCRIPTION="RelaxNG java datatype"
 HOMEPAGE="http://jaxb.dev.java.net/"
 #SRC_URI="http://java.net/projects/jaxb/sources/version1/content/trunk/jaxb-ri/tools/lib/src/relaxng.javadt.src.zip?rev=197"
-SRC_URI="http://java.net/projects/jaxb/sources/version1/content/trunk/jaxb-ri/tools/lib/src/relaxng.javadt.src.zip"
+#SRC_URI="http://java.net/projects/jaxb/sources/version1/content/trunk/jaxb-ri/tools/lib/src/relaxng.javadt.src.zip"
+MY_TARBALL="relaxng.javadt.src.zip"
+SRC_URI="https://osdn.net/frs/chamber_redir.php?m=ymu&f=%2Fusers%2F13%2F13637%2F${MY_TARBALL} -> ${MY_TARBALL}"
 
 LICENSE="CDDL"
 SLOT="0"
@@ -20,9 +21,9 @@ IUSE=""
 
 COMMON_DEP="
 	dev-java/relaxng-datatype"
-DEPEND=">=virtual/jdk-1.5
+DEPEND=">=virtual/jdk-1.6
 	${COMMON_DEP}"
-RDEPEND=">=virtual/jre-1.5
+RDEPEND=">=virtual/jre-1.6
 	${COMMON_DEP}"
 
 S="${WORKDIR}"

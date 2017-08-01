@@ -1,8 +1,8 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
 
-EAPI="4"
+EAPI=5
+
 JAVA_PKG_IUSE="doc source"
 JAVA_ANT_ENCODING="iso-8859-1"
 
@@ -13,14 +13,15 @@ RI_URI="http://download.oracle.com/otndocs/jcp/portlet-2.0-fr-oth-JSpec/"
 DESCRIPTION="Portlet API implementation of JSR 286"
 HOMEPAGE="http://jcp.org/aboutJava/communityprocess/final/jsr286/index.html"
 #SRC_URI="http://hnsp.inf-bb.uni-jena.de/download/RI_JSR286.zip"
-SRC_URI="portlet-2.0-fr.zip"
+MY_TARBALL="portlet-2.0-fr.zip"
+SRC_URI="https://osdn.net/frs/chamber_redir.php?m=ymu&f=%2Fusers%2F13%2F13638%2F${MY_TARBALL} -> ${MY_TARBALL}"
 
 LICENSE="Apache-2.0"
 SLOT="2"
 KEYWORDS="~x86 ~amd64"
 IUSE=""
 
-RESTRICT="fetch strip"
+RESTRICT="strip"
 
 CDEPEND="java-virtuals/servlet-api:3.0"
 DEPEND=">=virtual/jdk-1.6
@@ -29,15 +30,6 @@ RDEPEND=">=virtual/jre-1.6
 	${CDEPEND}"
 
 S="${WORKDIR}/portlet2-api"
-
-pkg_nofetch() {
-	if [[ ! -f "${DISTDIR}/${SRC_URI}" ]]; then
-		einfo "Download the following files:"
-		einfo "  ${SRC_URI}"
-		einfo "at '${RI_URI}'"
-		einfo "and move them to '${DISTDIR}'"
-	fi
-}
 
 src_unpack() {
 	unpack ${A}

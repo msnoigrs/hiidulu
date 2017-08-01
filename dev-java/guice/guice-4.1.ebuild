@@ -7,24 +7,24 @@ JAVA_PKG_IUSE="doc source"
 
 inherit eutils java-pkg-2 java-ant-2
 
-DESCRIPTION="Guice (pronounced'juice') is a lightweight dependency injection framework for Java 5"
-HOMEPAGE="http://code.google.com/p/google-guice/"
-SRC_URI="https://github.com/google/guice/archive/4.0.zip -> ${P}-src.zip"
+DESCRIPTION="A lightweight dependency injection framework for Java 5 and above"
+HOMEPAGE="http://github.com/google/guice/"
+SRC_URI="https://github.com/google/guice/archive/${PV}.zip -> ${P}-src.zip"
 LICENSE="Apache-2.0"
-SLOT="3"
+SLOT="4"
 KEYWORDS=""
-IUSE="servletapi spring struts2"
+IUSE="servletapi spring struts2 dagger"
 
 COMMON_DEP="dev-java/aopalliance:1
 	dev-java/geronimo-spec-jpa
 	dev-java/javax-inject
 	dev-java/asm:5
 	dev-java/cglib:3
-	dev-java/guava:18
+	dev-java/guava:20
 	servletapi? ( dev-java/tomcat-servlet-api:3.0 )"
-DEPEND=">=virtual/jdk-1.6
+DEPEND=">=virtual/jdk-1.7
 	${COMMON_DEP}"
-RDEPEND=">=virtual/jre-1.6
+RDEPEND=">=virtual/jre-1.7
 	${COMMON_DEP}"
 
 RESTRICT="test"
@@ -63,6 +63,14 @@ java_prepare() {
 	if ! use servletapi; then
 		rm -rv extensions/servlet || die
 		mkdir -p extensions/servlet/lib/build || die
+	else
+		rm -fv ${S}/extensions/servlet/lib/build/*.jar
+	fi
+	if ! use dagger; then
+		rm -rv extensions/dagger-adapter || die
+		mkdir -p extensions/dagger-adapter/lib/build || die
+	else
+		rm -fv ${S}/extensions/dagger-adapter/lib/*.jar
 	fi
 
 	einfo "Removing bundled jars and classes"
@@ -72,17 +80,17 @@ java_prepare() {
 	rm -fv ${S}/lib/build/*.jar
 	mv ${S}/bnd-0.0.*.jar ${S}/lib/build/
 	#mv ${S}/jarjar-1.0rc8.jar ${S}/lib/build/
-	rm -fv ${S}/lib/build/jdiff/*.jar
+	#rm -fv ${S}/lib/build/jdiff/*.jar
 	#rm -rf ${S}/javadoc
 	rm -fv ${S}/extensions/persist/lib/*.jar
 
 	cd ${S}/lib
 	java-pkg_jar-from aopalliance-1 aopalliance.jar
 	java-pkg_jar-from javax-inject javax-inject.jar javax.inject.jar
-	java-pkg_jar-from guava-18 guava.jar guava-16.0.1.jar
+	java-pkg_jar-from guava-20 guava.jar guava-19.0.jar
 
 	cd ${S}/lib/build
-	java-pkg_jar-from --build-only cglib-3 cglib.jar cglib-3.1.jar
+	java-pkg_jar-from --build-only cglib-3 cglib.jar cglib-3.2.jar
 	java-pkg_jar-from --build-only jarjar-1 jarjar.jar jarjar-1.1.jar
 	java-pkg_jar-from --build-only asm-5 asm.jar asm-5.0.3.jar
 
@@ -91,6 +99,11 @@ java_prepare() {
 
 	cd ${S}/extensions/persist/build/lib
 	java-pkg_jar-from tomcat-servlet-api-3.0 servlet-api.jar servlet-api-2.5.jar
+
+	if use servletapi; then
+		cd ${S}/extensions/servlet/lib/build
+		java-pkg_jar-from tomcat-servlet-api-3.0 servlet-api.jar servlet-api-2.5.jar
+	fi
 }
 
 src_compile() {
@@ -104,9 +117,11 @@ src_compile() {
 	eant -f extensions/persist/build.xml jar
 	eant -f extensions/service/build.xml jar
 	eant -f extensions/throwingproviders/build.xml jar
+	eant -f extensions/testlib/build.xml jar
 	use spring && eant -f extensions/spring/build.xml jar
 	use struts2 && eant -f extensions/struts2/build.xml jar
 	use servletapi && eant -f extensions/servlet/build.xml jar
+	use dagger && eant -f extensions/dagger-adapter/build.xml jar
 }
 
 src_install() {
@@ -121,7 +136,7 @@ src_install() {
 	#use doc && java-pkg_dojavadoc build/javadoc
 	if use source; then
 		java-pkg_dosrc src/com
-		for ext in assistedinject grapher jmx jndi multibindings persist service throwingproviders
+		for ext in assistedinject grapher jmx jndi multibindings persist service throwingproviders testlib
 		do
 			java-pkg_dosrc extensions/${ext}/src/com
 		done
@@ -133,6 +148,9 @@ src_install() {
 		fi
 		if use servletapi; then
 			java-pkg_dosrc extensions/servlet/src/com
+		fi
+		if use dagger; then
+			java-pkg_dosrc extensions/dagger-adapter/src/com
 		fi
 	fi
 }
