@@ -1,18 +1,17 @@
-# Copyright 1999-2012 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
 
-EAPI="4"
+EAPI=5
+
 JAVA_PKG_IUSE="doc source"
 
-ESVN_REPO_URI="https://svn.java.net/svn/jaxb~version2/trunk/txw2"
-
-inherit subversion java-pkg-2 java-ant-2
+inherit java-pkg-2 java-ant-2
 
 DESCRIPTION="TXW is a library that allows you to write XML documents."
 HOMEPAGE="https://txw.dev.java.net/"
 #SRC_URI="https://txw.dev.java.net/files/documents/3310/54821/txw2-${PV}.zip"
-SRC_URI=""
+MY_TARBALL="${P}.tar.gz"
+SRC_URI="https://osdn.net/frs/chamber_redir.php?m=iij&f=%2Fusers%2F13%2F13646%2F${MY_TARBALL} -> ${MY_TARBALL}"
 
 LICENSE="|| ( CDDL GPL-2 )"
 SLOT="0"
@@ -25,10 +24,10 @@ COMMON_DEP="dev-java/xsom:0
 	dev-java/args4j:1
 	dev-java/relaxng-datatype:0
 	java-virtuals/stax-api"
-DEPEND=">=virtual/jdk-1.5
+DEPEND=">=virtual/jdk-1.6
 	dev-java/ant-core
 	${COMMON_DEP}"
-RDEPEND=">=virtual/jre-1.5
+RDEPEND=">=virtual/jre-1.6
 	${COMMON_DEP}"
 
 java_prepare() {

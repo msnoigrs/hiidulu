@@ -1,12 +1,11 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
 
-EAPI="4"
+EAPI=5
 JAVA_PKG_IUSE="doc source"
-ESVN_REPO_URI="https://svn.apache.org/repos/asf/commons/proper/fileupload/trunk"
+EGIT_REPO_URI="https://github.com/apache/commons-fileupload.git"
 
-inherit subversion eutils java-pkg-2 java-ant-2
+inherit git-r3 java-pkg-2 java-ant-2
 
 DESCRIPTION="A Java library for adding robust, high-performance, file upload capability to your servlets and web applications."
 HOMEPAGE="http://commons.apache.org/fileupload/"
@@ -14,7 +13,7 @@ SRC_URI=""
 COMMON_DEPEND="dev-java/commons-io:1"
 DEPEND=">=virtual/jdk-1.6
 	java-virtuals/servlet-api:3.0
-	dev-java/portletapi:2
+	dev-java/portletapi:2.0
 	test? (
 		dev-java/ant-junit
 		=dev-java/junit-3.8*
@@ -38,7 +37,7 @@ java_prepare() {
 	mkdir -p "${S}/lib" || die
 	cd "${S}/lib"
 	java-pkg_jar-from commons-io-1
-	java-pkg_jar-from --build-only portletapi-2
+	java-pkg_jar-from --build-only portletapi-2.0
 	java-pkg_jar-from --build-only servlet-api-3.0 servlet-api.jar
 }
 

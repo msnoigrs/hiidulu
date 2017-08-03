@@ -1,20 +1,18 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
 
-EAPI="2"
+EAPI=5
 JAVA_PKG_IUSE="doc source"
 
-ESVN_REPO_URI="https://svn.java.net/svn/xsom~sources/trunk"
-
 WANT_ANT_TASKS="ant-nodeps ant-antlr dev-java/relaxngcc:0"
-#WANT_ANT_TASKS="ant-nodeps"
 
-inherit subversion java-pkg-2 java-ant-2
+inherit java-pkg-2 java-ant-2
 
 DESCRIPTION="XML Schema Object Model (XSOM) is a Java library that allows applications to easily parse XML Schema documents and inspect information in them."
 HOMEPAGE="http://xsom.java.net/"
-SRC_URI=""
+MY_TARBALL="${P}.tar.gz"
+SRC_URI="https://osdn.net/frs/chamber_redir.php?m=iij&f=%2Fusers%2F13%2F13643%2F${MY_TARBALL} -> ${MY_TARBALL}"
+
 
 LICENSE="|| ( CDDL GPL-2-sun-classpath-exception )"
 SLOT="0"

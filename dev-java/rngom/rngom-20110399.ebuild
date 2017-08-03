@@ -1,21 +1,19 @@
-# Copyright 1999-2013 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
 
-EAPI="4"
+EAPI=5
 
 JAVA_PKG_IUSE="doc source"
 
-ESVN_REPO_URI="https://svn.java.net/svn/rngom~svn/trunk/rngom"
-
 WANT_ANT_TASKS="ant-nodeps"
 
-inherit subversion java-pkg-2 java-ant-2
+inherit java-pkg-2 java-ant-2
 
 DESCRIPTION="RNGOM is an open-source Java library for parsing RELAX NG grammars."
 HOMEPAGE="https://rngom.java.net/"
 #SRC_URI="https://rngom.dev.java.net/files/documents/1647/26424/${P}.zip"
-SRC_URI=""
+MY_TARBALL="${PN}-201103.tar.gz"
+SRC_URI="https://osdn.net/frs/chamber_redir.php?m=iij&f=%2Fusers%2F13%2F13642%2F${MY_TARBALL} -> ${MY_TARBALL}"
 
 LICENSE="MIT"
 SLOT="0"
@@ -24,11 +22,13 @@ IUSE=""
 
 COMMON_DEP="dev-java/relaxng-datatype"
 
-DEPEND=">=virtual/jdk-1.5
+DEPEND=">=virtual/jdk-1.6
 	dev-java/javacc
 	${COMMON_DEP}"
-RDEPEND=">=virtual/jre-1.5
+RDEPEND=">=virtual/jre-1.6
 	${COMMON_DEP}"
+
+S="${WORKDIR}/${PN}-201103"
 
 java_prepare() {
 #	epatch ${FILESDIR}/without-retroweaver.patch
@@ -39,10 +39,6 @@ java_prepare() {
 
 	cd lib
 	java-pkg_jar-from relaxng-datatype
-#	java-pkg_jar-from xsdlib
-#	java-pkg_jar-from --build-only package-rename-task
-#	cd "${S}/lib/javacc/bin/lib"
-#	java-pkg_jar-from --build-only javacc
 }
 
 EANT_EXTRA_ARGS="-Dproject.name=${PN}"

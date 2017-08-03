@@ -1,8 +1,7 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
 
-EAPI="4"
+EAPI=5
 
 ESVN_REPO_URI="https://svn.java.net/svn/jaxb~version1/trunk/jaxb-ri"
 
@@ -15,6 +14,8 @@ HOMEPAGE="http://jaxb.dev.java.net/"
 #SRC_URI="mirror://gentoo/${PN}-src-${PV}.zip"
 #SRC_URI="${PN}-src-${PV}.tar.bz2"
 # svn export https://svn.java.net/svn/jaxb~version1/trunk/jaxb-ri jaxb-ri-1.0.6
+MY_TARBALL="${PN}-ri-${PV}.tar.gz"
+SRC_URI="https://osdn.net/frs/chamber_redir.php?m=iij&f=%2Fusers%2F13%2F13650%2F${MY_TARBALL} -> ${MY_TARBALL}"
 
 LICENSE="|| ( CDDL GPL-2-with-lonking-exception )"
 SLOT="1"

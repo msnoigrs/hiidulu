@@ -1,18 +1,18 @@
-# Copyright 1999-2012 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
 
-EAPI="4"
+EAPI=5
+
 JAVA_PKG_IUSE="doc source"
 
-ESVN_REPO_URI="https://svn.java.net/svn/dtd-parser~svn/trunk/dtd-parser"
+inherit java-pkg-2 java-ant-2
 
-inherit subversion java-pkg-2 java-ant-2
-
+MY_P="dtd-parser-${PV}"
 DESCRIPTION="Sun DTDParser"
 HOMEPAGE="http://java.net/projects/dtd-parser"
 #SRC_URI="mirror://gentoo/dtd-parser-${PV}-src.zip"
-SRC_URI=""
+MY_TARBALL="${MY_P}.tar.gz"
+SRC_URI="https://osdn.net/frs/chamber_redir.php?m=iij&f=%2Fusers%2F13%2F13647%2F${MY_TARBALL} -> ${MY_TARBALL}"
 
 LICENSE="BSD-2"
 SLOT="0"
@@ -20,8 +20,10 @@ KEYWORDS="amd64 ppc x86 ~x86-fbsd"
 
 IUSE=""
 
-RDEPEND=">=virtual/jre-1.5"
-DEPEND=">=virtual/jdk-1.5"
+RDEPEND=">=virtual/jre-1.6"
+DEPEND=">=virtual/jdk-1.6"
+
+S="${WORKDIR}/${MY_P}"
 
 java_prepare() {
 	cp "${FILESDIR}/gentoo-build.xml" build.xml || die

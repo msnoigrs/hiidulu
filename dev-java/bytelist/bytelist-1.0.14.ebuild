@@ -5,14 +5,13 @@ EAPI=5
 
 JAVA_PKG_IUSE="source test"
 
-EGIT_REPO_URI="https://github.com/jruby/bytelist.git"
-
-inherit git-r3 java-pkg-2 java-ant-2
+inherit java-pkg-2 java-ant-2
 
 DESCRIPTION="JRuby support library"
 HOMEPAGE="http://jruby.codehaus.org/"
+SRC_URI="https://github.com/jruby/${PN}/archive/${P}.tar.gz"
 LICENSE="|| ( CPL-1.0 GPL-2 LGPL-2.1 )"
-SLOT="0"
+SLOT="1.0.14"
 KEYWORDS="amd64 ppc x86 ~amd64-linux ~x86-linux ~x86-solaris"
 IUSE=""
 
@@ -22,6 +21,8 @@ RDEPEND=">=virtual/jre-1.6
 DEPEND=">=virtual/jdk-1.6
 	dev-java/jcodings
 	test? ( dev-java/ant-junit )"
+
+S="${WORKDIR}/${PN}-${P}"
 
 JAVA_ANT_REWRITE_CLASSPATH="true"
 EANT_GENTOO_CLASSPATH="jcodings"

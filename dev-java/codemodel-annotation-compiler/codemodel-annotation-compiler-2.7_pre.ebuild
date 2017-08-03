@@ -1,17 +1,18 @@
-# Copyright 1999-2012 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
 
-EAPI="4"
+EAPI=5
+
 JAVA_PKG_IUSE="source doc"
 
-ESVN_REPO_URI="https://svn.java.net/svn/codemodel~svn/trunk/codemodel/${PN}"
+inherit java-pkg-2 java-ant-2
 
-inherit subversion java-pkg-2 java-ant-2
-
+MY_PN="codemodel"
+MY_P="${MY_PN}-${PV}"
 DESCRIPTION="CodeModel Annotation Compiler"
 HOMEPAGE="https://codemodel.java.net/"
-SRC_URI=""
+MY_TARBALL="${MY_P}.tar.gz"
+SRC_URI="https://osdn.net/frs/chamber_redir.php?m=iij&f=%2Fusers%2F13%2F13641%2F${MY_TARBALL} -> ${MY_TARBALL}"
 
 LICENSE="|| ( CDDL GPL-2 )"
 SLOT="0"
@@ -20,11 +21,13 @@ IUSE=""
 
 COMMON_DEP="dev-java/codemodel:2
 	dev-java/istack-commons"
-RDEPEND=">=virtual/jre-1.5
+RDEPEND=">=virtual/jre-1.6
 	${COMMON_DEP}"
-DEPEND=">=virtual/jdk-1.5
+DEPEND=">=virtual/jdk-1.6
 	${COMMON_DEP}
 	dev-java/ant-core"
+
+S="${WORKDIR}/${MY_P}"
 
 java_prepare() {
 	cp "${FILESDIR}/gentoo-build.xml" build.xml

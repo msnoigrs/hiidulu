@@ -1,17 +1,14 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
 
-EAPI="4"
+EAPI=5
 JAVA_PKG_IUSE="doc source"
 
-ESVN_REPO_URI="https://ini4j.svn.sourceforge.net/svnroot/ini4j/trunk"
-
-inherit subversion java-pkg-2 java-ant-2
+inherit java-pkg-2 java-ant-2
 
 DESCRIPTION="Simple Java API Windows style .ini file handling"
 HOMEPAGE="http://ini4j.sourceforge.net/"
-SRC_URI=""
+SRC_URI="mirror://sourceforge/${PN}/${P}-src.zip"
 
 LICENSE="Apache-2.0"
 SLOT="0.5"
@@ -31,8 +28,8 @@ JAVA_ANT_ENCODING="utf-8"
 java_prepare() {
 	epatch "${FILESDIR}/java8-map.patch"
 
-	cp ${FILESDIR}/build.xml build.xml
-	mkdir -p lib || die
+	cp ${FILESDIR}/build.xml ${S}
+	mkdir -p ${S}/lib || die
 	java-pkg_jar-from --build-only --into lib --virtual servlet-api-3.0 servlet-api.jar
 }
 

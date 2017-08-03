@@ -1,8 +1,7 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
 
-EAPI="2"
+EAPI=5
 
 JAVA_PKG_IUSE="doc source"
 WANT_ANT_TASKS="ant-contrib"
@@ -13,7 +12,8 @@ MY_P="smack_src_3_2_2"
 
 DESCRIPTION="An Open Source XMPP (Jabber) client library for instant messaging and presence"
 HOMEPAGE="http://www.igniterealtime.org/projects/smack/index.jsp"
-SRC_URI="http://www.igniterealtime.org/downloadServlet?filename=smack/${MY_P}.tar.gz"
+#SRC_URI="http://www.igniterealtime.org/downloadServlet?filename=smack/${MY_P}.tar.gz"
+SRC_URI="https://github.com/igniterealtime/Smack/archive/${PV}.tar.gz -> ${P}.tar.gz"
 
 LICENSE="Apache-2.0"
 SLOT="3"
@@ -23,12 +23,12 @@ IUSE=""
 COMMON_DEP="dev-java/xpp3"
 #	dev-java/jzlib"
 
-DEPEND=">=virtual/jdk-1.5
+DEPEND=">=virtual/jdk-1.6
 	${COMMON_DEP}"
-RDEPEND=">=virtual/jre-1.5
+RDEPEND=">=virtual/jre-1.6
 	${COMMON_DEP}"
 
-S="${WORKDIR}/${MY_P}"
+S="${WORKDIR}/Smack-${PV}"
 
 java_prepare() {
 	rm -v *.jar build/merge/*.jar build/*.jar
@@ -47,8 +47,6 @@ EANT_EXTRA_ARGS="-Djavadoc.dest.dir=api"
 
 src_install() {
 	java-pkg_dojar target/*.jar
-
-	dohtml *.html
 
 	use doc && {
 		java-pkg_dohtml -r documentation/*

@@ -1,13 +1,12 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Id$
 
 EAPI=5
 JAVA_PKG_IUSE="doc source"
-EGIT_REPO_URI="https://github.com/apache/commons-io.git"
-EGIT_BRANCH="trunk"
 
-inherit git-2 java-pkg-2 java-ant-2
+EGIT_REPO_URI="https://github.com/apache/commons-io.git"
+
+inherit git-r3 java-pkg-2 java-ant-2
 
 MY_P="${P}-src"
 DESCRIPTION="Commons-IO contains utility classes, stream implementations, file filters, and endian classes."
@@ -19,9 +18,9 @@ SLOT="1"
 KEYWORDS="~amd64 ~ia64 ~ppc ~ppc64 ~x86 ~x86-fbsd"
 IUSE="test"
 
-DEPEND=">=virtual/jdk-1.6
+DEPEND=">=virtual/jdk-1.7
 	test? ( dev-java/ant-junit )"
-RDEPEND=">=virtual/jre-1.6"
+RDEPEND=">=virtual/jre-1.7"
 
 java_prepare() {
 	java-ant_ignore-system-classes

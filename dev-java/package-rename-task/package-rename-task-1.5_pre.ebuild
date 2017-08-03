@@ -1,19 +1,16 @@
-# Copyright 1999-2012 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
 
-EAPI="4"
+EAPI=5
 
 JAVA_PKG_IUSE="doc source"
 
-ESVN_REPO_URI="https://svn.java.net/svn/package-rename-task~svn/trunk/package-rename-task"
-
-inherit subversion java-pkg-2 java-ant-2
+inherit java-pkg-2 java-ant-2
 
 DESCRIPTION="Ant task to relocate code from one package tree to another"
 HOMEPAGE="https://package-rename-task.dev.java.net/"
-#SRC_URI="${P}.tar.bz2"
-SRC_URI=""
+MY_TARBALL="${P}.tar.gz"
+SRC_URI="https://osdn.net/frs/chamber_redir.php?m=iij&f=%2Fusers%2F13%2F13649%2F${MY_TARBALL} -> ${MY_TARBALL}"
 
 LICENSE="CDDL"
 SLOT="0"
@@ -21,8 +18,8 @@ SLOT="0"
 KEYWORDS="~amd64 ~x86"
 IUSE=""
 
-RDEPEND=">=virtual/jre-1.5"
-DEPEND=">=virtual/jdk-1.5
+RDEPEND=">=virtual/jre-1.6"
+DEPEND=">=virtual/jdk-1.6
 	dev-java/ant-core"
 
 java_prepare() {

@@ -1,32 +1,29 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
 
-EAPI="5"
+EAPI=5
 JAVA_PKG_IUSE="doc source"
 
-ESVN_REPO_URI="https://svn.java.net/svn/msv~svn/trunk/msv"
+inherit java-pkg-2 java-ant-2
 
-inherit subversion java-pkg-2 java-ant-2
-
-#MY_P="${PN}.${PV}"
 DESCRIPTION="Multi-Schema XML Validator, a Java tool for validating XML documents"
 HOMEPAGE="https://msv.java.net/"
 #SRC_URI="http://java.net/downloads/msv/releases/${MY_P}.zip"
-SRC_URI=""
+MY_TARBALL="${P}.tar.gz"
+SRC_URI="https://osdn.net/frs/chamber_redir.php?m=iij&f=%2Fusers%2F13%2F13640%2F${MY_TARBALL} -> ${MY_TARBALL}"
 
 LICENSE="BSD Apache-1.1"
 SLOT="0"
 KEYWORDS="amd64 ~ia64 ppc ppc64 x86 ~x86-fbsd"
 IUSE=""
 
-RDEPEND=">=virtual/jre-1.5
+RDEPEND=">=virtual/jre-1.6
 	dev-java/iso-relax
 	dev-java/relaxng-datatype
 	dev-java/xml-commons-resolver
 	dev-java/xsdlib"
 #	>=dev-java/xerces-2.7
-DEPEND=">=virtual/jdk-1.5
+DEPEND=">=virtual/jdk-1.6
 	${RDEPEND}"
 
 java_prepare() {

@@ -17,7 +17,7 @@ MY_TARBALL="portlet-2.0-fr.zip"
 SRC_URI="https://osdn.net/frs/chamber_redir.php?m=ymu&f=%2Fusers%2F13%2F13638%2F${MY_TARBALL} -> ${MY_TARBALL}"
 
 LICENSE="Apache-2.0"
-SLOT="2"
+SLOT="2.0"
 KEYWORDS="~x86 ~amd64"
 IUSE=""
 
@@ -35,7 +35,7 @@ src_unpack() {
 	unpack ${A}
 	mkdir -p "${S}"
 	cd "${S}"
-	unpack "${WORKDIR}/final/src.zip"
+	unzip "${WORKDIR}/final/src.zip"
 }
 
 java_prepare() {

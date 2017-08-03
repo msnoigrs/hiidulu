@@ -1,16 +1,16 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
 
-EAPI="4"
+EAPI=5
+
 JAVA_PKG_IUSE="source"
 
-ESVN_REPO_URI="https://svn.java.net/svn/stax-ex~svn/trunk/${PN}"
+EGIT_REPO_URI="https://github.com/kohsuke/stax-ex.git"
 
-inherit subversion java-pkg-2 java-ant-2
+inherit git-r3 java-pkg-2 java-ant-2
 
 DESCRIPTION="Extensions to complement JSR-173 StAX API"
-HOMEPAGE="http://stax-ex.dev.java.net/"
+HOMEPAGE="https://github.com/kohsuke/stax-ex"
 SRC_URI=""
 
 LICENSE="|| ( CDDL GPL-2 )"

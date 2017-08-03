@@ -1,16 +1,14 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
 
-EAPI="4"
+EAPI=5
 
-EGIT_REPO_URI="git://github.com/pgjdbc/pgjdbc.git"
+EGIT_REPO_URI="https://github.com/pgjdbc/pgjdbc.git"
 
-JAVA_PKG_IUSE="doc source"
-inherit java-pkg-2 java-ant-2 git-2
+JAVA_PKG_IUSE="doc source test"
+inherit git-r3 java-pkg-2 java-ant-2
 
 DESCRIPTION="JDBC Driver for PostgreSQL"
-SRC_URI=""
 HOMEPAGE="http://jdbc.postgresql.org/"
 
 LICENSE="POSTGRESQL"
@@ -31,9 +29,9 @@ DEPEND="
 	)"
 RDEPEND=">=virtual/jre-1.6"
 
-S="${WORKDIR}/pgjdbc"
+#S="${WORKDIR}/pgjdbc"
 
-RESTRICT="test"
+#RESTRICT="test"
 
 java_prepare() {
 	cp "${FILESDIR}"/build.xml build.xml
@@ -50,10 +48,11 @@ java_prepare() {
 	#rm -v org/postgresql/sspi/NTDSAPI.java
 	#rm -v org/postgresql/sspi/NTDSAPIWrapper.java
 
-	epatch "${FILESDIR}/rmsspi.patch"
+	#epatch "${FILESDIR}/rmsspi.patch"
 	rm -rv pgjdbc/src/main/java/org/postgresql/osgi
 	rm -v pgjdbc/src/main/java/org/postgresql/sspi/NTDSAPI.java
 	rm -v pgjdbc/src/main/java/org/postgresql/sspi/NTDSAPIWrapper.java
+	rm -v pgjdbc/src/main/java/org/postgresql/sspi/SSPIClient.java
 
 	java-ant_rewrite-classpath
 }

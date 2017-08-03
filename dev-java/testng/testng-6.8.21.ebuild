@@ -1,19 +1,16 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
 
-EAPI="4"
+EAPI=5
 JAVA_PKG_IUSE="doc source test"
 
 WANT_ANT_TASKS="dev-java/ant-ivy:2"
 
-EGIT_REPO_URI="git://github.com/cbeust/testng.git"
-
-inherit java-pkg-2 java-ant-2 git-2
+inherit java-pkg-2 java-ant-2
 
 DESCRIPTION="TestNG is a testing framework inspired from JUnit and NUnit"
 HOMEPAGE="http://testng.org/"
-
+SRC_URI="https://github.com/cbeust/${PN}/archive/${P}.tar.gz"
 LICENSE="Apache-2.0"
 SLOT="0"
 KEYWORDS="~amd64 ~x86"
@@ -30,6 +27,8 @@ DEPEND=">=virtual/jdk-1.6
 		${CDEPEND}"
 RDEPEND=">=virtual/jre-1.6
 		${CDEPEND}"
+
+S="${WORKDIR}/${PN}-${P}"
 
 java_prepare() {
 	find . -iname '*.jar' -exec rm -v {} +
