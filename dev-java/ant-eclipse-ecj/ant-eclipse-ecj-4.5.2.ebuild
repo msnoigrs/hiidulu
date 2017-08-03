@@ -5,12 +5,12 @@ EAPI=5
 
 inherit java-pkg-2 prefix
 
-DMF="R-${PV}-201502041700"
+DMF="R-${PV}-201602121500"
 S="${WORKDIR}"
 
 DESCRIPTION="Ant Compiler Adapter for Eclipse Java Compiler"
 HOMEPAGE="http://www.eclipse.org/"
-SRC_URI="http://download.eclipse.org/eclipse/downloads/drops4/${DMF/.0}/ecjsrc-${PV}.jar"
+SRC_URI="http://www.eclipse.org/downloads/download.php?file=/eclipse/downloads/drops4/${DMF}/ecjsrc-${PV}.jar -> ecjsrc-${PV}.jar"
 
 LICENSE="EPL-1.0"
 KEYWORDS="amd64 ppc ppc64 x86 ~x86-fbsd ~amd64-linux ~x86-linux ~x86-solaris"
