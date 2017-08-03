@@ -1,8 +1,7 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
 
-EAPI="4"
+EAPI=5
 JAVA_PKG_IUSE="source doc"
 WANT_ANT_TASKS="dev-java/package-rename-task:0
 	dev-java/txw2:0
@@ -12,10 +11,11 @@ WANT_ANT_TASKS="dev-java/package-rename-task:0
 inherit java-pkg-2 java-ant-2
 
 DESCRIPTION="Reference implementation of the JAXB specification."
-HOMEPAGE="http://jaxb.dev.java.net/"
+HOMEPAGE="https://github.com/javaee/jaxb-v2"
 #DATE="20090206"
 #MY_P="JAXB2_src_${DATE}"
-SRC_URI="http://jaxb.java.net/2.2.6/jaxb-ri-2.2.6.src.zip"
+#SRC_URI="http://jaxb.java.net/2.2.6/jaxb-ri-2.2.6.src.zip"
+SRC_URI="https://github.com/javaee/jaxb-v2/archive/jaxb-2_2_6.tar.gz"
 
 LICENSE="|| ( CDDL GPL-2 )"
 SLOT="2.2"
@@ -57,7 +57,7 @@ RDEPEND=">=virtual/jre-1.6
 #JAVA_PKG_WANT_TARGET=1.5
 #JAVA_PKG_DEBUG="true"
 
-S="${WORKDIR}"
+S="${WORKDIR}/jaxb-v2-jaxb-2_2_6/jaxb-ri"
 
 #JAVA_PKG_BSFIX="off"
 JAVA_PKG_BSFIX_ALL="yes"

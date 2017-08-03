@@ -3,11 +3,7 @@
 
 EAPI=5
 
-ESVN_REPO_URI="https://svn.java.net/svn/jaxb~version1/trunk/jaxb-ri"
-
-#JAVA_PKG_IUSE="source"
-
-inherit subversion java-pkg-2 java-ant-2
+inherit java-pkg-2 java-ant-2
 
 DESCRIPTION="Reference implementation of the JAXB specification."
 HOMEPAGE="http://jaxb.dev.java.net/"
@@ -41,7 +37,7 @@ DEPEND=">=virtual/jdk-1.6
 RDEPEND=">=virtual/jre-1.6
 	${COMMON_DEP}"
 
-#S="${WORKDIR}/jaxb-ri-${PV}"
+S="${WORKDIR}/jaxb-ri-${PV}"
 
 java_prepare() {
 #	rm -rf codemodel/*

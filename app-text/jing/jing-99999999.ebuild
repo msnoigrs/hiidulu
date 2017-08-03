@@ -1,6 +1,5 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Id$
 
 EAPI=5
 
@@ -10,7 +9,7 @@ EGIT_REPO_URI="https://github.com/relaxng/jing-trang.git"
 
 WANT_ANT_TASKS="dev-java/saxon:9.3 dev-java/testng:0"
 
-inherit git-2 java-pkg-2 java-ant-2
+inherit git-r3 java-pkg-2 java-ant-2
 
 DESCRIPTION="Jing: A RELAX NG validator in Java"
 HOMEPAGE="http://thaiopensource.com/relaxng/jing.html"
