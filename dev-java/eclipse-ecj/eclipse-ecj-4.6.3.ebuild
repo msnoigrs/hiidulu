@@ -8,23 +8,23 @@ JAVA_PKG_IUSE="doc source"
 inherit java-pkg-2
 
 MY_PN="ecj"
-DMF="R-${PV}-201509040015"
+DMF="R-${PV}-201703010400"
 
 DESCRIPTION="Eclipse Compiler for Java"
 HOMEPAGE="http://www.eclipse.org/"
-SRC_URI="http://download.eclipse.org/eclipse/downloads/drops4/${DMF}/${MY_PN}src-${PV}.jar"
+SRC_URI="http://www.eclipse.org/downloads/download.php?file=%2Feclipse%2Fdownloads%2Fdrops4%2F${DMF}%2F${MY_PN}src-${PV}.jar&r=1 -> ${MY_PN}src-${PV}.jar"
 
 LICENSE="EPL-1.0"
 KEYWORDS="amd64 ppc ppc64 x86 ~x86-fbsd ~x86-freebsd ~amd64-linux ~x86-linux ~x86-solaris"
-SLOT="4.5"
+SLOT="4.6"
 IUSE="+ant userland_GNU"
 
 COMMON_DEP="
 	|| ( app-eselect/eselect-java app-eselect/eselect-ecj )"
 RDEPEND="${COMMON_DEP}
-	>=virtual/jre-1.7"
+	>=virtual/jre-1.8"
 DEPEND="${COMMON_DEP}
-	>=virtual/jdk-1.7
+	>=virtual/jdk-1.8
 	app-arch/unzip
 	userland_GNU? ( sys-apps/findutils )"
 PDEPEND="
@@ -33,8 +33,6 @@ PDEPEND="
 S="${WORKDIR}"
 
 java_prepare() {
-	epatch "${FILESDIR}/remove-dep-core.patch"
-
 	# These have their own package.
 	rm -v org/eclipse/jdt/core/JDTCompilerAdapter.java || die
 	rm -rv org/eclipse/jdt/internal/antadapter || die
