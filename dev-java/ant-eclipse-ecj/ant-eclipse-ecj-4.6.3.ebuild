@@ -14,7 +14,7 @@ SRC_URI="http://www.eclipse.org/downloads/download.php?file=%2Feclipse%2Fdownloa
 
 LICENSE="EPL-1.0"
 KEYWORDS="amd64 ppc ppc64 x86 ~x86-fbsd ~amd64-linux ~x86-linux ~x86-solaris"
-SLOT="4.5"
+SLOT="4.6"
 IUSE=""
 
 RDEPEND=">=virtual/jre-1.7
