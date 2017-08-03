@@ -16,7 +16,7 @@ HOMEPAGE="http://thaiopensource.com/relaxng/jing.html"
 SRC_URI=""
 LICENSE="BSD Apache-1.1"
 SLOT="0"
-KEYWORDS="amd64 ~ppc x86"
+KEYWORDS=""
 IUSE=""
 COMMON_DEPEND="
 	dev-java/xerces:2
@@ -40,7 +40,7 @@ java_prepare() {
 
 	rm -fv lib/*.jar
 	cd lib
-	java-pkg_jar-from iso-relax
+	java-pkg_jar-from iso-relax iso-relax.jar isorelax.jar
 	java-pkg_jar-from xerces-2
 	java-pkg_jar-from xalan xalan.jar
 	java-pkg_jar-from saxon-9.3 saxon9.jar

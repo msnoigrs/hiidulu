@@ -5,18 +5,18 @@ EAPI=5
 
 JAVA_PKG_IUSE="doc source"
 
-EGIT_REPO_URI="https://github.com/relaxng/jing-trang.git"
-
 WANT_ANT_TASKS="dev-java/saxon:9.3 dev-java/testng:0"
 
-inherit git-r3 java-pkg-2 java-ant-2
+inherit java-pkg-2 java-ant-2
 
-DESCRIPTION="Multi-format schema converter based on RELAX NG"
+DESCRIPTION="Jing: A RELAX NG validator in Java"
 HOMEPAGE="http://thaiopensource.com/relaxng/jing.html"
-SRC_URI=""
+MY_TARBALL="jing-trang-${PV}.tar.gz"
+#SRC_URI="https://osdn.net/frs/chamber_redir.php?m=iij&f=%2Fusers%2F13%2F13651%2F${MY_TARBALL} -> ${MY_TARBALL}"
+SRC_URI="https://github.com/relaxng/jing-trang/archive/V${PV}.tar.gz -> jing-trang-${PV}.tar.gz"
 LICENSE="BSD Apache-1.1"
 SLOT="0"
-KEYWORDS=""
+KEYWORDS="amd64 ~ppc x86"
 IUSE=""
 COMMON_DEPEND="
 	dev-java/xerces:2
@@ -24,6 +24,8 @@ COMMON_DEPEND="
 	dev-java/xalan
 	dev-java/saxon:9.3
 	dev-java/xml-commons-resolver"
+#	dev-java/relaxng-datatype
+#	dev-java/saxon:9
 RDEPEND=">=virtual/jre-1.6
 	${COMMON_DEPEND}"
 DEPEND=">=virtual/jdk-1.6
@@ -32,6 +34,9 @@ DEPEND=">=virtual/jdk-1.6
 	${COMMON_DEPEND}"
 
 JAVA_PKG_BSFIX="off"
+
+S="${WORKDIR}/jing-trang-${PV}"
+
 java_prepare() {
 	find -type f -exec sed -i -e 's/com.icl.saxon/net.sf.saxon/g' {} \;
 
@@ -54,13 +59,12 @@ src_compile() {
 }
 
 src_install() {
-	#java-pkg_dojar build/jing.jar
-	java-pkg_dojar build/trang.jar
-	#java-pkg_dojar build/dtdinst.jar
-	#java-pkg_register-ant-task
+	java-pkg_dojar build/jing.jar
+	#java-pkg_dojar build/trang.jar
+	java-pkg_dojar build/dtdinst.jar
+	java-pkg_register-ant-task
 #	java-pkg_dolauncher ${PN}-${SLOT} --main com.thaiopensource.relaxng.util.Driver
-	#java-pkg_dolauncher ${PN} --main com.thaiopensource.relaxng.util.Driver
-	java-pkg_dolauncher ${PN} --main com.thaiopensource.relaxng.translate.Driver
+	java-pkg_dolauncher ${PN} --main com.thaiopensource.relaxng.util.Driver
 	use doc && java-pkg_dohtml -r doc/* readme.html
 	use source && java-pkg_dosrc src/com
 }

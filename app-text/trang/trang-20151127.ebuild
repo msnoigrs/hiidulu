@@ -5,33 +5,34 @@ EAPI=5
 
 JAVA_PKG_IUSE="doc source"
 
-EGIT_REPO_URI="https://github.com/relaxng/jing-trang.git"
-
 WANT_ANT_TASKS="dev-java/saxon:9.3 dev-java/testng:0"
 
-inherit git-r3 java-pkg-2 java-ant-2
+inherit java-pkg-2 java-ant-2
 
 DESCRIPTION="Multi-format schema converter based on RELAX NG"
 HOMEPAGE="http://thaiopensource.com/relaxng/jing.html"
-SRC_URI=""
+SRC_URI="https://github.com/relaxng/jing-trang/archive/V${PV}.tar.gz -> jing-trang-${PV}.tar.gz"
 LICENSE="BSD Apache-1.1"
 SLOT="0"
-KEYWORDS=""
+KEYWORDS="amd64 ~ppc x86"
 IUSE=""
 COMMON_DEPEND="
 	dev-java/xerces:2
-	dev-java/iso-relax
-	dev-java/xalan
-	dev-java/saxon:9.3
 	dev-java/xml-commons-resolver"
 RDEPEND=">=virtual/jre-1.6
 	${COMMON_DEPEND}"
 DEPEND=">=virtual/jdk-1.6
+	dev-java/xalan
+	dev-java/iso-relax
+	dev-java/saxon:9.3
 	dev-java/ant-core
 	dev-java/javacc
 	${COMMON_DEPEND}"
 
 JAVA_PKG_BSFIX="off"
+
+S="${WORKDIR}/jing-trang-${PV}"
+
 java_prepare() {
 	find -type f -exec sed -i -e 's/com.icl.saxon/net.sf.saxon/g' {} \;
 
