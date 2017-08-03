@@ -8,7 +8,7 @@ JAVA_PKG_IUSE="doc source"
 inherit java-pkg-2
 
 MY_PN="ecj"
-DMF="R-${PV}-201509040015"
+DMF="R-${PV}-201602121500"
 
 DESCRIPTION="Eclipse Compiler for Java"
 HOMEPAGE="http://www.eclipse.org/"

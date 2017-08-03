@@ -7,12 +7,10 @@ JAVA_PKG_IUSE="source doc"
 
 inherit java-pkg-2 java-ant-2
 
-MY_PN="codemodel"
-MY_P="${MY_PN}-${PV}"
 DESCRIPTION="CodeModel Annotation Compiler"
 HOMEPAGE="https://codemodel.java.net/"
-MY_TARBALL="${MY_P}.tar.gz"
-SRC_URI="https://osdn.net/frs/chamber_redir.php?m=iij&f=%2Fusers%2F13%2F13641%2F${MY_TARBALL} -> ${MY_TARBALL}"
+MY_TARBALL="${P}.tar.gz"
+SRC_URI="https://osdn.net/frs/chamber_redir.php?m=iij&f=%2Fusers%2F13%2F13652%2F${MY_TARBALL} -> ${MY_TARBALL}"
 
 LICENSE="|| ( CDDL GPL-2 )"
 SLOT="0"
@@ -26,8 +24,6 @@ RDEPEND=">=virtual/jre-1.6
 DEPEND=">=virtual/jdk-1.6
 	${COMMON_DEP}
 	dev-java/ant-core"
-
-S="${WORKDIR}/${MY_P}"
 
 java_prepare() {
 	cp "${FILESDIR}/gentoo-build.xml" build.xml
