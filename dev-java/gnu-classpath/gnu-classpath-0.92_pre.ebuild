@@ -1,18 +1,16 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
 
-EAPI="4"
+EAPI=5
 
-ECVS_SERVER="cvs.savannah.gnu.org:/sources/classpath"
-ECVS_MODULE="classpath"
+COMMIT="aaf337541ddfe97dc0ff1cea1f66f06074798a74"
 
-inherit autotools eutils cvs flag-o-matic multilib java-pkg-2
+inherit autotools flag-o-matic multilib java-pkg-2
 
 MY_PN=${PN/gnu-/}
 DESCRIPTION="Free core class libraries for use with VMs and compilers for the Java programming language"
 #SRC_URI="mirror://gnu/classpath/${MY_P}.tar.gz"
-SRC_URI=""
+SRC_URI="https://github.com/penberg/classpath/archive/${COMMIT}.tar.gz -> ${P}.tar.gz"
 HOMEPAGE="http://www.gnu.org/software/classpath"
 
 LICENSE="GPL-2-with-linking-exception"
@@ -66,7 +64,7 @@ DEPEND="app-arch/zip
 RDEPEND=">=virtual/jre-1.5
 	${RDEPEND}"
 
-S=${WORKDIR}/${MY_PN}
+S="${WORKDIR}/${MY_PN}-${COMMIT}"
 
 java_prepare() {
 	epatch "${FILESDIR}/fix-texinfo.patch"
