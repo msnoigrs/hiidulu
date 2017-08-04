@@ -21,12 +21,12 @@ IUSE=""
 
 JAVA_PKG_BSFIX_NAME="resolver.xml"
 
-S="${WORKDIR}/${P}/java"
+#S="${WORKDIR}/${P}/java"
 
 src_unpack() {
 	git-r3_src_unpack
 
-	cd ${S}
+	cd ${P}/java
 	rm -r external
 	rm which.xml
 	rm src/manifest.which
@@ -34,6 +34,7 @@ src_unpack() {
 }
 
 java_prepare() {
+	cd java
 	# https://issues.apache.org/bugzilla/show_bug.cgi?id=44582
 	epatch "${FILESDIR}/9999-add-getPublicIds.patch"
 	# with jaxb-2.1.10 and netbeans
@@ -43,8 +44,10 @@ java_prepare() {
 	epatch "${FILESDIR}/9999-catalog.diff"
 	# see http://patch-tracker.debian.org/package/libxml-commons-resolver1.1-java/1.2-5
 	# needed by netbeans 6.7
-	cd ${WORKDIR}
+	cd ${S}
 	epatch "${FILESDIR}/nb-extra-9999.patch"
+	cp ${P}/src/org/apache/xml/resolver/NbCatalogManager.java java/src/org/apache/xml/resolver
+	cp ${P}/src/org/apache/xml/resolver/tools/NbCatalogResolver.java java/src/org/apache/xml/resolver/tools
 
 	rm -rf apidocs resolver.jar || die
 }
@@ -52,7 +55,13 @@ java_prepare() {
 EANT_BUILD_XML="resolver.xml"
 EANT_DOC_TARGET="javadocs"
 
+src_compile() {
+	cd java
+	java-pkg-2_src_compile
+}
+
 src_install() {
+	cd java
 	java-pkg_newjar build/resolver.jar
 
 	if use doc; then
