@@ -34,7 +34,7 @@ RDEPEND=">=virtual/jre-1.7
 DEPEND=">=virtual/jdk-1.7
 	${CDEPEND}"
 
-S="${WORKDIR}/${P}/core"
+S="${WORKDIR}/${P}/commons-vfs2"
 
 java_prepare() {
 	#epatch "${FILESDIR}"/${PN}-2.0-incompatibility.patch
