@@ -4,7 +4,7 @@
 EAPI=6
 
 GOLANG_PKG_IMPORTPATH="github.com/spf13"
-#GOLANG_PKG_VERSION="e797a94d975d23a04dd0089f7db2c93ba93c43fb"
+GOLANG_PKG_VERSION="524c67107aa058b314a4437858a1d41bfd6b0dc2"
 
 inherit golang-common
 
@@ -14,32 +14,8 @@ SLOT="0"
 KEYWORDS="~amd64 ~arm"
 
 DEPEND="dev-go/govendor"
-RDEPEND="dev-python/pygments"
 
 src_unpack() {
 	golang_setup
-
-	mkdir -p "${S%/*}" || die
-
 	govendor get github.com/spf13/hugo
-}
-
-src_prepare() {
-	golang-common_src_prepare
-}
-
-src_confirugre() {
-	golang-common_src_configure
-}
-
-src_compile() {
-	golang-common_src_compile
-}
-
-src_install() {
-	golang-common_src_install
-}
-
-src_test() {
-	golang-common_src_test
 }
