@@ -32,6 +32,7 @@ JAVA_GENTOO_CLASSPATH="ant-core,commons-httpclient-3,bcel,ant-ivy-2,ant-ivy"
 
 java_prepare() {
 	cp ${FILESDIR}/antcontrib.properties src/main/resources/net/sf/antcontrib
+	cp ${FILESDIR}/antlib.xml src/main/resources/net/sf/antcontrib
 }
 
 

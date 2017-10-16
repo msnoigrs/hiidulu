@@ -1,41 +1,39 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Id$
 
 EAPI=5
 JAVA_PKG_IUSE="doc source"
 inherit java-pkg-2 java-ant-2 versionator
 
-MY_PN="SimplyHTML"
-MY_PV="$(replace_all_version_separators _)"
-
 DESCRIPTION="Text processing application based on HTML and CSS files."
 HOMEPAGE="http://${PN}.sourceforge.net"
-SRC_URI="mirror://sourceforge/${PN}/stable/${MY_PN}_src_${MY_PV}.tar.gz"
+SRC_URI="mirror://sourceforge/${PN}/stable/${PN}_src-${PV}.tar.gz"
 LICENSE="GPL-2"
 SLOT="0"
 KEYWORDS="amd64 ppc x86 ~amd64-linux ~x86-linux ~ppc-macos ~x86-macos ~x64-solaris"
 IUSE=""
 
 COMMON_DEP="dev-java/javahelp
-	dev-java/gnu-regexp:1"
+	dev-java/gnu-regexp:1
+	dev-java/mnemonicsetter"
 DEPEND=">=virtual/jdk-1.6
 	${COMMON_DEP}"
 RDEPEND=">=virtual/jre-1.6
 	${COMMON_DEP}"
 
-S="${WORKDIR}/${PN}-${MY_PV}/src"
-
 java_prepare() {
-	# it wants to copy lib jars
-	sed -i '/copy file/d' build.xml || die
+	sed -i -e 's#\(name="classpath" value="\${jhall.jar}\)#\1:../lib/mnemonicsetter.jar#' src/build.xml || die
+	mkdir lib
+	java-pkg_jar-from --into lib mnemonicsetter
+	java-pkg_jar-from --into lib javahelp jhall.jar
+	java-pkg_jar-from --into lib gnu-regexp-1 gnu-regexp.jar gnu-regexp-1.1.4.jar
 }
 
-EANT_EXTRA_ARGS="-Dclasspath=\"$(java-pkg_getjars javahelp,gnu-regexp-1)\""
+EANT_BUILD_TARGET="jar"
+EANT_BUILD_XML="src/build.xml"
 
 src_install() {
-	cd ..
-	java-pkg_dojar dist/lib/${MY_PN}*.jar
+	java-pkg_dojar dist/lib/SimplyHTML*.jar
 
 	dodoc readme.txt || die
 

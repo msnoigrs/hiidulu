@@ -1,6 +1,5 @@
 # Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Id$
 
 EAPI=5
 
@@ -31,6 +30,8 @@ python_prepare_all() {
 	sed -e '/datadir =/s:os\.path\.dirname(__file__):os.environ["BUILD_DIR"]:' \
 		-i tests/messages/test_frontend.py || die
 	sed -e '/^intersphinx_mapping/,+3d' -i docs/conf.py || die
+
+	sed -e "s/'babel.localtime'/'babel.localtime', 'babel.locale-data'/" -i setup.py
 	distutils-r1_python_prepare_all
 }
 
