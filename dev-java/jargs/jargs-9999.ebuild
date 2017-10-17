@@ -1,6 +1,5 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Id$
 
 EAPI=5
 
@@ -8,7 +7,7 @@ EGIT_REPO_URI="https://github.com/purcell/jargs.git"
 
 JAVA_PKG_IUSE="source doc"
 
-inherit git-2 java-pkg-2 java-ant-2
+inherit git-r3 java-pkg-2 java-ant-2
 
 DESCRIPTION="command line option parsers"
 HOMEPAGE="http://jargs.sourceforge.net/"

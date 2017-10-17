@@ -2,7 +2,7 @@
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=5
-JAVA_PKG_IUSE="doc source test"
+JAVA_PKG_IUSE="doc source"
 
 EGIT_REPO_URI="https://github.com/apache/commons-collections.git"
 
@@ -15,14 +15,10 @@ SRC_URI=""
 LICENSE="Apache-2.0"
 SLOT="4"
 KEYWORDS="~amd64 ~ia64 ~ppc ~ppc64 ~x86 ~x86-fbsd"
-IUSE="test-framework"
 
-COMMON_DEP="test-framework? ( dev-java/junit:0 )"
-DEPEND=">=virtual/jdk-1.7
-	test? ( dev-java/ant-junit:0 )
-	${COMMON_DEP}"
-RDEPEND=">=virtual/jre-1.7
-	${COMMON_DEP}"
+DEPEND=">=virtual/jdk-1.7"
+RDEPEND=">=virtual/jre-1.7"
+
 
 S="${WORKDIR}/${P}"
 

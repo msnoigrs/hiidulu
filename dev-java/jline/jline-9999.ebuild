@@ -1,13 +1,12 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
 
 EAPI="2"
 JAVA_PKG_IUSE="doc source test"
 
 EGIT_REPO_URI="git://jline.git.sourceforge.net/gitroot/jline/jline"
 
-inherit git-2 java-pkg-2 java-ant-2
+inherit git-r3 java-pkg-2 java-ant-2
 
 DESCRIPTION="A Java library for handling console input"
 HOMEPAGE="http://jline.sourceforge.net/"
@@ -18,9 +17,9 @@ LICENSE="BSD"
 SLOT="0"
 KEYWORDS="amd64 ppc x86"
 
-DEPEND=">=virtual/jdk-1.5
+DEPEND=">=virtual/jdk-1.6
 	test? ( dev-java/ant-junit )"
-RDEPEND=">=virtual/jre-1.5"
+RDEPEND=">=virtual/jre-1.6"
 
 java_prepare() {
 	sed -i -e 's:"sh":"/bin/bash":' src/main/java/jline/UnixTerminal.java

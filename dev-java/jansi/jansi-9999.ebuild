@@ -17,7 +17,8 @@ SLOT="0"
 KEYWORDS="amd64 ~ppc x86 ~amd64-linux ~x86-linux ~ppc-macos ~x86-macos"
 IUSE=""
 
-COMMON_DEP="dev-java/jansi-native"
+COMMON_DEP="dev-java/jansi-native
+	dev-java/hawtjni-runtime"
 RDEPEND=">=virtual/jre-1.6
 	${COMMON_DEP}"
 DEPEND=">=virtual/jdk-1.6
@@ -28,6 +29,7 @@ java_prepare() {
 
 	mkdir lib
 	java-pkg_jar-from --into lib jansi-native
+	java-pkg_jar-from --into lib hawtjni-runtime
 	cp "${FILESDIR}/gentoo-build.xml" build.xml
 }
 

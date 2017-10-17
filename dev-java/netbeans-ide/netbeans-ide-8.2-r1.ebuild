@@ -9,7 +9,7 @@ HOMEPAGE="http://netbeans.org/projects/ide"
 SLOT="8.2"
 SOURCE_URL="http://download.netbeans.org/netbeans/8.2/final/zip/netbeans-8.2-201609300101-src.zip"
 SRC_URI="${SOURCE_URL}
-	http://dev.gentoo.org/~fordfrog/distfiles/netbeans-8.2-build.xml.patch.bz2
+	https://dev.gentoo.org/~fordfrog/distfiles/netbeans-8.2-build.xml.patch.bz2
 	http://hg.netbeans.org/binaries/4E74C6BE42FE89871A878C7C4D6158F21A6D8010-antlr-runtime-3.4.jar
 	http://hg.netbeans.org/binaries/886FAF4B85054DD6E50D9B3438542F432B5F9251-bytelist-0.1.jar
 	http://hg.netbeans.org/binaries/DCDA3604865C8E80789B4F8E8EECC3D4D15D00F8-com.trilead.ssh2_1.0.0.build220_r167_v20150618_1733.jar
@@ -77,7 +77,7 @@ SRC_URI="${SOURCE_URL}
 	http://hg.netbeans.org/binaries/8FA16AD28B5E79A7CD52B8B72985B0AE8CCD6ADF-xmlrpc-common-3.0.jar
 	http://hg.netbeans.org/binaries/D6917BF718583002CBE44E773EE21E2DF08ADC71-xmlrpc-server-3.0.jar"
 LICENSE="|| ( CDDL GPL-2-with-linking-exception )"
-KEYWORDS="amd64 ~x86"
+KEYWORDS="~amd64 ~x86"
 IUSE=""
 S="${WORKDIR}"
 
@@ -99,7 +99,7 @@ CDEPEND="virtual/jdk:1.8
 	dev-java/lucene:3.5
 	dev-java/saxon:9.3
 	dev-java/smack:3
-	dev-java/sun-jaf:0
+	>=dev-java/sun-jaf-1.1.1-r1:0
 	dev-java/tomcat-servlet-api:2.2
 	dev-java/ws-commons-util:0
 	dev-java/xerces:2
@@ -231,12 +231,12 @@ src_prepare() {
 
 	einfo "Symlinking external libraries..."
 	java-pkg_jar-from --into libs.ini4j/external ini4j-0.5 ini4j.jar ini4j-0.5.1.jar
+	java-pkg_jar-from --into xml.jaxb.api/external jaxb-2.2 jaxb-api.jar
 	java-pkg_jar-from --into xml.jaxb.api/external jaxb-2.2 jaxb-impl.jar
 	java-pkg_jar-from --into libs.jaxb/external jaxb-2.2 jaxb-impl.jar
 	java-pkg_jar-from --into libs.jaxb/external jaxb-2.2 jaxb-xjc.jar
 	java-pkg_jar-from --into libs.jaxb/external jaxb-1 jaxb-impl.jar jaxb1-impl.jar
 	java-pkg_jar-from --into o.apache.xml.resolver/external xml-commons-resolver xml-commons-resolver.jar resolver-1.2.jar
-
 	java-pkg_jar-from --into c.jcraft.jsch/external jsch jsch.jar jsch-0.1.53.jar
 	java-pkg_jar-from --into db.drivers/external jdbc-mysql jdbc-mysql.jar mysql-connector-java-5.1.23-bin.jar
 	java-pkg_jar-from --into db.drivers/external jdbc-postgresql jdbc-postgresql.jar postgresql-9.4.1209.jar
@@ -263,8 +263,7 @@ src_prepare() {
 	java-pkg_jar-from --into o.apache.commons.logging/external commons-logging commons-logging.jar commons-logging-1.1.1.jar
 	java-pkg_jar-from --into o.apache.ws.commons.util/external ws-commons-util ws-commons-util.jar ws-commons-util-1.0.1.jar
 	java-pkg_jar-from --into servletapi/external tomcat-servlet-api-2.2 servlet.jar servlet-2.2.jar
-
-	java-pkg_jar-from --into xml.jaxb.api/external jaxb-2.2 jaxb-api.jar jaxb-api.jar
+	java-pkg_jar-from --into xml.jaxb.api/external sun-jaf sun-jaf.jar activation.jar
 
 	sed -i -e '/activation.jar/ d' \
 		-e '/jsr173_1.0_api.jar/ d' \
@@ -365,7 +364,7 @@ src_install() {
 
 	local instdir="${D}"/${INSTALL_DIR}/modules/ext/jaxb
 	pushd "${instdir}" >/dev/null || die
-	rm activation.jar && java-pkg_jar-from --into "${instdir}" sun-jaf activation.jar
+	rm activation.jar && java-pkg_jar-from --into "${instdir}" sun-jaf sun-jaf.jar activation.jar
 	rm jaxb-impl.jar && java-pkg_jar-from --into "${instdir}" jaxb-2.2 jaxb-impl.jar jaxb-impl.jar
 	rm jaxb-xjc.jar && java-pkg_jar-from --into "${instdir}" jaxb-2.2 jaxb-xjc.jar jaxb-xjc.jar
 	rm jaxb1-impl.jar && java-pkg_jar-from --into "${instdir}" jaxb-1 jaxb-impl.jar jaxb1-impl.jar

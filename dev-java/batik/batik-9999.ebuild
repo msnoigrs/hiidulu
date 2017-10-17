@@ -1,6 +1,5 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Id$
 
 EAPI=5
 JAVA_PKG_IUSE="doc"
@@ -8,7 +7,7 @@ JAVA_PKG_IUSE="doc"
 EGIT_REPO_URI="https://github.com/apache/batik.git"
 EGIT_BRANCH="trunk"
 
-inherit git-2 java-pkg-2 java-ant-2 eutils
+inherit git-r3 java-pkg-2 java-ant-2 eutils
 
 DESCRIPTION="Java based SVG toolkit"
 HOMEPAGE="https://xmlgraphics.apache.org/batik/"
@@ -49,14 +48,14 @@ java_prepare() {
 	# Add some missing imports to avoid a compiling issue.
 	# https://bugs.gentoo.org/show_bug.cgi?id=551952
 	# https://issues.apache.org/jira/browse/BATIK-1123
-	local imports=()
-	imports+=(sources/org/apache/batik/script/jpython/JPythonInterpreterFactory.java)
-	imports+=(sources/org/apache/batik/script/jacl/JaclInterpreterFactory.java)
-	for import in ${imports[@]}; do
-		einfo "Fixing missing import in ${import}"
-		sed -i '23i import org.apache.batik.script.ImportInfo;' ${import} || die
-		eend $?
-	done
+	# local imports=()
+	# imports+=(sources/org/apache/batik/script/jpython/JPythonInterpreterFactory.java)
+	# imports+=(sources/org/apache/batik/script/jacl/JaclInterpreterFactory.java)
+	# for import in ${imports[@]}; do
+	# 	einfo "Fixing missing import in ${import}"
+	# 	sed -i '23i import org.apache.batik.script.ImportInfo;' ${import} || die
+	# 	eend $?
+	# done
 
 	cd lib || die
 	rm -v *.jar build/*.jar || die

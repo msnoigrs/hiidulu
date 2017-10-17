@@ -1,6 +1,5 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Id$
 
 EAPI=5
 JAVA_PKG_IUSE="doc examples source test"
@@ -8,7 +7,7 @@ JAVA_PKG_IUSE="doc examples source test"
 EGIT_REPO_URI="https://github.com/apache/xml-graphics-commons.git"
 EGIT_BRANCH="trunk"
 
-inherit git-2 java-pkg-2 java-ant-2
+inherit git-r3 java-pkg-2 java-ant-2
 
 DESCRIPTION="A library of several reusable components used by Apache Batik and Apache FOP."
 HOMEPAGE="http://xmlgraphics.apache.org/commons/index.html"
