@@ -3,8 +3,8 @@
 
 EAPI=6
 
-GOLANG_PKG_IMPORTPATH="github.com/spf13"
-GOLANG_PKG_VERSION="524c67107aa058b314a4437858a1d41bfd6b0dc2"
+GOLANG_PKG_IMPORTPATH="github.com/gohugoio"
+GOLANG_PKG_VERSION="41180c51e128eaf85773c6a1b47236aef94f947f"
 
 inherit golang-common
 
@@ -17,5 +17,5 @@ DEPEND="dev-go/govendor"
 
 src_unpack() {
 	golang_setup
-	govendor get github.com/spf13/hugo
+	govendor get github.com/gohugoio/hugo
 }
