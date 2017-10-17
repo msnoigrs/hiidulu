@@ -364,7 +364,6 @@ src_install() {
 
 	local instdir="${D}"/${INSTALL_DIR}/modules/ext/jaxb
 	pushd "${instdir}" >/dev/null || die
-	rm activation.jar && java-pkg_jar-from --into "${instdir}" sun-jaf sun-jaf.jar activation.jar
 	rm jaxb-impl.jar && java-pkg_jar-from --into "${instdir}" jaxb-2.2 jaxb-impl.jar jaxb-impl.jar
 	rm jaxb-xjc.jar && java-pkg_jar-from --into "${instdir}" jaxb-2.2 jaxb-xjc.jar jaxb-xjc.jar
 	rm jaxb1-impl.jar && java-pkg_jar-from --into "${instdir}" jaxb-1 jaxb-impl.jar jaxb1-impl.jar
