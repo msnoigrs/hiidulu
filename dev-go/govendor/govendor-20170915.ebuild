@@ -4,7 +4,7 @@
 EAPI=6
 
 GOLANG_PKG_IMPORTPATH="github.com/kardianos"
-GOLANG_PKG_VERSION="c86c10d612bf08e847456ce91d495eb69ad87087"
+GOLANG_PKG_VERSION="fbdd0ffc7ae99ac98e62b222eff8b63544c3410b"
 
 inherit golang-single
 

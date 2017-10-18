@@ -1,13 +1,12 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
 
 EAPI="5"
 GCONF_DEBUG="yes"
 
 EGIT_REPO_URI="https://github.com/GNOME/byzanz.git"
 
-inherit gnome2 git-2
+inherit gnome2 git-r3
 
 DESCRIPTION="Screencasting program that saves casts as GIF files"
 HOMEPAGE="http://people.freedesktop.org/~company/byzanz/"
@@ -34,7 +33,7 @@ DEPEND="${COMMON_DEPEND}
 RDEPEND="${COMMON_DEPEND}"
 
 src_unpack() {
-	git-2_src_unpack
+	git-r3_src_unpack
 }
 
 src_prepare() {
