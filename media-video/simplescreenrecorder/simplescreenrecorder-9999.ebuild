@@ -1,13 +1,12 @@
-# Copyright 1999-2016 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
 
 EAPI="5"
 
 inherit autotools flag-o-matic multilib-minimal
 
 if [[ ${PV} = 9999 ]]; then
-	inherit git-2
+	inherit git-r3
 fi
 
 DESCRIPTION="A Simple Screen Recorder"

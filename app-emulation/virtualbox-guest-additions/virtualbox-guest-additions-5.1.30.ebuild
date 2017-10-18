@@ -10,7 +10,8 @@ MY_PV="${MY_PV/rc/RC}"
 MY_P=VirtualBox-${MY_PV}
 DESCRIPTION="VirtualBox kernel modules and user-space tools for Gentoo guests"
 HOMEPAGE="http://www.virtualbox.org/"
-SRC_URI="http://download.virtualbox.org/virtualbox/${MY_PV}/${MY_P}.tar.bz2"
+SRC_URI="http://download.virtualbox.org/virtualbox/${MY_PV}/${MY_P}.tar.bz2
+	https://dev.gentoo.org/~polynomial-c/virtualbox/patchsets/virtualbox-5.1.30-patches-02.tar.xz"
 
 LICENSE="GPL-2"
 SLOT="0"
@@ -89,9 +90,10 @@ src_prepare() {
 		done
 	done
 
-	# Remove pointless GCC version limitations in check_gcc()
-	sed -e "/\s*-o\s*\\\(\s*\$cc_maj\s*-eq\s*[5-9]\s*-a\s*\$cc_min\s*-gt\s*[0-5]\s*\\\)\s*\\\/d" \
-		-i configure || die
+	# Remove pointless GCC version check
+	sed -e '/^check_gcc$/d' -i configure || die
+
+	eapply "${WORKDIR}/patches"
 
 	eapply_user
 }
@@ -121,8 +123,7 @@ src_compile() {
 	MAKE="kmk" \
 	emake TOOL_YASM_AS=yasm \
 	VBOX_ONLY_ADDITIONS=1 \
-	KBUILD_VERBOSE=2 \
-	CXXFLAGS="${CXXFLAGS} -fpermissive -D__builtin_types_compatible_p\(x,y\)=1"
+	KBUILD_VERBOSE=2
 
 	# Now creating the kernel modules. We must do this _after_
 	# we compiled the user-space tools as we need two of the

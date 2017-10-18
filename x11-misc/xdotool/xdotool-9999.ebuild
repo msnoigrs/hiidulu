@@ -1,12 +1,11 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
 
 EAPI=5
 
 EGIT_REPO_URI="https://github.com/jordansissel/xdotool.git"
 
-inherit git-2 eutils toolchain-funcs flag-o-matic multilib
+inherit git-r3 eutils toolchain-funcs flag-o-matic multilib
 
 DESCRIPTION="Simulate keyboard input and mouse activity, move and resize windows"
 HOMEPAGE="http://www.semicomplete.com/projects/xdotool/"
