@@ -14,11 +14,3 @@ DESCRIPTION="ctags-compatible tag generator for Go"
 LICENSE="MIT"
 SLOT="0"
 KEYWORDS="~amd64 ~x86 ~arm"
-
-COMMON_DEP="x11-libs/libX11"
-DEPEND="${COMMON_DEP}"
-RDEPEND="${COMMON_DEP}
-	media-gfx/byzanz
-	x11-misc/xdotool
-	x11-apps/xprop
-	x11-apps/xwininfo"
