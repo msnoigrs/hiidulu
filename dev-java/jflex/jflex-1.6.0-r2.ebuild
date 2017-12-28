@@ -1,6 +1,5 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Id$
 
 EAPI="5"
 
@@ -16,7 +15,7 @@ LICENSE="BSD"
 SLOT="0"
 KEYWORDS="~amd64 ~ppc ~ppc64 ~x86 ~amd64-fbsd ~ppc-macos ~x64-macos ~x86-macos"
 
-CDEPEND="~dev-java/javacup-0.11a_beta20060608:0"
+CDEPEND="~dev-java/javacup-0.11a_beta20060608:20060608"
 RDEPEND=">=virtual/jre-1.6
 	vim-syntax? ( || ( app-editors/vim app-editors/gvim ) )
 	${CDEPEND}"
@@ -53,7 +52,7 @@ sources\" destdir=\"javadoc\" version=\"true\" />\n  </target>\n\1",g \
 
 JAVA_ANT_REWRITE_CLASSPATH="true"
 EANT_GENTOO_CLASSPATH="ant-core"
-WANT_ANT_TASKS="dev-java/javacup:0"
+WANT_ANT_TASKS="dev-java/javacup:20060608"
 
 src_compile() {
 	java-pkg-2_src_compile

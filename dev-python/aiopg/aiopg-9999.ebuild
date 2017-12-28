@@ -17,8 +17,7 @@ SLOT="0"
 KEYWORDS="~amd64 ~x86 ~amd64-linux ~x86-linux ~ppc-macos ~x64-macos ~x86-macos ~x86-solaris"
 IUSE=""
 
-DEPEND="dev-python/psycopg
-	virtual/python-asyncio"
+DEPEND="dev-python/psycopg"
 #	python_targets_python3_3? ( dev-python/asyncio[python_targets_python3_3] )"
 RDEPEND="${DEPEND}"
 

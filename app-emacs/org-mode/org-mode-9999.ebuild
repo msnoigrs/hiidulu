@@ -4,7 +4,8 @@
 EAPI=5
 NEED_EMACS=22
 
-EGIT_REPO_URI="https://orgmode.org/org-mode.git"
+#EGIT_REPO_URI="https://orgmode.org/org-mode.git"
+EGIT_REPO_URI="https://github.com/msnoigrs/org-mode.git"
 
 inherit elisp git-r3
 

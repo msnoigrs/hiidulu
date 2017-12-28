@@ -19,8 +19,7 @@ KEYWORDS="~amd64 ~ppc ~x86 ~x86-fbsd"
 
 IUSE=""
 
-COMMON_DEPEND="java-virtuals/jaf
-	java-virtuals/stax-api"
+COMMON_DEPEND="java-virtuals/stax-api"
 RDEPEND=">=virtual/jre-1.6
 	${COMMON_DEPEND}"
 DEPEND=">=virtual/jdk-1.6
@@ -36,7 +35,6 @@ java_prepare() {
 	cp "${FILESDIR}/build.xml" build.xml || die
 
 	mkdir -p "${S}/lib" || die
-	java-pkg_jar-from --into ${S}/lib --virtual jaf
 	java-pkg_jar-from --into ${S}/lib --virtual stax-api
 }
 

@@ -23,7 +23,6 @@ KEYWORDS="~amd64 ~ppc ~x86 ~x86-fbsd"
 IUSE=""
 
 COMMON_DEP="java-virtuals/stax-api
-	java-virtuals/jaf
 	dev-java/codemodel:2
 	dev-java/txw2
 	dev-java/istack-commons
@@ -238,7 +237,8 @@ src_compile() {
 #	jaxb_compile_subpkg1 jaxb-api-2.2 tools/lib/redist2.2/jaxb-api.jar jaf,stax-api
 #	eant clean
 
-	jaxb_compile_subpkg2 jaxb-api tools/lib/redist/jaxb-api.jar jaf,stax-api
+	#jaxb_compile_subpkg2 jaxb-api tools/lib/redist/jaxb-api.jar jaf,stax-api
+	jaxb_compile_subpkg2 jaxb-api tools/lib/redist/jaxb-api.jar stax-api
 
 #	cp ${S}/tools/lib/redist2.2/resolver.jar ${S}/tools/lib/rebundle/compiler
 

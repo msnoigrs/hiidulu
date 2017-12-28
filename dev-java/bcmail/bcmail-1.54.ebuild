@@ -1,6 +1,5 @@
-# Copyright 1999-2016 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Id$
 
 EAPI=5
 
@@ -21,7 +20,6 @@ KEYWORDS="amd64 ppc64 x86 ~amd64-fbsd ~x86-fbsd ~amd64-linux ~x86-linux ~x64-mac
 CDEPEND="dev-java/bcprov:${SLOT}
 		dev-java/bcpkix:${SLOT}
 		dev-java/junit:0
-		java-virtuals/jaf:0
 		dev-java/oracle-javamail:0"
 
 DEPEND=">=virtual/jdk-1.6
@@ -34,7 +32,6 @@ RDEPEND=">=virtual/jre-1.6
 S="${WORKDIR}/${MY_P}"
 
 JAVA_GENTOO_CLASSPATH="
-	jaf
 	junit
 	bcprov-${SLOT}
 	bcpkix-${SLOT}

@@ -1,12 +1,11 @@
-# Copyright 1999-2016 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
 
 EAPI="5"
 
-inherit fdo-mime gnome2-utils git-2 eutils
+inherit fdo-mime gnome2-utils git-r3 eutils
 
-EGIT_REPO_URI="https://github.com/Alexey-Yakovenko/deadbeef.git"
+EGIT_REPO_URI="https://github.com/DeaDBeeF-Player/deadbeef.git"
 EGIT_BRANCH="master"
 
 KEYWORDS="~amd64 ~x86"

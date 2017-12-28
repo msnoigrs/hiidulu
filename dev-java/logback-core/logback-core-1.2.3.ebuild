@@ -15,7 +15,7 @@ SLOT="0"
 KEYWORDS="~x86 ~amd64"
 IUSE=""
 
-COMMON_DEP="java-virtuals/javamail
+COMMON_DEP="dev-java/oracle-javamail
 	dev-java/janino"
 DEPEND=">=virtual/jdk-1.6
 	java-virtuals/servlet-api:3.0
@@ -29,7 +29,7 @@ java_prepare() {
 	cp "${FILESDIR}/gentoo-build.xml" build.xml
 	mkdir lib || die
 	java-pkg_jar-from --virtual --into lib --build-only --virtual servlet-api-3.0 servlet-api.jar
-	java-pkg_jar-from --virtual --into lib javamail
+	java-pkg_jar-from --into lib oracle-javamail
 	java-pkg_jar-from --into lib janino
 }
 

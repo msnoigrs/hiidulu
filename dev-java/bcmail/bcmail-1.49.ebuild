@@ -11,10 +11,10 @@ MY_P="${PN}-jdk15on-${PV/./}"
 
 DESCRIPTION="Java cryptography APIs"
 HOMEPAGE="http://www.bouncycastle.org/java.html"
-SRC_URI="http://www.bouncycastle.org/download/${MY_P}.tar.gz"
+SRC_URI="http://polydistortion.net/bc/download/${MY_P}.tar.gz"
 
 LICENSE="BSD"
-SLOT="1.56"
+SLOT="1.49"
 KEYWORDS="amd64 ppc64 x86 ~amd64-fbsd ~x86-fbsd ~amd64-linux ~x86-linux ~x64-macos"
 
 CDEPEND="dev-java/bcprov:${SLOT}

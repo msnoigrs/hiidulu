@@ -16,8 +16,6 @@ SLOT="0"
 KEYWORDS="~amd64 ~ppc ~x86 ~x86-fbsd"
 IUSE=""
 
-COMMON_DEP="java-virtuals/jaf"
-
 DEPEND=">=virtual/jdk-1.6
 	dev-java/ant-core
 	${COMMON_DEP}"
@@ -33,8 +31,6 @@ java_prepare() {
 
 	rm -rv runtime/src/test
 	rm -rv tools/src/test
-
-	java-pkg_jar-from --into runtime/lib --virtual jaf
 
 	cp ${S}/tools/src14/com/sun/istack/tools/ProtectedTask.java \
 		${S}/tools/src/main/java/com/sun/istack/tools
