@@ -1,6 +1,5 @@
-# Copyright 1999-2013 Gentoo Foundation
+# Copyright 1999-2018 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
 
 EAPI=4
 JAVA_PKG_IUSE="doc source test"
@@ -18,10 +17,10 @@ IUSE=""
 
 COMMON_DEP="
 	java-virtuals/jms
-	java-virtuals/javamail"
+	dev-java/oracle-javamail"
 #	dev-java/log4j
 
-RDEPEND=">=virtual/jre-1.5
+RDEPEND=">=virtual/jre-1.6
 	${COMMON_DEP}"
 # Doesn't like 1.6 changes to JDBC
 DEPEND=">=virtual/jdk-1.6
@@ -46,7 +45,7 @@ java_prepare() {
 	cd target/lib || die
 	java-pkg_jar-from --build-only --virtual servlet-api-3.0
 	java-pkg_jar-from --virtual jms
-	java-pkg_jar-from --virtual javamail
+	java-pkg_jar-from oracle-javamail
 	#java-pkg_jar-from log4j
 	java-pkg_filter-compiler jikes
 }
