@@ -1,11 +1,11 @@
-# Copyright 1999-2017 Gentoo Foundation
+# Copyright 1999-2018 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=5
 NEED_EMACS=22
 
-#EGIT_REPO_URI="https://orgmode.org/org-mode.git"
-EGIT_REPO_URI="https://github.com/msnoigrs/org-mode.git"
+EGIT_REPO_URI="https://code.orgmode.org/bzg/org-mode.git"
+#EGIT_REPO_URI="https://github.com/msnoigrs/org-mode.git"
 
 inherit elisp git-r3
 
