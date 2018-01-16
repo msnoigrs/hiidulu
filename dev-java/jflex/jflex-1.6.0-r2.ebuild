@@ -1,4 +1,4 @@
-# Copyright 1999-2017 Gentoo Foundation
+# Copyright 1999-2018 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI="5"
@@ -12,7 +12,7 @@ HOMEPAGE="http://www.jflex.de/"
 SRC_URI="http://${PN}.de/${P}.tar.gz"
 
 LICENSE="BSD"
-SLOT="0"
+SLOT="1.6.0"
 KEYWORDS="~amd64 ~ppc ~ppc64 ~x86 ~amd64-fbsd ~ppc-macos ~x64-macos ~x86-macos"
 
 CDEPEND="~dev-java/javacup-0.11a_beta20060608:20060608"

@@ -1,4 +1,4 @@
-# Copyright 1999-2017 Gentoo Foundation
+# Copyright 1999-2018 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=5
@@ -10,7 +10,7 @@ DESCRIPTION="JFlex is a lexical analyzer generator for Java"
 SRC_URI="http://${PN}.de/${P}.tar.gz"
 HOMEPAGE="http://www.jflex.de/"
 LICENSE="BSD"
-SLOT="1.6.1"
+SLOT="0"
 KEYWORDS="~x86 ~amd64"
 
 CDEPEND="dev-java/javacup:20060608"
@@ -19,7 +19,7 @@ RDEPEND=">=virtual/jre-1.6
 	${CDEPEND}"
 
 DEPEND=">=virtual/jdk-1.6
-	~dev-java/jflex-1.6.0:0
+	~dev-java/jflex-1.6.0:1.6.0
 	${CDEPEND}"
 
 IUSE="vim-syntax"
@@ -34,7 +34,7 @@ sources\" destdir=\"javadoc\" version=\"true\" />\n  </target>\n\1",g \
 
 JAVA_ANT_REWRITE_CLASSPATH="true"
 EANT_GENTOO_CLASSPATH="ant-core"
-WANT_ANT_TASKS="dev-java/javacup:20060608 dev-java/jflex:0"
+WANT_ANT_TASKS="dev-java/javacup:20060608 dev-java/jflex:1.6.0"
 
 src_compile() {
 	java-pkg-2_src_compile
