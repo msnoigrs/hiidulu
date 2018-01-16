@@ -53,7 +53,7 @@ src_test() {
 
 src_install() {
 	java-pkg_newjar build/${P}.jar ${PN}.jar
-	java-pkg_dolauncher "${PN}-${SLOT}" --main jflex.Main
+	java-pkg_dolauncher "${PN}" --main jflex.Main
 	java-pkg_register-ant-task
 
 	if use doc ; then

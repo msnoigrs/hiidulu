@@ -71,7 +71,7 @@ src_test() {
 
 src_install() {
 	java-pkg_newjar build/${P}.jar ${PN}.jar
-	java-pkg_dolauncher "${PN}" --main jflex.Main
+	java-pkg_dolauncher "${PN}-${SLOT}" --main jflex.Main
 	java-pkg_register-ant-task
 
 	if use doc ; then
@@ -83,8 +83,8 @@ src_install() {
 	use examples && java-pkg_doexamples examples
 	use source && java-pkg_dosrc src/main
 
-	if use vim-syntax; then
-		insinto /usr/share/vim/vimfiles/syntax
-		doins "${S}/lib/${PN}.vim"
-	fi
+	# if use vim-syntax; then
+	# 	insinto /usr/share/vim/vimfiles/syntax
+	# 	doins "${S}/lib/${PN}-${SLOT}.vim"
+	# fi
 }
