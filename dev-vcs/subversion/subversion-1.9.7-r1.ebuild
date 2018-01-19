@@ -1,24 +1,26 @@
-# Copyright 1999-2017 Gentoo Foundation
+# Copyright 1999-2018 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=6
+
 PYTHON_COMPAT=( python2_7 )
 USE_RUBY="ruby23 ruby22 ruby21"
 DISTUTILS_OPTIONAL=1
 WANT_AUTOMAKE="none"
 GENTOO_DEPEND_ON_PERL="no"
 
-inherit autotools bash-completion-r1 db-use depend.apache distutils-r1 elisp-common eutils flag-o-matic java-pkg-opt-2 libtool multilib perl-module ruby-single
+inherit autotools bash-completion-r1 db-use depend.apache distutils-r1 elisp-common eutils flag-o-matic java-pkg-opt-2 libtool multilib perl-module ruby-single xdg-utils
 
 MY_P="${P/_/-}"
 DESCRIPTION="Advanced version control system"
-HOMEPAGE="http://subversion.apache.org/"
-SRC_URI="mirror://apache/${PN}/${MY_P}.tar.bz2"
+HOMEPAGE="https://subversion.apache.org/"
+SRC_URI="mirror://apache/${PN}/${MY_P}.tar.bz2
+	https://dev.gentoo.org/~mgorny/dist/${PN}-1.8.18-patchset.tar.bz2"
 S="${WORKDIR}/${MY_P}"
 
 LICENSE="Subversion GPL-2"
 SLOT="0"
-KEYWORDS="alpha amd64 arm ~arm64 hppa ia64 ~mips ppc ppc64 ~s390 ~sh sparc x86 ~ppc-aix ~x64-cygwin ~amd64-fbsd ~x86-fbsd ~amd64-linux ~arm-linux ~x86-linux ~ppc-macos ~x64-macos ~x86-macos ~m68k-mint ~sparc-solaris ~sparc64-solaris ~x64-solaris ~x86-solaris"
+KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~ia64 ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 ~ppc-aix ~x64-cygwin ~amd64-fbsd ~x86-fbsd ~amd64-linux ~arm-linux ~x86-linux ~ppc-macos ~x64-macos ~x86-macos ~m68k-mint ~sparc-solaris ~sparc64-solaris ~x64-solaris ~x86-solaris"
 IUSE="apache2 berkdb ctypes-python debug doc +dso extras gnome-keyring +http java kwallet nls perl python ruby sasl test vim-syntax"
 
 COMMON_DEPEND="
@@ -31,9 +33,21 @@ COMMON_DEPEND="
 	sys-libs/zlib
 	berkdb? ( >=sys-libs/db-4.0.14:= )
 	ctypes-python? ( ${PYTHON_DEPS} )
-	gnome-keyring? ( dev-libs/glib:2 sys-apps/dbus gnome-base/libgnome-keyring )
+	gnome-keyring? (
+		dev-libs/glib:2
+		gnome-base/libgnome-keyring
+		sys-apps/dbus
+	)
 	http? ( >=net-libs/serf-1.3.4 )
-	kwallet? ( sys-apps/dbus dev-qt/qtcore:4 dev-qt/qtdbus:4 dev-qt/qtgui:4 kde-frameworks/kdelibs:4 )
+	kwallet? (
+		dev-qt/qtcore:5
+		dev-qt/qtdbus:5
+		dev-qt/qtgui:5
+		kde-frameworks/kcoreaddons:5
+		kde-frameworks/ki18n:5
+		kde-frameworks/kwallet:5
+		sys-apps/dbus
+	)
 	perl? ( dev-lang/perl:= )
 	python? ( ${PYTHON_DEPS} )
 	ruby? ( ${RUBY_DEPS} )
@@ -41,7 +55,6 @@ COMMON_DEPEND="
 RDEPEND="${COMMON_DEPEND}
 	apache2? ( www-servers/apache[apache2_modules_dav] )
 	java? ( >=virtual/jre-1.6 )
-	kwallet? ( >=kde-frameworks/kwallet-5.34.0-r1 )
 	nls? ( virtual/libintl )
 	perl? ( dev-perl/URI )"
 # Note: ctypesgen doesn't need PYTHON_USEDEP, it's used once
@@ -52,7 +65,10 @@ DEPEND="${COMMON_DEPEND}
 	gnome-keyring? ( virtual/pkgconfig )
 	http? ( virtual/pkgconfig )
 	java? ( >=virtual/jdk-1.6 )
-	kwallet? ( virtual/pkgconfig )
+	kwallet? (
+		kde-frameworks/kdelibs4support:5
+		virtual/pkgconfig
+	)
 	nls? ( sys-devel/gettext )
 	test? ( ${PYTHON_DEPS} )"
 
@@ -65,12 +81,13 @@ REQUIRED_USE="
 	)"
 
 PATCHES=(
-	"${FILESDIR}"/${PN}-1.5.4-interix.patch
-	"${FILESDIR}"/${PN}-1.5.6-aix-dso.patch
-	"${FILESDIR}"/${PN}-1.8.0-hpux-dso.patch
-	"${FILESDIR}"/${PN}-fix-parallel-build-support-for-perl-bindings.patch
-	"${FILESDIR}"/${PN}-1.8.1-revert_bdb6check.patch
-	"${FILESDIR}"/${PN}-1.8.16-javadoc-nolint.patch
+	"${WORKDIR}"/${PN}-1.8.18-patchset/${PN}-1.5.4-interix.patch
+	"${WORKDIR}"/${PN}-1.8.18-patchset/${PN}-1.5.6-aix-dso.patch
+	"${WORKDIR}"/${PN}-1.8.18-patchset/${PN}-1.8.0-hpux-dso.patch
+	"${WORKDIR}"/${PN}-1.8.18-patchset/${PN}-fix-parallel-build-support-for-perl-bindings.patch
+	"${WORKDIR}"/${PN}-1.8.18-patchset/${PN}-1.8.1-revert_bdb6check.patch
+	"${WORKDIR}"/${PN}-1.8.18-patchset/${PN}-1.8.16-javadoc-nolint.patch
+	"${FILESDIR}"/${P}-kf5.patch
 )
 
 want_apache
@@ -160,6 +177,8 @@ src_prepare() {
 		S=${S}/subversion/bindings/swig/python python_copy_sources
 		rm -r "${S}"/subversion/bindings/swig/python || die
 	fi
+
+	xdg_environment_reset
 }
 
 src_configure() {
