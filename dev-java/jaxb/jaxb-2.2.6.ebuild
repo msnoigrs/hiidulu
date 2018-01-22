@@ -1,4 +1,4 @@
-# Copyright 1999-2017 Gentoo Foundation
+# Copyright 1999-2018 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=5
@@ -40,7 +40,7 @@ COMMON_DEP="java-virtuals/stax-api
 	dev-java/xml-commons-external:1.4
 	dev-java/xerces:2
 	dev-java/xml-commons-resolver"
-DEPEND=">=virtual/jdk-1.6
+DEPEND=">=virtual/jdk-1.8
 	dev-java/codemodel-annotation-compiler
 	dev-java/relaxngcc
 	dev-java/jaxb:1
@@ -48,7 +48,7 @@ DEPEND=">=virtual/jdk-1.6
 	dev-java/junit:0
 	${COMMON_DEP}"
 #	dev-java/aptmirrorapi
-RDEPEND=">=virtual/jre-1.6
+RDEPEND=">=virtual/jre-1.8
 	${COMMON_DEP}"
 
 #JAVA_PKG_NV_DEPEND="=virtual/jdk-1.5*"

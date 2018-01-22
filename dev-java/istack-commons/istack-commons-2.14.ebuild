@@ -1,4 +1,4 @@
-# Copyright 1999-2017 Gentoo Foundation
+# Copyright 1999-2018 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=5
@@ -17,20 +17,15 @@ SLOT="0"
 KEYWORDS="~amd64 ~ppc ~x86 ~x86-fbsd"
 IUSE=""
 
-COMMON_DEP="java-virtuals/jaf"
-
 DEPEND=">=virtual/jdk-1.6
-	dev-java/ant-core
-	${COMMON_DEP}"
-RDEPEND=">=virtual/jre-1.6
-	${COMMON_DEP}"
+	dev-java/ant-core"
+RDEPEND=">=virtual/jre-1.6"
 
 java_prepare() {
 	java-ant_bsfix_one build-common.xml
 
 	rm -v runtime/lib/*.jar
 	rm -v lib/*.jar
-	java-pkg_jar-from --into runtime/lib --virtual jaf
 
 	cp ${S}/tools/src14/com/sun/istack/tools/ProtectedTask.java \
 		${S}/tools/src/com/sun/istack/tools

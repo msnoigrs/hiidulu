@@ -1,6 +1,5 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2018 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
 
 EAPI=5
 EGIT_REPO_URI="https://github.com/paul-hammant/qdox.git"
@@ -23,7 +22,7 @@ DEPEND=">=virtual/jdk-1.6
 	${COMMON_DEP}
 	dev-java/ant-core
 	>=dev-java/byaccj-1.14
-	dev-java/jflex:1.6.1
+	dev-java/jflex
 	sys-apps/sed"
 
 java_prepare() {
@@ -48,8 +47,8 @@ src_compile() {
 	local impldir="src/main/java/com/thoughtworks/qdox/parser/impl"
 	mkdir -p ${impldir}
 #	jflex -d ${impldir} --skel src/grammar/skeleton.inner src/grammar/lexer.flex || die "jflex failed"
-	jflex-1.6.1 -d ${impldir} src/grammar/lexer.flex || die "jflex failed"
-	jflex-1.6.1 -d ${impldir} src/grammar/commentlexer.flex || die "jflex failed"
+	jflex -d ${impldir} src/grammar/lexer.flex || die "jflex failed"
+	jflex -d ${impldir} src/grammar/commentlexer.flex || die "jflex failed"
 	byaccj -v -Jnorun -Jnoconstruct -Jclass=DefaultJavaCommentParser \
 		-Jpackage=com.thoughtworks.qdox.parser.impl \
 		src/grammar/commentparser.y || die "byaccj failed"
