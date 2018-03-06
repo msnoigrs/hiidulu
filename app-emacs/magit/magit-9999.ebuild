@@ -1,4 +1,4 @@
-# Copyright 1999-2017 Gentoo Foundation
+# Copyright 1999-2018 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=5
@@ -24,7 +24,7 @@ SITEFILE="50magit-gentoo.el"
 src_compile() {
 	#elisp_src_compile
 	#emake docs
-	emake DASH_DIR=${SITELISP}/dash
+	emake DASH_DIR=${SITELISP}/dash lisp
 }
 
 src_install() {
