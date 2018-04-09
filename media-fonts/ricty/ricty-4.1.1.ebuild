@@ -1,4 +1,4 @@
-# Copyright 1999-2017 Gentoo Foundation
+# Copyright 1999-2018 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=6
@@ -11,9 +11,9 @@ MIG="redir.php?m=iij&f=%2Fmix-mplus-ipa%2F${MIG_SFD}%2Fmigu-1m-${MIG_V}.zip"
 
 DESCRIPTION="Japanese TrueType font. for programing"
 HOMEPAGE="http://www.rs.tus.ac.jp/yyusa/ricty.html"
-SRC_URI="https://github.com/cyrealtype/Inconsolata/blob/master/fonts/ttf/Inconsolata-Regular.ttf
-	https://github.com/cyrealtype/Inconsolata/blob/master/fonts/ttf/Inconsolata-Bold.ttf
-	http://www.rs.tus.ac.jp/yyusa/ricty/ricty_generator.sh
+SRC_URI="https://github.com/google/fonts/raw/master/ofl/inconsolata/Inconsolata-Regular.ttf
+	https://github.com/google/fonts/raw/master/ofl/inconsolata/Inconsolata-Bold.ttf
+	http://www.rs.tus.ac.jp/yyusa/ricty/ricty_generator-${PV}.sh
 	http://sourceforge.jp/frs/${MIG}"
 
 # M+ FONTS -> mplus-fonts
@@ -39,7 +39,7 @@ src_unpack() {
 	cd ${S}
 	unpack ${MIG}
 	cp "${DISTDIR}/Inconsolata-Regular.ttf" "${DISTDIR}/Inconsolata-Bold.ttf" .
-	cp "${DISTDIR}/ricty_generator.sh" .
+	cp "${DISTDIR}/ricty_generator-${PV}.sh" ricty_generator.sh
 }
 
 src_compile() {
