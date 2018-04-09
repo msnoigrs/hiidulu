@@ -27,8 +27,8 @@ FONT_SUFFIX="otf"
 RESTRICT="binchecks strip"
 
 src_install() {
-	use l10n_ja && FONT_S="${S}/SourceHanSansJP" font_src_install
-	use l10n_ko && FONT_S="${S}/SourceHanSansKR" font_src_install
-	use l10n_zh-CN && FONT_S="${S}/SourceHanSansCN" font_src_install
-	use l10n_zh-TW && FONT_S="${S}/SourceHanSansTW" font_src_install
+	use l10n_ja && FONT_S="${S}/SourceHanSerifJP" font_src_install
+	use l10n_ko && FONT_S="${S}/SourceHanSerifKR" font_src_install
+	use l10n_zh-CN && FONT_S="${S}/SourceHanSerifCN" font_src_install
+	use l10n_zh-TW && FONT_S="${S}/SourceHanSerifTW" font_src_install
 }
