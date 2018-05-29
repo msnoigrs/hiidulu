@@ -14,9 +14,6 @@ SRC_URI=""
 LICENSE="GPL-3 FDL-1.3"
 SLOT="0"
 KEYWORDS="~amd64 ~x86"
-IUSE="linguas_ja"
-
-SITEFILE="50${PN}-gentoo.el"
 
 src_install() {
 	elisp_src_install
