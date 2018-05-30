@@ -3,19 +3,20 @@
 
 EAPI=5
 
-EGIT_REPO_URI="https://github.com/magit/with-editor.git"
+EGIT_REPO_URI="https://github.com/magit/magit-popup.git"
 
 inherit elisp git-r3
 
-DESCRIPTION="Use the Emacsclient as the $EDITOR of child processes"
-HOMEPAGE="https://github.com/magit/with-editor"
-SRC_URI=""
+DESCRIPTION="Define prefix-Infix-suffix command combos"
+HOMEPAGE="https://github.com/magit/magit-popup"
 
 LICENSE="GPL-3"
 SLOT="0"
 KEYWORDS="~amd64 ~x86"
+IUSE=""
 
 DEPEND="app-emacs/dash"
+RDEPEND="${RDEPEND}"
 
 src_compile() {
 	emake LOAD_PATH="-L ${SITELISP}/dash  -L ." lisp info
@@ -23,5 +24,5 @@ src_compile() {
 
 src_install() {
 	elisp_src_install
-	doinfo with-editor.info
+	doinfo magit-popup.info
 }
