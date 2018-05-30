@@ -1,4 +1,4 @@
-# Copyright 1999-2017 Gentoo Foundation
+# Copyright 1999-2018 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=5
@@ -17,8 +17,9 @@ KEYWORDS="amd64 ppc ~ppc64 x86"
 IUSE=""
 
 DEPEND="
-	>=virtual/jdk-1.6
+	>=virtual/jdk-1.8
 	dev-java/jna
+	dev-java/ongres-scram
 	doc? (
 		dev-libs/libxslt
 		app-text/docbook-xsl-stylesheets
@@ -27,13 +28,16 @@ DEPEND="
 		dev-java/ant-junit
 		dev-db/postgresql-server
 	)"
-RDEPEND=">=virtual/jre-1.6"
+RDEPEND=">=virtual/jre-1.8"
 
 #S="${WORKDIR}/pgjdbc"
 
 #RESTRICT="test"
 
 java_prepare() {
+	mkdir lib || die
+	java-pkg_jar-from --into lib --build-only ongres-scram
+
 	cp "${FILESDIR}"/build.xml build.xml
 	echo "major=9" >> build.properties
 	echo "minor=5" >> build.properties
@@ -53,6 +57,7 @@ java_prepare() {
 	rm -v pgjdbc/src/main/java/org/postgresql/sspi/NTDSAPI.java
 	rm -v pgjdbc/src/main/java/org/postgresql/sspi/NTDSAPIWrapper.java
 	rm -v pgjdbc/src/main/java/org/postgresql/sspi/SSPIClient.java
+	#rm -v pgjdbc/src/main/java/org/postgresql/jre8/sasl/ScramAuthenticator.java
 
 	java-ant_rewrite-classpath
 }
