@@ -20,9 +20,13 @@ DEPEND="app-emacs/yasnippet"
 RDEPEND="${DEPEND}"
 
 
-src_install() {
-	elisp_src_install
+src_prepare() {
+	default
+	touch .nosearch
+}
 
+src_install() {
 	insinto "${SITELISP}/${PN}"
+	doins .nosearch
 	doins -r snippets || die "doins failed"
 }

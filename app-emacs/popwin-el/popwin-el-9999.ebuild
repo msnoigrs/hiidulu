@@ -1,4 +1,4 @@
-# Copyright 1999-2017 Gentoo Foundation
+# Copyright 1999-2018 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=5
@@ -16,3 +16,8 @@ SLOT="0"
 KEYWORDS="~amd64 ~x86"
 
 SITEFILE="50${PN}-gentoo.el"
+
+src_install() {
+	elisp_src_install
+	elisp-install ${PN} misc/*.el || die
+}
