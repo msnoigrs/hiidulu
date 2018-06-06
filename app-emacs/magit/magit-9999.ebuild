@@ -26,6 +26,7 @@ SITEFILE="50magit-gentoo.el"
 
 src_compile() {
 	emake \
+		PREFIX="/usr" \
 		DASH_DIR="${SITELISP}/dash" \
 		GHUB_DIR="${SITELISP}/ghub" \
 		MAGIT_POPUP_DIR="${SITELISP}/magit-popup" \
@@ -35,5 +36,5 @@ src_compile() {
 src_install() {
 	doinfo Documentation/magit.info
 	cd lisp
-	default
+	emake PREFIX="${D}/usr" install
 }
