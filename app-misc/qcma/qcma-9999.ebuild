@@ -31,7 +31,7 @@ RDEPEND="${DEPEND}
 	virtual/ffmpeg"
 
 src_prepare() {
-	epatch "${FILESDIR}"/ffmpeg.patch
+	#epatch "${FILESDIR}"/ffmpeg.patch
 	sed -i -e 's/qcma.png/qcma/' -e '/^Path=/ d' gui/resources/qcma.desktop
 }
 
