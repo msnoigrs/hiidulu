@@ -98,6 +98,7 @@ src_unpack() {
 }
 
 src_prepare() {
+	eapply -p2 "${FILESDIR}/mozc-gcc8.patch"
 	eapply -p2 "${FILESDIR}/${PN}-2.20.2673.102-tests_build.patch"
 	eapply -p2 "${FILESDIR}/${PN}-2.20.2673.102-tests_skipping.patch"
 
