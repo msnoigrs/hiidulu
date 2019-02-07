@@ -3,7 +3,7 @@
 
 EAPI=6
 
-PYTHON_COMPAT=( python{2_7,3_5,3_6,3_7} )
+PYTHON_COMPAT=( python2_7 pypy )
 
 inherit distutils-r1
 
@@ -18,3 +18,12 @@ KEYWORDS="~amd64 ~x86"
 IUSE=""
 
 S="${WORKDIR}/${MY_P}"
+
+#RDEPEND="dev-python/backports[${PYTHON_USEDEP}]"
+DEPEND="dev-python/setuptools[${PYTHON_USEDEP}]"
+
+python_install_all() {
+	distutils-r1_python_install_all
+
+	find "${D}" -name '*.pth' -delete || die
+}

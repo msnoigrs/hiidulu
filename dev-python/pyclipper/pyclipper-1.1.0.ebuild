@@ -17,4 +17,7 @@ KEYWORDS="~amd64 ~x86"
 IUSE="test"
 
 RDEPEND=""
-DEPEND="${RDEPEND}"
+DEPEND="
+	dev-python/setuptools[${PYTHON_USEDEP}]
+	dev-python/setuptools_scm[${PYTHON_USEDEP}]
+	${RDEPEND}"
