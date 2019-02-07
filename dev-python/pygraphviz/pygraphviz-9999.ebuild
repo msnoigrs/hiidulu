@@ -1,14 +1,13 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2019 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
-# $Id$
 
-EAPI=5
+EAPI=6
 
 EGIT_REPO_URI="git://github.com/pygraphviz/pygraphviz.git"
 
-PYTHON_COMPAT=( python{2_7,3_3,3_4,3_5} )
+PYTHON_COMPAT=( python{2_7,3_5,3_6,3_7} )
 
-inherit git-2 distutils-r1
+inherit distutils-r1 git-r3
 
 DESCRIPTION="Python wrapper for the Graphviz Agraph data structure"
 HOMEPAGE="http://networkx.lanl.gov/pygraphviz/ http://pypi.python.org/pypi/pygraphviz"
@@ -23,12 +22,6 @@ IUSE="examples"
 RDEPEND="media-gfx/graphviz"
 DEPEND="dev-lang/swig
 		${RDEPEND}"
-
-#PATCHES=(
-#	"${FILESDIR}"/setup.patch
-#)
-#	"${FILESDIR}"/${PN}-1.0-setup.py.patch
-#	"${FILESDIR}"/${P}-avoid_tests.patch
 
 src_prepare() {
 	distutils-r1_src_prepare

@@ -1,10 +1,9 @@
-# Copyright 1999-2017 Gentoo Foundation
+# Copyright 1999-2019 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
-# $Id$
 
-EAPI=5
+EAPI=6
 
-PYTHON_COMPAT=( python{2_7,3_4,3_5,3_6} pypy2_0 )
+PYTHON_COMPAT=( python{2_7,3_5,3_6,3_7} pypy2_0 )
 
 EGIT_REPO_URI="https://github.com/Pylons/deform.git"
 
@@ -34,8 +33,7 @@ DOCS=( CHANGES.txt COPYRIGHT.txt )
 
 python_prepare_all() {
 	sed -i -e '/zope.deprecation/ d' setup.py
-
-	epatch "${FILESDIR}/deform-FieldStorage.patch"
+	#eapply "${FILESDIR}/deform-FieldStorage.patch"
 
 	distutils-r1_python_prepare_all
 }

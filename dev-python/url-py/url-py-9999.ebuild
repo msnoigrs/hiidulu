@@ -1,15 +1,14 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2019 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
-# $Id$
 
-EAPI=5
+EAPI=6
 
-PYTHON_COMPAT=( python{2_7,3_3,3_4,3_5} )
+PYTHON_COMPAT=( python{2_7,3_5,3_6,3_7} )
 
 #EGIT_REPO_URI="https://github.com/seomoz/url-py.git"
 EGIT_REPO_URI="https://github.com/masayuko/url-py"
 
-inherit distutils-r1 git-2
+inherit distutils-r1 git-r3
 
 DESCRIPTION="URL Transformation, Sanitization"
 HOMEPAGE="https://github.com/seomoz/url-py"

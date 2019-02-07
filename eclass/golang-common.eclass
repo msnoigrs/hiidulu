@@ -1,6 +1,5 @@
-# Copyright 1999-2017 Gentoo Foundation
+# Copyright 1999-2019 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
-# $Id$
 
 # @ECLASS: golang-utils.eclass
 # @MAINTAINER:
@@ -166,6 +165,11 @@ GOLANG_PKG_VENDOR=()
 # Sets the arguments to pass to dev-go/statik.
 # This eclass defaults to an empty list.
 GOLANG_PKG_STATIK="${GOLANG_PKG_STATIK:-}"
+
+# @ECLASS-VARIABLE: GOLANG_GO111MODULE
+# @DESCRIPTION:
+# Sets the GO111MODULE environment variable.
+GOLANG_GO111MODULE=${GOLANG_GO111MODULE:="auto"}
 
 
 # @ECLASS-VARIABLE: GO
@@ -372,8 +376,8 @@ golang_setup() {
 	fi
 
 	# Enable/Disable frame pointers
-    local GOEXPERIMENT="noframepointer"
-    use debug && GOEXPERIMENT="framepointer"
+	local GOEXPERIMENT="noframepointer"
+	use debug && GOEXPERIMENT="framepointer"
 
 	# Sets the build environment inside Portage's WORKDIR.
 	ebegin "Setting up GoLang build environment"
@@ -398,6 +402,7 @@ golang_setup() {
 		export CGO_ENABLED
 		export GOEXPERIMENT
 		export GO15VENDOREXPERIMENT=0
+		export GO111MODULE="${GOLANG_GO111MODULE}"
 
 		debug-print "${FUNCNAME}: GOPATH = ${GOPATH}"
 		debug-print "${FUNCNAME}: GOBIN = ${GOBIN}"
@@ -849,8 +854,8 @@ golang-common_src_test() {
 	[[ -n ${EGO_RACE} ]] && EGO_BUILD_FLAGS+=" $( echo ${EGO_RACE} )"
 
 	# Sanitizes vars from entra white spaces.
-    GOLANG_PKG_LDFLAGS="$( echo ${GOLANG_PKG_LDFLAGS} )"
-    GOLANG_PKG_TAGS="$( echo ${GOLANG_PKG_TAGS} )"
+	GOLANG_PKG_LDFLAGS="$( echo ${GOLANG_PKG_LDFLAGS} )"
+	GOLANG_PKG_TAGS="$( echo ${GOLANG_PKG_TAGS} )"
 
 	# Defines sub-packages.
 	local EGO_SUBPACKAGES="${GOLANG_PKG_IMPORTPATH_ALIAS}/${GOLANG_PKG_NAME}${GOLANG_PKG_BUILDPATH}"
@@ -885,7 +890,7 @@ golang-common_src_test() {
 				${EGO_BUILD_FLAGS} \
 				"${GOLANG_PKG_IMPORTPATH_ALIAS}/${GOLANG_PKG_NAME}${cmd}/..." \
 				|| die
-       done <<< "$( echo ${GOLANG_PKG_BUILDPATH}) "
+	   done <<< "$( echo ${GOLANG_PKG_BUILDPATH}) "
 	else
 		# It's a single package
 		einfo "${EGO} test -ldflags '$GOLANG_PKG_LDFLAGS' -tags '$GOLANG_PKG_TAGS' ${EGO_BUILD_FLAGS} ${EGO_SUBPACKAGES}"
@@ -927,8 +932,8 @@ golang_do_build() {
 	if ! use debug; then
 		case "${GOLANG_PKG_LDFLAGS}" in
 			*-s*|*-w*)
-			    # Do nothing
-    			;;
+				# Do nothing
+				;;
 			*)
 				GOLANG_PKG_LDFLAGS+=" -s -w"
 		esac

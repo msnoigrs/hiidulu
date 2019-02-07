@@ -1,13 +1,10 @@
-# Copyright 1999-2017 Gentoo Foundation
+# Copyright 1999-2019 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
-# $Id$
 
-EAPI=5
+EAPI=6
 
-PYTHON_COMPAT=( python{2_7,3_4,3_5,3_6} )
+PYTHON_COMPAT=( python{2_7,3_5,3_6,3_7} )
 
-#EGIT_REPO_URI="https://github.com/masayuko/astodi.git"
-EGIT_REPO_URI="https://masayuko@bitbucket.org/masayuko/astodi.git"
 EGIT_REPO_URI="https://github.com/hsharrison/Py2D.git"
 
 inherit distutils-r1 git-r3
