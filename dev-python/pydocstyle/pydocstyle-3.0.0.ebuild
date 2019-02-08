@@ -16,7 +16,5 @@ SLOT="0"
 KEYWORDS="~amd64"
 IUSE=""
 
-BDEPEND="
-	dev-python/setuptools[${PYTHON_USEDEP}]
-	dev-python/snowballstemmer[${PYTHON_USEDEP}]
-"
+BDEPEND="dev-python/setuptools[${PYTHON_USEDEP}]"
+DEPEND="dev-python/snowballstemmer[${PYTHON_USEDEP}]"

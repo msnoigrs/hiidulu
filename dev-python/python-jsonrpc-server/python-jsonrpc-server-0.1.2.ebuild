@@ -16,10 +16,8 @@ SLOT="0"
 KEYWORDS="~amd64"
 IUSE="test"
 
-BEPEND="
+BDEPEND="
 	dev-python/setuptools[${PYTHON_USEDEP}]
-	dev-python/future[${PYTHON_USEDEP}]
-	$(python_gen_cond_dep 'dev-python/futures' python2_7)
 	test? (
 		dev-python/tox[${PYTHON_USEDEP}]
 		dev-python/versioneer[${PYTHON_USEDEP}]
@@ -27,8 +25,10 @@ BEPEND="
 		dev-python/mock[${PYTHON_USEDEP}]
 		dev-python/pytest-cov[${PYTHON_USEDEP}]
 		dev-python/coverage[${PYTHON_USEDEP}]
-	)
-"
+	)"
+DEPEND="
+	dev-python/future[${PYTHON_USEDEP}]
+	$(python_gen_cond_dep 'dev-python/futures' python2_7)"
 
 python_test() {
 	pytest -vv || die "Tests failed under ${EPYTHON}"

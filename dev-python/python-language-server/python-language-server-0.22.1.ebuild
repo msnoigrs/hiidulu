@@ -17,8 +17,8 @@ SLOT="0"
 KEYWORDS="~amd64"
 IUSE="test"
 
-BEPEND="
-	dev-python/setuptools[${PYTHON_USEDEP}]
+BDEPEND="dev-python/setuptools[${PYTHON_USEDEP}]"
+DEPEND="
 	dev-python/future[${PYTHON_USEDEP}]
 	$(python_gen_cond_dep 'dev-python/futures' python2_7)
 	dev-python/jedi[${PYTHON_USEDEP}]
@@ -40,6 +40,7 @@ BEPEND="
 		dev-python/coverage[${PYTHON_USEDEP}]
 	)
 "
+RDEPEND="${DEPEND}"
 
 python_prepare_all() {
 	rm -r test || die

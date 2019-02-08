@@ -1,9 +1,9 @@
 # Copyright 1999-2019 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=6
+EAPI=7
 
-PYTHON_COMPAT=( python2_7 python3_{4,5,6} )
+PYTHON_COMPAT=( python2_7 python3_{5,6,7} )
 
 inherit distutils-r1
 
@@ -19,7 +19,7 @@ IUSE="doc"
 RDEPEND="!dev-python/rope_py3k"
 # Dependency for docbuild documentation which is not noted in
 # setup.py, using standard docutils builds docs successfully.
-DEPEND="dev-python/setuptools[${PYTHON_USEDEP}]
+BDEPEND="dev-python/setuptools[${PYTHON_USEDEP}]
 	doc? ( dev-python/docutils[${PYTHON_USEDEP}] )"
 
 # PATCHES=( "${FILESDIR}/${PN}-0.10.3-doc-syntax-errors.patch" )
