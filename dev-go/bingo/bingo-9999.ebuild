@@ -3,9 +3,10 @@
 
 EAPI=6
 
-inherit golang-build
+inherit git-r3
 
-EGO_PN="github.com/saibing/bingo/..."
+EGIT_REPO_URI="https://github.com/saibing/bingo.git"
+EGOPATH="${WORKDIR}/go"
 
 DESCRIPTION="Go language server that speaks Language Server Protocol"
 HOMEPAGE="https://github.com/saibing/bingo"
@@ -15,26 +16,18 @@ LICENSE="MIT"
 SLOT="0"
 IUSE=""
 
-DEPEND=">=dev-lang/go-1.11"
+DEPEND=">=dev-lang/go-1.12"
 
 src_unpack() {
-	mkdir -p "${S}"
-	GOPATH="${S}" go get -d -t -u -v -x ${EGO_PN}
-	GOPATH="${S}" go get -d -t -u -v -x golang.org/x/tools/go/packages
-
-	pushd "${S}/src/${EGO_PN%/...}" || die
-	GO111MODULE=on GOPATH="${S}" GOCACHE="${T}/go-cache" go build -v
-	popd || die
+	git-r3_src_unpack
+	cd "${S}"
+	GO111MODULE=on GOPATH="${EGOPATH}" go get -u
 }
 
 src_compile() {
-	pushd "${S}/src/${EGO_PN%/...}" || die
-	GO111MODULE=on GOPATH="${S}" GOCACHE="${T}/go-cache" go build -v
-	popd || die
+	GO111MODULE=on GOPATH="${EGOPATH}" go build -v
 }
 
 src_install() {
-	pushd "${S}/src/${EGO_PN%/...}" || die
 	dobin bingo
-	popd || die
 }
