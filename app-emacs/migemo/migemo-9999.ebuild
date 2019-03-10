@@ -15,4 +15,6 @@ SLOT="0"
 KEYWORDS="~amd64 ~x86"
 IUSE=""
 
+RDEPEND="app-text/cmigemo"
+
 #SITEFILE="50${PN}-gentoo.el"
