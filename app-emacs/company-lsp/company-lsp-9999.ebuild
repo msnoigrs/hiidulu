@@ -17,7 +17,7 @@ IUSE=""
 
 DEPEND="app-emacs/dash
 	app-emacs/s
-	app-emacs/company
+	app-emacs/company-mode
 	app-emacs/lsp-mode
 	app-emacs/seq"
 RDEPEND="${DEPEND}"
