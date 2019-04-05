@@ -18,15 +18,12 @@ IUSE=""
 src_unpack() {
 	default
 	cd "${S}"
-	GO111MODULE=on GOPATH="${EGOPATH}" go get -u
+	GO111MODULE=on GOPATH="${EGOPATH}" go get
 }
 
 src_compile() {
 	GO111MODULE=on GOPATH="${EGOPATH}" go build -v
-	mkdir man
-	cd man
-	../hugo gen man || die
-	cd ..
+	./hugo gen man || die
 	mkdir bash
 	cd bash
 	../hugo gen autocomplete --completionfile hugo || die
