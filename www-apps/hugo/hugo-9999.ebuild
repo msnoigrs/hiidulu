@@ -10,6 +10,7 @@ EGOPATH="${WORKDIR}/go"
 
 DESCRIPTION="A Fast and Flexible Static Site Generator built with love in Go"
 HOMEPAGE="https://gohugo.io https://github.com/gohugoio/hugo"
+KEYWORDS="~amd64"
 LICENSE="Apache-2.0"
 SLOT="0"
 IUSE=""
