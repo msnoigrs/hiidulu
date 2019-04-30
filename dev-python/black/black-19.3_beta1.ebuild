@@ -22,4 +22,12 @@ SLOT="0"
 KEYWORDS="~amd64"
 IUSE=""
 
+DEPEND="dev-python/toml
+	dev-python/appdirs
+	dev-python/attrs
+	dev-python/click
+	dev-python/aiohttp
+	dev-python/aiohttp-cors"
+RDEEND="${DEPEND}"
+
 S="${WORKDIR}/${PN}-${COMMIT}"
