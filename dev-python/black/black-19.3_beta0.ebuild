@@ -11,11 +11,11 @@ inherit distutils-r1
 MY_PV="${PV/_beta/b}"
 MY_P="${PN}-${MY_PV}"
 
-COMMIT="cea13f498418784e22f8fbd78db3f9240a2bad11"
+COMMIT="026c81b83454f176a9f9253cbfb70be2c159d822"
 
 DESCRIPTION="The uncompromising Python code formatter"
-HOMEPAGE="https://github.com/ambv/black"
-SRC_URI="https://github.com/ambv/${PN}/archive/${COMMIT}.tar.gz -> ${MY_P}.tar.gz"
+HOMEPAGE="https://github.com/python/black"
+SRC_URI="https://github.com/python/${PN}/archive/${COMMIT}.tar.gz -> ${MY_P}.tar.gz"
 
 LICENSE="MIT"
 SLOT="0"
