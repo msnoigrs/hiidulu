@@ -17,5 +17,6 @@ SLOT="0"
 KEYWORDS="~amd64"
 IUSE=""
 
-# DEPEND="""
-# RDEEND="${DEPEND}"
+DEPEND="dev-python/shutilwhich
+	dev-python/bashlex"
+RDEEND="${DEPEND}"
