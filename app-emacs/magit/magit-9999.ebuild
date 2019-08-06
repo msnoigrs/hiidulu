@@ -16,9 +16,11 @@ SLOT="0"
 KEYWORDS="~amd64 ~x86"
 IUSE=""
 
-DEPEND="app-emacs/dash
+DEPEND="app-emacs/async
+	app-emacs/dash
 	app-emacs/ghub
-	app-emacs/magit-popup
+	app-emacs/transient
+	app-emacs/libegit2
 	app-emacs/with-editor"
 RDEPEND="${RDEPEND}"
 
@@ -29,7 +31,8 @@ src_compile() {
 		PREFIX="/usr" \
 		DASH_DIR="${SITELISP}/dash" \
 		GHUB_DIR="${SITELISP}/ghub" \
-		MAGIT_POPUP_DIR="${SITELISP}/magit-popup" \
+		TRANSIENT_DIR="${SITELISP}/transient" \
+		LIBGIT_DIR="${SITELISP}/libegit2" \
 		WITH_EDITOR_DIR="${SITELISP}/with-editor" lisp info
 }
 
