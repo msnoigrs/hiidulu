@@ -14,6 +14,7 @@ KEYWORDS=""
 LICENSE="Apache-2.0"
 SLOT="0"
 IUSE=""
+RESTRICT="network-sandbox"
 
 src_unpack() {
 	git-r3_src_unpack
