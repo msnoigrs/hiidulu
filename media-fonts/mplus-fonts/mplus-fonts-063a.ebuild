@@ -8,7 +8,7 @@ inherit font
 MY_P="mplus-TESTFLIGHT-${PV}"
 
 DESCRIPTION="M+ Japanese outline fonts"
-HOMEPAGE="http://mplus-fonts.osdn.jp/ http://ossipedia.ipa.go.jp/ipafont/"
+HOMEPAGE="http://mplus-fonts.osdn.jp/"
 SRC_URI="mirror://sourceforge.jp/mplus-fonts/62344/${MY_P}.tar.xz"
 
 LICENSE="mplus-fonts"
