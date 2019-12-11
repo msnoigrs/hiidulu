@@ -19,5 +19,6 @@ DEPEND="app-emacs/dash
 	app-emacs/seq
 	app-emacs/f
 	app-emacs/ht
-	app-emacs/spinner"
+	app-emacs/spinner
+	app-emacs/hydra"
 RDEPEND="${DEPEND}"

@@ -16,5 +16,6 @@ KEYWORDS="~amd64 ~x86"
 IUSE=""
 
 DEPEND="app-emacs/posframe
-	app-emacs/company-mode"
+	app-emacs/company-mode
+	app-emacs/company-quickhelp"
 RDEPEND="${DEPEND}"
