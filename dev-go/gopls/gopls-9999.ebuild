@@ -5,11 +5,11 @@ EAPI=6
 
 inherit git-r3
 
-EGIT_REPO_URI="https://github.com/saibing/tools"
+EGIT_REPO_URI="https://github.com/golang/tools"
 EGOPATH="${WORKDIR}/go"
 
 DESCRIPTION="Go language server that speaks Language Server Protocol"
-HOMEPAGE="https://github.com/saibing/tools"
+HOMEPAGE="https://github.com/golang/tools/blob/master/gopls/README.md"
 
 KEYWORDS="~amd64"
 LICENSE="MIT"
