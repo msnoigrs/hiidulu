@@ -1,9 +1,9 @@
-# Copyright 1999-2019 Gentoo Authors
+# Copyright 1999-2020 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=7
 
-PYTHON_COMPAT=( python{2_7,3_{5,6,7}} )
+PYTHON_COMPAT=( python3_{6,7,8} )
 
 inherit distutils-r1
 
@@ -20,16 +20,16 @@ IUSE="test"
 BDEPEND="
 	dev-python/setuptools[${PYTHON_USEDEP}]
 	test? (
-		dev-python/tox[${PYTHON_USEDEP}]
 		dev-python/versioneer[${PYTHON_USEDEP}]
+		dev-python/pylint[${PYTHON_USEDEP}]
+		dev-python/pycodestyle[${PYTHON_USEDEP}]
+		dev-python/pyflakes[${PYTHON_USEDEP}]
 		dev-python/pytest[${PYTHON_USEDEP}]
 		dev-python/mock[${PYTHON_USEDEP}]
 		dev-python/pytest-cov[${PYTHON_USEDEP}]
 		dev-python/coverage[${PYTHON_USEDEP}]
 	)"
-DEPEND="
-	dev-python/future[${PYTHON_USEDEP}]
-	$(python_gen_cond_dep 'dev-python/futures' python2_7)"
+DEPEND=""
 
 python_test() {
 	pytest -vv || die "Tests failed under ${EPYTHON}"
