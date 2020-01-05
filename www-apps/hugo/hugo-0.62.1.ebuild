@@ -1,23 +1,24 @@
-# Copyright 1999-2019 Gentoo Authors
+# Copyright 1999-2020 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=6
 
-inherit git-r3 bash-completion-r1
+inherit bash-completion-r1
 
-EGIT_REPO_URI="https://github.com/gohugoio/hugo.git"
+EGO_PN="github.com/gohugoio/hugo"
 EGOPATH="${WORKDIR}/go"
 
 DESCRIPTION="A Fast and Flexible Static Site Generator built with love in Go"
 HOMEPAGE="https://gohugo.io https://github.com/gohugoio/hugo"
-KEYWORDS=""
+SRC_URI="https://${EGO_PN}/archive/v${PV}.tar.gz -> ${P}.tar.gz"
+KEYWORDS="~amd64"
 LICENSE="Apache-2.0"
 SLOT="0"
 IUSE=""
-RESTRICT="network-sandbox"
+RESTRICT="primaryuri network-sandbox"
 
 src_unpack() {
-	git-r3_src_unpack
+	default
 	cd "${S}"
 	GO111MODULE=on GOPATH="${EGOPATH}" go get
 }
