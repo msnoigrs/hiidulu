@@ -1,0 +1,109 @@
+diff -uNr a/src.orig/unix/fcitx5/mozc_engine.cc b/src/unix/fcitx5/mozc_engine.cc
+--- a/src/unix/fcitx5/mozc_engine.cc	2020-01-21 11:59:05.523490996 +0900
++++ b/src/unix/fcitx5/mozc_engine.cc	2020-01-21 18:06:10.669165445 +0900
+@@ -143,10 +143,10 @@
+       connection_(std::make_unique<MozcConnection>()),
+       factory_([this](InputContext &ic) {
+         return new MozcState(&ic, connection_->CreateClient(), this);
+-      }),
+-      modeAction_(this) {
++      }) {
++  modeAction_ = std::make_unique<MozcModeAction>(this);
+   instance_->inputContextManager().registerProperty("mozcState", &factory_);
+-  instance_->userInterfaceManager().registerAction("mozc-mode", &modeAction_);
++  instance_->userInterfaceManager().registerAction("mozc-mode", modeAction_.get());
+   instance_->userInterfaceManager().registerAction("mozc-tool", &toolAction_);
+   toolAction_.setShortText(_("Tool"));
+   toolAction_.setLongText(_("Tool"));
+@@ -154,11 +154,16 @@
+       stringutils::joinPath(StandardPath::global().fcitxPath("pkgdatadir"),
+                             "mozc/icon", "mozc-tool.png"));
+ 
+-  int i = 0;
+-  for (auto &modeAction : modeActions_) {
++  modeActions_[0].reset(new MozcModeSubAction(this, mozc::commands::DIRECT));
++  modeActions_[1].reset(new MozcModeSubAction(this, mozc::commands::HIRAGANA));
++  modeActions_[2].reset(new MozcModeSubAction(this, mozc::commands::FULL_KATAKANA));
++  modeActions_[3].reset(new MozcModeSubAction(this, mozc::commands::FULL_ASCII));
++  modeActions_[4].reset(new MozcModeSubAction(this, mozc::commands::HALF_ASCII));
++  modeActions_[5].reset(new MozcModeSubAction(this, mozc::commands::HALF_KATAKANA));
++  for (int i = 0; i < modeActions_.size(); i++) {
+     instance_->userInterfaceManager().registerAction(
+-        kPropCompositionModes[i].name, &modeAction);
+-    modeMenu_.addAction(&modeAction);
++        kPropCompositionModes[i].name, modeActions_[i].get());
++    modeMenu_.addAction(modeActions_[i].get());
+     i++;
+   }
+ 
+@@ -211,7 +216,7 @@
+   toolMenu_.addAction(&addWordAction_);
+   toolMenu_.addAction(&aboutAction_);
+ 
+-  modeAction_.setMenu(&modeMenu_);
++  modeAction_.get()->setMenu(&modeMenu_);
+   toolAction_.setMenu(&toolMenu_);
+ }
+ 
+@@ -223,7 +228,7 @@
+   auto ic = event.inputContext();
+   auto mozc_state = mozcState(ic);
+   mozc_state->FocusIn();
+-  ic->statusArea().addAction(StatusGroup::InputMethod, &modeAction_);
++  ic->statusArea().addAction(StatusGroup::InputMethod, modeAction_.get());
+   ic->statusArea().addAction(StatusGroup::InputMethod, &toolAction_);
+ }
+ void MozcEngine::deactivate(const fcitx::InputMethodEntry &entry,
+@@ -253,7 +258,7 @@
+ 
+ std::string MozcEngine::subMode(const fcitx::InputMethodEntry &,
+                                 fcitx::InputContext &ic) {
+-  return modeAction_.longText(&ic);
++  return modeAction_.get()->longText(&ic);
+ }
+ 
+ MozcState *MozcEngine::mozcState(InputContext *ic) {
+@@ -261,9 +266,9 @@
+ }
+ 
+ void MozcEngine::compositionModeUpdated(InputContext *ic) {
+-  modeAction_.update(ic);
+-  for (auto &modeAction : modeActions_) {
+-    modeAction.update(ic);
++  modeAction_.get()->update(ic);
++  for (int i = 0; i < modeActions_.size(); i++) {
++    modeActions_[i].get()->update(ic);
+   }
+ }
+ 
+diff -uNr a/src/unix/fcitx5/mozc_engine.h b/src/unix/fcitx5/mozc_engine.h
+--- a/src/unix/fcitx5/mozc_engine.h	2020-01-21 11:59:05.523490996 +0900
++++ b/src/unix/fcitx5/mozc_engine.h	2020-01-21 18:10:24.356708144 +0900
+@@ -19,6 +19,7 @@
+ #ifndef _FCITX_UNIX_FCITX5_MOZC_ENGINE_H_
+ #define _FCITX_UNIX_FCITX5_MOZC_ENGINE_H_
+ 
++#include <array>
+ #include <fcitx/action.h>
+ #include <fcitx/addonfactory.h>
+ #include <fcitx/addonmanager.h>
+@@ -82,17 +83,9 @@
+   Instance *instance_;
+   std::unique_ptr<MozcConnection> connection_;
+   FactoryFor<MozcState> factory_;
+-  MozcModeAction modeAction_;
++  std::unique_ptr<Action> modeAction_;
+   SimpleAction toolAction_;
+-  MozcModeSubAction modeActions_[mozc::commands::NUM_OF_COMPOSITIONS] = {
+-      {this, mozc::commands::DIRECT},
+-      {this, mozc::commands::HIRAGANA},
+-      {this, mozc::commands::FULL_KATAKANA},
+-      {this, mozc::commands::FULL_ASCII},
+-      {this, mozc::commands::HALF_ASCII},
+-      {this, mozc::commands::HALF_KATAKANA},
+-  };
+-
++  std::array<std::unique_ptr<Action>, mozc::commands::NUM_OF_COMPOSITIONS> modeActions_;
+   SimpleAction configToolAction_, dictionaryToolAction_, handWritingAction_,
+       characterPaletteAction_, addWordAction_, aboutAction_;
+   Menu toolMenu_;

@@ -1,8 +1,8 @@
-# Copyright 1999-2018 Gentoo Foundation
+# Copyright 1999-2020 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI="6"
-PYTHON_COMPAT=(python2_7)
+EAPI="7"
+PYTHON_COMPAT=(python{3_6,3_7,3_8})
 
 inherit elisp-common multiprocessing python-any-r1 toolchain-funcs
 
@@ -35,12 +35,26 @@ fi
 LICENSE="BSD BSD-2 ipadic public-domain unicode"
 SLOT="0"
 KEYWORDS=""
-IUSE="debug emacs fcitx4 +gui +handwriting-tegaki handwriting-tomoe ibus renderer test"
-REQUIRED_USE="|| ( emacs fcitx4 ibus ) gui? ( ^^ ( handwriting-tegaki handwriting-tomoe ) ) !gui? ( !handwriting-tegaki !handwriting-tomoe )"
+IUSE="debug emacs fcitx4 fcitx5 +gui +handwriting-tegaki handwriting-tomoe ibus renderer test"
+REQUIRED_USE="|| ( emacs fcitx4 fcitx5 ibus ) gui? ( ^^ ( handwriting-tegaki handwriting-tomoe ) ) !gui? ( !handwriting-tegaki !handwriting-tomoe ) ?? ( fcitx4 fcitx5 ) fcitx5? ( gui )"
 
+BDEPEND="${PYTHON_DEPS}
+	>=dev-libs/protobuf-3.0.0
+	dev-util/gyp
+	dev-util/ninja
+	virtual/pkgconfig
+	emacs? ( app-editors/emacs:* )
+	fcitx4? ( sys-devel/gettext )
+	fcitx5? ( sys-devel/gettext )"
 RDEPEND=">=dev-libs/protobuf-3.0.0:=
-	emacs? ( virtual/emacs )
-	fcitx4? ( app-i18n/fcitx:4 )
+	emacs? ( app-editors/emacs:* )
+	fcitx4? (
+		app-i18n/fcitx:4
+		virtual/libintl
+	)
+	fcitx5? (
+		app-i18n/fcitx5
+	)
 	gui? (
 		app-i18n/zinnia
 		dev-qt/qtcore:5
@@ -61,10 +75,6 @@ RDEPEND=">=dev-libs/protobuf-3.0.0:=
 		x11-libs/pango
 	)"
 DEPEND="${RDEPEND}
-	${PYTHON_DEPS}
-	dev-util/gyp
-	dev-util/ninja
-	virtual/pkgconfig
 	test? (
 		>=dev-cpp/gtest-1.8.0
 		dev-libs/jsoncpp
@@ -83,7 +93,7 @@ src_unpack() {
 	if [[ "${PV}" == "9999" ]]; then
 		git-r3_src_unpack
 
-		if use fcitx4; then
+		if use fcitx4 || use fcitx5; then
 			local EGIT_SUBMODULES=()
 			git-r3_fetch https://github.com/fcitx/mozc refs/heads/fcitx
 			git-r3_checkout https://github.com/fcitx/mozc "${WORKDIR}/fcitx-mozc"
@@ -98,7 +108,16 @@ src_unpack() {
 }
 
 src_prepare() {
-	eapply -p2 "${FILESDIR}/mozc-gcc8.patch"
+	eapply -p2 "${FILESDIR}/${PN}-2.23.2815.102-python-3_1.patch"
+	eapply -p2 "${FILESDIR}/${PN}-2.23.2815.102-python-3_2.patch"
+	eapply -p2 "${FILESDIR}/${PN}-2.23.2815.102-python-3_3.patch"
+	eapply -p2 "${FILESDIR}/${PN}-2.23.2815.102-python-3_4.patch"
+	eapply -p2 "${FILESDIR}/${PN}-2.23.2815.102-system_libraries.patch"
+	eapply -p2 "${FILESDIR}/${PN}-2.23.2815.102-gcc-8.patch"
+	eapply -p2 "${FILESDIR}/${PN}-2.23.2815.102-protobuf_generated_classes_no_inheritance.patch"
+	eapply -p2 "${FILESDIR}/${PN}-2.23.2815.102-environmental_variables.patch"
+	eapply -p2 "${FILESDIR}/${PN}-2.23.2815.102-reiwa.patch"
+	eapply -p2 "${FILESDIR}/${PN}-2.23.2815.102-server_path_check.patch"
 	eapply -p2 "${FILESDIR}/${PN}-2.20.2673.102-tests_build.patch"
 	eapply -p2 "${FILESDIR}/${PN}-2.20.2673.102-tests_skipping.patch"
 
@@ -109,6 +128,15 @@ src_prepare() {
 			eapply -p2 "${DISTDIR}/fcitx-mozc-${FCITX_PATCH_VERSION}.patch"
 		fi
 	fi
+	if use fcitx5; then
+		if [[ "${PV}" == "9999" ]]; then
+			cp -pr "${WORKDIR}/fcitx-mozc/src/unix/fcitx5" unix || die
+		else
+			:; #
+		fi
+		eapply -p2 "${FILESDIR}/fix_use_of_deleted_function_error.patch"
+		sed -e "s|PREFIX|/usr|g" -i unix/fcitx5/mozc.conf || die
+	fi
 
 	eapply_user
 
@@ -118,10 +146,18 @@ src_prepare() {
 		-e "s/RunOrDie(\[ninja/&, '-j$(makeopts_jobs)', '-l$(makeopts_loadavg "${MAKEOPTS}" 0)', '-v'/" \
 		-i build_mozc.py || die
 
-	sed \
-		-e "s/'release_extra_cflags%': \['-O2'\]/'release_extra_cflags%': []/" \
-		-e "s/'debug_extra_cflags%': \['-O0', '-g'\]/'debug_extra_cflags%': []/" \
-		-i gyp/common.gypi || die
+	if use fcitx5; then
+		sed \
+			-e "s/'release_extra_cflags%': \['-O2'\]/'release_extra_cflags%': ['-fvisibility=hidden']/" \
+			-e "s/'debug_extra_cflags%': \['-O0', '-g'\]/'debug_extra_cflags%': ['-fvisibility=hidden']/" \
+			-i gyp/common.gypi || die
+		sed -e "s/c[+][+]14/c++17/" -i unix/fcitx5/fcitx5.gyp
+	else
+		sed \
+			-e "s/'release_extra_cflags%': \['-O2'\]/'release_extra_cflags%': []/" \
+			-e "s/'debug_extra_cflags%': \['-O0', '-g'\]/'debug_extra_cflags%': []/" \
+			-i gyp/common.gypi || die
+	fi
 
 	local ar=($(tc-getAR))
 	local cc=($(tc-getCC))
@@ -166,6 +202,7 @@ src_configure() {
 	fi
 
 	gyp_arguments+=(-D use_fcitx=$(usex fcitx4 YES NO))
+	gyp_arguments+=(-D use_fcitx5=$(usex fcitx5 YES NO))
 	gyp_arguments+=(-D use_libgtest=$(usex test 1 0))
 	gyp_arguments+=(-D use_libibus=$(usex ibus 1 0))
 	gyp_arguments+=(-D use_libjsoncpp=$(usex test 1 0))
@@ -204,6 +241,9 @@ src_compile() {
 	fi
 	if use fcitx4; then
 		targets+=(unix/fcitx/fcitx.gyp:fcitx-mozc)
+	fi
+	if use fcitx5; then
+		targets+=(unix/fcitx5/fcitx5.gyp:fcitx5-mozc)
 	fi
 	if use gui; then
 		targets+=(gui/gui.gyp:mozc_tool)
@@ -276,6 +316,32 @@ src_install() {
 		done
 	fi
 
+	if use fcitx5; then
+		exeinto /usr/$(get_libdir)/fcitx5
+		doexe out_linux/${BUILD_TYPE}/fcitx5-mozc.so
+
+		insinto /usr/share/fcitx5/addon
+		newins unix/fcitx5/mozc-addon.conf mozc.conf
+
+		insinto /usr/share/fcitx5/inputmethod
+		doins unix/fcitx5/mozc.conf
+
+		insinto /usr/share/fcitx5/mozc/icon
+		newins data/images/product_icon_32bpp-128.png mozc.png
+		local image
+		for image in data/images/unix/ui-*.png; do
+			newins "${image}" "mozc-${image#data/images/unix/ui-}"
+		done
+
+		local locale mo_file
+		for mo_file in out_linux/${BUILD_TYPE}/gen/unix/fcitx5/po/*.mo; do
+			locale="${mo_file##*/}"
+			locale="${locale%.mo}"
+			insinto /usr/share/locale/${locale}/LC_MESSAGES
+			newins "${mo_file}" fcitx5-mozc.mo
+		done
+	fi
+
 	if use ibus; then
 		exeinto /usr/libexec
 		newexe out_linux/${BUILD_TYPE}/ibus_mozc ibus-engine-mozc
@@ -293,9 +359,33 @@ src_install() {
 }
 
 pkg_postinst() {
+	elog
+	elog "ENVIRONMENTAL VARIABLES"
+	elog
+	elog "MOZC_SERVER_DIRECTORY"
+	elog "  Mozc server directory"
+	elog "  Value used by default: \"${EPREFIX}/usr/libexec/mozc\""
+	elog "MOZC_DOCUMENTS_DIRECTORY"
+	elog "  Mozc documents directory"
+	elog "  Value used by default: \"${EPREFIX}/usr/libexec/mozc/documents\""
+	elog "MOZC_CONFIGURATION_DIRECTORY"
+	elog "  Mozc configuration directory"
+	elog "  Value used by default: \"~/.mozc\""
+	if use gui; then
+		elog "MOZC_ZINNIA_MODEL_FILE"
+		elog "  Zinnia handwriting recognition model file"
+		if use handwriting-tegaki; then
+			elog "  Value used by default: \"${EPREFIX}/usr/share/tegaki/models/zinnia/handwriting-ja.model\""
+		elif use handwriting-tomoe; then
+			elog "  Value used by default: \"${EPREFIX}/usr/$(get_libdir)/zinnia/model/tomoe/handwriting-ja.model\""
+		fi
+		elog "  Potential values:"
+		elog "    \"${EPREFIX}/usr/share/tegaki/models/zinnia/handwriting-ja.model\""
+		elog "    \"${EPREFIX}/usr/$(get_libdir)/zinnia/model/tomoe/handwriting-ja.model\""
+	fi
+	elog
 	if use emacs; then
-		elisp-site-regen
-
+		elog
 		elog "USAGE IN EMACS"
 		elog
 		elog "mozc-mode is minor mode to input Japanese text using Mozc server."
@@ -313,6 +403,9 @@ pkg_postinst() {
 		elog
 		elog "Alternatively, at run time, after loading mozc.el, mozc-mode can be activated by"
 		elog "calling \"set-input-method\" and entering \"japanese-mozc\"."
+		elog
+
+		elisp-site-regen
 	fi
 }
 
