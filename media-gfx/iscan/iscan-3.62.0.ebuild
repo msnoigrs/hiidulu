@@ -35,6 +35,7 @@ S="${WORKDIR}/utsushi-0.$(ver_cut 2-3)"
 PATCHES=(
 	"${FILESDIR}"/${PN}-3.61.0-ijg-libjpeg.patch
 	"${FILESDIR}"/${PN}-3.61.0-imagemagick-7.patch
+	"${FILESDIR}"/${PN}-3.62.0-c++11.patch
 )
 
 plugin_unpack() {

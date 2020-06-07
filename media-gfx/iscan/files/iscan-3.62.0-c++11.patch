@@ -1,0 +1,95 @@
+--- a/lib/monitor.cpp	2019-11-18 11:08:08.000000000 +0900
++++ b/lib/monitor.cpp	2020-06-08 01:09:24.727373896 +0900
+@@ -76,7 +76,7 @@
+ {
+   const_iterator it =
+     std::find_if (begin (), end (),
+-                  bind (&scanner::info::is_driver_set, _1));
++                  bind (&scanner::info::is_driver_set, std::placeholders::_1));
+ 
+   if (it != end ()) return it->udi ();
+ 
+@@ -521,7 +521,7 @@
+     monitor::container_type::const_iterator it =
+       std::find_if (devices.begin (), devices.end (),
+                     bind (&scanner::info::is_same_usb_device,
+-                          _1, id->first, id->second));
++                          std::placeholders::_1, id->first, id->second));
+     if (devices.end () == it)
+     {
+       return false;
+@@ -554,7 +554,7 @@
+                   monitor::container_type::iterator target =
+                     std::find_if (devices.begin (), devices.end (),
+                                   bind (&scanner::info::is_same_usb_device,
+-                                        _1, id->first, id->second));
++                                        std::placeholders::_1, id->first, id->second));
+                   log::debug ("delete %1%(%2%)") % target->name () % target->driver ();
+                   if (first_device)
+                     {
+--- a/gtkmm/pump.cpp	2019-11-18 11:08:48.000000000 +0900
++++ b/gtkmm/pump.cpp	2020-06-08 01:33:52.143475504 +0900
+@@ -145,19 +145,19 @@
+ pump::connect_(io_direction d, typename device< IO >::ptr dev_ptr)
+ {
+   acq_marker_connection_[d] =
+-    dev_ptr->connect_marker (bind (&pump::on_marker_, this, d, _1));
++    dev_ptr->connect_marker (std::bind (&pump::on_marker_, this, d, std::placeholders::_1));
+   gui_marker_connection_[d] = gui_marker_dispatch_[d]
+     .connect (sigc::bind (sigc::mem_fun (*this, &pump::signal_marker_), d));
+ 
+   acq_update_connection_[d] =
+-    dev_ptr->connect_update (bind (&pump::on_update_, this, d, _1, _2));
++    dev_ptr->connect_update (std::bind (&pump::on_update_, this, d, std::placeholders::_1, std::placeholders::_2));
+   gui_update_connection_[d] = gui_update_dispatch_[d]
+     .connect (sigc::bind (sigc::mem_fun (*this, &pump::signal_update_), d));
+ 
+   if (in == d)
+     {
+       acq_notify_connection_ =
+-        this->connect (bind (&pump::on_notify_, this, _1, _2));
++        this->connect (std::bind (&pump::on_notify_, this, std::placeholders::_1, std::placeholders::_2));
+       gui_notify_connection_ = gui_notify_dispatch_
+         .connect (sigc::mem_fun (*this, &pump::signal_notify_));
+     }
+--- a/sane/handle.cpp	2019-11-18 11:08:08.000000000 +0900
++++ b/sane/handle.cpp	2020-06-08 01:31:08.905464201 +0900
+@@ -1348,8 +1348,8 @@
+       cache_ = idevice::ptr (cache);
+       iptr_ = cache_;
+ 
+-      pump_->connect (bind (on_notify, cache, _1, _2));
+-      pump_->connect_cancel (bind (&iocache::on_cancel, cache));
++      pump_->connect (std::bind (on_notify, cache, std::placeholders::_1, std::placeholders::_2));
++      pump_->connect_cancel (std::bind (&iocache::on_cancel, cache));
+       pump_->start (str);
+     }
+   else
+--- a/drivers/esci/verify.cpp	2019-11-18 11:08:45.000000000 +0900
++++ b/drivers/esci/verify.cpp	2020-06-08 01:51:59.987550829 +0900
+@@ -91,11 +91,11 @@
+     namespace reply = code_token::reply;
+ 
+     // Override base class hooks
+-    hook_[reply::INFO] = bind (&devdata_dumper::dump_hook_, this);
+-    hook_[reply::CAPA] = bind (&devdata_dumper::dump_hook_, this);
+-    hook_[reply::CAPB] = bind (&devdata_dumper::dump_hook_, this);
+-    hook_[reply::RESA] = bind (&devdata_dumper::dump_hook_, this);
+-    hook_[reply::RESB] = bind (&devdata_dumper::dump_hook_, this);
++    hook_[reply::INFO] = std::bind (&devdata_dumper::dump_hook_, this);
++    hook_[reply::CAPA] = std::bind (&devdata_dumper::dump_hook_, this);
++    hook_[reply::CAPB] = std::bind (&devdata_dumper::dump_hook_, this);
++    hook_[reply::RESA] = std::bind (&devdata_dumper::dump_hook_, this);
++    hook_[reply::RESB] = std::bind (&devdata_dumper::dump_hook_, this);
+ 
+     if (!file.empty ())
+       {
+@@ -345,7 +345,7 @@
+       do
+         {
+           it = std::find_if (mon.begin (), mon.end (),
+-                             bind (&scanner::info::is_driver_set, _1));
++                             std::bind (&scanner::info::is_driver_set, std::placeholders::_1));
+         }
+       while (it != mon.end () && "esci" != it->driver ());
+     }
