@@ -21,3 +21,11 @@ DEPEND="app-emacs/dash
 	app-emacs/spinner
 	app-emacs/hydra"
 RDEPEND="${DEPEND}"
+
+src_compile() {
+	emacs --batch --no-site-file -L . -L clients -f batch-byte-compile *.el clients/*.el
+}
+
+src_install() {
+	elisp-install ${PN} *.el *.elc clients/*.el clients/*.elc
+}
