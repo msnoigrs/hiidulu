@@ -1,0 +1,13 @@
+diff --git a/src/gyp/common.gypi b/src/gyp/common.gypi
+index 4e78489..662bde5 100644
+--- a/src/gyp/common.gypi
++++ b/src/gyp/common.gypi
+@@ -106,6 +106,8 @@
+     # Libraries for GNU/Linux environment.
+     'linux_ldflags': [
+       '-lc++',
++      '-stdlib=libc++',
++      '-rtlib=compiler-rt',
+       '-pthread',
+     ],
+ 

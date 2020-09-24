@@ -1,0 +1,43 @@
+diff --git a/src/unix/fcitx/eim.cc b/src/unix/fcitx/eim.cc
+index ce3e205..10e21e1 100644
+--- a/src/unix/fcitx/eim.cc
++++ b/src/unix/fcitx/eim.cc
+@@ -94,7 +94,7 @@ static void* FcitxMozcCreate(FcitxInstance* instance)
+     char argv0[] = "fcitx_mozc";
+     char *_argv[] = {  argv0 };
+     char **argv = _argv;
+-    mozc::InitMozc(argv[0], &argc, &argv, true);
++    mozc::InitMozc(argv[0], &argc, &argv);
+     mozcState->mozc = new mozc::fcitx::FcitxMozc(
+         instance,
+         mozc::fcitx::MozcConnection::CreateMozcConnection(),
+diff --git a/src/unix/fcitx/surrounding_text_util.cc b/src/unix/fcitx/surrounding_text_util.cc
+index d6ccc34..2a6a2f8 100644
+--- a/src/unix/fcitx/surrounding_text_util.cc
++++ b/src/unix/fcitx/surrounding_text_util.cc
+@@ -38,6 +38,8 @@
+ #include "base/logging.h"
+ #include "base/util.h"
+ 
++#include "absl/strings/string_view.h"
++
+ namespace mozc {
+ namespace fcitx {
+ 
+@@ -229,12 +231,10 @@ bool GetSurroundingText(FcitxInstance* instance,
+ 
+     const size_t selection_start = std::min(cursor_pos, anchor_pos);
+     const size_t selection_length = std::abs(info->relative_selected_length);
+-    Util::SubStringPiece(surrounding_text, 0, selection_start)
+-       .CopyToString(&info->preceding_text);
+-    Util::SubStringPiece(surrounding_text, selection_start, selection_length)
+-       .CopyToString(&info->selection_text);
+-    Util::SubStringPiece(surrounding_text, selection_start + selection_length)
+-       .CopyToString(&info->following_text);
++    Util::Utf8SubString(surrounding_text, 0, selection_start, &info->preceding_text);
++    Util::Utf8SubString(surrounding_text, selection_start, selection_length, &info->selection_text);
++    const absl::string_view substr = Util::Utf8SubString(surrounding_text, selection_start + selection_length);
++    info->following_text.assign(substr.data(), substr.size());
+     return true;
+ }
+ 

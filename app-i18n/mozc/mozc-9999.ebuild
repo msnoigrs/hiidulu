@@ -10,7 +10,7 @@ if [[ "${PV}" == "9999" ]]; then
 	inherit git-r3
 
 	EGIT_REPO_URI="https://github.com/google/mozc"
-	EGIT_SUBMODULES=(src/third_party/japanese_usage_dictionary)
+	EGIT_SUBMODULES=(src/third_party/japanese_usage_dictionary src/third_party/abseil-cpp src/third_party/protobuf)
 else
 	MOZC_GIT_REVISION=""
 	JAPANESE_USAGE_DICTIONARY_GIT_REVISION=""
@@ -39,14 +39,15 @@ IUSE="debug emacs fcitx4 fcitx5 +gui +handwriting-tegaki handwriting-tomoe ibus 
 REQUIRED_USE="|| ( emacs fcitx4 fcitx5 ibus ) gui? ( ^^ ( handwriting-tegaki handwriting-tomoe ) ) !gui? ( !handwriting-tegaki !handwriting-tomoe ) ?? ( fcitx4 fcitx5 ) fcitx5? ( gui )"
 
 BDEPEND="${PYTHON_DEPS}
-	>=dev-libs/protobuf-3.0.0
+	sys-devel/clang:10
+	>=dev-libs/protobuf-3.13.0
 	dev-util/gyp
 	dev-util/ninja
 	virtual/pkgconfig
 	emacs? ( app-editors/emacs:* )
 	fcitx4? ( sys-devel/gettext )
 	fcitx5? ( sys-devel/gettext )"
-RDEPEND=">=dev-libs/protobuf-3.0.0:=
+RDEPEND=">=dev-libs/protobuf-3.13.0:=
 	emacs? ( app-editors/emacs:* )
 	fcitx4? (
 		app-i18n/fcitx:4
@@ -108,18 +109,14 @@ src_unpack() {
 }
 
 src_prepare() {
-	eapply -p2 "${FILESDIR}/${PN}-2.23.2815.102-python-3_1.patch"
-	eapply -p2 "${FILESDIR}/${PN}-2.23.2815.102-python-3_2.patch"
-	eapply -p2 "${FILESDIR}/${PN}-2.23.2815.102-python-3_3.patch"
-	eapply -p2 "${FILESDIR}/${PN}-2.23.2815.102-python-3_4.patch"
-	eapply -p2 "${FILESDIR}/${PN}-2.23.2815.102-system_libraries.patch"
-	eapply -p2 "${FILESDIR}/${PN}-2.23.2815.102-gcc-8.patch"
-	eapply -p2 "${FILESDIR}/${PN}-2.23.2815.102-protobuf_generated_classes_no_inheritance.patch"
-	eapply -p2 "${FILESDIR}/${PN}-2.23.2815.102-environmental_variables.patch"
-	eapply -p2 "${FILESDIR}/${PN}-2.23.2815.102-reiwa.patch"
-	eapply -p2 "${FILESDIR}/${PN}-2.23.2815.102-server_path_check.patch"
+	eapply -p2 "${FILESDIR}/${PN}-python-3-1.patch"
+	eapply -p2 "${FILESDIR}/${PN}-python-3-2.patch"
+	eapply -p2 "${FILESDIR}/unsigned-enum-zero-compare.patch"
+	eapply -p2 "${FILESDIR}/${PN}-environmental_variables.patch"
+	eapply -p2 "${FILESDIR}/${PN}-server_path_check.patch"
 	eapply -p2 "${FILESDIR}/${PN}-2.20.2673.102-tests_build.patch"
-	eapply -p2 "${FILESDIR}/${PN}-2.20.2673.102-tests_skipping.patch"
+	eapply -p2 "${FILESDIR}/${PN}-tests_skipping.patch"
+	eapply -p2 "${FILESDIR}/mozc-ldflags.patch"
 
 	if use fcitx4; then
 		if [[ "${PV}" == "9999" ]]; then
@@ -127,6 +124,7 @@ src_prepare() {
 		else
 			eapply -p2 "${DISTDIR}/fcitx-mozc-${FCITX_PATCH_VERSION}.patch"
 		fi
+		eapply -p2 "${FILESDIR}/fcitx-mozc.patch"
 	fi
 	if use fcitx5; then
 		if [[ "${PV}" == "9999" ]]; then
@@ -158,6 +156,9 @@ src_prepare() {
 			-e "s/'debug_extra_cflags%': \['-O0', '-g'\]/'debug_extra_cflags%': []/" \
 			-i gyp/common.gypi || die
 	fi
+
+	CC=${CHOST}-clang-10
+	CXX=${CHOST}-clang++-10
 
 	local ar=($(tc-getAR))
 	local cc=($(tc-getCC))
@@ -206,7 +207,7 @@ src_configure() {
 	gyp_arguments+=(-D use_libgtest=$(usex test 1 0))
 	gyp_arguments+=(-D use_libibus=$(usex ibus 1 0))
 	gyp_arguments+=(-D use_libjsoncpp=$(usex test 1 0))
-	gyp_arguments+=(-D use_libprotobuf=1)
+	gyp_arguments+=(-D use_libprotobuf=0)
 	gyp_arguments+=(-D use_libzinnia=$(usex gui 1 0))
 	gyp_arguments+=(-D enable_gtk_renderer=$(usex renderer 1 0))
 
@@ -225,6 +226,9 @@ src_configure() {
 	fi
 
 	unset AR CC CXX LD NM READELF
+
+	CC=${CHOST}-clang-10
+	CXX=${CHOST}-clang++-10
 
 	execute "${PYTHON}" build_mozc.py gyp \
 		--gypdir="${EPREFIX}/usr/bin" \

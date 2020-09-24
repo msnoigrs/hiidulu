@@ -1,0 +1,1047 @@
+diff --git a/src/base/gen_character_set.py b/src/base/gen_character_set.py
+index 3748053..098fb5e 100644
+--- a/src/base/gen_character_set.py
++++ b/src/base/gen_character_set.py
+@@ -88,7 +88,7 @@ class CodePointCategorizer(object):
+   @staticmethod
+   def _LoadTable(filename, column_index, pattern, validater):
+     result = set()
+-    with open(filename) as fh:
++    with open(filename, 'r', encoding="utf-8") as fh:
+       for line in fh:
+         if line.startswith('#'):
+           # Skip a comment line.
+@@ -456,7 +456,7 @@ def main():
+ 
+   # Write the result.
+   if options.output:
+-    output = open(options.output, 'w')
++    output = open(options.output, 'w', encoding="utf-8")
+     try:
+       output.writelines(generated_character_set_header)
+     finally:
+diff --git a/src/base/gen_config_file_stream_data.py b/src/base/gen_config_file_stream_data.py
+index 3c93f1f..e6a26c4 100644
+--- a/src/base/gen_config_file_stream_data.py
++++ b/src/base/gen_config_file_stream_data.py
+@@ -30,8 +30,6 @@
+ 
+ """Script to generate config_file_stream_data.h."""
+ 
+-from __future__ import absolute_import
+-from __future__ import print_function
+ 
+ import optparse
+ import os.path
+@@ -100,7 +98,7 @@ def main():
+         file=sys.stderr)
+     sys.exit(2)
+ 
+-  with open(options.output, 'w') as output:
++  with open(options.output, 'w', encoding='utf-8') as output:
+     OutputConfigFileStreamData(args, output)
+ 
+ 
+diff --git a/src/build_tools/binary_size_checker.py b/src/build_tools/binary_size_checker.py
+index d26ce6a..84fbf4e 100644
+--- a/src/build_tools/binary_size_checker.py
++++ b/src/build_tools/binary_size_checker.py
+@@ -34,8 +34,6 @@ Usage:
+   % python binary_size_checker.py --target_directory=out_linux/Debug
+ """
+ 
+-from __future__ import absolute_import
+-from __future__ import print_function
+ 
+ import logging
+ import optparse
+diff --git a/src/build_tools/build_breakpad.py b/src/build_tools/build_breakpad.py
+index ca01e9f..21ee8a6 100644
+--- a/src/build_tools/build_breakpad.py
++++ b/src/build_tools/build_breakpad.py
+@@ -34,8 +34,6 @@
+   --pbdir ./third_party/breakpad --outdir /tmp/breakpad
+ """
+ 
+-from __future__ import absolute_import
+-from __future__ import print_function
+ import optparse
+ import os
+ import subprocess
+diff --git a/src/build_tools/code_generator_util.py b/src/build_tools/code_generator_util.py
+index 573886a..9932e55 100644
+--- a/src/build_tools/code_generator_util.py
++++ b/src/build_tools/code_generator_util.py
+@@ -30,7 +30,6 @@
+ 
+ """Utilities to generate source codes."""
+ 
+-from __future__ import absolute_import
+ 
+ import struct
+ 
+diff --git a/src/build_tools/codesign_mac.py b/src/build_tools/codesign_mac.py
+index e206f13..ecbb902 100644
+--- a/src/build_tools/codesign_mac.py
++++ b/src/build_tools/codesign_mac.py
+@@ -34,8 +34,6 @@ Exapmle:
+ /home/komatsu/bin/update_codesign.py --target /path/to/target
+ """
+ 
+-from __future__ import absolute_import
+-from __future__ import print_function
+ import optparse
+ import os
+ import platform
+diff --git a/src/build_tools/copy_dll_and_symbol.py b/src/build_tools/copy_dll_and_symbol.py
+index 248d6f5..57cfa9a 100644
+--- a/src/build_tools/copy_dll_and_symbol.py
++++ b/src/build_tools/copy_dll_and_symbol.py
+@@ -30,8 +30,6 @@
+ 
+ """Utilitis for copying dependent files for Windows build."""
+ 
+-from __future__ import absolute_import
+-from __future__ import print_function
+ 
+ import datetime
+ import logging
+diff --git a/src/build_tools/copy_file.py b/src/build_tools/copy_file.py
+index 4c2447e..b91f6b3 100644
+--- a/src/build_tools/copy_file.py
++++ b/src/build_tools/copy_file.py
+@@ -35,8 +35,6 @@ This script provides more features than 'copies' rule of GYP.
+ 2. Is able to copy directories recursively.
+ """
+ 
+-from __future__ import absolute_import
+-from __future__ import print_function
+ 
+ import optparse
+ import os
+diff --git a/src/build_tools/embed_file.py b/src/build_tools/embed_file.py
+index f01ce56..bcac454 100644
+--- a/src/build_tools/embed_file.py
++++ b/src/build_tools/embed_file.py
+@@ -30,13 +30,9 @@
+ 
+ """Generate a C++ array definition for file embedding."""
+ 
+-from __future__ import absolute_import
+-from __future__ import print_function
+ import binascii
+ import optparse
+ import os
+-import six
+-from six.moves import range
+ 
+ 
+ def _ParseOption():
+@@ -51,40 +47,45 @@ def _ParseOption():
+ def _FormatAsUint64LittleEndian(s):
+   """Formats a string as uint64 value in little endian order."""
+   for _ in range(len(s), 8):
+-    s += six.b('\0')
++    s += b'\0'
+   s = s[::-1]  # Reverse the string
+-  return six.b('0x%s') % binascii.b2a_hex(s)
++  return b'0x%s' % binascii.b2a_hex(s)
+ 
+ 
+ def main():
+   opts = _ParseOption()
++
++  header = ('#ifdef MOZC_EMBEDDED_FILE_%(name)s\n'
++            '#error "%(name)s was already included or defined elsewhere"\n'
++            '#else\n'
++            '#define MOZC_EMBEDDED_FILE_%(name)s\n'
++            'const uint64 %(name)s_data[] = {\n') % {
++              'name': opts.name
++            }
++
++  footer = ('};\n'
++            'const EmbeddedFile %(name)s = {\n'
++            '  %(name)s_data,\n'
++            '  %(size)d,\n'
++            '};\n'
++            '#endif  // MOZC_EMBEDDED_FILE_%(name)s\n') % {
++              'name': opts.name,
++              'size': os.stat(opts.input).st_size
++            }
++
+   with open(opts.input, 'rb') as infile:
+     with open(opts.output, 'wb') as outfile:
+-      outfile.write(six.b(
+-          '#ifdef MOZC_EMBEDDED_FILE_%(name)s\n'
+-          '#error "%(name)s was already included or defined elsewhere"\n'
+-          '#else\n'
+-          '#define MOZC_EMBEDDED_FILE_%(name)s\n'
+-          'const uint64 %(name)s_data[] = {\n'
+-          % {'name': opts.name}))
++      outfile.write(header.encode('utf-8'))
+ 
+       while True:
+         chunk = infile.read(8)
+         if not chunk:
+           break
+-        outfile.write(six.b('  '))
++        outfile.write(b'  ')
+         outfile.write(_FormatAsUint64LittleEndian(chunk))
+-        outfile.write(six.b(',\n'))
++        outfile.write(b',\n')
+ 
+-      outfile.write(six.b(
+-          '};\n'
+-          'const EmbeddedFile %(name)s = {\n'
+-          '  %(name)s_data,\n'
+-          '  %(size)d,\n'
+-          '};\n'
+-          '#endif  // MOZC_EMBEDDED_FILE_%(name)s\n'
+-          % {'name': opts.name,
+-             'size': os.stat(opts.input).st_size}))
++      outfile.write(footer.encode('utf-8'))
+ 
+ 
+ if __name__ == '__main__':
+diff --git a/src/build_tools/embed_pathname.py b/src/build_tools/embed_pathname.py
+index 71f7991..0da4fa7 100644
+--- a/src/build_tools/embed_pathname.py
++++ b/src/build_tools/embed_pathname.py
+@@ -37,8 +37,6 @@ Example:
+       const char kMozcDataDir[] = "d:\\data\\mozc";
+ """
+ 
+-from __future__ import absolute_import
+-from __future__ import print_function
+ 
+ import optparse
+ import os
+@@ -64,13 +62,8 @@ def main():
+   opt = ParseOption()
+   path = os.path.abspath(opt.path_to_be_embedded)
+   # TODO(yukawa): Consider the case of non-ASCII characters.
+-  if isinstance(path, str):
+-    # Python3
+-    escaped_path = path.replace('\\', r'\\')
+-  else:
+-    # Python2
+-    escaped_path = path.encode('string-escape')
+-  with open(opt.output, 'w') as output_file:
++  escaped_path = path.replace('\\', r'\\')
++  with open(opt.output, 'w', encoding='utf-8') as output_file:
+     output_file.write(
+         'const char %s[] = "%s";\n' % (opt.constant_name, escaped_path))
+ 
+diff --git a/src/build_tools/ensure_gyp_module_path.py b/src/build_tools/ensure_gyp_module_path.py
+index 490570d..50858cb 100644
+--- a/src/build_tools/ensure_gyp_module_path.py
++++ b/src/build_tools/ensure_gyp_module_path.py
+@@ -35,8 +35,6 @@ Example:
+     --expected=/home/foobar/work/mozc/src/third_party/gyp/pylib/gyp
+ """
+ 
+-from __future__ import absolute_import
+-from __future__ import print_function
+ 
+ import optparse
+ import os
+diff --git a/src/build_tools/mozc_version.py b/src/build_tools/mozc_version.py
+index 01ec045..4ff167d 100644
+--- a/src/build_tools/mozc_version.py
++++ b/src/build_tools/mozc_version.py
+@@ -51,7 +51,6 @@ The syntax of template is written in the template file.
+ #   simplify the design. Currently I'd keep this design to reduce
+ #   client side's change.
+ 
+-from __future__ import absolute_import
+ import datetime
+ import logging
+ import optparse
+@@ -119,7 +118,7 @@ def _ParseVersionTemplateFile(template_path, target_platform,
+     A dictionary generated from the template file.
+   """
+   template_dict = {}
+-  with open(template_path) as template_file:
++  with open(template_path, 'r', encoding='utf-8') as template_file:
+     for line in template_file:
+       matchobj = re.match(r'(\w+) *= *(.*)', line.strip())
+       if matchobj:
+@@ -172,7 +171,7 @@ def _GetChangelistNumber(build_override, build_changelist_file):
+   if not build_changelist_file:
+     return '0'
+ 
+-  with open(build_changelist_file, 'r') as cl_file:
++  with open(build_changelist_file, 'r', encoding='utf-8') as cl_file:
+     for line in cl_file:
+       if line.startswith('BUILD_CHANGELIST'):
+         return line.rstrip().split(' ')[1]
+@@ -209,11 +208,11 @@ def GenerateVersionFileFromTemplate(template_path,
+     # to reduce file-creation frequency.
+     # Currently generated version file is not seen from Make (and Make like
+     # tools) so recreation will not cause serious issue but just in case.
+-    with open(output_path) as output_file:
++    with open(output_path, 'r', encoding='utf-8') as output_file:
+       old_content = output_file.read()
+ 
+   if version_definition != old_content:
+-    with open(output_path, 'w') as output_file:
++    with open(output_path, 'w', encoding='utf-8') as output_file:
+       output_file.write(version_definition)
+ 
+ 
+@@ -271,7 +270,7 @@ class MozcVersion(object):
+     self._properties = {}
+     if not os.path.isfile(path):
+       return
+-    with open(path) as fh:
++    with open(path, 'r', encoding='utf-8') as fh:
+       for line in fh:
+         matchobj = re.match(r'(\w+)=(.*)', line.strip())
+         if matchobj:
+diff --git a/src/build_tools/redirect.py b/src/build_tools/redirect.py
+index 21a3e68..f22c6b0 100644
+--- a/src/build_tools/redirect.py
++++ b/src/build_tools/redirect.py
+@@ -38,8 +38,6 @@ This is essentially identical to 'echo foo > out.txt' but the script
+ can be used in platforms without a Unix shell (i.e. windows).
+ """
+ 
+-from __future__ import absolute_import
+-from __future__ import print_function
+ 
+ import subprocess
+ import sys
+diff --git a/src/build_tools/replace_macros.py b/src/build_tools/replace_macros.py
+index fe681fa..29eecd9 100644
+--- a/src/build_tools/replace_macros.py
++++ b/src/build_tools/replace_macros.py
+@@ -176,9 +176,10 @@ def main():
+   else:
+     variables = TransformValuesToCStyle(variables)
+ 
+-  open(options.output, 'w').write(
+-      ReplaceVariables(open(options.input, 'r').read(),
+-                       variables))
++  with open(options.input, 'r', encoding='utf-8') as ifh:
++    rvariables = ReplaceVariables(ifh.read(), variables)
++    with open(options.output, 'w', encoding='utf-8') as ofh:
++      ofs.write(rvariables)
+ 
+ 
+ if __name__ == '__main__':
+diff --git a/src/build_tools/replace_version.py b/src/build_tools/replace_version.py
+index e73e3ad..85137c6 100644
+--- a/src/build_tools/replace_version.py
++++ b/src/build_tools/replace_version.py
+@@ -36,7 +36,6 @@
+ See mozc_version.py for the detailed information for version.txt.
+ """
+ 
+-from __future__ import absolute_import
+ 
+ import logging
+ import optparse
+@@ -100,13 +99,13 @@ def main():
+ 
+   version = mozc_version.MozcVersion(options.version_file)
+   branding_name = GetBrandingName(version, options.branding)
+-  with open(options.input) as f:
++  with open(options.input, 'r', encoding='utf-8') as f:
+     result = f.read()
+   result = version.GetVersionInFormat(result)
+   for (key, value) in branding_name.items():
+     result = result.replace('@%s@' % key, value)
+ 
+-  with open(options.output, 'w') as f:
++  with open(options.output, 'w', encoding='utf-8') as f:
+     f.write(result)
+ 
+ 
+diff --git a/src/build_tools/run_after_chdir.py b/src/build_tools/run_after_chdir.py
+index 9c2b880..7ff8fa4 100644
+--- a/src/build_tools/run_after_chdir.py
++++ b/src/build_tools/run_after_chdir.py
+@@ -37,8 +37,6 @@
+ The example above is to run ls command in / directory.
+ """
+ 
+-from __future__ import absolute_import
+-from __future__ import print_function
+ 
+ import os
+ import subprocess
+diff --git a/src/build_tools/serialized_string_array_builder.py b/src/build_tools/serialized_string_array_builder.py
+index 6ef8116..ed901da 100644
+--- a/src/build_tools/serialized_string_array_builder.py
++++ b/src/build_tools/serialized_string_array_builder.py
+@@ -30,8 +30,6 @@
+ 
+ """Generate a binary image of SerializedStringArray."""
+ 
+-from __future__ import absolute_import
+-from __future__ import print_function
+ import struct
+ 
+ 
+diff --git a/src/build_tools/tweak_info_plist.py b/src/build_tools/tweak_info_plist.py
+index 6b1381a..6bacbf1 100644
+--- a/src/build_tools/tweak_info_plist.py
++++ b/src/build_tools/tweak_info_plist.py
+@@ -81,7 +81,7 @@ def main():
+ 
+   version = mozc_version.MozcVersion(options.version_file)
+ 
+-  copyright_message = ('© %d Google Inc.' % _COPYRIGHT_YEAR).encode('utf-8')
++  copyright_message = ('© %d Google Inc.' % _COPYRIGHT_YEAR)
+   long_version = version.GetVersionString()
+   short_version = version.GetVersionInFormat('@MAJOR@.@MINOR@.@BUILD@')
+ 
+@@ -109,8 +109,11 @@ def main():
+       'BREAKPAD_URL': breakpad_url,
+   }
+ 
+-  open(options.output, 'w').write(
+-      tweak_data.ReplaceVariables(open(options.input).read(), variables))
++  with open(options.input, 'r', encoding='utf-8') as ifh:
++    contents = ifh.read()
++    with open(options.output, 'w', encoding='utf-8') as ofh:
++      ofh.write(
++        tweak_data.ReplaceVariables(contents, variables))
+ 
+ if __name__ == '__main__':
+     main()
+diff --git a/src/build_tools/tweak_info_plist_strings.py b/src/build_tools/tweak_info_plist_strings.py
+index 9b2f64f..17c0ee4 100644
+--- a/src/build_tools/tweak_info_plist_strings.py
++++ b/src/build_tools/tweak_info_plist_strings.py
+@@ -89,8 +89,11 @@ def main():
+         'INPUT_MODE_ANNOTATION': 'Mozc',
+         }
+ 
+-  open(options.output, 'w').write(
+-      tweak_data.ReplaceVariables(open(options.input).read(), variables))
++  with open(options.input, 'r', encoding='utf-8') as ifh:
++    contens = ifh.read()
++    with open(options.output, 'w', encoding='utf-8') as ofh:
++      ofh.write(
++        tweak_data.ReplaceVariables(contents, variables))
+ 
+ if __name__ == '__main__':
+     main()
+diff --git a/src/build_tools/tweak_macinstaller_script.py b/src/build_tools/tweak_macinstaller_script.py
+index 23b4ae3..35d38f8 100644
+--- a/src/build_tools/tweak_macinstaller_script.py
++++ b/src/build_tools/tweak_macinstaller_script.py
+@@ -101,8 +101,11 @@ def main():
+       ('@@@MOZC_PACKAGE_NAME@@@', 'GoogleJapaneseInput.pkg'),
+       ]
+ 
+-  open(options.output, 'w').write(
+-      _ReplaceVariables(open(options.input).read(), variables))
++  with open(options.input, 'r', encoding='utf-8') as ifh:
++    contents = ifh.read()
++    with open(options.output, 'w', encoding='utf-8') as ofh:
++      ofh.write(
++        _ReplaceVariables(contents, variables))
+ 
+ if __name__ == '__main__':
+   main()
+diff --git a/src/build_tools/tweak_pkgproj.py b/src/build_tools/tweak_pkgproj.py
+index af86466..af3e8fe 100644
+--- a/src/build_tools/tweak_pkgproj.py
++++ b/src/build_tools/tweak_pkgproj.py
+@@ -147,9 +147,12 @@ def main():
+       'MOZC_DIR': path.abspath(path.join(os.getcwd(), ".."))
+       }
+ 
+-  open(options.output, 'w').write(
+-      _RemoveDevOnlyLines(
+-          _ReplaceVariables(open(options.input).read(), variables),
++  with open(options.input, 'r', encoding='utf-8') as ifh:
++    contents = ifh.read()
++    with open(options.output, 'w', encoding='utf-8') as ofh:
++      fh.write(
++        _RemoveDevOnlyLines(
++          _ReplaceVariables(contents, variables),
+           options.build_type))
+ 
+ if __name__ == '__main__':
+diff --git a/src/build_tools/util.py b/src/build_tools/util.py
+index c657780..6da62dc 100644
+--- a/src/build_tools/util.py
++++ b/src/build_tools/util.py
+@@ -30,8 +30,6 @@
+ 
+ """Utilitis for build_mozc script."""
+ 
+-from __future__ import absolute_import
+-from __future__ import print_function
+ 
+ import logging
+ import multiprocessing
+@@ -43,7 +41,6 @@ import sys
+ import tempfile
+ import zipfile
+ 
+-from six.moves import range
+ 
+ 
+ def IsWindows():
+@@ -246,4 +243,3 @@ def WalkFileContainers(comma_separated_paths):
+         z.extractall(tempdir)
+         for dirpath, dirnames, filenames in os.walk(tempdir):
+           yield dirpath, dirnames, filenames
+-
+diff --git a/src/build_tools/versioning_files.py b/src/build_tools/versioning_files.py
+index cf05b30..41d24f8 100644
+--- a/src/build_tools/versioning_files.py
++++ b/src/build_tools/versioning_files.py
+@@ -91,7 +91,7 @@ def _VersioningFile(version_string, is_debug, file_path):
+   sha1_digest = _GetSha1Digest(new_file_path)
+   sha1_hash = base64.b64encode(sha1_digest)
+   sha1_hash_hex = sha1_digest.encode('hex')
+-  with open('%s.info' % new_file_path, 'w') as output:
++  with open('%s.info' % new_file_path, 'w', encoding='utf-8') as output:
+     output.write('package\t%s\n' % package)
+     output.write('build_id\t%s\n' % build_id)
+     output.write('version\t%s\n' % version_string)
+diff --git a/src/build_tools/zlib_util.py b/src/build_tools/zlib_util.py
+index 3348eb9..4912818 100644
+--- a/src/build_tools/zlib_util.py
++++ b/src/build_tools/zlib_util.py
+@@ -30,8 +30,6 @@
+ 
+ """Simple zlib utility."""
+ 
+-from __future__ import absolute_import
+-from __future__ import print_function
+ import sys
+ import zlib
+ 
+diff --git a/src/converter/gen_boundary_data.py b/src/converter/gen_boundary_data.py
+index 7762b86..c48e3c9 100644
+--- a/src/converter/gen_boundary_data.py
++++ b/src/converter/gen_boundary_data.py
+@@ -55,25 +55,22 @@ suffix penalty of POS ID N (2 bytes)
+ See converter/segmenter.cc for how it's used.
+ """
+ 
+-from __future__ import absolute_import
+-from __future__ import print_function
+ 
+ import optparse
+ import re
+ import struct
+ import sys
+ 
+-from six.moves import range
+ 
+ 
+ def PatternToRegexp(pattern):
+   return '^' + pattern.replace('*', '[^,]+')
+ 
+ 
+-def LoadPatterns(file):
++def LoadPatterns(filename):
+   prefix = []
+   suffix = []
+-  with open(file, 'r') as fh:
++  with open(filename, 'r', encoding='utf-8') as fh:
+     for line in fh:
+       if len(line) <= 1 or line[0] == '#':
+         continue
+@@ -104,7 +101,7 @@ def GetCost(patterns, feature):
+ 
+ def LoadFeatures(filename):
+   features = []
+-  with open(filename, 'r') as fh:
++  with open(filename, 'r', encoding='utf-8') as fh:
+     for line in fh:
+       fields = line.split()
+       features.append(fields[1])
+@@ -113,7 +110,7 @@ def LoadFeatures(filename):
+ 
+ def CountSpecialPos(filename):
+   count = 0
+-  with open(filename, 'r') as fh:
++  with open(filename, 'r', encoding='utf-8') as fh:
+     for line in fh:
+       line = line.rstrip()
+       if not line or line[0] == '#':
+diff --git a/src/converter/gen_quality_regression_test_data.py b/src/converter/gen_quality_regression_test_data.py
+index 112862e..3c1cc79 100644
+--- a/src/converter/gen_quality_regression_test_data.py
++++ b/src/converter/gen_quality_regression_test_data.py
+@@ -32,8 +32,6 @@
+ A tool to embedded tsv file into test binary for quality regression test.
+ """
+ 
+-from __future__ import absolute_import
+-from __future__ import print_function
+ 
+ import sys
+ import xml.dom.minidom
+@@ -62,7 +60,7 @@ _DISABLED = 'false'
+ _ENABLED = 'true'
+ 
+ def ParseTSV(file):
+-  with open(file, 'r') as fh:
++  with open(file, 'r', encoding='utf-8') as fh:
+     for line in fh:
+       if line.startswith('#'):
+         continue
+diff --git a/src/converter/gen_segmenter_code.py b/src/converter/gen_segmenter_code.py
+index 1b6be18..76c58e5 100644
+--- a/src/converter/gen_segmenter_code.py
++++ b/src/converter/gen_segmenter_code.py
+@@ -32,8 +32,6 @@
+ A tool to generate segmenter-code from human-readable rule file
+ """
+ 
+-from __future__ import absolute_import
+-from __future__ import print_function
+ 
+ import sys
+ import re
+@@ -55,14 +53,14 @@ def ReadPOSID(id_file, special_pos_file):
+   pos = {}
+   max_id = 0
+ 
+-  with open(id_file, "r") as fh:
++  with open(id_file, "r", encoding='utf-8') as fh:
+     for line in fh:
+       fields = line.split()
+       pos[fields[1]] = fields[0]
+       max_id = max(int(fields[0]), max_id)
+ 
+   max_id = max_id + 1
+-  with open(special_pos_file, "r") as fh:
++  with open(special_pos_file, "r", encoding='utf-8') as fh:
+     for line in fh:
+       if len(line) <= 1 or line[0] == '#':
+         continue
+@@ -119,7 +117,7 @@ def main():
+ 
+   print(HEADER % (len(list(pos.keys())), len(list(pos.keys()))))
+ 
+-  with open(sys.argv[3], "r") as fh:
++  with open(sys.argv[3], "r", encoding='utf-8') as fh:
+     for line in fh:
+       if len(line) <= 1 or line[0] == '#':
+         continue
+diff --git a/src/data_manager/gen_connection_data.py b/src/data_manager/gen_connection_data.py
+index 5a130f9..9c09a7c 100644
+--- a/src/data_manager/gen_connection_data.py
++++ b/src/data_manager/gen_connection_data.py
+@@ -30,8 +30,6 @@
+ 
+ """Generator script for connection data."""
+ 
+-from __future__ import absolute_import
+-from __future__ import print_function
+ 
+ import io
+ import logging
+@@ -40,9 +38,6 @@ import os
+ import struct
+ import sys
+ 
+-import six
+-from six.moves import range
+-from six.moves import zip
+ 
+ from build_tools import code_generator_util
+ 
+@@ -73,7 +68,7 @@ def ParseBoolFlag(value):
+ def GetPosSize(filepath):
+   # The pos-size should be equal to the number of lines.
+   # TODO(hidehiko): Merge this method with pos_util in dictionary.
+-  with open(filepath, 'r') as stream:
++  with open(filepath, 'r', encoding='utf-8') as stream:
+     stream = code_generator_util.SkipLineComment(stream)
+     # Count the number of lines.
+     return sum(1 for _ in stream)
+@@ -84,7 +79,7 @@ def ParseConnectionFile(text_connection_file, pos_size, special_pos_size):
+   mat_size = pos_size + special_pos_size
+ 
+   matrix = [[0] * mat_size for _ in range(mat_size)]
+-  with open(text_connection_file, 'r') as stream:
++  with open(text_connection_file, 'r', encoding='utf-8') as stream:
+     stream = code_generator_util.SkipLineComment(stream)
+     # The first line contains the matrix column/row size.
+     size = next(stream).rstrip()
+diff --git a/src/data_manager/gen_data_version.py b/src/data_manager/gen_data_version.py
+index 594603c..d995994 100644
+--- a/src/data_manager/gen_data_version.py
++++ b/src/data_manager/gen_data_version.py
+@@ -53,7 +53,7 @@ def _ParseOption():
+ def main():
+   opts = _ParseOption()
+   data = {}
+-  with open(opts.mozc_version_template, 'r') as f:
++  with open(opts.mozc_version_template, 'r', encoding='utf-8') as f:
+     for line in f:
+       matchobj = re.match(r'(\w+) *= *(.*)', line.strip())
+       if matchobj:
+@@ -61,7 +61,7 @@ def main():
+         value = matchobj.group(2)
+         data[key] = value
+ 
+-  with open(opts.output, 'w') as f:
++  with open(opts.output, 'w', encoding='utf-8') as f:
+     f.write('.'.join((data['ENGINE_VERSION'], data['DATA_VERSION'], opts.tag)))
+ 
+ 
+diff --git a/src/dictionary/gen_pos_map.py b/src/dictionary/gen_pos_map.py
+index 45eb5fd..c48be2b 100644
+--- a/src/dictionary/gen_pos_map.py
++++ b/src/dictionary/gen_pos_map.py
+@@ -31,7 +31,6 @@
+ """A script to generate a C++ header file for the POS conversion map.
+ """
+ 
+-from __future__ import absolute_import
+ import optparse
+ import sys
+ 
+@@ -53,7 +52,7 @@ FOOTER = """};
+ """
+ 
+ def ParseUserPos(user_pos_file):
+-  with open(user_pos_file, 'r') as stream:
++  with open(user_pos_file, 'r', encoding="utf-8") as stream:
+     stream = code_generator_util.SkipLineComment(stream)
+     stream = code_generator_util.ParseColumnStream(stream, num_column=2)
+     return dict((key, enum_value) for key, enum_value in stream)
+@@ -63,7 +62,7 @@ def GeneratePosMap(third_party_pos_map_file, user_pos_file):
+   user_pos_map = ParseUserPos(user_pos_file)
+ 
+   result = {}
+-  with open(third_party_pos_map_file, 'r') as stream:
++  with open(third_party_pos_map_file, 'r', encoding="utf-8") as stream:
+     stream = code_generator_util.SkipLineComment(stream)
+     for columns in code_generator_util.ParseColumnStream(stream, num_column=2):
+       third_party_pos_name, mozc_pos = (columns + [None])[:2]
+diff --git a/src/dictionary/gen_pos_matcher_code.py b/src/dictionary/gen_pos_matcher_code.py
+index 586a674..5217bd0 100644
+--- a/src/dictionary/gen_pos_matcher_code.py
++++ b/src/dictionary/gen_pos_matcher_code.py
+@@ -87,7 +87,6 @@ return true if id is in one of the ranges).  See the following figure:
+ |                                           |
+ """
+ 
+-from __future__ import absolute_import
+ 
+ import optparse
+ import re
+@@ -218,7 +217,7 @@ def main():
+     pos_database = pos_util.PosDataBase()
+     pos_matcher = pos_util.PosMatcher(pos_database)
+     pos_matcher.Parse(options.pos_matcher_rule_file)
+-    with open(options.output_pos_matcher_h, 'w') as stream:
++    with open(options.output_pos_matcher_h, 'w', encoding='utf-8') as stream:
+       OutputPosMatcherHeader(pos_matcher, stream)
+ 
+   if options.output_pos_matcher_data:
+diff --git a/src/dictionary/gen_pos_rewrite_rule.py b/src/dictionary/gen_pos_rewrite_rule.py
+index e9402b4..6d5265e 100644
+--- a/src/dictionary/gen_pos_rewrite_rule.py
++++ b/src/dictionary/gen_pos_rewrite_rule.py
+@@ -47,7 +47,7 @@ def IsPrefix(str, key):
+ 
+ def LoadRewriteMapRule(filename):
+   rule = []
+-  with open(filename, 'r') as fh:
++  with open(filename, 'r', encoding='utf-8') as fh:
+     for line in fh:
+       line = line.rstrip('\n')
+       if not line or line.startswith('#'):
+@@ -60,12 +60,12 @@ def LoadRewriteMapRule(filename):
+ def ReadPOSID(id_file, special_pos_file):
+   pos_list = []
+ 
+-  with open(id_file, 'r') as fh:
++  with open(id_file, 'r', encoding='utf-8') as fh:
+     for line in fh:
+       fields = line.split()
+       pos_list.append(fields[1])
+ 
+-  with open(special_pos_file, 'r') as fh:
++  with open(special_pos_file, 'r', encoding='utf-8') as fh:
+     for line in fh:
+       if len(line) <= 1 or line[0] == '#':
+         continue
+diff --git a/src/dictionary/gen_suffix_data.py b/src/dictionary/gen_suffix_data.py
+index 22f5976..8cc49a0 100644
+--- a/src/dictionary/gen_suffix_data.py
++++ b/src/dictionary/gen_suffix_data.py
+@@ -52,7 +52,7 @@ def main():
+   opts = _ParseOptions()
+ 
+   result = []
+-  with open(opts.input, 'r') as stream:
++  with open(opts.input, 'r', encoding='utf-8') as stream:
+     for line in stream:
+       line = line.rstrip('\r\n')
+       fields = line.split('\t')
+diff --git a/src/dictionary/gen_user_pos_data.py b/src/dictionary/gen_user_pos_data.py
+index aab0033..b7a2137 100644
+--- a/src/dictionary/gen_user_pos_data.py
++++ b/src/dictionary/gen_user_pos_data.py
+@@ -30,8 +30,6 @@
+ 
+ """Utility to generate User POS binary data."""
+ 
+-from __future__ import absolute_import
+-from __future__ import print_function
+ 
+ import optparse
+ import struct
+diff --git a/src/dictionary/gen_zip_code_seed.py b/src/dictionary/gen_zip_code_seed.py
+index c04cf35..f3578c6 100644
+--- a/src/dictionary/gen_zip_code_seed.py
++++ b/src/dictionary/gen_zip_code_seed.py
+@@ -51,7 +51,6 @@
+  "南三条西","１１丁目","0608612","060  ","札幌",0,0,0
+ """
+ 
+-from __future__ import print_function
+ __author__ = "toshiyuki"
+ 
+ import optparse
+diff --git a/src/dictionary/pos_util.py b/src/dictionary/pos_util.py
+index 2922d88..6be3640 100644
+--- a/src/dictionary/pos_util.py
++++ b/src/dictionary/pos_util.py
+@@ -30,7 +30,6 @@
+ 
+ """Utilities to handle pos related stuff for source code generation."""
+ 
+-from __future__ import absolute_import
+ 
+ from collections import defaultdict
+ import logging
+@@ -46,14 +45,14 @@ class PosDataBase(object):
+ 
+   def Parse(self, id_file, special_pos_file):
+     id_list = []
+-    with open(id_file, 'r') as stream:
++    with open(id_file, 'r', encoding='utf-8') as stream:
+       stream = code_generator_util.SkipLineComment(stream)
+       stream = code_generator_util.ParseColumnStream(stream, num_column=2)
+       for pos_id, feature in stream:
+         id_list.append((feature, int(pos_id)))
+ 
+     max_id = max(pos_id for _, pos_id in id_list)
+-    with open(special_pos_file, 'r') as stream:
++    with open(special_pos_file, 'r', encoding='utf-8') as stream:
+       stream = code_generator_util.SkipLineComment(stream)
+       for pos_id, line in enumerate(stream, start=max_id + 1):
+         id_list.append((line, pos_id))
+@@ -93,7 +92,7 @@ class PosMatcher(object):
+     self._match_rule_map = {}
+ 
+   def Parse(self, pos_matcher_rule_file):
+-    with open(pos_matcher_rule_file, 'r') as stream:
++    with open(pos_matcher_rule_file, 'r', encoding='utf-8') as stream:
+       stream = code_generator_util.SkipLineComment(stream)
+       stream = code_generator_util.ParseColumnStream(stream, num_column=2)
+       self._match_rule_map = dict(
+@@ -126,7 +125,7 @@ class InflectionMap(object):
+ 
+   def Parse(self, filepath):
+     result = defaultdict(list)
+-    with open(filepath, 'r') as stream:
++    with open(filepath, 'r', encoding='utf-8') as stream:
+       stream = code_generator_util.SkipLineComment(stream)
+       stream = code_generator_util.ParseColumnStream(stream, num_column=4)
+       for key, form, value_suffix, key_suffix in stream:
+@@ -153,7 +152,7 @@ class UserPos(object):
+ 
+   def Parse(self, filepath):
+     result = []
+-    with open(filepath, 'r') as stream:
++    with open(filepath, 'r', encoding='utf-8') as stream:
+       stream = code_generator_util.SkipLineComment(stream)
+       stream = code_generator_util.ParseColumnStream(stream, num_column=4)
+       for user_pos, _, ctype, feature in stream:
+diff --git a/src/mac/generate_mapping.py b/src/mac/generate_mapping.py
+index bbb55d0..28fa475 100644
+--- a/src/mac/generate_mapping.py
++++ b/src/mac/generate_mapping.py
+@@ -96,7 +96,7 @@ void Init%(mapname)s() {
+ 
+   def Print(self):
+     self.PrintHeader()
+-    with open(self._filename) as fh:
++    with open(self._filename, 'r', encoding='utf-8') as fh:
+       for line in fh:
+         self.PrintLine(line)
+     self.PrintFooter()
+diff --git a/src/prediction/gen_zero_query_data.py b/src/prediction/gen_zero_query_data.py
+index 6f39ecf..d76c111 100644
+--- a/src/prediction/gen_zero_query_data.py
++++ b/src/prediction/gen_zero_query_data.py
+@@ -303,13 +303,13 @@ def ParseOptions():
+ 
+ def main():
+   options = ParseOptions()
+-  with open(options.input_rule, 'r') as input_stream:
++  with open(options.input_rule, 'r', encoding='utf-8') as input_stream:
+     zero_query_rule_dict = ReadZeroQueryRuleData(input_stream)
+-  with open(options.input_symbol, 'r') as input_stream:
++  with open(options.input_symbol, 'r', encoding='utf-8') as input_stream:
+     zero_query_symbol_dict = ReadSymbolTsv(input_stream)
+-  with open(options.input_emoji, 'r') as input_stream:
++  with open(options.input_emoji, 'r', encoding='utf-8') as input_stream:
+     zero_query_emoji_dict = ReadEmojiTsv(input_stream)
+-  with open(options.input_emoticon, 'r') as input_stream:
++  with open(options.input_emoticon, 'r', encoding='utf-8') as input_stream:
+     zero_query_emoticon_dict = ReadEmoticonTsv(input_stream)
+ 
+   merged_zero_query_dict = MergeZeroQueryData(
+diff --git a/src/prediction/gen_zero_query_number_data.py b/src/prediction/gen_zero_query_number_data.py
+index a584ae3..8f35313 100644
+--- a/src/prediction/gen_zero_query_number_data.py
++++ b/src/prediction/gen_zero_query_number_data.py
+@@ -71,7 +71,7 @@ def ParseOption():
+ 
+ def main():
+   options = ParseOption()
+-  with open(options.input, 'r') as input_stream:
++  with open(options.input, 'r', encoding='utf-8') as input_stream:
+     zero_query_dict = ReadZeroQueryNumberData(input_stream)
+   util.WriteZeroQueryData(zero_query_dict,
+                           options.output_token_array,
+diff --git a/src/prediction/gen_zero_query_util.py b/src/prediction/gen_zero_query_util.py
+index 8e1c9df..57e1b29 100644
+--- a/src/prediction/gen_zero_query_util.py
++++ b/src/prediction/gen_zero_query_util.py
+@@ -33,8 +33,6 @@
+ For output format, see zero_query_dict.h.
+ """
+ 
+-from __future__ import absolute_import
+-from __future__ import print_function
+ 
+ import os
+ import struct
+diff --git a/src/rewriter/gen_counter_suffix_array.py b/src/rewriter/gen_counter_suffix_array.py
+index eeeb916..9a386e8 100644
+--- a/src/rewriter/gen_counter_suffix_array.py
++++ b/src/rewriter/gen_counter_suffix_array.py
+@@ -39,7 +39,7 @@ from build_tools import serialized_string_array_builder
+ 
+ def ReadCounterSuffixPosIds(id_file):
+   pos_ids = set()
+-  with open(id_file, 'r') as stream:
++  with open(id_file, 'r', encoding='utf-8') as stream:
+     stream = code_generator_util.ParseColumnStream(stream, num_column=2)
+     for pos_id, pos_name in stream:
+       if pos_name.startswith('名詞,接尾,助数詞'):
+@@ -56,7 +56,7 @@ def ReadCounterSuffixes(dictionary_files, ids):
+     # reading_correction.tsv in a cleaner way in the whole build system.
+     if 'reading_correction.tsv' in filename:
+       continue
+-    with open(filename, 'r') as stream:
++    with open(filename, 'r', encoding='utf-8') as stream:
+       stream = code_generator_util.ParseColumnStream(stream, num_column=5,
+                                                      delimiter='\t')
+       for x, lid, rid, y, value in stream:
+diff --git a/src/rewriter/gen_emoji_rewriter_data.py b/src/rewriter/gen_emoji_rewriter_data.py
+index 1d48591..b769f21 100644
+--- a/src/rewriter/gen_emoji_rewriter_data.py
++++ b/src/rewriter/gen_emoji_rewriter_data.py
+@@ -47,8 +47,6 @@ File format:
+   "mozc/data/emoji/emoji_data.tsv".
+ """
+ 
+-from __future__ import absolute_import
+-from __future__ import print_function
+ 
+ from collections import defaultdict
+ import logging
+@@ -196,7 +194,7 @@ def ParseOptions():
+ 
+ def main():
+   options = ParseOptions()
+-  with open(options.input, 'r') as input_stream:
++  with open(options.input, 'r', encoding="utf-8") as input_stream:
+     (emoji_data_list, token_dict) = ReadEmojiTsv(input_stream)
+ 
+   OutputData(emoji_data_list, token_dict,
+diff --git a/src/rewriter/gen_reading_correction_data.py b/src/rewriter/gen_reading_correction_data.py
+index d358a00..6771ebf 100644
+--- a/src/rewriter/gen_reading_correction_data.py
++++ b/src/rewriter/gen_reading_correction_data.py
+@@ -63,7 +63,7 @@ def ParseOptions():
+ def WriteData(input_path, output_value_array_path, output_error_array_path,
+               output_correction_array_path):
+   outputs = []
+-  with open(input_path, 'r') as input_stream:
++  with open(input_path, 'r', encoding="utf-8") as input_stream:
+     input_stream = code_generator_util.SkipLineComment(input_stream)
+     input_stream = code_generator_util.ParseColumnStream(input_stream,
+                                                          num_column=3)
+diff --git a/src/rewriter/gen_single_kanji_rewriter_data.py b/src/rewriter/gen_single_kanji_rewriter_data.py
+index e7a48c0..f75295f 100644
+--- a/src/rewriter/gen_single_kanji_rewriter_data.py
++++ b/src/rewriter/gen_single_kanji_rewriter_data.py
+@@ -151,10 +151,10 @@ def _ParseOptions():
+ def main():
+   options = _ParseOptions()
+ 
+-  with open(options.single_kanji_file, 'r') as single_kanji_stream:
++  with open(options.single_kanji_file, 'r', encoding='utf-8') as single_kanji_stream:
+     single_kanji = ReadSingleKanji(single_kanji_stream)
+ 
+-  with open(options.variant_file, 'r') as variant_stream:
++  with open(options.variant_file, 'r', encoding='utf-8') as variant_stream:
+     variant_info = ReadVariant(variant_stream)
+ 
+   WriteSingleKanji(single_kanji,
+diff --git a/src/unix/ibus/gen_mozc_xml.py b/src/unix/ibus/gen_mozc_xml.py
+index c7e9243..8153811 100644
+--- a/src/unix/ibus/gen_mozc_xml.py
++++ b/src/unix/ibus/gen_mozc_xml.py
+@@ -35,7 +35,6 @@ since it could make start-up time of ibus-daemon slow when XML cache of the
+ daemon in ~/.cache/ibus/bus/ is not ready or is expired.
+ """
+ 
+-from __future__ import print_function
+ __author__ = "yusukes"
+ 
+ import optparse
+diff --git a/src/usage_stats/gen_stats_list.py b/src/usage_stats/gen_stats_list.py
+index fff4a17..bb69fae 100644
+--- a/src/usage_stats/gen_stats_list.py
++++ b/src/usage_stats/gen_stats_list.py
+@@ -30,7 +30,6 @@
+ 
+ """Generates usage stats name list."""
+ 
+-from __future__ import print_function
+ 
+ __author__ = "toshiyuki"
+ 
+@@ -39,7 +38,7 @@ import sys
+ 
+ def GetStatsNameList(filename):
+   stats = []
+-  with open(filename, 'r') as fh:
++  with open(filename, 'r', encoding='utf-8') as fh:
+     for line in fh:
+       stat = line.strip()
+       if not stat or stat[0] == '#':
+diff --git a/src/win32/installer/postbuilds_win.py b/src/win32/installer/postbuilds_win.py
+index d4c18a6..53ebd28 100644
+--- a/src/win32/installer/postbuilds_win.py
++++ b/src/win32/installer/postbuilds_win.py
+@@ -33,7 +33,6 @@
+ postbuilds_win.py --targetpath=my_binary.exe
+ """
+ 
+-from __future__ import print_function
+ 
+ __author__ = "yukawa"
+ 

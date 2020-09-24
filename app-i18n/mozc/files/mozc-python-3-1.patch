@@ -1,0 +1,1387 @@
+diff --git a/src/base/gen_character_set.py b/src/base/gen_character_set.py
+index 6372645..3748053 100644
+--- a/src/base/gen_character_set.py
++++ b/src/base/gen_character_set.py
+@@ -33,7 +33,6 @@ __author__ = "taku"
+ import itertools
+ import optparse
+ import re
+-import string
+ import sys
+ 
+ 
+@@ -89,17 +88,18 @@ class CodePointCategorizer(object):
+   @staticmethod
+   def _LoadTable(filename, column_index, pattern, validater):
+     result = set()
+-    for line in open(filename):
+-      if line.startswith('#'):
+-        # Skip a comment line.
+-        continue
+-
+-      columns = line.split()
+-      match = pattern.search(columns[column_index])
+-      if match:
+-        ucs = int(match.group(1), 16)
+-        if validater(ucs):
+-          result.add(ucs)
++    with open(filename) as fh:
++      for line in fh:
++        if line.startswith('#'):
++          # Skip a comment line.
++          continue
++
++        columns = line.split()
++        match = pattern.search(columns[column_index])
++        if match:
++          ucs = int(match.group(1), 16)
++          if validater(ucs):
++            result.add(ucs)
+ 
+     return result
+ 
+@@ -250,7 +250,7 @@ def GenerateCategoryBitmap(category_list, name):
+   # (at most) four code points.
+   bit_list = []
+   for _, group in itertools.groupby(enumerate(category_list),
+-                                    lambda (codepoint, _): codepoint / 4):
++                                    lambda x: x[0] // 4):
+     # Fill bits from LSB to MSB for each group.
+     bits = 0
+     for index, (_, category) in enumerate(group):
+@@ -263,7 +263,7 @@ def GenerateCategoryBitmap(category_list, name):
+ 
+   # Output the content. Each line would have (at most) 16 bytes.
+   for _, group in itertools.groupby(enumerate(bit_list),
+-                                    lambda (index, _): index / 16):
++                                    lambda x: x[0] // 16):
+     line = ['    \"']
+     for _, bits in group:
+       line.append('\\x%02X' % bits)
+@@ -386,7 +386,7 @@ def GenerateGetCharacterSet(category_list, bitmap_name, bitmap_size):
+   # Bitmap lookup.
+   # TODO(hidehiko): the bitmap has two huge 0-bits ranges. Reduce them.
+   category_map = [
+-      (bits, category) for category, bits in CATEGORY_BITMAP.iteritems()]
++      (bits, category) for category, bits in CATEGORY_BITMAP.items()]
+   category_map.sort()
+ 
+   lines.extend([
+@@ -451,7 +451,7 @@ def main():
+                                      options.jisx0213file)
+   category_list = [
+       categorizer.GetCategory(codepoint)
+-      for codepoint in xrange(categorizer.MaxCodePoint() + 1)]
++      for codepoint in range(categorizer.MaxCodePoint() + 1)]
+   generated_character_set_header = GenerateCharacterSetHeader(category_list)
+ 
+   # Write the result.
+diff --git a/src/build_mozc.py b/src/build_mozc.py
+index 4b581df..b8f551f 100644
+--- a/src/build_mozc.py
++++ b/src/build_mozc.py
+@@ -718,7 +718,7 @@ def RunTests(target_platform, configuration, parallel_num):
+       logging.info('running %s...', binary)
+       try:
+         test_function(binary, gtest_report_dir, options)
+-      except RunOrDieError, e:
++      except RunOrDieError as e:
+         logging.error(e)
+         failed_tests.append(binary)
+   else:
+@@ -746,7 +746,7 @@ def RunTestsMain(options, args):
+   # and '-c' and 'Release' are build options.
+   targets = []
+   build_options = []
+-  for i in xrange(len(args)):
++  for i in range(len(args)):
+     if args[i].startswith('-'):
+       # starting with build options
+       build_options = args[i:]
+@@ -827,14 +827,14 @@ def CleanMain(options, unused_args):
+ 
+ def ShowHelpAndExit():
+   """Shows the help message."""
+-  print 'Usage: build_mozc.py COMMAND [ARGS]'
+-  print 'Commands: '
+-  print '  gyp          Generate project files.'
+-  print '  build        Build the specified target.'
+-  print '  runtests     Build all tests and run them.'
+-  print '  clean        Clean all the build files and directories.'
+-  print ''
+-  print 'See also the comment in the script for typical usage.'
++  print('Usage: build_mozc.py COMMAND [ARGS]')
++  print('Commands: ')
++  print('  gyp          Generate project files.')
++  print('  build        Build the specified target.')
++  print('  runtests     Build all tests and run them.')
++  print('  clean        Clean all the build files and directories.')
++  print('')
++  print('See also the comment in the script for typical usage.')
+   sys.exit(1)
+ 
+ 
+diff --git a/src/build_tools/build_and_sign_pkg_mac.py b/src/build_tools/build_and_sign_pkg_mac.py
+index a1ecdaa..f46691f 100644
+--- a/src/build_tools/build_and_sign_pkg_mac.py
++++ b/src/build_tools/build_and_sign_pkg_mac.py
+@@ -44,8 +44,8 @@ import os
+ import shutil
+ import sys
+ 
+-from util import PrintErrorAndExit
+-from util import RunOrDie
++from .util import PrintErrorAndExit
++from .util import RunOrDie
+ 
+ 
+ def ParseOption():
+diff --git a/src/build_tools/change_reference_mac.py b/src/build_tools/change_reference_mac.py
+index 790c3c6..bfb3edb 100644
+--- a/src/build_tools/change_reference_mac.py
++++ b/src/build_tools/change_reference_mac.py
+@@ -41,8 +41,8 @@ __author__ = "horo"
+ import optparse
+ import os
+ 
+-from util import PrintErrorAndExit
+-from util import RunOrDie
++from .util import PrintErrorAndExit
++from .util import RunOrDie
+ 
+ 
+ def ParseOption():
+diff --git a/src/build_tools/code_generator_util.py b/src/build_tools/code_generator_util.py
+index c74b375..573886a 100644
+--- a/src/build_tools/code_generator_util.py
++++ b/src/build_tools/code_generator_util.py
+@@ -33,9 +33,6 @@
+ from __future__ import absolute_import
+ 
+ import struct
+-import six
+-
+-from six.moves import range  # pylint: disable=redefined-builtin
+ 
+ __author__ = "hidehiko"
+ 
+@@ -45,23 +42,12 @@ def ToCppStringLiteral(s):
+   if s is None:
+     return 'NULL'
+ 
+-  if six.PY3:
+-    # Python3
+-    if all(0x20 <= ord(c) <= 0x7E for c in s):
+-      # All characters are in ascii code.
+-      return '"%s"' % s.replace('\\', r'\\').replace('"', r'\"')
+-    else:
+-      # One or more characters are non-ascii.
+-      return '"%s"' % ''.join(r'\x%02X' % c for c in s.encode('utf-8'))
+-
++  if all(0x20 <= ord(c) <= 0x7E for c in s):
++    # All characters are in ascii code.
++    return '"%s"' % s.replace('\\', r'\\').replace('"', r'\"')
+   else:
+-    # Python2
+-    if all(0x20 <= ord(c) <= 0x7E for c in s):
+-      # All characters are in ascii code.
+-      return '"%s"' % s.replace('\\', r'\\').replace('"', r'\"')
+-    else:
+-      # One or more characters are non-ascii.
+-      return '"%s"' % ''.join(r'\x%02X' % ord(c) for c in s)
++    # One or more characters are non-ascii.
++    return '"%s"' % ''.join(r'\x%02X' % c for c in s.encode('utf-8'))
+ 
+ 
+ def FormatWithCppEscape(format_text, *args):
+@@ -112,7 +98,7 @@ def WriteCppDataArray(data, variable_name, target_compiler, stream):
+ 
+     for word_index in range(0, len(data), 8):
+       word_chunk = data[word_index:word_index + 8].ljust(8, '\x00')
+-      stream.write('0x%016X, ' % struct.unpack('<Q', six.b(word_chunk)))
++      stream.write('0x%016X, ' % struct.unpack('<Q', word_chunk.encode('utf-8')))
+       if (word_index / 8) % 4 == 3:
+         # Line feed for every 4 elements.
+         stream.write('\n')
+@@ -144,7 +130,7 @@ def ToJavaStringLiteral(codepoint_list):
+     return 'null'
+   result = r'"'
+   for codepoint in codepoint_list:
+-    utf16_array = bytearray(six.unichr(codepoint).encode('utf-16be'))
++    utf16_array = bytearray(chr(codepoint).encode('utf-16be'))
+     if len(utf16_array) == 2:
+       (u0, l0) = utf16_array
+       result += r'\u%02X%02X' % (u0, l0)
+diff --git a/src/build_tools/copy_dll_and_symbol.py b/src/build_tools/copy_dll_and_symbol.py
+index b119967..248d6f5 100644
+--- a/src/build_tools/copy_dll_and_symbol.py
++++ b/src/build_tools/copy_dll_and_symbol.py
+@@ -39,7 +39,7 @@ import optparse
+ import os
+ import shutil
+ 
+-from util import PrintErrorAndExit
++from .util import PrintErrorAndExit
+ 
+ def ParseOption():
+   """Parse command line options."""
+diff --git a/src/build_tools/copy_qt_frameworks_mac.py b/src/build_tools/copy_qt_frameworks_mac.py
+index a12f06e..9e81316 100644
+--- a/src/build_tools/copy_qt_frameworks_mac.py
++++ b/src/build_tools/copy_qt_frameworks_mac.py
+@@ -41,9 +41,9 @@ __author__ = "horo"
+ import optparse
+ import os
+ 
+-from copy_file import CopyFiles
+-from util import PrintErrorAndExit
+-from util import RunOrDie
++from .copy_file import CopyFiles
++from .util import PrintErrorAndExit
++from .util import RunOrDie
+ 
+ 
+ def ParseOption():
+diff --git a/src/build_tools/gen_win32_resource_header.py b/src/build_tools/gen_win32_resource_header.py
+index f0375dc..cad858d 100644
+--- a/src/build_tools/gen_win32_resource_header.py
++++ b/src/build_tools/gen_win32_resource_header.py
+@@ -39,7 +39,7 @@ See mozc_version.py for the detailed information for version.txt.
+ __author__ = "yukawa"
+ 
+ import logging
+-import mozc_version
++from . import mozc_version
+ import optparse
+ import os
+ import sys
+diff --git a/src/build_tools/mozc_version.py b/src/build_tools/mozc_version.py
+index b3b33de..01ec045 100644
+--- a/src/build_tools/mozc_version.py
++++ b/src/build_tools/mozc_version.py
+@@ -271,13 +271,14 @@ class MozcVersion(object):
+     self._properties = {}
+     if not os.path.isfile(path):
+       return
+-    for line in open(path):
+-      matchobj = re.match(r'(\w+)=(.*)', line.strip())
+-      if matchobj:
+-        var = matchobj.group(1)
+-        val = matchobj.group(2)
+-        if var not in self._properties:
+-          self._properties[var] = val
++    with open(path) as fh:
++      for line in fh:
++        matchobj = re.match(r'(\w+)=(.*)', line.strip())
++        if matchobj:
++          var = matchobj.group(1)
++          val = matchobj.group(2)
++          if var not in self._properties:
++            self._properties[var] = val
+ 
+     # Check mandatory properties.
+     for key in VERSION_PROPERTIES:
+diff --git a/src/build_tools/redirect.py b/src/build_tools/redirect.py
+index d90bd5e..21a3e68 100644
+--- a/src/build_tools/redirect.py
++++ b/src/build_tools/redirect.py
+@@ -67,6 +67,7 @@ def main():
+   # Write the stdout content to the output file.
+   output_file = open(output_file_name, 'w')
+   output_file.write(stdout_content)
++  output_file.close()
+   return process.wait()
+ 
+ if __name__ == '__main__':
+diff --git a/src/build_tools/serialized_string_array_builder.py b/src/build_tools/serialized_string_array_builder.py
+index adeb36f..6ef8116 100644
+--- a/src/build_tools/serialized_string_array_builder.py
++++ b/src/build_tools/serialized_string_array_builder.py
+@@ -33,7 +33,6 @@
+ from __future__ import absolute_import
+ from __future__ import print_function
+ import struct
+-from six.moves import range
+ 
+ 
+ def SerializeToFile(strings, filename):
+@@ -53,8 +52,9 @@ def SerializeToFile(strings, filename):
+   offset = 4 + 8 * array_size  # The start offset of strings chunk
+   for s in strings:
+     offsets.append(offset)
+-    lengths.append(len(s))
+-    offset += len(s) + 1  # Include one byte for the trailing '\0'
++    slen = len(s.encode('utf-8'))
++    lengths.append(slen)
++    offset += slen + 1  # Include one byte for the trailing '\0'
+ 
+   with open(filename, 'wb') as f:
+     # 4-byte array_size.
+@@ -67,5 +67,5 @@ def SerializeToFile(strings, filename):
+ 
+     # Strings chunk.
+     for i in range(array_size):
+-      f.write(strings[i])
+-      f.write('\0')
++      f.write(strings[i].encode('utf-8'))
++      f.write(b'\0')
+diff --git a/src/build_tools/test_tools/test_launcher.py b/src/build_tools/test_tools/test_launcher.py
+index 6615111..41d5399 100644
+--- a/src/build_tools/test_tools/test_launcher.py
++++ b/src/build_tools/test_tools/test_launcher.py
+@@ -101,11 +101,11 @@ class PathDeleter(object):
+       time.sleep(1)
+       try:
+         shutil.rmtree(self._path)
+-      except OSError, e:
++      except OSError as e:
+         logging.error('Failed to remove %s. error: %s', self._path, e)
+ 
+ 
+-def _ExecuteTest((command, gtest_report_dir)):
++def _ExecuteTest(args):
+   """Executes tests with specified Test command.
+ 
+   Args:
+@@ -122,6 +122,7 @@ def _ExecuteTest((command, gtest_report_dir)):
+   module, which is used in multiprocessing module.
+   (http://docs.python.org/library/pickle.html)
+   """
++  (command, gtest_report_dir) = args
+   binary = command[0]
+   binary_filename = os.path.basename(binary)
+   tmp_dir = tempfile.mkdtemp()
+diff --git a/src/build_tools/tweak_info_plist.py b/src/build_tools/tweak_info_plist.py
+index 7106dfe..6b1381a 100644
+--- a/src/build_tools/tweak_info_plist.py
++++ b/src/build_tools/tweak_info_plist.py
+@@ -42,8 +42,8 @@ import datetime
+ import logging
+ import optparse
+ import sys
+-import mozc_version
+-import tweak_data
++from . import mozc_version
++from . import tweak_data
+ 
+ _COPYRIGHT_YEAR = datetime.date.today().year
+ 
+@@ -81,7 +81,7 @@ def main():
+ 
+   version = mozc_version.MozcVersion(options.version_file)
+ 
+-  copyright_message = (u'© %d Google Inc.' % _COPYRIGHT_YEAR).encode('utf-8')
++  copyright_message = ('© %d Google Inc.' % _COPYRIGHT_YEAR).encode('utf-8')
+   long_version = version.GetVersionString()
+   short_version = version.GetVersionInFormat('@MAJOR@.@MINOR@.@BUILD@')
+ 
+diff --git a/src/build_tools/tweak_info_plist_strings.py b/src/build_tools/tweak_info_plist_strings.py
+index bf0a360..9b2f64f 100644
+--- a/src/build_tools/tweak_info_plist_strings.py
++++ b/src/build_tools/tweak_info_plist_strings.py
+@@ -40,7 +40,7 @@ import datetime
+ import logging
+ import optparse
+ import sys
+-import tweak_data
++from . import tweak_data
+ 
+ _COPYRIGHT_YEAR = datetime.date.today().year
+ 
+diff --git a/src/build_tools/tweak_macinstaller_script.py b/src/build_tools/tweak_macinstaller_script.py
+index a2d38d4..23b4ae3 100644
+--- a/src/build_tools/tweak_macinstaller_script.py
++++ b/src/build_tools/tweak_macinstaller_script.py
+@@ -39,7 +39,7 @@ __author__ = "mukai"
+ import logging
+ import optparse
+ 
+-import mozc_version
++from . import mozc_version
+ 
+ 
+ def _ReplaceVariables(data, environment):
+diff --git a/src/composer/internal/gen_typing_model.py b/src/composer/internal/gen_typing_model.py
+index f512e25..164a778 100644
+--- a/src/composer/internal/gen_typing_model.py
++++ b/src/composer/internal/gen_typing_model.py
+@@ -54,14 +54,13 @@ Output file format:
+ __author__ = "noriyukit"
+ 
+ import bisect
+-import codecs
+ import collections
+ import optparse
+ import struct
+ 
+ UNDEFINED_COST = -1
+-MAX_UINT16 = struct.unpack('H', '\xFF\xFF')[0]
+-MAX_UINT8 = struct.unpack('B', '\xFF')[0]
++MAX_UINT16 = struct.unpack('H', b'\xFF\xFF')[0]
++MAX_UINT8 = struct.unpack('B', b'\xFF')[0]
+ 
+ 
+ def ParseArgs():
+@@ -113,7 +112,7 @@ def GetMappingTable(values, mapping_table_size):
+   sorted_values = list(sorted(set(values)))
+   mapping_table = sorted_values[0]
+   mapping_table_size_without_special_value = mapping_table_size - 1
+-  span = len(sorted_values) / (mapping_table_size_without_special_value - 1)
++  span = len(sorted_values) // (mapping_table_size_without_special_value - 1)
+   mapping_table = [sorted_values[i * span]
+                    for i
+                    in range(0, mapping_table_size_without_special_value - 1)]
+@@ -150,7 +149,7 @@ def GetNearestMappingTableIndex(mapping_table, value):
+ 
+ def GetValueTable(unique_characters, mapping_table, dictionary):
+   result = []
+-  for key, value in dictionary.iteritems():
++  for key, value in dictionary.items():
+     index = GetIndexFromKey(unique_characters, key)
+     while len(result) <= index:
+       result.append(len(mapping_table) - 1)
+@@ -167,13 +166,13 @@ def WriteResult(romaji_transition_cost, output_path):
+                              romaji_transition_cost)
+   with open(output_path, 'wb') as f:
+     f.write(struct.pack('<I', len(unique_characters)))
+-    f.write(''.join(unique_characters))
++    f.write(''.join(unique_characters).encode('utf-8'))
+     offset = 4 + len(unique_characters)
+ 
+     # Add padding to place value list size at 4-byte boundary.
+     if offset % 4:
+       padding_size = 4 - offset % 4
+-      f.write('\x00' * padding_size)
++      f.write(b'\x00' * padding_size)
+       offset += padding_size
+ 
+     f.write(struct.pack('<I', len(value_list)))
+@@ -184,7 +183,7 @@ def WriteResult(romaji_transition_cost, output_path):
+     # Add padding to place mapping_table at 4-byte boundary.
+     if offset % 4:
+       padding_size = 4 - offset % 4
+-      f.write('\x00' * padding_size)
++      f.write(b'\x00' * padding_size)
+       offset += padding_size
+ 
+     for v in mapping_table:
+@@ -198,14 +197,15 @@ def main():
+   #   - trigram['vw']['x'] = -500 * log(P(x | 'vw'))
+   unigram = {}
+   trigram = collections.defaultdict(dict)
+-  for line in codecs.open(options.input_path, 'r', encoding='utf-8'):
+-    line = line.rstrip()
+-    ngram, cost = line.split('\t')
+-    cost = int(cost)
+-    if len(ngram) == 1:
+-      unigram[ngram] = cost
+-    else:
+-      trigram[ngram[:-1]][ngram[-1]] = cost
++  with open(options.input_path, 'r', encoding='utf-8') as input_file:
++    for line in input_file:
++      line = line.rstrip()
++      ngram, cost = line.split('\t')
++      cost = int(cost)
++      if len(ngram) == 1:
++        unigram[ngram] = cost
++      else:
++        trigram[ngram[:-1]][ngram[-1]] = cost
+ 
+   # Calculate ngram-related cost for each 'vw' and 'x':
+   #     -500 * log( P('x' | 'vw') / P('x') )
+diff --git a/src/converter/gen_boundary_data.py b/src/converter/gen_boundary_data.py
+index fd3e5b1..7762b86 100644
+--- a/src/converter/gen_boundary_data.py
++++ b/src/converter/gen_boundary_data.py
+@@ -73,22 +73,23 @@ def PatternToRegexp(pattern):
+ def LoadPatterns(file):
+   prefix = []
+   suffix = []
+-  for line in open(file, 'r'):
+-    if len(line) <= 1 or line[0] == '#':
+-      continue
+-    fields = line.split()
+-    label = fields[0]
+-    feature = fields[1]
+-    cost = int(fields[2])
+-    if cost < 0 or cost > 0xffff:
+-      sys.exit(-1)
+-    if label == 'PREFIX':
+-      prefix.append([re.compile(PatternToRegexp(feature)), cost])
+-    elif label == 'SUFFIX':
+-      suffix.append([re.compile(PatternToRegexp(feature)), cost])
+-    else:
+-      print('format error %s' % (line))
+-      sys.exit(0)
++  with open(file, 'r') as fh:
++    for line in fh:
++      if len(line) <= 1 or line[0] == '#':
++        continue
++      fields = line.split()
++      label = fields[0]
++      feature = fields[1]
++      cost = int(fields[2])
++      if cost < 0 or cost > 0xffff:
++        sys.exit(-1)
++      if label == 'PREFIX':
++        prefix.append([re.compile(PatternToRegexp(feature)), cost])
++      elif label == 'SUFFIX':
++        suffix.append([re.compile(PatternToRegexp(feature)), cost])
++      else:
++        print('format error %s' % (line))
++        sys.exit(0)
+   return (prefix, suffix)
+ 
+ 
+@@ -103,19 +104,21 @@ def GetCost(patterns, feature):
+ 
+ def LoadFeatures(filename):
+   features = []
+-  for line in open(filename, 'r'):
+-    fields = line.split()
+-    features.append(fields[1])
++  with open(filename, 'r') as fh:
++    for line in fh:
++      fields = line.split()
++      features.append(fields[1])
+   return features
+ 
+ 
+ def CountSpecialPos(filename):
+   count = 0
+-  for line in open(filename, 'r'):
+-    line = line.rstrip()
+-    if not line or line[0] == '#':
+-      continue
+-    count += 1
++  with open(filename, 'r') as fh:
++    for line in fh:
++      line = line.rstrip()
++      if not line or line[0] == '#':
++        continue
++      count += 1
+   return count
+ 
+ 
+diff --git a/src/converter/gen_quality_regression_test_data.py b/src/converter/gen_quality_regression_test_data.py
+index 4b1eef1..112862e 100644
+--- a/src/converter/gen_quality_regression_test_data.py
++++ b/src/converter/gen_quality_regression_test_data.py
+@@ -62,13 +62,14 @@ _DISABLED = 'false'
+ _ENABLED = 'true'
+ 
+ def ParseTSV(file):
+-  for line in open(file, 'r'):
+-    if line.startswith('#'):
+-      continue
+-    line = line.rstrip('\r\n')
+-    if not line:
+-      continue
+-    yield (_ENABLED, line)
++  with open(file, 'r') as fh:
++    for line in fh:
++      if line.startswith('#'):
++        continue
++      line = line.rstrip('\r\n')
++      if not line:
++        continue
++      yield (_ENABLED, line)
+ 
+ 
+ def GetText(node):
+diff --git a/src/converter/gen_segmenter_code.py b/src/converter/gen_segmenter_code.py
+index 314e90a..1b6be18 100644
+--- a/src/converter/gen_segmenter_code.py
++++ b/src/converter/gen_segmenter_code.py
+@@ -55,18 +55,20 @@ def ReadPOSID(id_file, special_pos_file):
+   pos = {}
+   max_id = 0
+ 
+-  for line in open(id_file, "r"):
+-    fields = line.split()
+-    pos[fields[1]] = fields[0]
+-    max_id = max(int(fields[0]), max_id)
++  with open(id_file, "r") as fh:
++    for line in fh:
++      fields = line.split()
++      pos[fields[1]] = fields[0]
++      max_id = max(int(fields[0]), max_id)
+ 
+   max_id = max_id + 1
+-  for line in open(special_pos_file, "r"):
+-    if len(line) <= 1 or line[0] == '#':
+-      continue
+-    fields = line.split()
+-    pos[fields[0]] = ("%d" % max_id)
+-    max_id = max_id + 1
++  with open(special_pos_file, "r") as fh:
++    for line in fh:
++      if len(line) <= 1 or line[0] == '#':
++        continue
++      fields = line.split()
++      pos[fields[0]] = ("%d" % max_id)
++      max_id = max_id + 1
+ 
+   return pos
+ 
+@@ -80,8 +82,7 @@ def GetRange(pos, pattern, name):
+   pat = re.compile(PatternToRegexp(pattern))
+   min = -1;
+   max = -1;
+-  keys = list(pos.keys())
+-  keys.sort()
++  keys = sorted(pos.keys())
+ 
+   range = []
+ 
+@@ -118,15 +119,16 @@ def main():
+ 
+   print(HEADER % (len(list(pos.keys())), len(list(pos.keys()))))
+ 
+-  for line in open(sys.argv[3], "r"):
+-    if len(line) <= 1 or line[0] == '#':
+-      continue
+-    (l, r, result) = line.split()
+-    result = result.lower()
+-    lcond = GetRange(pos, l, "rid") or "true";
+-    rcond = GetRange(pos, r, "lid") or "true";
+-    print("  // %s %s %s" % (l, r, result))
+-    print("  if ((%s) && (%s)) { return %s; }" % (lcond, rcond, result))
++  with open(sys.argv[3], "r") as fh:
++    for line in fh:
++      if len(line) <= 1 or line[0] == '#':
++        continue
++      (l, r, result) = line.split()
++      result = result.lower()
++      lcond = GetRange(pos, l, "rid") or "true";
++      rcond = GetRange(pos, r, "lid") or "true";
++      print("  // %s %s %s" % (l, r, result))
++      print("  if ((%s) && (%s)) { return %s; }" % (lcond, rcond, result))
+ 
+   print(FOOTER)
+ 
+diff --git a/src/data/test/calculator/gen_test.py b/src/data/test/calculator/gen_test.py
+index 9c192cf..eee1817 100644
+--- a/src/data/test/calculator/gen_test.py
++++ b/src/data/test/calculator/gen_test.py
+@@ -636,24 +636,24 @@ class TestCaseGenerator(object):
+   """
+ 
+   # Character map used to generate test expression including Japanese.
+-  _EQUIVALENT_CHARS = {'+': ['+', u'＋'],
+-                       '-': ['-', u'−', u'ー'],
+-                       '*': ['*', u'＊'],
+-                       '/': ['/', u'／', u'・'],
++  _EQUIVALENT_CHARS = {'+': ['+', '＋'],
++                       '-': ['-', '−', 'ー'],
++                       '*': ['*', '＊'],
++                       '/': ['/', '／', '・'],
+                        '^': ['^'],
+-                       '%': ['%', u'％'],
+-                       '(': ['(', u'（'],
+-                       ')': [')', u'）'],
+-                       '0': ['0', u'０'],
+-                       '1': ['1', u'１'],
+-                       '2': ['2', u'２'],
+-                       '3': ['3', u'３'],
+-                       '4': ['4', u'４'],
+-                       '5': ['5', u'５'],
+-                       '6': ['6', u'６'],
+-                       '7': ['7', u'７'],
+-                       '8': ['8', u'８'],
+-                       '9': ['9', u'９']}
++                       '%': ['%', '％'],
++                       '(': ['(', '（'],
++                       ')': [')', '）'],
++                       '0': ['0', '０'],
++                       '1': ['1', '１'],
++                       '2': ['2', '２'],
++                       '3': ['3', '３'],
++                       '4': ['4', '４'],
++                       '5': ['5', '５'],
++                       '6': ['6', '６'],
++                       '7': ['7', '７'],
++                       '8': ['8', '８'],
++                       '9': ['9', '９']}
+ 
+   def __init__(self, test_filename, py_filename = '', cc_filename = ''):
+     """
+@@ -716,7 +716,7 @@ class TestCaseGenerator(object):
+   @staticmethod
+   def _mix_japanese_string(string):
+     """Randomly transforms half-width characters to full-width."""
+-    result = u''
++    result = ''
+     for char in string:
+       if char in TestCaseGenerator._EQUIVALENT_CHARS:
+         equiv_chars = TestCaseGenerator._EQUIVALENT_CHARS[char]
+@@ -749,11 +749,11 @@ class TestCaseGenerator(object):
+         raise FatalError('Expression tree evaluation error')
+ 
+       self._num_computable_cases += 1
+-      self._test_file.write(u'%s=%.8g\n' % (test_expr, value))
++      self._test_file.write('%s=%.8g\n' % (test_expr, value))
+       self._add_py_code_for(py_expr, value)
+       self._add_cc_code_for(expr.build_cc_expr(), value)
+     except EvalError:
+-      self._test_file.write(u'%s=\n' % test_expr)
++      self._test_file.write('%s=\n' % test_expr)
+       self._add_cc_code_for(expr.build_cc_expr(), None)
+ 
+     self._num_total_cases += 1
+diff --git a/src/data_manager/gen_connection_data.py b/src/data_manager/gen_connection_data.py
+index 3ebc800..5a130f9 100644
+--- a/src/data_manager/gen_connection_data.py
++++ b/src/data_manager/gen_connection_data.py
+@@ -33,7 +33,7 @@
+ from __future__ import absolute_import
+ from __future__ import print_function
+ 
+-import cStringIO as StringIO
++import io
+ import logging
+ import optparse
+ import os
+@@ -49,7 +49,7 @@ from build_tools import code_generator_util
+ INVALID_COST = 30000
+ INVALID_1BYTE_COST = 255
+ RESOLUTION_FOR_1BYTE = 64
+-FILE_MAGIC = '\xAB\xCD'
++FILE_MAGIC = b'\xAB\xCD'
+ 
+ FALSE_VALUES = ['f', 'false', '0']
+ TRUE_VALUES = ['t', 'true', '1']
+@@ -84,15 +84,15 @@ def ParseConnectionFile(text_connection_file, pos_size, special_pos_size):
+   mat_size = pos_size + special_pos_size
+ 
+   matrix = [[0] * mat_size for _ in range(mat_size)]
+-  with open(text_connection_file) as stream:
++  with open(text_connection_file, 'r') as stream:
+     stream = code_generator_util.SkipLineComment(stream)
+     # The first line contains the matrix column/row size.
+-    size = stream.next().rstrip()
++    size = next(stream).rstrip()
+     assert (int(size) == pos_size), '%s != %d' % (size, pos_size)
+ 
+     for array_index, cost in enumerate(stream):
+       cost = int(cost.rstrip())
+-      rid = array_index / pos_size
++      rid = array_index // pos_size
+       lid = array_index % pos_size
+       if rid == 0 and lid == 0:
+         cost = 0
+@@ -120,7 +120,7 @@ def CreateModeValueList(matrix):
+         # Heuristically, we do not compress INVALID_COST.
+         continue
+       m[cost] = m.get(cost, 0) + 1
+-    mode_value = max(six.iteritems(m), key=lambda __count: __count[1])[0]
++    mode_value = max(m.items(), key=lambda x: x[1])[0]
+     result.append(mode_value)
+   return result
+ 
+@@ -183,7 +183,7 @@ def BuildBinaryData(matrix, mode_value_list, use_1byte_cost):
+     resolution = RESOLUTION_FOR_1BYTE
+   else:
+     resolution = 1
+-  stream = StringIO.StringIO()
++  stream = io.BytesIO()
+ 
+   # Output header.
+   stream.write(FILE_MAGIC)
+@@ -198,7 +198,7 @@ def BuildBinaryData(matrix, mode_value_list, use_1byte_cost):
+ 
+   # 4 bytes alignment.
+   if len(mode_value_list) % 2:
+-    stream.write('\x00\x00')
++    stream.write(b'\x00\x00')
+ 
+   # Process each row:
+   for row in matrix:
+@@ -222,7 +222,7 @@ def BuildBinaryData(matrix, mode_value_list, use_1byte_cost):
+             if cost == INVALID_COST:
+               cost = INVALID_1BYTE_COST
+             else:
+-              cost /= resolution
++              cost //= resolution
+               assert cost != INVALID_1BYTE_COST
+           values.append(cost)
+ 
+@@ -241,7 +241,7 @@ def BuildBinaryData(matrix, mode_value_list, use_1byte_cost):
+       values_size = len(values) * 2
+ 
+     # Output the bits for a row.
+-    stream.write(struct.pack('<HH', len(compact_bits) / 8, values_size))
++    stream.write(struct.pack('<HH', len(compact_bits) // 8, values_size))
+     OutputBitList(chunk_bits, stream)
+     OutputBitList(compact_bits, stream)
+     if use_1byte_cost:
+diff --git a/src/dictionary/gen_pos_map.py b/src/dictionary/gen_pos_map.py
+index cbc142f..45eb5fd 100644
+--- a/src/dictionary/gen_pos_map.py
++++ b/src/dictionary/gen_pos_map.py
+@@ -35,8 +35,6 @@ from __future__ import absolute_import
+ import optparse
+ import sys
+ 
+-import six  # pylint: disable=g-import-not-at-top
+-
+ from build_tools import code_generator_util
+ 
+ 
+@@ -79,7 +77,7 @@ def GeneratePosMap(third_party_pos_map_file, user_pos_file):
+       result[third_party_pos_name] = mozc_pos
+ 
+   # Create mozc_pos to mozc_pos map.
+-  for key, value in six.iteritems(user_pos_map):
++  for key, value in user_pos_map.items():
+     if key in result:
+       assert (result[key] == value)
+       continue
+@@ -122,7 +120,7 @@ def main():
+   pos_map = GeneratePosMap(options.third_party_pos_map_file,
+                            options.user_pos_file)
+ 
+-  with open(options.output, 'w') as stream:
++  with open(options.output, 'w', encoding="utf-8") as stream:
+     OutputPosMap(pos_map, stream)
+ 
+ 
+diff --git a/src/dictionary/gen_pos_rewrite_rule.py b/src/dictionary/gen_pos_rewrite_rule.py
+index 8699f13..e9402b4 100644
+--- a/src/dictionary/gen_pos_rewrite_rule.py
++++ b/src/dictionary/gen_pos_rewrite_rule.py
+@@ -46,29 +46,31 @@ def IsPrefix(str, key):
+ 
+ 
+ def LoadRewriteMapRule(filename):
+-  fh = open(filename)
+   rule = []
+-  for line in fh:
+-    line = line.rstrip('\n')
+-    if not line or line.startswith('#'):
+-      continue
+-    fields = line.split()
+-    rule.append([fields[0], fields[1]])
++  with open(filename, 'r') as fh:
++    for line in fh:
++      line = line.rstrip('\n')
++      if not line or line.startswith('#'):
++        continue
++      fields = line.split()
++      rule.append([fields[0], fields[1]])
+   return rule
+ 
+ 
+ def ReadPOSID(id_file, special_pos_file):
+   pos_list = []
+ 
+-  for line in open(id_file, 'r'):
+-    fields = line.split()
+-    pos_list.append(fields[1])
++  with open(id_file, 'r') as fh:
++    for line in fh:
++      fields = line.split()
++      pos_list.append(fields[1])
+ 
+-  for line in open(special_pos_file, 'r'):
+-    if len(line) <= 1 or line[0] == '#':
+-      continue
+-    fields = line.split()
+-    pos_list.append(fields[0])
++  with open(special_pos_file, 'r') as fh:
++    for line in fh:
++      if len(line) <= 1 or line[0] == '#':
++        continue
++      fields = line.split()
++      pos_list.append(fields[0])
+ 
+   return pos_list
+ 
+@@ -112,7 +114,7 @@ def main():
+     ids.append(id)
+ 
+   with open(opts.output, 'wb') as f:
+-    f.write(''.join(chr(id) for id in ids))
++    f.write(''.join(chr(id) for id in ids).encode('utf-8'))
+ 
+ 
+ if __name__ == '__main__':
+diff --git a/src/dictionary/gen_user_pos_data.py b/src/dictionary/gen_user_pos_data.py
+index c0663b6..aab0033 100644
+--- a/src/dictionary/gen_user_pos_data.py
++++ b/src/dictionary/gen_user_pos_data.py
+@@ -65,7 +65,7 @@ def OutputUserPosData(user_pos_data, output_token_array, output_string_array):
+         f.write(struct.pack('<H', conjugation_id))
+ 
+   serialized_string_array_builder.SerializeToFile(
+-      sorted(string_index.keys()), output_string_array)
++    sorted(string_index.keys()), output_string_array)
+ 
+ 
+ def ParseOptions():
+diff --git a/src/dictionary/gen_zip_code_seed.py b/src/dictionary/gen_zip_code_seed.py
+index 1c3b14a..c04cf35 100644
+--- a/src/dictionary/gen_zip_code_seed.py
++++ b/src/dictionary/gen_zip_code_seed.py
+@@ -106,26 +106,26 @@ def ProcessJigyosyoCSV(file_name):
+ 
+ def ReadZipCodeEntries(zip_code, level1, level2, level3):
+   """Read zip code entries."""
+-  return [ZipEntry(zip_code, u''.join([level1, level2, town]))
++  return [ZipEntry(zip_code, ''.join([level1, level2, town]))
+           for town in ParseTownName(level3)]
+ 
+ 
+ def ReadJigyosyoEntry(zip_code, level1, level2, level3, name):
+   """Read jigyosyo entry."""
+   return ZipEntry(zip_code,
+-                  u''.join([level1, level2, level3, u' ', name]))
++                  ''.join([level1, level2, level3, ' ', name]))
+ 
+ 
+ def ParseTownName(level3):
+   """Parse town name."""
+-  if level3.find(u'以下に掲載がない場合') != -1:
++  if level3.find('以下に掲載がない場合') != -1:
+     return ['']
+ 
+   assert CanParseAddress(level3), ('failed to be merged %s'
+                                    % level3.encode('utf-8'))
+ 
+   # We ignore additional information here.
+-  level3 = re.sub(u'（.*）', u'', level3, re.U)
++  level3 = re.sub('（.*）', '', level3, re.U)
+ 
+   # For 地割, we have these cases.
+   #  XX1地割
+@@ -135,7 +135,7 @@ def ParseTownName(level3):
+   #  XX第1地割、XX第2地割、
+   #  XX第1地割〜XX第2地割、
+   # We simply use XX for them.
+-  chiwari_match = re.match(u'(\D*?)第?\d+地割.*', level3, re.U)
++  chiwari_match = re.match('(\D*?)第?\d+地割.*', level3, re.U)
+   if chiwari_match:
+     town = chiwari_match.group(1)
+     return [town]
+@@ -145,21 +145,21 @@ def ParseTownName(level3):
+   #   -> XX町YY and (XX町)ZZ
+   #  YY、ZZ
+   #   -> YY and ZZ
+-  chou_match = re.match(u'(.*町)?(.*)', level3, re.U)
++  chou_match = re.match('(.*町)?(.*)', level3, re.U)
+   if chou_match:
+-    chou = u''
++    chou = ''
+     if chou_match.group(1):
+       chou = chou_match.group(1)
+     rests = chou_match.group(2)
+-    return [chou + rest for rest in rests.split(u'、')]
++    return [chou + rest for rest in rests.split('、')]
+ 
+   return [level3]
+ 
+ 
+ def CanParseAddress(address):
+   """Return true for valid address."""
+-  return (address.find(u'（') == -1 or
+-          address.find(u'）') != -1)
++  return (address.find('（') == -1 or
++          address.find('）') != -1)
+ 
+ 
+ def ParseOptions():
+diff --git a/src/dictionary/zip_code_util.py b/src/dictionary/zip_code_util.py
+index 0189eb2..a2890f4 100644
+--- a/src/dictionary/zip_code_util.py
++++ b/src/dictionary/zip_code_util.py
+@@ -30,16 +30,14 @@
+ 
+ """Util module for Japanese postal(ZIP) code."""
+ 
+-import codecs
+-
+ 
+ def ReadCSV(file_name):
+   """Read CSV file."""
+   # Do not use csv reader module because it does not support unicode
+-  return [GetCells(line) for line in codecs.open(file_name,
+-                                                 'r',
+-                                                 'shift_jis',
+-                                                 errors='replace')]
++  return [GetCells(line) for line in open(file_name,
++                                          'r',
++                                          encoding='shift_jis',
++                                          errors='replace')]
+ 
+ 
+ def GetCells(line):
+@@ -86,11 +84,11 @@ class SpecialMergeZip(object):
+ 
+ 
+ _SPECIAL_CASES = [
+-    SpecialMergeZip(u'5900111', u'大阪府', u'堺市中区', [u'三原台']),
+-    SpecialMergeZip(u'8710046', u'大分県', u'中津市',
+-                    [u'金谷', u'西堀端', u'東堀端', u'古金谷']),
+-    SpecialMergeZip(u'9218046', u'石川県', u'金沢市',
+-                    [u'大桑町', u'三小牛町']),
++    SpecialMergeZip('5900111', '大阪府', '堺市中区', ['三原台']),
++    SpecialMergeZip('8710046', '大分県', '中津市',
++                    ['金谷', '西堀端', '東堀端', '古金谷']),
++    SpecialMergeZip('9218046', '石川県', '金沢市',
++                    ['大桑町', '三小牛町']),
+     ]
+ 
+ 
+diff --git a/src/mac/generate_mapping.py b/src/mac/generate_mapping.py
+index 7af7437..bbb55d0 100644
+--- a/src/mac/generate_mapping.py
++++ b/src/mac/generate_mapping.py
+@@ -96,8 +96,9 @@ void Init%(mapname)s() {
+ 
+   def Print(self):
+     self.PrintHeader()
+-    for line in file(self._filename):
+-      self.PrintLine(line)
++    with open(self._filename) as fh:
++      for line in fh:
++        self.PrintLine(line)
+     self.PrintFooter()
+ 
+ def ParseOption():
+diff --git a/src/prediction/gen_zero_query_data.py b/src/prediction/gen_zero_query_data.py
+index 7f763f0..6f39ecf 100644
+--- a/src/prediction/gen_zero_query_data.py
++++ b/src/prediction/gen_zero_query_data.py
+@@ -59,14 +59,13 @@ def ParseCodePoint(s):
+   Returns:
+     A integer indicating parsed pua.
+   """
+-  if not s or s[0] == '>':
++  if not s or s[0:1] == '>':
+     return 0
+   return int(s, 16)
+ 
+ 
+ def NormalizeString(string):
+-  return unicodedata.normalize(
+-      'NFKC', string.decode('utf-8')).encode('utf-8').replace('~', '〜')
++  return unicodedata.normalize('NFKC', string).replace('~', '〜')
+ 
+ 
+ def RemoveTrailingNumber(string):
+@@ -83,8 +82,8 @@ def GetReadingsFromDescription(description):
+   #  - 電話１（プッシュホン）
+   #  - ビル・建物
+   # \xE3\x83\xBB : "・"
+-  return [RemoveTrailingNumber(token) for token
+-          in re.split(r'(?:\(|\)|/|\xE3\x83\xBB)+', normalized)]
++  return [RemoveTrailingNumber(token.decode('utf-8')) for token
++          in re.split(br'(?:\(|\)|/|\xE3\x83\xBB)+', normalized.encode('utf-8'))]
+ 
+ 
+ def ReadEmojiTsv(stream):
+@@ -119,7 +118,8 @@ def ReadEmojiTsv(stream):
+ 
+     reading_list = []
+     # \xe3\x80\x80 is a full-width space
+-    for reading in re.split(r'(?: |\xe3\x80\x80)+', NormalizeString(readings)):
++    for reading in re.split(br'(?: |\xe3\x80\x80)+', NormalizeString(readings).encode('utf-8')):
++      reading = reading.decode('utf-8')
+       if not reading:
+         continue
+       reading_list.append(reading)
+@@ -188,7 +188,8 @@ def ReadEmoticonTsv(stream):
+     readings = columns[2]
+ 
+     # \xe3\x80\x80 is a full-width space
+-    for reading in re.split(r'(?: |\xe3\x80\x80)+', readings.strip()):
++    for reading in re.split(br'(?: |\xe3\x80\x80)+', readings.strip().encode('utf-8')):
++      reading = reading.decode('utf-8')
+       if not reading:
+         continue
+       zero_query_dict[reading].append(
+@@ -210,11 +211,11 @@ def ReadSymbolTsv(stream):
+     symbol = columns[1]
+     readings = columns[2]
+ 
+-    symbol_unicode = symbol.decode('utf-8')
+-    if len(symbol_unicode) != 1:
++    symbol_utf8 = symbol.encode('utf-8')
++    if len(symbol_utf8) != 1:
+       continue
+ 
+-    symbol_code_point = ord(symbol_unicode)
++    symbol_code_point = ord(symbol)
+     # Selects emoji symbols from symbol dictionary.
+     # TODO(toshiyuki): Update the range if we need.
+     # from "☀"(black sun with rays) to "❧"(rotated floral heart).
+@@ -222,7 +223,8 @@ def ReadSymbolTsv(stream):
+       continue
+ 
+     # \xe3\x80\x80 is a full-width space
+-    for reading in re.split(r'(?: |\xe3\x80\x80)+', readings.strip()):
++    for reading in re.split(br'(?: |\xe3\x80\x80)+', readings.strip().encode('utf-8')):
++      reading = reading.decode('utf-8')
+       if not reading:
+         continue
+       zero_query_dict[reading].append(
+diff --git a/src/prediction/gen_zero_query_util.py b/src/prediction/gen_zero_query_util.py
+index 7ef5390..8e1c9df 100644
+--- a/src/prediction/gen_zero_query_util.py
++++ b/src/prediction/gen_zero_query_util.py
+@@ -39,7 +39,6 @@ from __future__ import print_function
+ import os
+ import struct
+ 
+-import six
+ 
+ from build_tools import code_generator_util as cgu
+ from build_tools import serialized_string_array_builder
+@@ -72,7 +71,7 @@ def WriteZeroQueryData(zero_query_dict, output_token_array,
+                        output_string_array):
+   # Collect all the strings and assing index in ascending order
+   string_index = {}
+-  for key, entry_list in six.iteritems(zero_query_dict):
++  for key, entry_list in zero_query_dict.items():
+     string_index[key] = 0
+     for entry in entry_list:
+       string_index[entry.value] = 0
+diff --git a/src/rewriter/gen_counter_suffix_array.py b/src/rewriter/gen_counter_suffix_array.py
+index 4898c86..eeeb916 100644
+--- a/src/rewriter/gen_counter_suffix_array.py
++++ b/src/rewriter/gen_counter_suffix_array.py
+@@ -30,7 +30,6 @@
+ 
+ """Generate embedded counter suffix data."""
+ 
+-import codecs
+ import optparse
+ import sys
+ 
+@@ -40,10 +39,10 @@ from build_tools import serialized_string_array_builder
+ 
+ def ReadCounterSuffixPosIds(id_file):
+   pos_ids = set()
+-  with codecs.open(id_file, 'r', encoding='utf-8') as stream:
++  with open(id_file, 'r') as stream:
+     stream = code_generator_util.ParseColumnStream(stream, num_column=2)
+     for pos_id, pos_name in stream:
+-      if pos_name.startswith(u'名詞,接尾,助数詞'):
++      if pos_name.startswith('名詞,接尾,助数詞'):
+         pos_ids.add(pos_id)
+   return pos_ids
+ 
+@@ -57,13 +56,13 @@ def ReadCounterSuffixes(dictionary_files, ids):
+     # reading_correction.tsv in a cleaner way in the whole build system.
+     if 'reading_correction.tsv' in filename:
+       continue
+-    with codecs.open(filename, 'r', encoding='utf-8') as stream:
++    with open(filename, 'r') as stream:
+       stream = code_generator_util.ParseColumnStream(stream, num_column=5,
+                                                      delimiter='\t')
+       for x, lid, rid, y, value in stream:
+         if (lid == rid) and (lid in ids) and (rid in ids):
+           suffixes.add(value)
+-  return sorted(s.encode('utf-8') for s in suffixes)
++  return sorted(suffixes)
+ 
+ 
+ def ParseOptions():
+diff --git a/src/rewriter/gen_emoji_rewriter_data.py b/src/rewriter/gen_emoji_rewriter_data.py
+index ddedaaa..1d48591 100644
+--- a/src/rewriter/gen_emoji_rewriter_data.py
++++ b/src/rewriter/gen_emoji_rewriter_data.py
+@@ -57,9 +57,6 @@ import re
+ import struct
+ import sys
+ 
+-import six
+-from six import unichr  # pylint: disable=redefined-builtin
+-
+ from build_tools import code_generator_util
+ from build_tools import serialized_string_array_builder
+ 
+@@ -78,19 +75,18 @@ def ParseCodePoint(s):
+   the glyph (in other words, it has alternative (primary) code point, which
+   doesn't lead '>' and that's why we'll ignore it).
+   """
+-  if not s or s[0] == '>':
++  if not s or s[0:1] == '>':
+     return None
+   return int(s, 16)
+ 
+ 
+-_FULLWIDTH_RE = re.compile(u'[！-～]')   # U+FF01 - U+FF5E
++_FULLWIDTH_RE = re.compile(r'[！-～]')   # U+FF01 - U+FF5E
+ 
+ 
+ def NormalizeString(string):
+   """Normalize full width ascii characters to half width characters."""
+-  offset = ord(u'Ａ') - ord(u'A')
+-  return _FULLWIDTH_RE.sub(lambda x: unichr(ord(x.group(0)) - offset),
+-                           six.text_type(string, 'utf-8')).encode('utf-8')
++  offset = ord('Ａ') - ord('A')
++  return _FULLWIDTH_RE.sub(lambda x: chr(ord(x.group(0)) - offset), string)
+ 
+ 
+ def ReadEmojiTsv(stream):
+@@ -143,7 +139,8 @@ def ReadEmojiTsv(stream):
+                             kddi_description))
+ 
+     # \xe3\x80\x80 is a full-width space
+-    for reading in re.split(r'(?: |\xe3\x80\x80)+', readings.strip()):
++    for reading in re.split(br'(?: |\xe3\x80\x80)+', readings.strip().encode('utf-8')):
++      reading = reading.decode('utf-8')
+       if reading:
+         token_dict[NormalizeString(reading)].append(index)
+ 
+@@ -153,7 +150,7 @@ def ReadEmojiTsv(stream):
+ def OutputData(emoji_data_list, token_dict,
+                token_array_file, string_array_file):
+   """Output token and string arrays to files."""
+-  sorted_token_dict = sorted(six.iteritems(token_dict))
++  sorted_token_dict = sorted(token_dict.items())
+ 
+   strings = {}
+   for reading, _ in sorted_token_dict:
+@@ -165,7 +162,7 @@ def OutputData(emoji_data_list, token_dict,
+     strings[docomo_description] = 0
+     strings[softbank_description] = 0
+     strings[kddi_description] = 0
+-  sorted_strings = sorted(six.iterkeys(strings))
++  sorted_strings = sorted(strings.keys())
+   for index, s in enumerate(sorted_strings):
+     strings[s] = index
+ 
+diff --git a/src/rewriter/gen_reading_correction_data.py b/src/rewriter/gen_reading_correction_data.py
+index 4439cda..d358a00 100644
+--- a/src/rewriter/gen_reading_correction_data.py
++++ b/src/rewriter/gen_reading_correction_data.py
+@@ -63,7 +63,7 @@ def ParseOptions():
+ def WriteData(input_path, output_value_array_path, output_error_array_path,
+               output_correction_array_path):
+   outputs = []
+-  with open(input_path) as input_stream:
++  with open(input_path, 'r') as input_stream:
+     input_stream = code_generator_util.SkipLineComment(input_stream)
+     input_stream = code_generator_util.ParseColumnStream(input_stream,
+                                                          num_column=3)
+@@ -73,7 +73,7 @@ def WriteData(input_path, output_value_array_path, output_error_array_path,
+ 
+   # In order to lookup the entries via |error| with binary search,
+   # sort outputs here.
+-  outputs.sort(lambda x, y: cmp(x[1], y[1]) or cmp(x[0], y[0]))
++  outputs.sort(key=lambda x: (x[1], x[0]))
+ 
+   serialized_string_array_builder.SerializeToFile(
+       [value for (value, _, _) in outputs], output_value_array_path)
+diff --git a/src/rewriter/gen_single_kanji_rewriter_data.py b/src/rewriter/gen_single_kanji_rewriter_data.py
+index 90c0e18..e7a48c0 100644
+--- a/src/rewriter/gen_single_kanji_rewriter_data.py
++++ b/src/rewriter/gen_single_kanji_rewriter_data.py
+@@ -52,7 +52,7 @@ def ReadSingleKanji(stream):
+   stream = code_generator_util.ParseColumnStream(stream, num_column=2)
+   outputs = list(stream)
+   # For binary search by |key|, sort outputs here.
+-  outputs.sort(lambda x, y: cmp(x[0], y[0]))
++  outputs.sort(key=lambda x: x[0])
+ 
+   return outputs
+ 
+@@ -72,7 +72,7 @@ def ReadVariant(stream):
+       variant_items.append([target, original, len(variant_types) - 1])
+ 
+   # For binary search by |target|, sort variant items here.
+-  variant_items.sort(lambda x, y: cmp(x[0], y[0]))
++  variant_items.sort(key=lambda x: x[0])
+ 
+   return (variant_types, variant_items)
+ 
+diff --git a/src/session/gen_session_stress_test_data.py b/src/session/gen_session_stress_test_data.py
+index 334332e..1e549cb 100644
+--- a/src/session/gen_session_stress_test_data.py
++++ b/src/session/gen_session_stress_test_data.py
+@@ -57,17 +57,18 @@ def escape_string(s):
+ 
+ def GenerateHeader(file):
+   try:
+-    print "const char *kTestSentences[] = {"
+-    for line in open(file, "r"):
+-      if line.startswith('#'):
+-        continue
+-      line = line.rstrip('\r\n')
+-      if not line:
+-        continue
+-      print " \"%s\"," % escape_string(line)
+-    print "};"
++    print("const char *kTestSentences[] = {")
++    with open(file, "r") as fh:
++      for line in fh:
++        if line.startswith('#'):
++          continue
++        line = line.rstrip('\r\n')
++        if not line:
++          continue
++        print(" \"%s\"," % escape_string(line))
++      print("};")
+   except:
+-    print "cannot open %s" % (file)
++    print("cannot open %s" % (file))
+     sys.exit(1)
+ 
+ def main():
+diff --git a/src/unix/ibus/gen_mozc_xml.py b/src/unix/ibus/gen_mozc_xml.py
+index 856d4c7..c7e9243 100644
+--- a/src/unix/ibus/gen_mozc_xml.py
++++ b/src/unix/ibus/gen_mozc_xml.py
+@@ -97,11 +97,11 @@ def OutputXml(param_dict, component, engine_common, engines, setup_arg):
+   print('<engines>')
+   for i in range(len(engines['name'])):
+     print('<engine>')
+-    for key in engine_common:
++    for key in sorted(engine_common):
+       OutputXmlElement(param_dict, key, engine_common[key])
+     if setup_arg:
+       OutputXmlElement(param_dict, 'setup', ' '.join(setup_arg))
+-    for key in engines:
++    for key in sorted(engines):
+       OutputXmlElement(param_dict, key, engines[key][i])
+     print('</engine>')
+   print('</engines>')
+@@ -124,11 +124,11 @@ def OutputCpp(param_dict, component, engine_common, engines):
+   """
+   guard_name = 'MOZC_UNIX_IBUS_MAIN_H_'
+   print(CPP_HEADER % (guard_name, guard_name))
+-  for key in component:
++  for key in sorted(component):
+     OutputCppVariable(param_dict, 'Component', key, component[key])
+-  for key in engine_common:
++  for key in sorted(engine_common):
+     OutputCppVariable(param_dict, 'Engine', key, engine_common[key])
+-  for key in engines:
++  for key in sorted(engines):
+     print('const char* kEngine%sArray[] = {' % key.capitalize())
+     for i in range(len(engines[key])):
+       print('"%s",' % (engines[key][i] % param_dict))
+diff --git a/src/usage_stats/gen_stats_list.py b/src/usage_stats/gen_stats_list.py
+index c2ab36e..fff4a17 100644
+--- a/src/usage_stats/gen_stats_list.py
++++ b/src/usage_stats/gen_stats_list.py
+@@ -39,11 +39,12 @@ import sys
+ 
+ def GetStatsNameList(filename):
+   stats = []
+-  for line in open(filename, 'r'):
+-    stat = line.strip()
+-    if not stat or stat[0] == '#':
+-      continue
+-    stats.append(stat)
++  with open(filename, 'r') as fh:
++    for line in fh:
++      stat = line.strip()
++      if not stat or stat[0] == '#':
++        continue
++      stats.append(stat)
+   return stats
+ 
+ 
