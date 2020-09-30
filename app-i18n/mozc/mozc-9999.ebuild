@@ -109,12 +109,12 @@ src_unpack() {
 }
 
 src_prepare() {
-	eapply -p2 "${FILESDIR}/${PN}-python-3-1.patch"
-	eapply -p2 "${FILESDIR}/${PN}-python-3-2.patch"
-	eapply -p2 "${FILESDIR}/unsigned-enum-zero-compare.patch"
+	#eapply -p2 "${FILESDIR}/${PN}-python-3-1.patch"
+	#eapply -p2 "${FILESDIR}/${PN}-python-3-2.patch"
+	#eapply -p2 "${FILESDIR}/unsigned-enum-zero-compare.patch"
 	eapply -p2 "${FILESDIR}/${PN}-environmental_variables.patch"
 	eapply -p2 "${FILESDIR}/${PN}-server_path_check.patch"
-	eapply -p2 "${FILESDIR}/${PN}-2.20.2673.102-tests_build.patch"
+	#eapply -p2 "${FILESDIR}/${PN}-2.20.2673.102-tests_build.patch"
 	eapply -p2 "${FILESDIR}/${PN}-tests_skipping.patch"
 	eapply -p2 "${FILESDIR}/mozc-ldflags.patch"
 
