@@ -11,7 +11,7 @@ DESCRIPTION="Python parser for bash"
 HOMEPAGE="https://github.com/idank/bashlex"
 SRC_URI="https://github.com/idank/${PN}/archive/${PV}.tar.gz -> ${P}.tar.gz"
 
-LICENSE="MIT"
+LICENSE="GPL-3+"
 SLOT="0"
 KEYWORDS="~amd64"
 IUSE=""
