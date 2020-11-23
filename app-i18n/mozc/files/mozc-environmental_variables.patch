@@ -1,19 +1,19 @@
 diff --git a/src/base/system_util.cc b/src/base/system_util.cc
-index 6d84b55..dcc4bfb 100644
+index fcdb897f..3004aa3e 100644
 --- a/src/base/system_util.cc
 +++ b/src/base/system_util.cc
-@@ -211,6 +211,7 @@ UserProfileDirectoryImpl::UserProfileDirectoryImpl() {
-   dir_ = "/mutable";
+@@ -224,6 +224,7 @@ UserProfileDirectoryImpl::UserProfileDirectoryImpl() {
    return;
- #else  // OS_NACL || OS_CHROMEOS
+ #endif  // OS_ANDROID
+ 
 +  const char *configuration_directory_env;
    std::string dir;
  
  #ifdef OS_IOS
-@@ -223,25 +224,35 @@ UserProfileDirectoryImpl::UserProfileDirectoryImpl() {
-   dir = FileUtil::JoinPath({MacUtil::GetCachesDirectory(), kProductPrefix});
+@@ -237,8 +238,13 @@ UserProfileDirectoryImpl::UserProfileDirectoryImpl() {
+ #endif  // OS_IOS
  
- #elif defined(OS_WIN)
+ #if defined(OS_WIN)
 -  DCHECK(SUCCEEDED(Singleton<LocalAppDataDirectoryCache>::get()->result()));
 -  dir = Singleton<LocalAppDataDirectoryCache>::get()->path();
 +  configuration_directory_env = ::getenv("MOZC_CONFIGURATION_DIRECTORY");
@@ -22,46 +22,28 @@ index 6d84b55..dcc4bfb 100644
 +  } else {
 +    DCHECK(SUCCEEDED(Singleton<LocalAppDataDirectoryCache>::get()->result()));
 +    dir = Singleton<LocalAppDataDirectoryCache>::get()->path();
- #ifdef GOOGLE_JAPANESE_INPUT_BUILD
--  dir = FileUtil::JoinPath(dir, kCompanyNameInEnglish);
--  FileUtil::CreateDirectory(dir);
-+    dir = FileUtil::JoinPath(dir, kCompanyNameInEnglish);
-+    FileUtil::CreateDirectory(dir);
- #endif  // GOOGLE_JAPANESE_INPUT_BUILD
--  dir = FileUtil::JoinPath(dir, kProductNameInEnglish);
-+    dir = FileUtil::JoinPath(dir, kProductNameInEnglish);
 +  }
+ # ifdef GOOGLE_JAPANESE_INPUT_BUILD
+   dir = FileUtil::JoinPath(dir, kCompanyNameInEnglish);
+   FileUtil::CreateDirectory(dir);
+@@ -247,7 +253,12 @@ UserProfileDirectoryImpl::UserProfileDirectoryImpl() {
+ #endif  // OS_WIN
  
- #elif defined(__APPLE__)
+ #if defined(__APPLE__)
 -  dir = MacUtil::GetApplicationSupportDirectory();
 +  configuration_directory_env = ::getenv("MOZC_CONFIGURATION_DIRECTORY");
 +  if (configuration_directory_env) {
 +    dir = configuration_directory_env;
 +  } else {
 +    dir = MacUtil::GetApplicationSupportDirectory();
- #ifdef GOOGLE_JAPANESE_INPUT_BUILD
--  dir = FileUtil::JoinPath(dir, "Google");
--  // The permission of ~/Library/Application Support/Google seems to be 0755.
--  // TODO(komatsu): nice to make a wrapper function.
--  ::mkdir(dir.c_str(), 0755);
--  dir = FileUtil::JoinPath(dir, "JapaneseInput");
-+    dir = FileUtil::JoinPath(dir, "Google");
-+    // The permission of ~/Library/Application Support/Google seems to be 0755.
-+    // TODO(komatsu): nice to make a wrapper function.
-+    ::mkdir(dir.c_str(), 0755);
-+    dir = FileUtil::JoinPath(dir, "JapaneseInput");
- #else   //  GOOGLE_JAPANESE_INPUT_BUILD
--  dir = FileUtil::JoinPath(dir, "Mozc");
-+    dir = FileUtil::JoinPath(dir, "Mozc");
- #endif  //  GOOGLE_JAPANESE_INPUT_BUILD
 +  }
+ # ifdef GOOGLE_JAPANESE_INPUT_BUILD
+   dir = FileUtil::JoinPath(dir, "Google");
+   // The permission of ~/Library/Application Support/Google seems to be 0755.
+@@ -260,14 +271,24 @@ UserProfileDirectoryImpl::UserProfileDirectoryImpl() {
+ #endif  // __APPLE__
  
- #elif defined(OS_WASM)
-   // Do nothing for WebAssembly.
-@@ -252,14 +263,24 @@ UserProfileDirectoryImpl::UserProfileDirectoryImpl() {
-   // is injected from Java layer.
- 
- #else   // !OS_IOS && !OS_WIN && !__APPLE__ && !OS_ANDROID
+ #if defined(OS_LINUX)
 -  char buf[1024];
 -  struct passwd pw, *ppw;
 -  const uid_t uid = geteuid();
@@ -88,10 +70,10 @@ index 6d84b55..dcc4bfb 100644
 +      dir = FileUtil::JoinPath(pw.pw_dir, ".mozc");
 +    }
 +  }
- #endif  // !OS_IOS && !OS_WIN && !__APPLE__ && !OS_ANDROID
+ #endif  // OS_LINUX
  
    FileUtil::CreateDirectory(dir);
-@@ -365,6 +386,10 @@ class ProgramFilesX86Cache {
+@@ -372,6 +393,10 @@ class ProgramFilesX86Cache {
  #endif  // OS_WIN
  
  std::string SystemUtil::GetServerDirectory() {
@@ -101,8 +83,8 @@ index 6d84b55..dcc4bfb 100644
 +  }
  #ifdef OS_WIN
    DCHECK(SUCCEEDED(Singleton<ProgramFilesX86Cache>::get()->result()));
- #if defined(GOOGLE_JAPANESE_INPUT_BUILD)
-@@ -419,6 +444,10 @@ std::string SystemUtil::GetToolPath() {
+ # if defined(GOOGLE_JAPANESE_INPUT_BUILD)
+@@ -430,6 +455,10 @@ std::string SystemUtil::GetToolPath() {
  }
  
  std::string SystemUtil::GetDocumentDirectory() {

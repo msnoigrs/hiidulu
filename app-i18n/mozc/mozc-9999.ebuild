@@ -124,7 +124,7 @@ src_prepare() {
 		else
 			eapply -p2 "${DISTDIR}/fcitx-mozc-${FCITX_PATCH_VERSION}.patch"
 		fi
-		eapply -p2 "${FILESDIR}/fcitx-mozc.patch"
+		#eapply -p2 "${FILESDIR}/fcitx-mozc.patch"
 	fi
 	if use fcitx5; then
 		if [[ "${PV}" == "9999" ]]; then
