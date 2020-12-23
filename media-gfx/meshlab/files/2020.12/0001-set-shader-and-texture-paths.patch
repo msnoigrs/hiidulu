@@ -1,0 +1,32 @@
+diff --git a/meshlabplugins/render_gdp/meshrender.cpp b/meshlabplugins/render_gdp/meshrender.cpp
+index 86055ae..461a7c5 100644
+--- a/meshlabplugins/render_gdp/meshrender.cpp
++++ b/meshlabplugins/render_gdp/meshrender.cpp
+@@ -46,7 +46,11 @@ void MeshShaderRenderPlugin::initActionList() {
+ 	qaNone->setCheckable(false);
+ 	actionList << qaNone;*/
+ 
++#if defined(Q_OS_LINUX)
++	QDir shadersDir("/usr/share/meshlab");
++#else
+ 	QDir shadersDir = QDir(qApp->applicationDirPath());
++#endif
+ #if defined(Q_OS_WIN)
+ 	QString d = shadersDir.dirName();
+ 	QString dLower = d.toLower();
+diff --git a/meshlabplugins/render_gdp/shaderDialog.cpp b/meshlabplugins/render_gdp/shaderDialog.cpp
+index 1315757..db27b2e 100644
+--- a/meshlabplugins/render_gdp/shaderDialog.cpp
++++ b/meshlabplugins/render_gdp/shaderDialog.cpp
+@@ -317,7 +317,11 @@ void ShaderDialog::changeTexturePath(int i) {
+ void ShaderDialog::browseTexturePath(int i) {
+ 	QFileDialog fd(0,"Choose new texture");
+ 
++#if defined(Q_OS_LINUX)
++	QDir shadersDir("/usr/share/meshlab");
++#else
+ 	QDir shadersDir = QDir(qApp->applicationDirPath());
++#endif
+ #if defined(Q_OS_WIN)
+ 	if (shadersDir.dirName() == "debug" || shadersDir.dirName() == "release")
+ 		shadersDir.cdUp();

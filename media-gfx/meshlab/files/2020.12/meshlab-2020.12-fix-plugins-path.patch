@@ -1,0 +1,17 @@
+diff --git a/common/pluginmanager.cpp b/common/pluginmanager.cpp
+index 465e963..50d441a 100644
+--- a/common/pluginmanager.cpp
++++ b/common/pluginmanager.cpp
+@@ -224,8 +224,11 @@ QMap<QString, RichParameterList> PluginManager::generateFilterParameterMap()
+ 
+ QString PluginManager::getBaseDirPath()
+ {
++#if defined(Q_OS_LINUX)
++	QDir baseDir("/usr/share/meshlab");
++#else
+ 	QDir baseDir(qApp->applicationDirPath());
+-	
++#endif
+ #if defined(Q_OS_WIN)
+ 	// Windows:
+ 	// during development with visual studio binary could be in the debug/release subdir.
