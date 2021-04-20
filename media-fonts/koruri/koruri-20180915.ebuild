@@ -1,14 +1,14 @@
-# Copyright 1999-2019 Gentoo Authors
+# Copyright 1999-2021 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 # $Header:
 
-EAPI=5
+EAPI=7
 inherit font
 
 MY_P="Koruri-${PV}"
 DESCRIPTION="Mixing mplus and Open Sans"
-HOMEPAGE="http://sourceforge.jp/projects/koruri"
-SRC_URI="mirror://sourceforge.jp/${PN}/70038/${MY_P}.tar.xz"
+HOMEPAGE="https://koruri.github.io/"
+SRC_URI="https://github.com/Koruri/Koruri/releases/download/Koruri-${PV}/Koruri-${PV}.tar.xz"
 
 LICENSE="Apache-2.0"
 SLOT="0"

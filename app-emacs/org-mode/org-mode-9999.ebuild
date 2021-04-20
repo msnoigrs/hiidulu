@@ -1,8 +1,8 @@
-# Copyright 1999-2019 Gentoo Authors
+# Copyright 1999-2021 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=5
-NEED_EMACS=22
+EAPI=7
+NEED_EMACS=24
 
 EGIT_REPO_URI="https://code.orgmode.org/bzg/org-mode.git"
 #EGIT_REPO_URI="https://github.com/msnoigrs/org-mode.git"
