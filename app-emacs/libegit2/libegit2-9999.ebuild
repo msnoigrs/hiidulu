@@ -19,10 +19,6 @@ DEPEND="dev-util/cmake
 	dev-libs/libgit2"
 RDEPEND="${DEPEND}"
 
-src_prepare() {
-	sed -i -e 's/^(libgit-load)/(libgit--load)/' libgit.el
-}
-
 src_compile() {
 	emake
 }
