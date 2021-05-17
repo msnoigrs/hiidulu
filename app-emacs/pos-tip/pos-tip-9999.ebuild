@@ -21,5 +21,6 @@ RDEPEND="${DEPEND}"
 #SITEFILES="50${PN}-gentoo.el"
 
 src_prepare() {
+	default
 	sed -i -e "s/(interactive-p)/(called-interactively-p 'any)/" pos-tip.el
 }

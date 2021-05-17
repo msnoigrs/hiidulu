@@ -15,6 +15,4 @@ SLOT="0"
 KEYWORDS="~amd64 ~x86"
 IUSE=""
 
-src_prepare() {
-	rm -v ${S}/comment-dwim-2-test.el
-}
+ELISP_REMOVE="comment-dwim-2-test.el"

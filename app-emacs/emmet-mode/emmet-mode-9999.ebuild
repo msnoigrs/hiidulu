@@ -18,6 +18,7 @@ IUSE=""
 #SITEFILE="50${PN}-gentoo.el"
 
 src_prepare() {
+	default
 	sed -i -e 's/lang=en/lang=ja/g' conf/snippets.json
 }
 
