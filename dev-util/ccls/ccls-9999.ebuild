@@ -17,7 +17,7 @@ KEYWORDS="~amd64"
 IUSE=""
 
 DEPEND="dev-libs/rapidjson
-	sys-devel/clang:11"
+	sys-devel/clang:12"
 RDEPEND="${DEPEND}"
 
 src_configure() {
