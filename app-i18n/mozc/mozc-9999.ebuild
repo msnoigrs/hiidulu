@@ -1,8 +1,8 @@
-# Copyright 1999-2020 Gentoo Authors
+# Copyright 1999-2021 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI="7"
-PYTHON_COMPAT=(python{3_6,3_7,3_8})
+PYTHON_COMPAT=(python{3_7,3_8,3_9})
 
 inherit elisp-common multiprocessing python-any-r1 toolchain-funcs
 
@@ -39,7 +39,9 @@ IUSE="debug emacs fcitx4 fcitx5 +gui +handwriting-tegaki handwriting-tomoe ibus 
 REQUIRED_USE="|| ( emacs fcitx4 fcitx5 ibus ) gui? ( ^^ ( handwriting-tegaki handwriting-tomoe ) ) !gui? ( !handwriting-tegaki !handwriting-tomoe ) ?? ( fcitx4 fcitx5 ) fcitx5? ( gui )"
 
 BDEPEND="${PYTHON_DEPS}
-	sys-devel/clang:10
+	dev-python/six
+	sys-libs/libcxx
+	sys-devel/clang:13
 	>=dev-libs/protobuf-3.13.0
 	dev-util/gyp
 	dev-util/ninja
@@ -121,6 +123,8 @@ src_prepare() {
 	if use fcitx4; then
 		if [[ "${PV}" == "9999" ]]; then
 			cp -pr "${WORKDIR}/fcitx-mozc/src/unix/fcitx" unix || die
+			eapply -p2 "${FILESDIR}/fcitx-absl.patch"
+			eapply -p2 "${FILESDIR}/fcitx-undef.patch"
 		else
 			eapply -p2 "${DISTDIR}/fcitx-mozc-${FCITX_PATCH_VERSION}.patch"
 		fi
@@ -156,8 +160,8 @@ src_prepare() {
 			-i gyp/common.gypi || die
 	fi
 
-	CC=${CHOST}-clang-10
-	CXX=${CHOST}-clang++-10
+	CC=${CHOST}-clang-13
+	CXX=${CHOST}-clang++-13
 
 	local ar=($(tc-getAR))
 	local cc=($(tc-getCC))
@@ -226,8 +230,8 @@ src_configure() {
 
 	unset AR CC CXX LD NM READELF
 
-	CC=${CHOST}-clang-10
-	CXX=${CHOST}-clang++-10
+	CC=${CHOST}-clang-13
+	CXX=${CHOST}-clang++-13
 
 	execute "${PYTHON}" build_mozc.py gyp \
 		--gypdir="${EPREFIX}/usr/bin" \

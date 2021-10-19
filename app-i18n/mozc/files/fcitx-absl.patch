@@ -1,0 +1,15 @@
+diff --git a/src/unix/fcitx/fcitx_mozc.cc b/src/unix/fcitx/fcitx_mozc.cc
+index 64e83726..f8681cc8 100644
+--- a/src/unix/fcitx/fcitx_mozc.cc
++++ b/src/unix/fcitx/fcitx_mozc.cc
+@@ -412,8 +412,8 @@ void FcitxMozc::InitializeBar()
+         GetCompositionIconName
+     );
+ 
+-    if ( mozc::FileUtil::FileExists ( mozc::FileUtil::JoinPath (
+-                                      mozc::SystemUtil::GetServerDirectory(), mozc::kMozcTool ) ) )
++    if (absl::Status s = mozc::FileUtil::FileExists ( mozc::FileUtil::JoinPath (
++                                      mozc::SystemUtil::GetServerDirectory(), mozc::kMozcTool ) ); s.ok() )
+     {
+         FcitxUIRegisterComplexStatus(instance, this,
+             "mozc-tool",

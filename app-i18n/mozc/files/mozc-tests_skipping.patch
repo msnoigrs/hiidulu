@@ -1,8 +1,8 @@
 diff --git a/src/unix/ibus/mozc_engine_test.cc b/src/unix/ibus/mozc_engine_test.cc
-index 1ad496e..34af5a9 100644
+index a8a59ce2..5ff4d697 100644
 --- a/src/unix/ibus/mozc_engine_test.cc
 +++ b/src/unix/ibus/mozc_engine_test.cc
-@@ -41,61 +41,5 @@ using std::unique_ptr;
+@@ -39,61 +39,5 @@
  namespace mozc {
  namespace ibus {
  
@@ -22,7 +22,7 @@ index 1ad496e..34af5a9 100644
 -  virtual void TearDown() { mozc_engine_.reset(); }
 -
 -  client::ClientMock* mock_;
--  unique_ptr<MozcEngine> mozc_engine_;
+-  std::unique_ptr<MozcEngine> mozc_engine_;
 -
 - private:
 -  DISALLOW_COPY_AND_ASSIGN(LaunchToolTest);

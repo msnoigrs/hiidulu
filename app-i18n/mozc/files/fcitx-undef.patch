@@ -1,0 +1,42 @@
+diff --git a/src/unix/fcitx/mozc_connection.cc b/src/unix/fcitx/mozc_connection.cc
+index bccb4644..884a9e2e 100755
+--- a/src/unix/fcitx/mozc_connection.cc
++++ b/src/unix/fcitx/mozc_connection.cc
+@@ -32,6 +32,9 @@
+ 
+ #include <string>
+ 
++// Resolve macro naming conflict with absl.
++#undef InvokeFunction
++
+ #include "base/logging.h"
+ #include "base/util.h"
+ #include "client/client.h"
+diff --git a/src/unix/fcitx/mozc_response_parser.cc b/src/unix/fcitx/mozc_response_parser.cc
+index fedd1dfb..6647fce9 100755
+--- a/src/unix/fcitx/mozc_response_parser.cc
++++ b/src/unix/fcitx/mozc_response_parser.cc
+@@ -33,6 +33,9 @@
+ #include <string>
+ #include <vector>
+ 
++// Resolve macro naming conflict with absl.
++#undef InvokeFunction
++
+ #include "base/logging.h"
+ #include "base/util.h"
+ #include "protocol/commands.pb.h"
+diff --git a/src/unix/fcitx/surrounding_text_util.cc b/src/unix/fcitx/surrounding_text_util.cc
+index 53b038c5..9306c425 100644
+--- a/src/unix/fcitx/surrounding_text_util.cc
++++ b/src/unix/fcitx/surrounding_text_util.cc
+@@ -34,6 +34,9 @@
+ #include <fcitx/instance.h>
+ #include <fcitx/module/clipboard/fcitx-clipboard.h>
+ 
++// Resolve macro naming conflict with absl.
++#undef InvokeFunction
++
+ #include "base/port.h"
+ #include "base/logging.h"
+ #include "base/util.h"
