@@ -15,7 +15,7 @@ LICENSE="GPL-3"
 SLOT="0"
 KEYWORDS="~amd64 ~x86"
 
-DEPEND="app-emacs/let-alist"
-RDEPEND="${DEPEND}"
+#DEPEND=""
+#RDEPEND="${DEPEND}"
 
 #SITEFILES="50${PN}-gentoo.el"
