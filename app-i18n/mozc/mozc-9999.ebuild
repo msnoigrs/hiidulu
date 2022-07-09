@@ -1,4 +1,4 @@
-# Copyright 1999-2021 Gentoo Authors
+# Copyright 1999-2022 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI="7"
@@ -123,7 +123,7 @@ src_prepare() {
 	if use fcitx4; then
 		if [[ "${PV}" == "9999" ]]; then
 			cp -pr "${WORKDIR}/fcitx-mozc/src/unix/fcitx" unix || die
-			eapply -p2 "${FILESDIR}/fcitx-absl.patch"
+			#eapply -p2 "${FILESDIR}/fcitx-absl.patch"
 			eapply -p2 "${FILESDIR}/fcitx-undef.patch"
 		else
 			eapply -p2 "${DISTDIR}/fcitx-mozc-${FCITX_PATCH_VERSION}.patch"

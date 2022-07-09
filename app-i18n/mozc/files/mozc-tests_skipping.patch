@@ -1,5 +1,5 @@
 diff --git a/src/unix/ibus/mozc_engine_test.cc b/src/unix/ibus/mozc_engine_test.cc
-index a8a59ce2..5ff4d697 100644
+index 61a293a3..5ff4d697 100644
 --- a/src/unix/ibus/mozc_engine_test.cc
 +++ b/src/unix/ibus/mozc_engine_test.cc
 @@ -39,61 +39,5 @@
@@ -8,7 +8,7 @@ index a8a59ce2..5ff4d697 100644
  
 -class LaunchToolTest : public testing::Test {
 - public:
--  LaunchToolTest() { g_type_init(); }
+-  LaunchToolTest() = default;
 -
 - protected:
 -  virtual void SetUp() {
