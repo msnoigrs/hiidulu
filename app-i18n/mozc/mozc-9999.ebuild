@@ -2,9 +2,9 @@
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI="7"
-PYTHON_COMPAT=(python{3_7,3_8,3_9})
+PYTHON_COMPAT=( python3_{8..10} )
 
-inherit elisp-common multiprocessing python-any-r1 toolchain-funcs
+inherit elisp-common multiprocessing python-any-r1 toolchain-funcs desktop xdg
 
 if [[ "${PV}" == "9999" ]]; then
 	inherit git-r3
@@ -41,7 +41,7 @@ REQUIRED_USE="|| ( emacs fcitx4 fcitx5 ibus ) gui? ( ^^ ( handwriting-tegaki han
 BDEPEND="${PYTHON_DEPS}
 	dev-python/six
 	sys-libs/libcxx
-	sys-devel/clang:13
+	sys-devel/clang:14
 	>=dev-libs/protobuf-3.13.0
 	dev-util/gyp
 	dev-util/ninja
@@ -56,7 +56,10 @@ RDEPEND=">=dev-libs/protobuf-3.13.0:=
 		virtual/libintl
 	)
 	fcitx5? (
-		app-i18n/fcitx5
+		app-i18n/fcitx:5
+		app-i18n/libime
+		sys-devel/gettext
+		virtual/libintl
 	)
 	gui? (
 		app-i18n/zinnia
@@ -135,7 +138,7 @@ src_prepare() {
 		else
 			:; #
 		fi
-		eapply -p2 "${FILESDIR}/fix_use_of_deleted_function_error.patch"
+		#eapply -p2 "${FILESDIR}/fix_use_of_deleted_function_error.patch"
 		sed -e "s|PREFIX|/usr|g" -i unix/fcitx5/mozc.conf || die
 	fi
 
@@ -160,8 +163,11 @@ src_prepare() {
 			-i gyp/common.gypi || die
 	fi
 
-	CC=${CHOST}-clang-13
-	CXX=${CHOST}-clang++-13
+	# CC=${CHOST}-clang-14
+	# CXX=${CHOST}-clang++-14
+	# AR="llvm-ar"
+	# NM="llvm-nm"
+	# RANLIB="llvm-ranlib"
 
 	local ar=($(tc-getAR))
 	local cc=($(tc-getCC))
@@ -185,6 +191,12 @@ src_prepare() {
 		-e "s:<!(which ld):${ld[@]}:" \
 		-e "s:<!(which nm):${nm[@]}:" \
 		-e "s:<!(which readelf):${readelf[@]}:" \
+		-i gyp/common.gypi || die
+
+	# https://github.com/google/mozc/issues/489
+	sed \
+		-e "/'-lc++'/d" \
+		-e "/'-stdlib=libc++'/d" \
 		-i gyp/common.gypi || die
 }
 
@@ -230,8 +242,11 @@ src_configure() {
 
 	unset AR CC CXX LD NM READELF
 
-	CC=${CHOST}-clang-13
-	CXX=${CHOST}-clang++-13
+	# CC=${CHOST}-clang-14
+	# CXX=${CHOST}-clang++-14
+	# AR="llvm-ar"
+	# NM="llvm-nm"
+	# RANLIB="llvm-ranlib"
 
 	execute "${PYTHON}" build_mozc.py gyp \
 		--gypdir="${EPREFIX}/usr/bin" \
@@ -333,20 +348,40 @@ src_install() {
 		insinto /usr/share/fcitx5/inputmethod
 		doins unix/fcitx5/mozc.conf
 
-		insinto /usr/share/fcitx5/mozc/icon
-		newins data/images/product_icon_32bpp-128.png mozc.png
-		local image
-		for image in data/images/unix/ui-*.png; do
-			newins "${image}" "mozc-${image#data/images/unix/ui-}"
+		local orgfcitx5="org.fcitx.Fcitx5.fcitx-mozc"
+		newicon -s 128 data/images/product_icon_32bpp-128.png ${orgfcitx5}.png
+		newicon -s 128 data/images/product_icon_32bpp-128.png fcitx-mozc.png
+		newicon -s 32 data/images/unix/ime_product_icon_opensource-32.png ${orgfcitx5}.png
+		newicon -s 32 data/images/unix/ime_product_icon_opensource-32.png fcitx-mozc.png
+		for uiimg in ../../fcitx-mozc/scripts/icons/ui-*.png; do
+			dimg=${uiimg#*ui-}
+			newicon -s 48 ${uiimg} ${orgfcitx5}-${dimg/_/-}
+			newicon -s 48 ${uiimg} fcitx-mozc-${dimg/_/-}
 		done
 
 		local locale mo_file
-		for mo_file in out_linux/${BUILD_TYPE}/gen/unix/fcitx5/po/*.mo; do
+		for mo_file in unix/fcitx5/po/*.po; do
 			locale="${mo_file##*/}"
-			locale="${locale%.mo}"
+			locale="${locale%.po}"
+			msgfmt ${mo_file} -o ${mo_file/.po/.mo} || die
 			insinto /usr/share/locale/${locale}/LC_MESSAGES
-			newins "${mo_file}" fcitx5-mozc.mo
+			newins "${mo_file/.po/.mo}" fcitx5-mozc.mo
 		done
+
+		# insinto /usr/share/fcitx5/mozc/icon
+		# newins data/images/product_icon_32bpp-128.png mozc.png
+		# local image
+		# for image in data/images/unix/ui-*.png; do
+		# 	newins "${image}" "mozc-${image#data/images/unix/ui-}"
+		# done
+
+		# local locale mo_file
+		# for mo_file in out_linux/${BUILD_TYPE}/gen/unix/fcitx5/po/*.mo; do
+		# 	locale="${mo_file##*/}"
+		# 	locale="${locale%.mo}"
+		# 	insinto /usr/share/locale/${locale}/LC_MESSAGES
+		# 	newins "${mo_file}" fcitx5-mozc.mo
+		# done
 	fi
 
 	if use ibus; then
