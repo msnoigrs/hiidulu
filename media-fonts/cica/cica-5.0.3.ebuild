@@ -1,11 +1,11 @@
-# Copyright 1999-2021 Gentoo Authors
+# Copyright 1999-2023 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 # $Header:
 
 EAPI=7
 inherit font
 
-MY_P="Cica_v${PV}_with_emoji"
+MY_P="Cica_v${PV}"
 DESCRIPTION="Cica font"
 HOMEPAGE="https://github.com/miiton/Cica"
 SRC_URI="https://github.com/miiton/Cica/releases/download/v${PV}/${MY_P}.zip"
