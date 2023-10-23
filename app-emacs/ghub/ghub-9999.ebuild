@@ -1,4 +1,4 @@
-# Copyright 1999-2022 Gentoo Authors
+# Copyright 1999-2023 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=7
@@ -16,11 +16,12 @@ KEYWORDS="~amd64 ~x86"
 IUSE=""
 
 DEPEND="app-emacs/dash
-	app-emacs/treepy"
+	app-emacs/treepy
+	app-emacs/compat"
 RDEPEND="${RDEPEND}"
 
 src_compile() {
-	emake LOAD_PATH="-L ${SITELISP}/dash -L ${SITELISP}/treepy -L ." lisp info
+	emake LOAD_PATH="-L ${SITELISP}/dash -L ${SITELISP}/treepy -L ${SITELISP}/compat -L ." lisp info
 }
 
 src_install() {

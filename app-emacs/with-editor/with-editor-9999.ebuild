@@ -1,4 +1,4 @@
-# Copyright 1999-2022 Gentoo Authors
+# Copyright 1999-2023 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=7
@@ -11,6 +11,9 @@ DESCRIPTION="Use the Emacsclient as the $EDITOR of child processes"
 HOMEPAGE="https://github.com/magit/with-editor"
 SRC_URI=""
 
+DEPEND="app-emacs/compat"
+RDEPEND="${DEPEND}"
+
 LICENSE="GPL-3"
 SLOT="0"
 KEYWORDS="~amd64 ~x86"
@@ -18,7 +21,7 @@ KEYWORDS="~amd64 ~x86"
 DEPEND="app-emacs/dash"
 
 src_compile() {
-	emake LOAD_PATH="-L ${SITELISP}/dash  -L ." lisp info
+	emake LOAD_PATH="-L ${SITELISP}/dash -L ${SITELISP}/compat -L ." lisp info
 }
 
 src_install() {

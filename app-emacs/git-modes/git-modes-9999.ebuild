@@ -1,4 +1,4 @@
-# Copyright 1999-2021 Gentoo Authors
+# Copyright 1999-2023 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=7
@@ -15,13 +15,16 @@ SLOT="0"
 KEYWORDS="~amd64 ~x86"
 IUSE=""
 
+DEPEND="app-emacs/compat"
+RDEPEND="${DEPEND}"
+
 #SITEFILE="50git-modes-gentoo.el"
 
 src_compile() {
-	emake
+	emake LOAD_PATH="-L ${SITELISP}/compat -L ." lisp
 }
 
 src_install() {
-	elisp-install ${PN} gitattributes-mode.{el,elc} gitconfig-mode.{el,elc} gitignore-mode.{el,elc}|| die
+	elisp-install ${PN} gitattributes-mode.{el,elc} gitconfig-mode.{el,elc} gitignore-mode.{el,elc} git-modes-autoloads.el|| die
 	#elisp-site-file-install "${FILESDIR}/${SITEFILE}" || die
 }

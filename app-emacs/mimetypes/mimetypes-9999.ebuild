@@ -3,14 +3,14 @@
 
 EAPI=7
 
-EGIT_REPO_URI="https://github.com/Fuco1/smartparens.git"
+EGIT_REPO_URI="https://github.com/cniles/emacs-mimetypes.git"
 
 inherit elisp git-r3
 
-DESCRIPTION="smartparens minor mode"
-HOMEPAGE="https://github.com/Fuco1/smartparens"
+DESCRIPTION="guessing mimetypes"
+HOMEPAGE="https://github.com/cniles/emacs-mimetypes"
 
 LICENSE="GPL-3"
 SLOT="0"
-KEYWORDS="~amd64 ~x86"
+KEYWORDS="~amd64"
 IUSE=""

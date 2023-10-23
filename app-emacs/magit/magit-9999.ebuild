@@ -1,4 +1,4 @@
-# Copyright 1999-2022 Gentoo Authors
+# Copyright 1999-2023 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=7
@@ -21,7 +21,8 @@ DEPEND="app-emacs/async
 	app-emacs/ghub
 	app-emacs/transient
 	app-emacs/libegit2
-	app-emacs/with-editor"
+	app-emacs/with-editor
+	app-emacs/compat"
 RDEPEND="${RDEPEND}"
 
 SITEFILE="50magit-gentoo.el"
@@ -33,7 +34,8 @@ src_compile() {
 		GHUB_DIR="${SITELISP}/ghub" \
 		TRANSIENT_DIR="${SITELISP}/transient" \
 		LIBGIT_DIR="${SITELISP}/libegit2" \
-		WITH_EDITOR_DIR="${SITELISP}/with-editor" lisp info
+		WITH_EDITOR_DIR="${SITELISP}/with-editor" \
+		COMPAT_DIR="${SITELISP}/compat" lisp info
 }
 
 src_install() {
