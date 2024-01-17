@@ -15,4 +15,7 @@ SLOT="0"
 KEYWORDS="~amd64 ~x86"
 IUSE=""
 
+DEPEND="app-emacs/ht"
+RDEPEND="${DEPEND}"
+
 #SITEFILE="50${PN}-gentoo.el"
